@@ -1,0 +1,1 @@
+order = ['tpQtLib.widgets.base']
