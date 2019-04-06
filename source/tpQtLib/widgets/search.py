@@ -11,7 +11,7 @@ from tpQtLib.Qt.QtCore import *
 from tpQtLib.Qt.QtWidgets import *
 
 from tpQtLib.widgets import button
-from tpRigToolkit.core.resources import resource
+from tpQtLib.resources import resource
 
 
 class SearchFindWidget(QWidget, object):
