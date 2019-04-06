@@ -37,12 +37,15 @@ class SearchFindWidget(QWidget, object):
 
         icon_size = self.style().pixelMetric(QStyle.PM_SmallIconSize)
 
-        self._clear_btn = button.IconButton('delete', icon_padding=2, parent=self)
+        delete_icon = resource.icon('delete', extension='png')
+        search_icon = resource.icon('search', extension='png')
+
+        self._clear_btn = button.IconButton(delete_icon, icon_padding=2, parent=self)
         self._clear_btn.setIconSize(QSize(icon_size, icon_size))
         self._clear_btn.setFixedSize(QSize(icon_size, icon_size))
         self._clear_btn.hide()
 
-        self._search_btn = button.IconButton('search', icon_padding=2, parent=self)
+        self._search_btn = button.IconButton(search_icon, icon_padding=2, parent=self)
         self._search_btn.setIconSize(QSize(icon_size, icon_size))
         self._search_btn.setFixedSize(QSize(icon_size, icon_size))
         # self._search_btn.setStyleSheet('border: none;')
