@@ -28,13 +28,15 @@ class tpQtLib(object):
     reload_modules = list()
 
     @classmethod
-    def initialize(cls):
+    def initialize(cls, do_reload=False):
 
         import tpQtLib
 
         cls.create_logger()
         cls.import_modules(tpQtLib.__path__[0], only_packages=True, order=['tpQtLib.core'])
-        cls.reload_all()
+
+        if do_reload:
+            cls.reload_all()
 
     @staticmethod
     def create_logger():
@@ -163,5 +165,5 @@ class tpQtLib(object):
         tpQtLib.logger.debug(' =========> tpQtLib reloaded successfully!')
 
 
-def init():
-    tpQtLib.initialize()
+def init(do_reload=False):
+    tpQtLib.initialize(do_reload=do_reload)
