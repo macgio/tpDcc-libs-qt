@@ -1,13 +1,11 @@
 #! /usr/bin/env python
-# # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 Initialization module for tpQtLib
 """
 
 from __future__ import print_function, division, absolute_import
-
-main = __import__('__main__')
 
 import os
 import types
@@ -31,8 +29,11 @@ class tpQtLib(object):
 
     @classmethod
     def initialize(cls):
+
+        import tpQtLib
+
         cls.create_logger()
-        cls.import_modules(os.path.join(tpQtLib.__path__[0], 'core'), only_packages=True, order=['tpQtLib.widgets'])
+        cls.import_modules(tpQtLib.__path__[0], only_packages=True, order=['tpQtLib.core'])
         cls.reload_all()
 
     @staticmethod
@@ -160,3 +161,7 @@ class tpQtLib(object):
             else:
                 tpQtLib.logger.debug('AVOIDING RELOAD OF {}'.format(mod))
         tpQtLib.logger.debug(' =========> tpQtLib reloaded successfully!')
+
+
+def init():
+    tpQtLib.initialize()
