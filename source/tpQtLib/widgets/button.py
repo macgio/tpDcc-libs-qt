@@ -49,7 +49,7 @@ class BaseButton(QPushButton, animation.BaseAnimObject):
 
 
 class IconButton(BaseButton, object):
-    def __init__(self, icon=None, icon_padding=0, icon_min_size=8, icon_extension='png', button_style=None, parent=None):
+    def __init__(self, icon=None, icon_padding=0, icon_min_size=8, button_style=None, parent=None):
         super(IconButton, self).__init__(button_style=button_style, parent=parent)
 
         self._pad = icon_padding

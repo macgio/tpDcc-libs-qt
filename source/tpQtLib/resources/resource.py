@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #
 # """ ==================================================================
 # Script Name: resource.py
@@ -10,10 +10,10 @@
 
 import os
 
-from Qt.QtGui import *
+from tpQtLib.Qt.QtGui import *
 
 from tpPyUtils import folder
-from tpRigToolkit.core.gui import pixmap as pixmap_resource
+from tpQtLib.core import pixmap as pixmap_resource
 from tpPyUtils import qtutils, path
 
 

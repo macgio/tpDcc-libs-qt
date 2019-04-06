@@ -91,7 +91,7 @@ class tpQtLib(object):
                 return mod
             return None
         except (ImportError, AttributeError) as e:
-            tpQtLib.logger.debug('FAILED IMPORT: {} -> {}'.format(package_name, str(e)))
+            tpQtLib.logger.error('FAILED IMPORT: {} -> {}'.format(package_name, str(e)))
             pass
 
     @classmethod
