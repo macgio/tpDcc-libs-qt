@@ -45,7 +45,7 @@ class tpQtLib(object):
         """
 
         global logger
-        logger = logger_utils.Logger(name='tpQtLib', level=logger_utils.LoggerLevel.WARNING)
+        logger = logger_utils.Logger(name='tpQtLib', level=logger_utils.LoggerLevel.WARNING).logger
         logger.debug('Initializing tpQtLib logger ...')
         return logger
 
