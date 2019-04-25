@@ -11,7 +11,7 @@ from tpQtLib.Qt.QtCore import *
 from tpQtLib.Qt.QtWidgets import *
 
 from tpQtLib.widgets import button
-from tpQtLib.resources import resource
+from tpQtLib.core import resource
 
 
 class SearchFindWidget(QWidget, object):
@@ -37,8 +37,8 @@ class SearchFindWidget(QWidget, object):
 
         icon_size = self.style().pixelMetric(QStyle.PM_SmallIconSize)
 
-        delete_icon = resource.icon('delete', extension='png')
-        search_icon = resource.icon('search', extension='png')
+        delete_icon = resource.Resource.icon('delete', extension='png')
+        search_icon = resource.Resource.icon('search', extension='png')
 
         self._clear_btn = button.IconButton(delete_icon, icon_padding=2, parent=self)
         self._clear_btn.setIconSize(QSize(icon_size, icon_size))

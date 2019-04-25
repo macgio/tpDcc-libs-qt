@@ -11,7 +11,7 @@ from tpQtLib.Qt.QtCore import *
 from tpQtLib.Qt.QtWidgets import *
 from tpQtLib.Qt.QtGui import *
 
-from tpQtLib.resources import resource
+from tpQtLib.core import resource
 
 
 class StatusWidget(QFrame, object):

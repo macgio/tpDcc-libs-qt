@@ -16,7 +16,7 @@ import tpQtLib as tp
 from tpPyUtils import path, qtutils, python
 from tpQtLib.core import base
 from tpQtLib.widgets import label
-from tpQtLib.resources import resource
+from tpQtLib.core import resource
 
 
 class Breadcrumb(object):
