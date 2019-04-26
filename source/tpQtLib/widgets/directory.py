@@ -12,6 +12,7 @@ import os
 from tpQtLib.Qt.QtCore import *
 from tpQtLib.Qt.QtWidgets import *
 
+import tpQtLib
 import tpDccLib as tp
 from tpPyUtils import path
 from tpQtLib.widgets import button
@@ -173,7 +174,8 @@ class SelectFolderButton(QWidget, object):
         main_layout.setSpacing(2)
         self.setLayout(main_layout)
 
-        self._folder_btn = button.IconButton(icon_name='folder', icon_extension='png', icon_padding=2, button_style=button.ButtonStyles.FlatStyle)
+        folder_icon = tpQtLib.resource.icon('folder')
+        self._folder_btn = button.IconButton(icon=folder_icon, icon_padding=2, button_style=button.ButtonStyles.FlatStyle)
         main_layout.addWidget(self._folder_btn)
 
         self._folder_btn.clicked.connect(self._open_folder_browser_dialog)
@@ -254,7 +256,8 @@ class SelectFolder(QWidget, object):
             self._folder_line.setText(self._directory)
 
         if self._use_icon:
-            self._folder_btn = button.IconButton(icon_name='folder', icon_extension='png', icon_padding=2, button_style=button.ButtonStyles.FlatStyle)
+            folder_icon = tpQtLib.resource.icon('folder')
+            self._folder_btn = button.IconButton(icon=folder_icon, icon_padding=2, button_style=button.ButtonStyles.FlatStyle)
         else:
             self._folder_btn = button.BaseButton('Browse...')
 
@@ -376,7 +379,8 @@ class SelectFile(QWidget, object):
             self._file_line.setText(self._directory)
 
         if self._use_icon:
-            self._file_btn = button.IconButton(icon_name='folder', icon_extension='png', icon_padding=2, button_style=button.ButtonStyles.FlatStyle)
+            folder_icon = tpQtLib.resource.icon('folder')
+            self._file_btn = button.IconButton(icon=folder_icon, icon_padding=2, button_style=button.ButtonStyles.FlatStyle)
         else:
             self._file_btn = button.BaseButton('Browse ...')
 

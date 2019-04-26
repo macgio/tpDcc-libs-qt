@@ -30,7 +30,6 @@ class BaseButton(QPushButton, animation.BaseAnimObject):
         self._min_size = kwargs.pop('min_size', 8)
         self._radius = kwargs.pop('radius', 5)
         self._icon = kwargs.pop('icon', None)
-        self._extension = kwargs.pop('icon_extension', 'png')
 
         QPushButton.__init__(self, *args, **kwargs)
         animation.BaseAnimObject.__init__(self)

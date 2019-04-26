@@ -14,12 +14,18 @@ import importlib
 from collections import OrderedDict
 
 from tpPyUtils import logger as logger_utils
+from tpQtLib.core import resource as resource_utils
 
 # =================================================================================
 
 logger = None
+resource = None
 
 # =================================================================================
+
+
+class tpQtLibResource(resource_utils.Resource, object):
+    RESOURCES_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources')
 
 
 class tpQtLib(object):
@@ -33,6 +39,7 @@ class tpQtLib(object):
         import tpQtLib
 
         cls.create_logger()
+        cls.register_resource()
         cls.import_modules(tpQtLib.__path__[0], only_packages=True, order=['tpQtLib.core'])
 
         if do_reload:
@@ -48,6 +55,15 @@ class tpQtLib(object):
         logger = logger_utils.Logger(name='tpQtLib', level=logger_utils.LoggerLevel.WARNING).logger
         logger.debug('Initializing tpQtLib logger ...')
         return logger
+
+    @staticmethod
+    def register_resource():
+        """
+        Register resource class used to load tpRenamer resources
+        """
+
+        global resource
+        resource = tpQtLibResource
 
     @staticmethod
     def _explore_package(module_name, only_packages=False):
