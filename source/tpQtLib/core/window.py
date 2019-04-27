@@ -12,11 +12,6 @@ import os
 from tpQtLib.Qt.QtCore import *
 from tpQtLib.Qt.QtWidgets import *
 
-try:
-    from shiboken import wrapInstance
-except ImportError:
-    from shiboken2 import wrapInstance
-
 import tpDccLib as tp
 from tpPyUtils import path, folder
 from tpQtLib.core import qtutils, settings
@@ -31,6 +26,19 @@ class MainWindow(QMainWindow, object):
 
     DOCK_CONTROL_NAME = 'my_workspcae_control'
     DOCK_LABEL_NAME = 'my workspcae control'
+
+    class DockWindowContainer(QDockWidget, object):
+        """
+        Docked Widget used to dock windows inside other windows
+        """
+
+        def __init__(self, title):
+            super(MainWindow.DockWindowContainer, self).__init__(title)
+
+        def closeEvent(self, event):
+            if self.widget():
+                self.widget().close()
+            super(MainWindow.DockWindowContainer, self).closeEvent(event)
 
     def __init__(self, name, parent=None, **kwargs):
 
@@ -164,6 +172,16 @@ class MainWindow(QMainWindow, object):
         """
 
         pass
+
+    def dock(self):
+        """
+        Docks window into main DCC window
+        """
+
+        self._dock_widget = MainWindow.DockWindowContainer(self.windowTitle())
+        self._dock_widget.setWidget(self)
+        tp.Dcc.get_main_window().addDockWidget(Qt.LeftDockWidgetArea, self._dock_widget)
+        self.main_title.setVisible(False)
 
     def add_dock(self, name, widget, pos=Qt.LeftDockWidgetArea, tabify=True):
         """

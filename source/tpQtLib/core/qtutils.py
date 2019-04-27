@@ -12,25 +12,38 @@ import os
 import re
 import subprocess
 
-from tpQtLib.Qt.QtCore import *
-from tpQtLib.Qt.QtWidgets import *
-from tpQtLib.Qt.QtGui import *
-from tpQtLib.Qt import QtGui
-from tpQtLib.Qt import QtCompat
-from tpQtLib.Qt import __binding__
-try:
-    import shiboken
-    from shiboken import wrapInstance
-except ImportError:
-    try:
-        from shiboken2 import wrapInstance
-        import shiboken2 as shiboken
-    except ImportError:
-        import Shiboken as shiboken
-        from Shiboken import wrapInstance
-
-
 from tpPyUtils import python, fileio, strings, path
+
+QT_AVAILABLE = True
+try:
+    from tpQtLib.Qt.QtCore import *
+    from tpQtLib.Qt.QtWidgets import *
+    from tpQtLib.Qt.QtGui import *
+    from tpQtLib.Qt import QtGui
+    from tpQtLib.Qt import QtCompat
+    from tpQtLib.Qt import __binding__
+except ImportError as e:
+    QT_AVAILABLE = False
+    print('Impossible to load Qt libraries. Qt dependant functionality will be disabled!')
+
+if QT_AVAILABLE:
+    if __binding__ == 'PySide2':
+        try:
+            import shiboken2 as shiboken
+        except ImportError:
+            from PySide2 import shiboken2 as shiboken
+    else:
+        try:
+            import shiboken
+        except ImportError:
+            try:
+                from Shiboken import shiboken
+            except ImportError:
+                try:
+                    from PySide import shiboken
+                except Exception:
+                    pass
+
 from tpQtLib.core import color
 
 # ==============================================================================
@@ -38,6 +51,7 @@ from tpQtLib.core import color
 QWIDGET_SIZE_MAX = (1 << 24) - 1
 
 # ==============================================================================
+
 
 def is_pyqt():
     """
