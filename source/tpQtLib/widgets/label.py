@@ -11,7 +11,7 @@ from tpQtLib.Qt.QtCore import *
 from tpQtLib.Qt.QtWidgets import *
 from tpQtLib.Qt.QtGui import *
 
-from tpPyUtils import qtutils
+from tpQtLib.core import qtutils
 from tpQtLib.widgets import graphicseffects
 
 

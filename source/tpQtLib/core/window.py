@@ -18,8 +18,8 @@ except ImportError:
     from shiboken2 import wrapInstance
 
 import tpDccLib as tp
-from tpPyUtils import settings, qtutils, path, folder
-from tpQtLib.widgets import statusbar
+from tpPyUtils import settings, path, folder
+from tpQtLib.core import qtutils
 
 
 class MainWindow(QMainWindow, object):
@@ -109,6 +109,8 @@ class MainWindow(QMainWindow, object):
         """
         Function used to define UI of the window
         """
+
+        from tpQtLib.widgets import statusbar
 
         self._base_layout = QVBoxLayout()
         self._base_layout.setContentsMargins(0, 0, 0, 0)

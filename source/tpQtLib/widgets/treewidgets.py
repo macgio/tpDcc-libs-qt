@@ -15,8 +15,8 @@ from tpQtLib.Qt.QtGui import *
 
 import tpQtLib
 import tpDccLib as tp
-from tpPyUtils import path, fileio, folder, version, qtutils
-from tpQtLib.core import base
+from tpPyUtils import path, fileio, folder, version
+from tpQtLib.core import base, qtutils
 from tpQtLib.widgets import button, search
 
 

@@ -12,7 +12,7 @@ from tpQtLib.Qt.QtWidgets import *
 from tpQtLib.Qt.QtGui import *
 
 import tpDccLib as tp
-from tpPyUtils import qtutils
+from tpQtLib.core import qtutils
 from tpQtLib.core import window
 from tpQtLib.widgets import tabbars
 

@@ -9,7 +9,7 @@ from __future__ import print_function, division, absolute_import
 
 from tpQtLib.Qt.QtGui import *
 
-from tpPyUtils import color
+from tpQtLib.core import color
 
 
 class Pixmap(QPixmap, object):

@@ -10,7 +10,7 @@ from __future__ import print_function, division, absolute_import
 from tpQtLib.Qt.QtCore import *
 from tpQtLib.Qt.QtWidgets import *
 
-from tpPyUtils import qtutils
+from tpQtLib.core import qtutils
 
 
 class BaseGroup(QGroupBox, object):

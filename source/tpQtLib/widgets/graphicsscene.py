@@ -12,7 +12,7 @@ from tpQtLib.Qt.QtWidgets import *
 from tpQtLib.Qt.QtGui import *
 
 import tpQtLib as tp
-from tpPyUtils import decorators, color
+from tpPyUtils import decorators
 
 
 class BaseScene(QGraphicsScene, object):
@@ -147,6 +147,15 @@ class BaseScene(QGraphicsScene, object):
         self._z_index += 1
 
 
+class GridColors(object):
+    """
+    Class that stores predefined colors for grids
+    """
+
+    BaseColor = QColor(60, 60, 60, 100)
+    DarkerColor = QColor(20, 20, 20, 100)
+
+
 class BackgroundImageScene(BaseScene, object):
     """
     Scene with image background drawing support
@@ -224,8 +233,8 @@ class GridScene(BaseScene, object):
     def __init__(self,
                  grid_main_spacing=8,
                  grid_secondary_spacing=8,
-                 grid_main_pen_color=color.GridColors.BaseColor,
-                 grid_secondary_pen_color=color.GridColors.DarkerColor,
+                 grid_main_pen_color=GridColors.BaseColor,
+                 grid_secondary_pen_color=GridColors.DarkerColor,
                  grid_main_width=1,
                  grid_secondary_width=1,
                  grid_main_style=Qt.SolidLine,

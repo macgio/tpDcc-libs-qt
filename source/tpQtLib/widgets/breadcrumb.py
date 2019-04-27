@@ -13,8 +13,8 @@ from tpQtLib.Qt.QtCore import *
 from tpQtLib.Qt.QtWidgets import *
 
 import tpQtLib as tp
-from tpPyUtils import path, qtutils, python
-from tpQtLib.core import base
+from tpPyUtils import path, python
+from tpQtLib.core import base, qtutils
 from tpQtLib.widgets import label
 from tpQtLib.core import resource
 
