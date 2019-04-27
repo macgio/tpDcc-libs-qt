@@ -11,9 +11,8 @@ import os
 
 from tpQtLib.Qt.QtGui import *
 
-from tpPyUtils import folder
+from tpPyUtils import folder, path
 from tpQtLib.core import qtutils, pixmap as pixmap_resource
-from tpPyUtils import path
 
 
 class Resource(object):
