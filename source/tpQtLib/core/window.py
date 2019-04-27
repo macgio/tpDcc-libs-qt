@@ -18,8 +18,8 @@ except ImportError:
     from shiboken2 import wrapInstance
 
 import tpDccLib as tp
-from tpPyUtils import settings, path, folder
-from tpQtLib.core import qtutils
+from tpPyUtils import path, folder
+from tpQtLib.core import qtutils, settings
 
 
 class MainWindow(QMainWindow, object):
@@ -58,7 +58,7 @@ class MainWindow(QMainWindow, object):
             self.settings = win_settings
         else:
             if has_settings:
-                self.settings = settings.QtIniSettings(filename=self.get_settings_file(), window=self)
+                self.settings = settings.QtSettings(filename=self.get_settings_file(), window=self)
                 self.settings.setFallbacksEnabled(False)
             else:
                 self.settings = None
