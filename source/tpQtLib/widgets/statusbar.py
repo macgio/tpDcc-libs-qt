@@ -11,23 +11,13 @@ from tpQtLib.Qt.QtCore import *
 from tpQtLib.Qt.QtWidgets import *
 from tpQtLib.Qt.QtGui import *
 
+import tpQtLib
 from tpQtLib.core import resource
 
 
 class StatusWidget(QFrame, object):
 
     DEFAULT_DISPLAY_TIME = 10000  # milliseconds -> 15 seconds
-    INFO_CSS = ''
-    # WARNING_CSS = """
-    #     color: rgb(240, 240, 240);
-    #     background-color: rgb(240, 170, 0);
-    # """
-    # ERROR_CSS = """
-    #     color: rgb(240, 240, 240);
-    #     background-color: rgb(220, 40, 40);
-    #     selection-color: rgb(220, 40, 40);
-    #     selection-background-color: rgb(240, 240, 240);
-    # """
 
     def __init__(self, *args):
         super(StatusWidget, self).__init__(*args)
@@ -50,13 +40,13 @@ class StatusWidget(QFrame, object):
         self._button.setIconSize(QSize(17, 17))
         self._button.hide()
 
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(5, 0, 0, 0)
+        self.main_layout = QHBoxLayout(self)
+        self.main_layout.setContentsMargins(5, 0, 0, 0)
 
-        layout.addWidget(self._button)
-        layout.addWidget(self._label)
+        self.main_layout.addWidget(self._button)
+        self.main_layout.addWidget(self._label)
 
-        self.setLayout(layout)
+        self.setLayout(self.main_layout)
 
         self._timer.timeout.connect(self._reset)
 
@@ -78,8 +68,7 @@ class StatusWidget(QFrame, object):
         if self.is_blocking():
             return
 
-        icon = resource.icon('info', extension='png')
-        self.setStyleSheet(self.INFO_CSS)
+        icon = tpQtLib.resource.icon('info', extension='png')
         self._show_message(message, icon, msecs)
 
     def show_warning_message(self, message, msecs=None):
@@ -92,8 +81,7 @@ class StatusWidget(QFrame, object):
         if self.is_blocking():
             return
 
-        icon = resource.icon('warning', extension='png')
-        # self.setStyleSheet(self.WARNING_CSS)
+        icon = tpQtLib.resource.icon('warning', extension='png')
         self._show_message(message, icon, msecs)
 
     def show_error_message(self, message, msecs=None):
@@ -103,11 +91,7 @@ class StatusWidget(QFrame, object):
        :param msecs: int
        """
 
-        if self.is_blocking():
-            return
-
-        icon = resource.icon('error', extension='png')
-        # self.setStyleSheet(self.ERROR_CSS)
+        icon = tpQtLib.resource.icon('error', extension='png')
         self._show_message(message, icon, msecs)
 
     def _reset(self):
@@ -118,7 +102,7 @@ class StatusWidget(QFrame, object):
         self._timer.stop()
         self._button.hide()
         self._label.setText('')
-        icon = resource.icon('blank')
+        icon = tpQtLib.resource.icon('blank')
         self._button.setIcon(icon) if icon else self._button.setIcon(QIcon())
         self.setStyleSheet('')
         self._blocking = False

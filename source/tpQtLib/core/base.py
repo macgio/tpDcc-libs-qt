@@ -10,6 +10,8 @@ from __future__ import print_function, division, absolute_import
 from tpQtLib.Qt.QtCore import *
 from tpQtLib.Qt.QtWidgets import *
 
+from tpQtLib.core import qtutils
+
 
 class BaseWidget(QWidget, object):
     """
@@ -207,3 +209,13 @@ class DirectoryWidget(BaseWidget, object):
         self.last_directory = self.directory
         self.directory = directory
     # endregion
+
+
+class PlaceholderWidget(QWidget, object):
+    """
+    Basic widget that loads custom UI
+    """
+
+    def __init__(self, *args):
+        super(PlaceholderWidget, self).__init__(*args)
+        qtutils.load_widget_ui(self)

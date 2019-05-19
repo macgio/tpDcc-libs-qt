@@ -10,8 +10,13 @@
 
 import os
 import re
+import sys
+import inspect
+import traceback
 import subprocess
+import contextlib
 
+import tpPyUtils
 from tpPyUtils import python, fileio, strings, path
 
 QT_AVAILABLE = True
@@ -48,6 +53,7 @@ from tpQtLib.core import color
 
 # ==============================================================================
 
+UI_EXTENSION = '.ui'
 QWIDGET_SIZE_MAX = (1 << 24) - 1
 
 # ==============================================================================
@@ -143,12 +149,99 @@ def unwrapinstance(object):
     return long(shiboken.getCppPointer(object)[0])
 
 
+@contextlib.contextmanager
+def app():
+    """
+    Context to create a Qt app
+    >>> with with qtutils.app():
+    >>>     w = QWidget(None)
+    >>>     w.show()
+    :return:
+    """
+
+    app_ = None
+    is_app_running = bool(QApplication.instance())
+    if not is_app_running:
+        app_ = QApplication(sys.argv)
+        install_fonts()
+
+    yield None
+
+    if not is_app_running:
+        sys.exit(app_.exec_())
+
+
+def install_fonts(path):
+    """
+    Install all the fonts in the given directory path
+    :param path: str
+    """
+
+    if not os.path.isdir(path):
+        return
+
+    path = os.path.abspath(path)
+    font_data_base = QFontDatabase()
+    for filename in os.listdir(path):
+        if filename.endswith('.ttf'):
+            filename = os.path.join(path, filename)
+            result = font_data_base.addApplicationFont(filename)
+            if result > 0:
+                tpPyUtils.logger.debug('Added font {}'.format(filename))
+            else:
+                tpPyUtils.logger.debug('Impossible to add font {}'.format(filename))
+
+
+def ui_path(cls):
+    """
+    Returns the UI path for the given widget class
+    :param cls: type
+    :return: str
+    """
+
+    name = cls.__name__
+    ui_path = inspect.getfile(cls)
+    dirname = os.path.dirname(ui_path)
+
+    ui_path = dirname + '/resource/ui' + name + UI_EXTENSION
+    if not os.path.exists(ui_path):
+        ui_path = dirname + '/ui/' + name + UI_EXTENSION
+    if not os.path.exists(ui_path):
+        ui_path = dirname + '/' + name + UI_EXTENSION
+
+    return ui_path
+
+
+def load_widget_ui(widget, path=None):
+    """
+    Loads UI of the given widget
+    :param widget: QWidget or QDialog
+    :param path: str
+    """
+
+    if not path:
+        path = ui_path(widget.__class__)
+
+    cwd = os.getcwd()
+    try:
+        os.chdir(os.path.dirname(path))
+        widget.ui = QtCompat.loadUi(path, widget)
+    except Exception as e:
+        pass
+        # tpPyUtils.logger.debug('{} | {}'.format(e, traceback.format_exc()))
+    finally:
+        os.chdir(cwd)
+
+
 def ui_loader(ui_file, widget=None):
     """
     Loads GUI from .ui file
     :param ui_file: str, path to the UI file
     :param widget: parent widget
     """
+
+    if not ui_file:
+        ui_file = ui_path(widget.__class__)
 
     ui = QtCompat.loadUi(ui_file)
     if not widget:
@@ -738,6 +831,16 @@ def is_control_modifier():
     return modifiers == Qt.ControlModifier
 
 
+def is_shift_modifier():
+    """
+    Returns True if the Shift key is down
+    :return: bool
+    """
+
+    modifiers = QApplication.keyboardModifiers()
+    return modifiers == Qt.ShiftModifier
+
+
 def to_qt_object(long_ptr, qobj=None):
     """
     Returns an instance of the Maya UI element as a QWidget
@@ -913,6 +1016,3 @@ def create_flat_button(
         btn.customContextMenuRequested.connect(context)
 
     return btn
-
-
-
