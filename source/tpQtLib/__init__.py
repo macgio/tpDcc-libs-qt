@@ -12,11 +12,17 @@ import inspect
 
 from tpPyUtils import importer
 from tpQtLib.core import resource as resource_utils
+from tpQtLib.core import window
+
+main = __import__('__main__')
 
 # =================================================================================
 
 logger = None
 resource = None
+MainWindow = window.MainWindow
+DockWindow = window.DockWindow
+SubWindow = window.SubWindow
 
 # =================================================================================
 
@@ -65,3 +71,24 @@ def init(do_reload=False):
 
     tpqtlib_importer.import_modules()
     tpqtlib_importer.import_packages(only_packages=True)
+
+    init_dcc(do_reload=do_reload)
+
+
+def init_dcc(do_reload=False):
+    """
+    Checks DCC we are working on an initializes proper variables
+    """
+
+    if 'cmds' in main.__dict__:
+        import tpMayaLib
+        tpMayaLib.init(do_reload=do_reload)
+    elif 'MaxPlus' in main.__dict__:
+        import tpMaxLib
+        tpMaxLib.init(do_reload=do_reload)
+    elif 'hou' in main.__dict__:
+        raise NotImplementedError('Houdini is not a supported DCC yet!')
+    elif 'nuke' in main.__dict__:
+        raise NotImplementedError('Nuke is not a supported DCC yet!')
+    else:
+        raise NotImplementedError('Current DCC is not supported yet!')

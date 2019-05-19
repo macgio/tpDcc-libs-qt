@@ -26,7 +26,7 @@ from tpQtLib.Qt.QtGui import *
 import tpQtLib
 import tpDccLib as tp
 from tpPyUtils import decorators, path as path_utils, osplatform
-from tpQtLib.core import base, menu, window, icon, qtutils
+from tpQtLib.core import base, menu, icon, image, qtutils, animation
 from tpQtLib.widgets import toolbar, statusbar, progressbar
 
 if tp.is_maya():
@@ -45,12 +45,42 @@ class LibraryConsts(object):
 
     LIBRARY_DEFAULT_NAME = 'DefaultLibrary'
 
+    DEFAULT_ICON_MODE = 'icon'
+    DEFAULT_TABLE_MODE = 'table'
+
     DPI_ENABLED = False
     DPI_MIN_VALUE = 80
     DPI_MAX_VALUE = 250
 
+    ITEM_DEFAULT_SORT_ROLE = 'SortRole'
+    ITEM_DEFAULT_DATA_ROLE = 'DataRole'
+    ITEM_DEFAULT_THUMBNAIL_PATH = ''
+    ITEM_DEFAULT_MAX_ICON_SIZE = 256
+    ITEM_DEFAULT_FONT_SIZE = 13
+    ITEM_DEFAULT_PLAYHEAD_COLOR = QColor(255, 255, 255, 220)
+    ITEM_DEFAULT_THUMBNAIL_COLUMN = 0
+    ITEM_DEFAULT_ENABLE_THUMBNAIL_THREAD = True
+    ITEM_DEFAULT_ENABLE_DELETE = False
+    ITEM_DEFAULT_ENABLE_NESTED_ITEMS = False
+    ITEM_DEFAULT_MENU_NAME = ''
+    ITEM_DEFAULT_MENU_ORDER = 10
+    ITEM_DEFAULT_MENU_ICON_PATH  = ''
+
+    GROUP_ITEM_DEFAULT_FONT_SIZE = 24
+
     TREE_MINIMUM_WIDTH = 5
     TREE_DEFAULT_WIDTH = 100
+
+    LIST_DEFAULT_DRAG_THRESHOLD = 10
+
+    VIEWER_DEFAULT_PADDING = 5
+    VIEWER_DEFAULT_ZOOM_AMOUNT = 90
+    VIEWER_DEFAULT_TEXT_HEIGHT = 20
+    VIEWER_DEFAULT_WHEEL_SCROLL_STEP = 2
+    VIEWER_DEFAULT_MIN_SPACING = 0
+    VIEWER_DEFAULT_MAX_SPACING = 50
+    VIEWER_DEFAULT_MIN_LIST_SIZE = 15
+    VIEWER_DEFAULT_MIN_ICON_SIZE = 50
 
     ICON_COLOR = QColor(255, 255, 255)
     ICON_BADGE_COLOR = QColor(230, 230, 0)
@@ -257,6 +287,7 @@ class LibraryUtils(object):
         data = OrderedDict(sorted(data.items(), key=lambda t: t[0]))
         data = json.dumps(data, indent=4)
         LibraryUtils.write(path, data)
+
 
 class LibraryManager(object):
     """
@@ -998,17 +1029,96 @@ class LibraryItemSignals(QObject, object):
     renamed = Signal(object, object, object)
 
 
+class LibraryItemDelegate(QStyledItemDelegate, object):
+    """
+    Class that defines visual style in LibraryViewer of LibraryItems
+    """
+
+    def __init__(self):
+        super(LibraryItemDelegate, self).__init__()
+
+        self._viewer = None
+
+    """
+    ##########################################################################################
+    OVERRIDES
+    ##########################################################################################
+    """
+
+    def sizeHint(self, option, index):
+        """
+        Overrides base QStyledItemDelegate sizeHint function
+        Return the size for the given id¡ndex
+        :param option: QStylOptionViewItem
+        :param index: QModelIndex
+        :return: QSize
+        """
+
+        item = self.viewr().item_from_index(index)
+        if isinstance(item, LibraryGroupItem):
+            return item.sizeHint()
+
+        return self.viewer().item_size_hint(index)
+
+    def paint(self, painter, option, index):
+        """
+        Overrides base QStyledItemDelegate paint function
+        Paint performs low-level painting for the given model index
+        :param painter: QPainter
+        :param option: QStyleOptionViewItem
+        :param index: QModelIndex
+        """
+
+        item = self.viewer().item_from_index(index)
+        item.paint(painter, option, index)
+
+    """
+    ##########################################################################################
+    VIEWER
+    ##########################################################################################
+    """
+
+    def viewer(self):
+        """
+        Returns LibraryViewer object associated to this delegate
+        :return: LibraryViewer
+        """
+
+        return self._viewer
+
+    def set_viewer(self, viewer):
+        """
+        Set LibraryViewer associated to this delegate
+        :param viewer: LibraryViewer
+        """
+
+        self._viewer = viewer
+
+
 class LibraryItem(QTreeWidgetItem, object):
     """
     Stores information to work on Library views
     """
 
-    EnableDelete = False
-    EnableNestedItems = False
+    SortRole = LibraryConsts.ITEM_DEFAULT_SORT_ROLE
+    DataRole = LibraryConsts.ITEM_DEFAULT_DATA_ROLE
 
-    MenuName = ''
-    MenuOrder = 10
-    MenuIconPath = ''
+    ThreadPool = QThreadPool()
+    DefaultThumbnailPath = LibraryConsts.ITEM_DEFAULT_THUMBNAIL_PATH
+
+    MAX_ICON_SIZE = LibraryConsts.ITEM_DEFAULT_MAX_ICON_SIZE
+    DEFAULT_FONT_SIZE = LibraryConsts.ITEM_DEFAULT_FONT_SIZE
+    DEFAULT_PLAYHEAD_COLOR = LibraryConsts.ITEM_DEFAULT_PLAYHEAD_COLOR
+
+    DEFAULT_THUMBNAIL_COLUMN = LibraryConsts.ITEM_DEFAULT_THUMBNAIL_COLUMN
+    ENABLE_THUMBNAIL_THREAD = LibraryConsts.ITEM_DEFAULT_ENABLE_THUMBNAIL_THREAD
+
+    EnableDelete = LibraryConsts.ITEM_DEFAULT_ENABLE_DELETE
+    EnableNestedItems = LibraryConsts.ITEM_DEFAULT_ENABLE_NESTED_ITEMS
+
+    MenuName = LibraryConsts.ITEM_DEFAULT_MENU_NAME
+    MenuOrder = LibraryConsts.ITEM_DEFAULT_MENU_ORDER
+    MenuIconPath = LibraryConsts.ITEM_DEFAULT_MENU_ICON_PATH
 
     CreateWidgetClass = None
     PreviewWidgetClass = None
@@ -1023,10 +1133,49 @@ class LibraryItem(QTreeWidgetItem, object):
 
     def __init__(self, path='', library=None, library_window=None, *args):
 
+        self._url = None
+        self._path = None
+        self._size = None
+        self._rect = None
+        self._text_column_order = list()
+
         self._data = dict()
         self._item_data = dict()
 
-        self._path = ''
+        self._icon = dict()
+        self._icon_path = None
+        self._thumbnail_icon = None
+        self._fonts = dict()
+        self._thread = None
+        self._pixmap = dict()
+        self._pixmap_rect = None
+        self._pixmap_scaled = None
+        self._image_sequence = None
+        self._image_sequence_path = None
+
+        self._mime_text = None
+        self._drag_enabled = True
+
+        self._under_mouse = False
+        self._search_text = None
+        self._info_widget = None
+
+        self._group_item = None
+        self._group_column = 0
+
+        self._viewer = None
+        self._stretch_to_widget = None
+
+        self._blend_value = 0.0
+        self._blend_prev_value = 0.0
+        self._blend_position = None
+        self._blending_enabled = False
+
+        self._worker = image.ImageWorker()
+        self._worker.setAutoDelete(False)
+        self._worker.signals.triggered.connect(self._on_thumbnail_from_image)
+        self._worker_started = False
+
         self._library = None
         self._library_window = library_window
 
@@ -1040,6 +1189,25 @@ class LibraryItem(QTreeWidgetItem, object):
 
         if path:
             self.set_path(path)
+
+    def __eq__(self, other):
+        return id(other) == id(self)
+
+    def __ne__(self, other):
+        return id(other) != id(self)
+
+    def __del__(self):
+        """
+        When the object is deleted we make sure the sequence is stopped
+        """
+
+        self.stop()
+
+    """
+   ##########################################################################################
+   CLASS METHODS
+   ##########################################################################################
+   """
 
     @classmethod
     def create_action(cls, menu, library_window):
@@ -1078,6 +1246,12 @@ class LibraryItem(QTreeWidgetItem, object):
 
         raise NotImplementedError('LibraryItem context_menu() not implemented!')
 
+    """
+    ##########################################################################################
+    LIBRARY
+    ##########################################################################################
+    """
+
     def set_library_window(self, library_window):
         """
         Sets the library widget containing the item
@@ -1105,6 +1279,175 @@ class LibraryItem(QTreeWidgetItem, object):
 
         path = path_utils.normalize_path(path)
         self._path = path
+
+    """
+    ##########################################################################################
+    DRAG & DROP
+    ##########################################################################################
+    """
+
+    def drag_enabled(self):
+        """
+        Return whether the item can be dragged or not
+        :return: bool
+        """
+
+        return self._drag_enabled
+
+    def set_drag_enabled(self, flag):
+        """
+        Set whether item can be dragged or not
+        :param flag: bool
+        """
+
+        self._drag_enabled = flag
+
+    """
+    ##########################################################################################
+    THUMBNAIL
+    ##########################################################################################
+    """
+
+    def thumbnail_path(self):
+        """
+        Return the thumbnail path for the item on disk
+        :return: str
+        """
+
+        return ''
+
+    """
+    ##########################################################################################
+    SEQUENCE
+    ##########################################################################################
+    """
+
+    def image_sequence(self):
+        """
+        Return ImageSequence of the item
+        :return: image.ImageSequence or QMovie
+        """
+
+        return self._image_sequence
+
+    def set_image_sequence(self, image_sequence):
+        """
+        Set the image sequence of the item
+        :param image_sequence: image.ImageSequence or QMovie
+        """
+
+        self._image_sequence = image_sequence
+
+    def image_sequence_path(self):
+        """
+        Return the path where image sequence is located on disk
+        :return: str
+        """
+
+        return self._image_sequence_path
+
+    def set_image_sequence_path(self, path):
+        """
+        Set the path where image sequence is located on disk
+        :param path: str
+        """
+
+        self._image_sequence_path = path
+
+    def reset_image_sequence(self):
+        """
+        Reset image sequence
+        """
+
+        self._image_sequence = None
+
+    def play(self):
+        """
+        Start play image sequence
+        """
+
+        self.reset_image_sequence()
+        path = self.image_sequence_path() or self.thumbnail_path()
+        movie = None
+
+        if os.path.isfile(path) and path.lower().endswith('.gif'):
+            movie = QMovie(path)
+            movie.setCacheMode(QMovie.CacheAll)
+            movie.frameChanged.connect(self._on_frame_changed)
+        elif os.path.isdir(path):
+            if not self.image_sequence():
+                movie = image.ImageSequence(path)
+                movie.frameChanged.connect(self._on_frame_changed)
+
+        if movie:
+            self.set_image_sequence(movie)
+            self.image_sequence().start()
+
+    def update_frame(self):
+        """
+        Function that updates the current frame
+        """
+
+        if self.image_sequence():
+            pixmap = self.image_sequence().current_pixmap()
+            self.setIcon(0, pixmap)
+
+    def stop(self):
+        """
+        Stop play image sequence
+        """
+
+        if self.image_sequence():
+            self.image_sequence().stop()
+
+    def playhead_color(self):
+        """
+        Returns playehad color
+        :return: QColor
+        """
+
+        return self.DEFAULT_PLAYHEAD_COLOR
+
+    def paint_playhead(self, painter, option):
+        """
+        Pain the playhead if the item has an image sequence
+        :param painter: QPainter
+        :param option: QStyleOptionViewItem
+        """
+
+        image_sequence = self.image_sequence()
+        if image_sequence and self.under_mouse():
+            count = image_sequence.frame_count()
+            current = image_sequence.current_frame_number()
+            if count > 0:
+                percent = float((count + current) + 1) / count - 1
+            else:
+                percent = 0
+
+            r = self.icon_rect(option)
+            c = self.playhead_color()
+
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(QBrush(c))
+
+            if percent <= 0:
+                width = 0
+            elif percent >= 1:
+                width = r.width()
+            else:
+                width = (percent * r.width()) - 1
+
+            height = 3 * self.dpi()
+            y = r.y() + r.height() - (height - 1)
+
+            painter.drawRect(r.x(), y, width, height)
+
+
+    """
+    ##########################################################################################
+    CONTEXTUAL MENUS
+    ##########################################################################################
+    """
 
     def _context_edit_menu(self, menu, items=None):
         """
@@ -1136,6 +1479,25 @@ class LibraryItem(QTreeWidgetItem, object):
         menu.addAction(show_in_folder_action)
         menu.addAction(copy_path_action)
 
+    """
+    ##########################################################################################
+    CALLBACKS
+    ##########################################################################################
+    """
+
+    def _on_thumbnail_from_image(self):
+        pass
+
+    def _on_frame_changed(self, frame):
+        """
+        Internal callback function that is triggered when the movei object updates to the given
+        frame
+        :return:
+        """
+
+        if not qtutils.is_control_modifier():
+            self.update_frame()
+
     def _on_show_delete_dialog(self):
         pass
 
@@ -1152,6 +1514,26 @@ class LibraryItem(QTreeWidgetItem, object):
         pass
 
 
+class LibraryGroupItem(LibraryItem, object):
+    """
+    Class that defines group of items
+    """
+
+    DEFAULT_FONT_SIZE = LibraryConsts.GROUP_ITEM_DEFAULT_FONT_SIZE
+
+    def __init__(self, *args):
+        super(LibraryGroupItem, self).__init__(*args)
+
+        self._children = list()
+
+        self._font = self.font(0)
+        self._font.setBold(True)
+
+        self.setFont(0, self._font)
+        self.setFont(1, self._font)
+        self.set_drag_enabled(False)
+
+
 class LibraryViewWidgetMixin(object):
     """
     Class that contains generic functionality for view widgets that
@@ -1162,7 +1544,7 @@ class LibraryViewWidgetMixin(object):
         pass
 
 
-class LibraryTree(LibraryViewWidgetMixin, QTreeWidget):
+class LibraryTreeWidget(LibraryViewWidgetMixin, QTreeWidget):
     """
     Class that implemented library tree viewer widget
     This class is used by LibraryViewer class
@@ -1198,7 +1580,7 @@ class LibraryTree(LibraryViewWidgetMixin, QTreeWidget):
         label = self.label_from_column(column)
         self._hidden_columns[label] = value
 
-        super(LibraryTree, self).setColumnHidden(column, value)
+        super(LibraryTreeWidget, self).setColumnHidden(column, value)
 
         width = self.columnWidth(column)
         if width < LibraryConsts.TREE_MINIMUM_WIDTH:
@@ -1236,29 +1618,268 @@ class LibraryTree(LibraryViewWidgetMixin, QTreeWidget):
         print('Showing Header Menu ...')
 
 
+class LibraryListView(LibraryViewWidgetMixin, QListView):
+    """
+    Class that implemented library list view widget
+    This class is used by LibraryViewer class
+    """
+
+    DEFAULT_DRAG_THRESHOLD = LibraryConsts.LIST_DEFAULT_DRAG_THRESHOLD
+
+    itemMoved = Signal(object)
+    itemDropped = Signal(object)
+    itemClicked = Signal(object)
+    itemDoubleClicked = Signal(object)
+
+    def __init__(self, *args):
+        QListView.__init__(self, *args)
+        LibraryViewWidgetMixin.__init__(self)
+
+        self.setSpacing(5)
+        self.setMouseTracking(True)
+        self.setSelectionRectVisible(True)
+        self.setViewMode(QListView.IconMode)
+        self.setResizeMode(QListView.Adjust)
+        self.setSelectionMode(QListView.ExtendedSelection)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setAcceptDrops(True)
+        self.setDragEnabled(True)
+        self.setDragDropMode(QAbstractItemView.DragDrop)
+
+        self._tree_widget = None
+        self._rubber_band = None
+        self._rubber_band_start_pos = None
+        self._rubber_band_color = QColor(Qt.white)
+        self._custom_sort_order = list()
+
+        self._drag = None
+        self._drag_start_pos = None
+        self._drag_start_index = None
+        self._drop_enabled = True
+
+        self.clicked.connect(self._on_index_clicked)
+        self.itemDoubleClicked.connect(self._on_index_double_clicked)
+
+    """
+    ##########################################################################################
+    BASE
+    ##########################################################################################
+    """
+
+    def scroll_to_item(self, item, pos=None):
+        """
+        Ensures that the item is visible
+        :param item: LibraryItem
+        :param pos: QPoint or None
+        """
+
+        index = self.index_from_item(item)
+        pos = pos or QAbstractItemView.PositionAtCenter
+
+        self.scrollTo(index, pos)
+
+    """
+    ##########################################################################################
+    TREE WIDGET
+    ##########################################################################################
+    """
+
+    def tree_widget(self):
+        """
+        Return the tree widget that contains the items
+        :return: LibraryTreeWidget
+        """
+
+        return self._tree_widget
+
+    def set_tree_widget(self, tree_widget):
+        """
+        Set the tree widget that contains the items
+        :param tree_widget: LibraryTreeWidget
+        """
+
+        self._tree_widget = tree_widget
+        self.setModel(tree_widget.model())
+        self.setSelectionModel(tree_widget.selectionModel())
+
+    def items(self):
+        """
+        Return all the items
+        :return: list(LibraryItem)
+        """
+
+        return self.tree_widget().items()
+
+    def item_at(self, pos):
+        """
+        Returns a pointer to the item at the coordinates p
+        The coordinates are relative to the tree widget's viewport
+        :param pos: QPoint
+        :return: LibraryItem
+        """
+
+        index = self.indexAt(pos)
+        return self.item_from_index(index)
+
+    def index_from_item(self, item):
+        """
+        Returns QModelIndex associated with the given item
+        :param item: LibraryItem
+        :return: QModelIndex
+        """
+
+        return self.tree_widget().index_from_item(item)
+
+    def item_from_index(self, index):
+        """
+        Return a pointer to the LibraryItem associated with the given model index
+        :param index: QModelIndex
+        :return: LibraryItem
+        """
+
+        return self.tree_widget().item_from_index(index)
+
+    """
+    ##########################################################################################
+    CALLBACKS
+    ##########################################################################################
+    """
+
+    def _on_index_clicked(self, index):
+        """
+        Callback function that is called when the user clicks on an item
+        :param index: QModelIndex
+        """
+
+        item = self.item_from_index(index)
+        item.clicked()
+        self.set_items_selected([item], True)
+        self.itemClicked.emit(item)
+
+    def _on_index_double_clicked(self, index):
+        """
+        Callback function that is called when the user double clicks on an item
+        :param index: QModelIndex
+        """
+
+        item = self.item_from_index(index)
+        self.set_item_selected([item], True)
+        item.doubleClicked()
+        self.itemDoubleClicked.emit(item)
+
+
+class LibraryImageSequenceWidget(QToolButton, object):
+
+    DEFAULT_PLAYHEAD_COLOR = QColor(255, 255, 255, 220)
+
+    DEFAULT_STYLE = """
+    QToolBar {
+        border: 0px solid black; 
+        border-radius:2px;
+        background-color: rgb(0,0,0,100);
+    }
+    
+    QToolButton {
+        background-color: transparent;
+    }
+    """
+
+    def __init__(self, *args):
+        super(LibraryImageSequenceWidget, self).__init__(*args)
+
+        self.setMouseTracking(True)
+
+        self._image_sequence = image.ImageSequence('')
+        self._image_sequence.frameChanged.connect(self._on_frame_changed)
+
+        self._toolbar = QToolBar(self)
+        self._toolbar.setStyleSheet(self.DEFAULT_STYLE)
+        animation.fade_out_widget(self._toolbar, duration=0)
+
+        spacer = QWidget()
+        spacer.setMaximumWidth(4)
+        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self._toolbar.addWidget(spacer)
+
+        spacer1 = QWidget()
+        spacer1.setMaximumWidth(4)
+        spacer1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self._first_spacer = self._toolbar.addWidget(spacer1)
+
+        self.set_size(150, 150)
+
+    def set_size(self, w, h):
+        """
+        Set the size of the widget and updates icon size at the same time
+        :param w: int
+        :param h: int
+        """
+
+        self._size = QSize(w, h)
+        self.setIconSize(self._size)
+        self.setFixedSize(self._size)
+
+    def _on_frame_changed(self, frame):
+        pass
+
+
 class LibraryViewer(base.BaseWidget, object):
     """
     Class that implements library viewer widget
     """
 
+    IconMode = LibraryConsts.DEFAULT_ICON_MODE
+    TableMode = LibraryConsts.DEFAULT_TABLE_MODE
+
+    DEFAULT_PADDING = LibraryConsts.VIEWER_DEFAULT_PADDING
+    DEFAULT_ZOOM_AMOUNT = LibraryConsts.VIEWER_DEFAULT_ZOOM_AMOUNT
+    DEFAULT_TEXT_HEIGHT = LibraryConsts.VIEWER_DEFAULT_TEXT_HEIGHT
+    DEFAULT_WHEEL_SCROLL_STEP = LibraryConsts.VIEWER_DEFAULT_WHEEL_SCROLL_STEP
+    DEFAULT_MIN_SPACING = LibraryConsts.VIEWER_DEFAULT_MIN_SPACING
+    DEFAULT_MAX_SPACING = LibraryConsts.VIEWER_DEFAULT_MAX_SPACING
+    DEFAULT_MIN_LIST_SIZE = LibraryConsts.VIEWER_DEFAULT_MIN_LIST_SIZE
+    DEFAULT_MIN_ICON_SIZE = LibraryConsts.VIEWER_DEFAULT_MIN_ICON_SIZE
+
+    itemClicked = Signal(object)
+    itemDoubleClicked = Signal(object)
+    zoomChanged = Signal(object)
+    spacingChanged = Signal(object)
+    groupClicked = Signal(object)
+
     def __init__(self, parent=None):
-        super(LibraryViewer, self).__init__(parent=parent)
+
+        self._dpi = 1
+        self._padding = self.DEFAULT_PADDING
 
         self._library = None
+        self._tree_widget = None
+        self._list_widget = None
+        self._delegate = None
+        self._is_item_text_visible = True
+
+        self._zoom_amount = self.DEFAULT_ZOOM_AMOUNT
+        self._icon_size = QSize(self._zoom_amount, self._zoom_amount)
+        self._item_size_hint = QSize(self._zoom_amount, self._zoom_amount)
+
+        super(LibraryViewer, self).__init__(parent=parent)
 
     def ui(self):
         super(LibraryViewer, self).ui()
 
-        self._tree_widget = LibraryTree(self)
+        self._tree_widget = LibraryTreeWidget(self)
+
+        self._list_view = LibraryListView(self)
+        self._list_view.set_tree_widget(self._tree_widget)
+
+        self._delegate = LibraryItemDelegate()
+
         self.main_layout.addWidget(self._tree_widget)
 
-    def tree_widget(self):
-        """
-        Returns the list view that contains the items
-        :return: TreeWidget
-        """
-
-        return self._tree_widget
+    """
+    ##########################################################################################
+    BASE
+    ##########################################################################################
+    """
 
     def library(self):
         """
@@ -1276,6 +1897,29 @@ class LibraryViewer(base.BaseWidget, object):
 
         self._library = library
         self.set_column_labels(library.Fields)
+        library.searchFinished.connect(self._on_update_items)
+
+    """
+    ##########################################################################################
+    TREE WIDGET
+    ##########################################################################################
+    """
+
+    def tree_widget(self):
+        """
+        Returns the list view that contains the items
+        :return: TreeWidget
+        """
+
+        return self._tree_widget
+
+    def column_from_label(self, *args):
+        """
+        Returns column from given label text
+        :return: int
+        """
+
+        return self.tree_widget().column_from_label(*args)
 
     def set_column_hidden(self, column, hidden):
         """
@@ -1295,6 +1939,21 @@ class LibraryViewer(base.BaseWidget, object):
         labels_set = set()
         set_add = labels_set.add
         labels = [x for x in labels if x.strip() and not (x in labels_set or set_add(x))]
+        self.tree_widget().setHeaderLabels(labels)
+
+    def create_group_item(self, text, children=None):
+        """
+        Internal function that creates a new item for the given text and children
+        :param text: str
+        :param children: list(LibraryItem)
+        """
+
+        group_item = LibraryGroupItem()
+        group_item.set_name(text)
+        group_item.set_stretch_to_widget(self)
+        group_item.set_children(children)
+
+        return group_item
 
     def items(self):
         """
@@ -1303,6 +1962,46 @@ class LibraryViewer(base.BaseWidget, object):
         """
 
         return self._tree_widget.items()
+
+    def add_item(self, item):
+        """
+        Add the item to the tree widget
+        :param item: LibraryItem
+        """
+
+        self.add_items([item])
+
+    def add_items(self, items):
+        """
+        Add the given items to the items widget
+        :param items: list(LibraryItem)
+        """
+
+        self._tree_widget.addTopLevelItems(items)
+
+    def update_items(self):
+        """
+        Sets the items to the viewer
+        """
+
+        selected_items = self.selected_items()
+        self.clear_selection()
+
+        results = self.library().grouped_results()
+
+        items = list()
+
+        for group in results:
+            if group != 'None':
+                group_item = self.create_group_item(group)
+                items.append(group_item)
+            items.extend(results[group])
+
+        self.tree_widget().set_items(items)
+
+        if selected_items:
+            self.select_items(selected_items)
+            self.scroll_to_selected_item()
 
     def selected_items(self):
         """
@@ -1333,6 +2032,9 @@ class LibraryViewer(base.BaseWidget, object):
         """
 
         self.tree_widget().clear()
+
+    def _on_update_items(self):
+        self.update_items()
 
 
 class LibrarySearchWidget(QLineEdit, object):
@@ -1470,7 +2172,7 @@ class LibrarySidebarWidget(QWidget, object):
         super(LibrarySidebarWidget, self).__init__(*args)
 
 
-class LibraryWindow(window.MainWindow, object):
+class LibraryWindow(tpQtLib.MainWindow, object):
 
     LIBRARY_CLASS = Library
     VIEWER_CLASS = LibraryViewer
@@ -1508,12 +2210,18 @@ class LibraryWindow(window.MainWindow, object):
         self._is_trash_folder_visible = False
         self._sidebar_widget_visible = True
         self._preview_widget_visible = True
-        self._statusbar_widget_visibvle = True
+        self._status_widget_visible = True
 
         super(LibraryWindow, self).__init__(name=name, parent=parent, **kwargs)
 
         if path:
             self.set_path(path)
+
+    """
+    ##########################################################################################
+    ABSTRACT
+    ##########################################################################################
+    """
 
     @decorators.abstractmethod
     def manager(self):
@@ -1586,21 +2294,21 @@ class LibraryWindow(window.MainWindow, object):
     def setup_signals(self):
         self._viewer.customContextMenuRequested.connect(self._on_show_items_context_menu)
 
-    def event(self, event):
-        """
-        Overrides window.MainWindow event function
-        :param event: QEvent
-        :return: QEvent
-        """
-
-        if isinstance(event, QKeyEvent):
-            if qtutils.is_control_modifier() and event.key() == Qt.Key_F:
-                self.search_widget().setFocus()
-
-        if isinstance(event, QStatusTipEvent):
-            self.status_widget().show_info_message(event.tip())
-
-        return super(LibraryWindow, self).event(event)
+    # def event(self, ev):
+    #     """
+    #     Overrides window.MainWindow event function
+    #     :param ev: QEvent
+    #     :return: QEvent
+    #     """
+    #
+    #     if isinstance(ev, QKeyEvent):
+    #         if qtutils.is_control_modifier() and ev.key() == Qt.Key_F:
+    #             self.search_widget().setFocus()
+    #
+    #     if isinstance(ev, QStatusTipEvent):
+    #         self.status_widget().show_info_message(ev.tip())
+    #
+    #     return super(LibraryWindow, self).event(ev)
 
     def keyReleaseEvent(self, event):
         """
@@ -1621,7 +2329,8 @@ class LibraryWindow(window.MainWindow, object):
         :return:
         """
 
-        super(LibraryWindow, self).show(self)
+        # super(LibraryWindow, self).show(self)
+        super(LibraryWindow, self).show()
         self.setWindowState(Qt.WindowNoState)
         self.raise_()
 
@@ -1646,6 +2355,87 @@ class LibraryWindow(window.MainWindow, object):
 
         self.save_settings()
         super(LibraryWindow, self).closeEvent(event)
+
+    """
+    ##########################################################################################
+    BASE
+    ##########################################################################################
+    """
+
+    def library(self):
+        """
+        Returns muscle library
+        :return: MuscleLibrary
+        """
+
+        return self._library
+
+    def set_library(self, library):
+        """
+        Sets the muscle library
+        :param library: MuscleLibrary
+        """
+
+        self._library = library
+
+    def is_loaded(self):
+        """
+        Returns whether window has been shown or not
+        :return: bool
+        """
+
+        return self._is_loaded
+
+    def set_loaded(self, flag):
+        """
+        Set if window has been shown or not
+        :param flag: flag
+        """
+
+        self._is_loaded = flag
+
+    def is_locked(self):
+        """
+        Returns whether the library is locked or not
+        :return: bool
+        """
+
+        return self._is_locked
+
+    def set_locked(self, flag):
+        """
+        Sets the state of the library to be editable or not
+        :param flag: bool
+        """
+
+        self._is_locked = flag
+
+    def is_refresh_enabled(self):
+        """
+        Returns whether refresh is enabled or not
+        If not, all updates will be ignored
+        :return: bool
+        """
+
+        return self._refresh_enabled
+
+    def set_refresh_enabled(self, flag):
+        """
+        Whether widgets should be updated or not
+        :param flag: bool
+        """
+
+        self.library().set_search_enabled(flag)
+        self._refresh_enabled = flag
+
+    def icon_color(self):
+        """
+        Returns the icon color
+        :return: Color
+        """
+
+        return LibraryConsts.ICON_COLOR
+
 
     """
     ##########################################################################################
@@ -1703,10 +2493,63 @@ class LibraryWindow(window.MainWindow, object):
         return settings
 
     def set_settings(self, settings):
-        pass
+        """
+        Set the library window settings from the given dictionary
+        :param settings: dict
+        """
+
+        defaults = copy.deepcopy(LibraryConsts.DEFAULT_SETTINGS)
+        settings = LibraryUtils.update(defaults, settings)
+
+        is_refresh_enabled = self.is_refresh_enabled()
+
+        self.set_refresh_enabled(False)
+        self.viewer().set_toast_enabled(False)
+
+        geo = settings.get('geometry')
+        if geo:
+            self.set_geometry_settings(geo)
+
+        theme_settings = settings.get('theme')
+        if theme_settings:
+            self.set_theme_settings(theme_settings)
+
+        if not self.path():
+            path = settings.get('path')
+            if path and os.path.exists(path):
+                self.set_path(path)
+
+        dpi = settings.get('dpi', 1.0)
+        self.set_dpi(dpi)
+
+        sizes = settings.get('paneSizes')
+        if sizes and len(sizes) == 3:
+            self.set_sizes(sizes)
+
+        sidebar_visible = settings.get('sidebarWidgetVisible')
+        if sidebar_visible:
+            self.set_folders_widget_visible(sidebar_visible)
+
+        menubar_visible = settings.get('menuBarWidgetVisible')
+        if menubar_visible:
+            self.set_menubar_widget_visible(menubar_visible)
 
     def set_geometry_settings(self, settings):
-        pass
+        """
+        Set the geometry of the widget with the given values
+        :param settings: list(int)
+        """
+
+        x, y, width, height = settings
+
+        screen_geo = QApplication.desktop().screenGeometry()
+        screen_width = screen_geo.width()
+        screen_height = screen_geo.height()
+
+        if x <= 0 or y <= 0 or x >= screen_width or y >= screen_height:
+            self.center(width, height)
+        else:
+            self.window().setGeometry(x, y, width, height)
 
     def reset_settings(self):
         """
@@ -1723,22 +2566,6 @@ class LibraryWindow(window.MainWindow, object):
 
         self.refresh_sidebar()
         self.update_window_title()
-
-    def viewer(self):
-        """
-        Returns muscle viewer widget
-        :return:
-        """
-
-        return self._viewer
-
-    def status_widget(self):
-        """
-        Returns the status widget
-        :return: StatusWidget
-        """
-
-        return self._status_widget
 
     def name(self):
         """
@@ -1782,55 +2609,6 @@ class LibraryWindow(window.MainWindow, object):
         self.library().search()
         self.update_preview_widget()
 
-    def library(self):
-        """
-        Returns muscle library
-        :return: MuscleLibrary
-        """
-
-        return self._library
-
-    def set_library(self, library):
-        """
-        Sets the muscle library
-        :param library: MuscleLibrary
-        """
-
-        self._library = library
-
-    def is_locked(self):
-        """
-        Returns whether the library is locked or not
-        :return: bool
-        """
-
-        return self._is_locked
-
-    def set_locked(self, flag):
-        """
-        Sets the state of the library to be editable or not
-        :param flag: bool
-        """
-
-        self._is_locked = flag
-
-    def is_refresh_enabled(self):
-        """
-        Returns whether refresh is enabled or not
-        If not, all updates will be ignored
-        :return: bool
-        """
-
-        return self._refresh_enabled
-
-    def icon_color(self):
-        """
-        Returns the icon color
-        :return: Color
-        """
-
-        return LibraryConsts.ICON_COLOR
-
     def set_create_widget(self, create_widget):
         """
         Set the widget that should be showed when creating a new item
@@ -1845,6 +2623,302 @@ class LibraryWindow(window.MainWindow, object):
             self.set_sizes((fsize, rsize, 180))
 
         self.set_preview_widget(create_widget)
+
+    def refresh(self):
+        """
+        Refresh all necessary items
+        """
+
+        if self.is_refresh_enabled():
+            self.update()
+
+    """
+    ##########################################################################################
+    VIEWER WIDGET
+    ##########################################################################################
+    """
+
+    def viewer(self):
+        """
+        Returns muscle viewer widget
+        :return:
+        """
+
+        return self._viewer
+
+    def add_item(self, item, select=False):
+        """
+        Add the given item to the viewer widget
+        :param item: LibraryItem
+        :param select: bool
+        """
+
+        self.add_items([item], select=select)
+
+    def add_items(self, items, select=False):
+        """
+        Add the given items to the viewer widget
+        :param items: list(LibraryItem)
+        :param select: bool
+        """
+
+        self.viewer().add_items(items)
+        self._items.extend(items)
+
+        if select:
+            self.select_Items(items)
+            self.scroll_to_selected_item()
+
+    def create_items_from_urls(self, urls):
+        """
+        Return a new list of items from the given urls
+        :param urls: list(QUrl)
+        :return: list(LibraryItem)
+        """
+
+        return self.manager().items_from_urls(urls, library_window=self)
+
+    def items(self):
+        """
+        Return all the loaded items
+        :return: list(LibraryItem)
+        """
+
+        return self._items
+
+    def selected_items(self):
+        """
+        Return selected items
+        :return: list(LibraryItem)
+        """
+
+        return self.viewer().selected_items()
+
+    def select_path(self, path):
+        """
+        Select the item with the given path
+        :param path: str
+        """
+
+        self.select_paths([path])
+
+    def select_paths(self, paths):
+        """
+        Select the items with the given paths
+        :param paths: list(str)
+        """
+
+        selection = self.selected_items()
+        self.clear_preview_widget()
+        self.viewer().clear_selection()
+        self.viewer().select_paths(paths)
+
+        if self.selected_items() != selection:
+            self._item_selection_changed()
+
+    def select_items(self, items):
+        """
+        Select the given items
+        :param items: list(LibraryItem)
+        :return:
+        """
+
+        paths = [item.path() for item in items]
+        self.select_paths(paths)
+
+    def scroll_to_selected_item(self):
+        """
+        Scroll the item widget to the selected item
+        """
+
+        self.viewer().scroll_to_selected_item()
+
+    def refresh_selection(self):
+        """
+        Refresh teh current item selection
+        """
+
+        items = self.selected_items()
+        self.viewer().clear_selection()
+        self.select_items(items)
+
+    def clear_items(self):
+        """
+        Remove all the loaded items
+        """
+
+        self.viewer().clear()
+
+    """
+    ##########################################################################################
+    MENUBAR WIDGET
+    ##########################################################################################
+    """
+
+    def menubar_widget(self):
+        """
+        Returns menu bar widget
+        :return: LibraryMenuBarWidget
+        """
+
+        return self._menubar_widget
+
+    def add_menubar_action(self, name, icon, tip, callback=None):
+        """
+        Add a button/action into menu bar widget
+        :param name: str
+        :param icon: QIcon
+        :param tip: str
+        :param callback: fn
+        :return: QAction
+        """
+
+        # We need to do this to avoid PySide2 errors
+        def _callback():
+            callback()
+
+        action = self.menubar_widget().addAction(name)
+        if icon:
+            action.setIcon(icon)
+        if tip:
+            action.setToolTip(tip)
+            action.setStatusTip(tip)
+        if callback:
+            action.triggered.connect(_callback)
+
+        return action
+
+    def is_menubar_widget_visible(self):
+        """
+        Returns whether MenuBar widget is visible or not
+        :return: bool
+        """
+
+        return self.menubar_widget().is_expanded()
+
+    def set_menubar_widget_visible(self, flag):
+        """
+        Sets whether menubar widget is visible or not
+        :param flag: bool
+        """
+
+        flag = bool(flag)
+        if flag:
+            self.menubar_widget().expand()
+        else:
+            self.menubar_widget().collapse()
+
+    """
+    ##########################################################################################
+    SIDEBAR WIDGET
+    ##########################################################################################
+    """
+
+    def sidebar_widget(self):
+        """
+        Return the sidebar widget
+        :return: LibrarySidebarWidget
+        """
+
+        return self._sidebar_widget
+
+    def is_sidebar_widget_visible(self):
+        """
+        Return whether SideBar widget is visible or not
+        :return: bool
+        """
+
+        return self._sidebar_widget_visible
+
+    def set_sidebar_widget_visible(self, flag):
+        """
+        Set whether SideBar widget is visible or not
+        :param flag: bool
+        """
+
+        flag = bool(flag)
+        self._sidebar_widget_visible = flag
+
+        if flag:
+            self._sidebar_frame.show()
+        else:
+            self._sidebar_frame.hide()
+
+        self.update_view_button()
+
+    @show_wait_cursor_decorator
+    def refresh_sidebar(self):
+        """
+        Refresh the state of the sidebar widget
+        """
+
+        path = self.path()
+        if not path:
+            return self.show_hello_dialog()
+        elif not os.path.exists(path):
+            return self.show_path_error_dialog()
+
+        self.update_sidebar()
+
+    def update_sidebar(self):
+        """
+        Update the folders to be shown in the folders widget
+        """
+
+        data = dict()
+        root = self.path()
+
+        queries = [{'filters': [('type', 'is', 'folder')]}]
+
+        items = self.library().find_items(queries)
+        trash_icon_path = tpQtLib.resource.icon('trash')
+
+        for item in items:
+            path = item.path()
+            if item.path().endswith('Trash'):
+                data[path] = {'iconPath': trash_icon_path}
+            else:
+                data[path] = dict()
+
+        self.sidebar_widget().set_data(data, root=root)
+
+    def selected_folder_path(self):
+        """
+        Return the selected folder items
+        :return: str or None
+        """
+
+        return self.sidebar_widget().selected_path()
+
+    def selected_folder_paths(self):
+        """
+        Return the selected folder items
+        :return: list(str)
+        """
+
+        return self.sidebar_widget().selected_paths()
+
+    def select_folder_path(self, path):
+        """
+        Select the given folder path
+        :param path: str
+        """
+
+        self.select_folder_paths([path])
+
+    def select_folder_paths(self, paths):
+        """
+        Select the given folder paths
+        :param paths: list(str)
+        """
+
+        self.sidebar_widget().select_paths(paths)
+
+    """
+    ##########################################################################################
+    PREVIEW WIDGET
+    ##########################################################################################
+    """
 
     def preview_widget(self):
         """
@@ -1869,6 +2943,14 @@ class LibraryWindow(window.MainWindow, object):
             if self._preview_widget:
                 self._preview_frame.layout().addWidget(self._preview_widget)
                 self._preview_widget.show()
+
+    def is_preview_widget_visible(self):
+        """
+        Returns whether preview widget is visible or not
+        :return: bool
+        """
+
+        return self._preview_widget_visible
 
     def set_preview_widget_visible(self, flag):
         """
@@ -1941,135 +3023,6 @@ class LibraryWindow(window.MainWindow, object):
 
         self._preview_widget = None
 
-    def refresh(self):
-        """
-        Refresh all necessary items
-        """
-
-        if self.is_refresh_enabled():
-            self.update()
-
-    """
-    ##########################################################################################
-    MENUBAR WIDGET
-    ##########################################################################################
-    """
-
-    def menubar_widget(self):
-        """
-        Returns menu bar widget
-        :return: LibraryMenuBarWidget
-        """
-
-        return self._menubar_widget
-
-    def add_menubar_action(self, name, icon, tip, callback=None):
-        """
-        Add a button/action into menu bar widget
-        :param name: str
-        :param icon: QIcon
-        :param tip: str
-        :param callback: fn
-        :return: QAction
-        """
-
-        # We need to do this to avoid PySide2 errors
-        def _callback():
-            callback()
-
-        action = self.menubar_widget().addAction(name)
-        if icon:
-            action.setIcon(icon)
-        if tip:
-            action.setToolTip(tip)
-            action.setStatusTip(tip)
-        if callback:
-            action.triggered.connect(_callback)
-
-        return action
-
-    """
-    ##########################################################################################
-    SIDEBAR WIDGET
-    ##########################################################################################
-    """
-
-    def sidebar_widget(self):
-        """
-        Return the sidebar widget
-        :return: LibrarySidebarWidget
-        """
-
-        return self._sidebar_widget
-
-    @show_wait_cursor_decorator
-    def refresh_sidebar(self):
-        """
-        Refresh the state of the sidebar widget
-        """
-
-        path = self.path()
-        if not path:
-            return self.show_hello_dialog()
-        elif not os.path.exists(path):
-            return self.show_path_error_dialog()
-
-        self.update_sidebar()
-
-    def update_sidebar(self):
-        """
-        Update the folders to be shown in the folders widget
-        """
-
-        data = dict()
-        root = self.path()
-
-        queries = [{'filters': [('type', 'is', 'folder')]}]
-
-        items = self.library().find_items(queries)
-        trash_icon_path = tpQtLib.resource.icon('trash')
-
-        for item in items:
-            path = item.path()
-            if item.path().endswith('Trash'):
-                data[path] = {'iconPath': trash_icon_path}
-            else:
-                data[path] = dict()
-
-        self.sidebar_widget().set_data(data, root=root)
-
-    def selected_folder_path(self):
-        """
-        Return the selected folder items
-        :return: str or None
-        """
-
-        return self.sidebar_widget().selected_path()
-
-    def selected_folder_paths(self):
-        """
-        Return the selected folder items
-        :return: list(str)
-        """
-
-        return self.sidebar_widget().selected_paths()
-
-    def select_folder_path(self, path):
-        """
-        Select the given folder path
-        :param path: str
-        """
-
-        self.select_folder_paths([path])
-
-    def select_folder_paths(self, paths):
-        """
-        Select the given folder paths
-        :param paths: list(str)
-        """
-
-        self.sidebar_widget().select_paths(paths)
-
     """
     ##########################################################################################
     SEARCH WIDGET
@@ -2083,6 +3036,65 @@ class LibraryWindow(window.MainWindow, object):
         """
 
         return self._search_widget
+
+    def set_search_text(self, text):
+        """
+        Set the search widget text
+        :param text: str
+        """
+
+        self.search_widget().setText(text)
+
+    def items_visible_count(self):
+        """
+        Return the number of visible items
+        :return: int
+        """
+
+        return self._items_visible_count
+
+    def items_hidden_count(self):
+        """
+        Return the number of hidden items
+        :return: int
+        """
+
+        return self._items_hidden_count
+
+    """
+    ##########################################################################################
+    STATUS WIDGET
+    ##########################################################################################
+    """
+
+    def status_widget(self):
+        """
+        Returns the status widget
+        :return: StatusWidget
+        """
+
+        return self._status_widget
+
+    def is_status_widget_visible(self):
+        """
+        Return whether StatusWidget is visible or not
+        :return: bool
+        """
+
+        return self._status_widget_visible
+
+    def set_status_widget_visible(self, flag):
+        """
+        Set whether StatusWidget is visible or not
+        :param flag: bool
+        """
+
+        flag = bool(flag)
+        self._status_widget_visible = flag
+        if flag:
+            self.status_widget().show()
+        else:
+            self.status_widget().hide()
 
     """
     ##########################################################################################

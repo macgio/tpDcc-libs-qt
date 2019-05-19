@@ -57,8 +57,10 @@ class MainWindow(QMainWindow, object):
         self.setProperty('saveWindowPref', True)
         self.setObjectName(name)
         # self.setWindowFlags(Qt.Window)
-
         self.setWindowTitle(kwargs.pop('title', 'Maya Window'))
+
+        self._theme = None
+        self._kwargs = dict()
 
         has_settings = kwargs.pop('has_settings', True)
         win_settings = kwargs.pop('settings', None)
@@ -77,6 +79,14 @@ class MainWindow(QMainWindow, object):
     def closeEvent(self, event):
         self.windowClosed.emit()
         self.deleteLater()
+
+    def set_kwargs(self, kwargs):
+        """
+        Set the keyword arguments used to open the library window
+        :param kwargs: dict
+        """
+
+        self._kwargs.update(kwargs)
 
     def add_toolbar(self, name, area=Qt.TopToolBarArea):
         """
@@ -172,6 +182,26 @@ class MainWindow(QMainWindow, object):
         """
 
         pass
+
+    def center(self, width=None, height=None):
+        """
+        Centers window to the center of the desktop
+        :param width: int
+        :param height: int
+        """
+
+        geometry = self.frameGeometry()
+        if width:
+            geometry.setWidth(width)
+        if height:
+            geometry.setHeight(height)
+
+        desktop = QApplication.desktop()
+        pos = desktop.cursor().pos()
+        screen = desktop.screenNumber(pos)
+        center_point = desktop.screenGeometry(screen).center()
+        geometry.moveCenter(center_point)
+        self.window().setGeometry(geometry)
 
     def dock(self):
         """
@@ -517,6 +547,15 @@ class DockWindow(QMainWindow, object):
 
         docks[index].hide()
         docks[index].show()
+
+
+class SubWindow(MainWindow, object):
+    """
+    Class to create sub windows
+    """
+
+    def __init__(self, parent=None, **kwargs):
+        super(SubWindow, self).__init__(parent=parent, **kwargs)
 
 
 class DirectoryWindow(MainWindow, object):
