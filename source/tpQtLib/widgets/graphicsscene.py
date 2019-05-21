@@ -34,20 +34,37 @@ class BaseScene(QGraphicsScene, object):
         self.setParent(parent)
 
     def get_root(self):
+        """
+        Returns root scene object
+        :return: QSceneObject
+        """
+
         return self._root
 
     def set_root(self, value):
+        """
+        Set the root scene object
+        :param value: QSceneObject
+        """
+
         self._root = value
         self._root.setParent(self)
 
     def get_auto_z(self):
+        """
+        Returns whether auto Z is enabled or not
+        :return: bool
+        """
+
         return self._auto_z
 
     def set_auto_z(self, auto_z):
-        self._auto_z = auto_z
+        """
+        Sets whether auto z is enabled or not
+        :param auto_z: bool
+        """
 
-    root = property(get_root, set_root)
-    auto_z = property(get_auto_z, set_auto_z)
+        self._auto_z = auto_z
 
     def set_default_size(self):
         """

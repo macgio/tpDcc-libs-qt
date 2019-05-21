@@ -443,9 +443,9 @@ class GridView(BaseGraphicsView, object):
         super(GridView, self).__init__(parent=parent)
 
         self._grid_spacing = 100
-        self._grid_size = 2
+        self._grid_size = 10
         self._draw_grid_size = self._grid_size * 2
-        self._show_grid = False
+        self._show_grid = True
 
         self.setRenderHint(QPainter.Antialiasing)
 
@@ -520,12 +520,13 @@ class GridBackgroundImageView(GridView, object):
 
     background_image = property(get_background_image, set_background_image)
 
-    def resizeEvent(self, event):
-        if self._fit_image_to_window:
-            self.scene().set_size(self.rect().width(), self.rect().height())
-        else:
-            self.fit_scene_content()
-        super(GridBackgroundImageView, self).resizeEvent(event)
+    # def resizeEvent(self, event):
+    # TODO: tpoveda: This is not working when an image is not loaded
+    #     if self._fit_image_to_window:
+    #         self.scene().set_size(self.rect().width(), self.rect().height())
+    #     else:
+    #         self.fit_scene_content()
+    #     super(GridBackgroundImageView, self).resizeEvent(event)
 
     def drawBackground(self, painter, rect):
         """
