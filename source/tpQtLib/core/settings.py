@@ -29,14 +29,19 @@ class QtSettings(QSettings, object):
     def has_setting(self, setting_name):
         return self.get(setting_name)
 
-    def get(self, setting_name):
+    def get(self, setting_name, default_value=None):
         """
         Returns the setting stored with the given name
         :param setting_name: str
+        :param default_value: variant
         :return:
         """
 
-        return self.value(setting_name)
+        val = self.value(setting_name)
+        if not val:
+            return default_value
+
+        return val
 
     def set(self, setting_name, setting_value):
         """
@@ -47,6 +52,15 @@ class QtSettings(QSettings, object):
         """
 
         self.setValue(setting_name, setting_value)
+
+    def setw(self, setting_name, setting_value):
+        """
+        Stores a new window setting with the given name and the given value
+        :param setting_name: str, setting name we want to store
+        :param setting_value: variant, setting value we want to store
+        """
+
+        self.setValue(self._window.objectName().upper() + '/' + setting_name, setting_value)
 
     def get_groups(self):
         """

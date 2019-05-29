@@ -982,14 +982,17 @@ def create_flat_button(
         tip=None, flat=True,
         hover=True,
         destroy_flag=False,
-        context=None
+        context=None,
 ):
 
     btn = QPushButton()
     btn.setText(name)
     btn.setCheckable(checkable)
     if icon:
-        btn.setIcon(QIcon(icon))
+        if isinstance(icon, QIcon):
+            btn.setIcon(icon)
+        else:
+            btn.setIcon(QIcon(icon))
     btn.setFlat(flat)
     if flat:
         change_button_color(button=btn, text_color=text, bg_color=ui_color, hi_color=background_color, mode='button', hover=hover, destroy=destroy_flag, ds_color=border_color)

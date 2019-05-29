@@ -8,6 +8,7 @@ Collapsible accordion widget similar to Maya Attribute Editor
 from __future__ import print_function, division, absolute_import
 
 import os
+import traceback
 
 from tpQtLib.Qt.QtCore import *
 from tpQtLib.Qt.QtWidgets import *
@@ -61,6 +62,7 @@ class MainWindow(QMainWindow, object):
 
         self._theme = None
         self._kwargs = dict()
+        self._callbacks = list()
 
         has_settings = kwargs.pop('has_settings', True)
         win_settings = kwargs.pop('settings', None)
@@ -73,10 +75,13 @@ class MainWindow(QMainWindow, object):
             else:
                 self.settings = None
 
+        self._load_window_data()
         self.ui()
         self.setup_signals()
 
     def closeEvent(self, event):
+        self._save_window_data()
+        self.remove_callbacks()
         self.windowClosed.emit()
         self.deleteLater()
 
@@ -87,6 +92,22 @@ class MainWindow(QMainWindow, object):
         """
 
         self._kwargs.update(kwargs)
+
+    def load_window_data(self):
+        """
+        Function used to restore the data of the current window
+        Overrides in specific window to load custom data
+        """
+
+        pass
+
+    def save_window_data(self):
+        """
+        Function used to store the data of the current window
+        Overrides in specific window to save custom data
+        """
+
+        pass
 
     def add_toolbar(self, name, area=Qt.TopToolBarArea):
         """
@@ -244,6 +265,23 @@ class MainWindow(QMainWindow, object):
 
         return dock
 
+    def add_callback(self, callback_wrapper):
+        if not isinstance(callback_wrapper, tp.Callback):
+            tp.logger.error('Impossible add callback of type: {}'.format(type(callback_wrapper)))
+            return
+
+        self._callbacks.append(callback_wrapper)
+
+    def remove_callbacks(self):
+        for c in self._callbacks:
+            try:
+                self._callbacks.remove(c)
+                del c
+            except Exception as e:
+                tp.logger.error('Impossible to clean callback {} | {}'.format(c, e))
+                tp.logger.error(traceback.format_exc())
+        self._callbacks = list()
+
     def set_active_dock_tab(self, dock_widget):
         """
         Sets the current active dock tab depending on the given dock widget
@@ -271,6 +309,26 @@ class MainWindow(QMainWindow, object):
                 docks.append(child)
 
         return docks
+
+    def _load_window_data(self):
+        """
+        Internal function used to restore the data of the current window
+        """
+
+        if not self.settings:
+            return
+
+        self.load_window_data()
+
+    def _save_window_data(self):
+        """
+        Internal function used to store the data of the current window
+        """
+
+        if not self.settings:
+            return
+
+        self.save_window_data()
 
 
 class DetachedWindow(QMainWindow):

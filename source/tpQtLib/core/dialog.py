@@ -30,7 +30,7 @@ class Dialog(QDialog, object):
         super(Dialog, self).__init__(parent=tp.Dcc.get_main_window())
 
         # Window needs to have a unique name to avoid problems with Maya workspaces
-        self.callbacks = list()
+        self._callbacks = list()
 
         self.setObjectName(name)
         self.setFocusPolicy(Qt.StrongFocus)
@@ -46,21 +46,19 @@ class Dialog(QDialog, object):
         self.ui()
         self.setup_signals()
 
-    def add_callback(self, callback_id):
-        if tp.Dcc.get_name() == tp.Dccs.Maya:
-            from tpRigToolkit.maya.lib import callback
-            self.callbacks.append(callback.MCallbackIdWrapper(callback_id=callback_id))
-        else:
-            tpQtLib.logger.warning('Callback functionality is not implemented for your current DCC: {}'.format(tp.Dcc.get_name()))
+    def add_callback(self, callback_wrapper):
+        if not isinstance(callback_wrapper, tp.Callback):
+            tp.logger.error('Impossible add callback of type: {}'.format(type(callback_wrapper)))
+            return
 
     def remove_callbacks(self):
-        for c in self.callbacks:
+        for c in self._callbacks:
             try:
-                self.callbacks.remove(c)
+                self._callbacks.remove(c)
                 del c
             except Exception as e:
                 pass
-        self.callbacks = []
+        self._callbacks = list()
 
     def center(self):
         """

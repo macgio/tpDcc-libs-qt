@@ -27,7 +27,7 @@ import tpQtLib
 import tpDccLib as tp
 from tpPyUtils import decorators, path as path_utils, osplatform
 from tpQtLib.core import base, menu, icon, image, qtutils, animation
-from tpQtLib.widgets import toolbar, statusbar, progressbar
+from tpQtLib.widgets import toolbar, statusbar, progressbar, toast
 
 if tp.is_maya():
     from tpMayaLib.core import decorators as maya_decorators
@@ -81,6 +81,11 @@ class LibraryConsts(object):
     VIEWER_DEFAULT_MAX_SPACING = 50
     VIEWER_DEFAULT_MIN_LIST_SIZE = 15
     VIEWER_DEFAULT_MIN_ICON_SIZE = 50
+    VIEWER_DEFAULT_TEXT_COLOR = QColor(255, 255, 255, 200)
+    VIEWER_DEFAULT_SELECTED_TEXT_COLOR = QColor(255, 255, 255, 200)
+    VIEWER_DEFAULT_BACKGROUND_COLOR = QColor(255, 255, 255, 30)
+    VIEWER_DEFAULT_BACKGROUND_HOVER_COLOR = QColor(255, 255, 255, 35)
+    VIEWER_DEFAULT_BACKGROUND_SELECTED_COLOR = QColor(30, 150, 255)
 
     ICON_COLOR = QColor(255, 255, 255)
     ICON_BADGE_COLOR = QColor(230, 230, 0)
@@ -1204,10 +1209,10 @@ class LibraryItem(QTreeWidgetItem, object):
         self.stop()
 
     """
-   ##########################################################################################
-   CLASS METHODS
-   ##########################################################################################
-   """
+    ##########################################################################################
+    CLASS METHODS
+    ##########################################################################################
+    """
 
     @classmethod
     def create_action(cls, menu, library_window):
@@ -1541,7 +1546,118 @@ class LibraryViewWidgetMixin(object):
     """
 
     def __init__(self):
-        pass
+        self._hover_item = None
+        self._mouse_press_button = None
+        self._current_item = None
+        self._current_selection = list()
+
+    def wheelEvent(self, event):
+        """
+        Triggered on any wheel events for the current viewport
+        :param event: QWheelEvent
+        """
+
+        if self.is_control_modifier():
+            event.ignore()
+        else:
+            QAbstractItemView.wheelEvent(self, event)
+
+        item = self.item_at(event.pos())
+        self.item_update_event(item, event)
+
+    def keyPressEvent(self, event):
+        """
+        Triggered when user key press events for the current viewport
+        :param event: QKeyEvent
+        """
+
+        item = self.selectedItems()
+        if item:
+            self.item_key_press_event(item, event)
+
+        valid_keys = [Qt.Key_Up, Qt.Key_Left, Qt.Key_Down, Qt.Key_Right]
+        if event.isAccepted() and event.key() in valid_keys:
+            QAbstractItemView.keyPressEvent(event)
+
+    def mousePressEvent(self, event):
+        """
+        Triggered on user mouse press events for the current viewport
+        :param event: QMouseEvent
+        """
+
+        self._mouse_press_button = event.button()
+        item = self.item_at(event.pos())
+        if item:
+            self.item_mouse_press_event(item, event)
+        QAbstractItemView.mousePressEvent(self, event)
+
+    def mouseReleaseEvent(self, event):
+        """
+        Triggered on user mouse release events for the current viewport
+        :param event: QMouseEvent
+        """
+
+        self._mouse_press_button = None
+        item = self.selected_item()
+        if item:
+            self.item_mouse_release_event(item, event)
+
+    def mouseMoveEvent(self, event):
+        """
+        Triggered on user mouse move events for the current viewport
+        :param event: QMouseEvent
+        """
+
+        if self._mouse_press_button == Qt.MiddleButton:
+            item = self.selected_item()
+        else:
+            item = self.item_at(event.pos())
+
+        self.item_update_event(item, event)
+
+    def mouse_press_button(self):
+        """
+        Returns the mouse button that has been pressed
+        :return: Qt.MouseButton
+        """
+
+        return self._mouse_press_button
+
+    def clean_dirty_objects(self):
+        """
+        Removes any obejct that may have been deleted
+        """
+
+        if self._current_item:
+            try:
+                self._current_item.text(0)
+            except RuntimeError:
+                self._hover_item = None
+                self._current_item = None
+                self._current_selection = None
+
+    def items_widget(self):
+        """
+        Returns parent widget of the library widget
+        :return:
+        """
+
+        return self.parent()
+
+    def is_control_modifier(self):
+        """
+        Returns whether control modifier is active or not
+        :return: bool
+        """
+
+        modifiers = QApplication.keyboardModifiers()
+        is_alt_modifier = modifiers == Qt.AltModifier
+        is_ctrl_modifier = modifiers == Qt.ControlModifier
+        return is_alt_modifier or is_ctrl_modifier
+
+
+
+
 
 
 class LibraryTreeWidget(LibraryViewWidgetMixin, QTreeWidget):
@@ -1567,6 +1683,50 @@ class LibraryTreeWidget(LibraryViewWidgetMixin, QTreeWidget):
         header.setContextMenuPolicy(Qt.CustomContextMenu)
         header.customContextMenuRequested.connect(self._on_show_header_menu)
 
+        self.itemClicked.connect(self._on_item_clicked)
+        self.itemDoubleClicked.connect(self._on_item_double_clicked)
+
+    """
+    ##########################################################################################
+    MIXIN
+    ##########################################################################################
+    """
+
+    def mouseMoveEvent(self, event):
+        """
+        Triggered when the user moves the mouse over the current viewport
+        :param event: QMouseEvent
+        """
+
+        LibraryViewWidgetMixin.mouseMoveEvent(self, event)
+        QTreeWidget.mouseMoveEvent(self, event)
+
+    def mouseReleaseEvent(self, event):
+        """
+        Triggerd when the user releases the mouse button on the viewport
+        :param event: QMouseEvent
+        """
+
+        LibraryViewWidgetMixin.mouseReleaseEvent(self, event)
+        QTreeWidget.mouseReleaseEvent(self, event)
+
+    """
+    ##########################################################################################
+    BASE
+    ##########################################################################################
+    """
+
+    def drawRow(self, painter, options, index):
+        """
+        Overrides base QTreeWidget drawDrow function
+        :param painter: QPainter
+        :param options: QStyleOption
+        :param index: QModelIndex
+        """
+
+        item = self.itemFromIndex(index)
+        item.paint_row(painter, options, index)
+
     def setColumnHidden(self, column, value):
         """
         Overrides base QTreeWidget setColumnHidden function
@@ -1586,6 +1746,131 @@ class LibraryTreeWidget(LibraryViewWidgetMixin, QTreeWidget):
         if width < LibraryConsts.TREE_MINIMUM_WIDTH:
             width = LibraryConsts.TREE_DEFAULT_WIDTH
             self.setColumnWidth(column, width)
+
+    def resizeColumnToContents(self, column):
+        """
+        Overrides base QTreeWidget resizeColumnToContents function
+        Resize the given column to the data of that column
+        :param column: int or str
+        """
+
+        width = 0
+        for item in self.items():
+            text = item.text(column)
+            font = item.font(column)
+            metrics = QFontMetrics(font)
+            text_width = metrics.width(text) + item.padding()
+            width = max(width, text_width)
+
+        self.setColumnWidth(column, width)
+
+    def setHeaderLabels(self, labels):
+        """
+        Overrides base QTreeWidget setHeaderLabels function
+        :param labels: list(str)
+        """
+
+        labels = self._remove_duplicates(labels)
+        column_settings = self.column_settings()
+        super(LibraryTreeWidget, self).setHeaderLabels(labels)
+        self._header_labels = labels
+        self.update_column_hidden()
+        self.set_column_settings(column_settings)
+
+    def items(self):
+        """
+        Overrides base QTreeWidget items function
+        Return a list of all items in the tree widget
+        :return: list(LibraryItem)
+        """
+
+        items = list()
+        for item in self._items():
+            if not isinstance(item, LibraryGroupItem):
+                items.append(item)
+
+        return items
+
+    def selectedItems(self):
+        """
+        Overrides base QTreeWidget selectedItems function
+        Returns all selected items
+        :return: list(LibraryItem)
+        """
+
+        items = list()
+        items_ = super(LibraryTreeWidget, self).selectedItems()
+
+        for item in items_:
+            if not isinstance(item, LibraryGroupItem):
+                items.append(item)
+
+        return items
+
+    def clear(self, *args):
+        """
+        Clear tree items
+        """
+
+        super(LibraryTreeWidget, self).clear(*args)
+        self.clean_dirty_objects()
+
+    def set_items(self, items):
+        """
+        Add given items to the tree, clearing the tree first
+        :param items: list(LibraryItem)
+        """
+
+        selected_items = self.selectedItems()
+        self.take_top_level_items()
+        self.addTopLevelItems(items)
+        self.set_items_selected(selected_items, True)
+
+    def set_items_selected(self, items, value, scroll_to=True):
+        """
+        Selects the given library items
+        :param items: list(LibraryItem)
+        :param value: bool, Whether to select or deselect the items
+        :param scroll_to: bool, Whether to scroll or not to selected items
+        """
+
+        for item in items:
+            self.setItemSelected(item, value)
+        if scroll_to:
+            self.items_widget().scroll_to_selected_item()
+
+    def selected_item(self):
+        """
+        Returns the last non-hidden selected item
+        :return: LibraryItem
+        """
+
+        items = self.selectedItems()
+        if items:
+            return items[-1]
+
+    def settings(self):
+        """
+        Returns the current widget settings
+        :return: dict
+        """
+
+        settings = dict()
+        settings['columnSettings'] = self.column_settings()
+
+        return settings
+
+    def set_settings(self, settings):
+        """
+        Sets the current widget settings
+        :param settings: dict
+        :return: dict
+        """
+
+        column_settings = settings.get('columnSettings', dict())
+        self.set_column_settings(column_settings)
+
+        return settings
 
     def column_from_label(self, label):
         """
@@ -1609,6 +1894,313 @@ class LibraryTreeWidget(LibraryViewWidgetMixin, QTreeWidget):
         if column is not None:
             return self.headerItem().text(column)
 
+    def item_row(self, item):
+        """
+        Returns the row for the given item
+        :param item: LibraryItem
+        :return: int
+        """
+
+        index = self.indexFromItem(item)
+        return index.row()
+
+    def row_at(self, pos):
+        """
+        Returns the row for the given position
+        :param pos: QPoint
+        :return: int
+        """
+
+        item = self.itemAt(pos)
+        return self.item_row(item)
+
+    def take_top_level_items(self):
+        """
+        Returns all items from the tree widget
+        :return: list(LibraryItem)
+        """
+
+        items = list()
+        for item in self._items():
+            items.append(self.takeTopLevelItem(1))
+        items.append(self.takeTopLevelItem(0))
+
+        return items
+
+    def text_from_items(self, items, column, split=None, duplicates=False):
+        """
+        Returns all the text data for the given items and column
+        :param items: list(LibraryItem)
+        :param column: int or str
+        :param split: str
+        :param duplicates: bool
+        :return: list(str)
+        """
+
+        results = list()
+
+        for item in items:
+            text = item.text(column)
+            if text and split:
+                results.extend(text.split(split))
+            elif text:
+                results.append(text)
+        if not duplicates:
+            results = list(set(results))
+
+        return results
+
+    def text_from_column(self, column, split=None, duplicates=False):
+        """
+        Returns all data for the given column
+        :param column: int or str
+        :param split: str
+        :param duplicates: bool
+        :return: list(str)
+        """
+
+        items = self.items()
+        results = self.text_from_items(items, column, split=split, duplicates=duplicates)
+
+        return results
+
+    def header_labels(self):
+        """
+        Returns all header labels
+        :return: list(str)
+        """
+
+        return self._header_labels
+
+    def is_header_label(self, label):
+        """
+        Returns whether given label is a valid header label or not
+        :param label: str
+        :return: bool
+        """
+
+        return label in self._header_labels
+
+    def column_labels(self):
+        """
+        Returns all header labels for the tree widget
+        :return: list(str)
+        """
+
+        return self.header_labels()
+
+    def label_from_column(self, column):
+        """
+        Returns the column label for the given column
+        :param column: int
+        :return: str
+        """
+
+        if column is not None:
+            return self.headerItem().text(column)
+
+    def column_from_label(self, label):
+        """
+        Returns the column for the given label
+        :param label: str
+        :return: int
+        """
+
+        try:
+            return self._header_labels.index(label)
+        except ValueError:
+            return -1
+
+    def show_all_columns(self):
+        """
+        Show all available columns
+        """
+
+        for column in range(self.columnCount()):
+            self.setColumnHidden(column, False)
+
+    def hide_all_columns(self):
+        """
+        Hide all available columns
+        """
+
+        for column in range(1, self.columnCount()):
+            self.setColumnHidden(column, True)
+
+    def update_column_hidden(self):
+        """
+        Updates the hidden state for all the current columns
+        """
+
+        self.show_all_columns()
+        column_labels = self._hidden_columns.keys()
+        for column_label in column_labels:
+            self.setColumnHidden(column_label, self._hidden_columns[column_label])
+
+    def _items(self):
+        """
+        Internal function that returns a list of all items in the tree widget
+        :return: list(LibraryItem)
+        """
+
+        return self.findItems('*', Qt.MatchWildcard | Qt.MatchRecursive)
+
+    def _remove_duplicates(self, labels):
+        """
+        Internal function that removes dupñlicates from a list (preserving its order)
+        :param labels: list(str)
+        :return: list(str)
+        """
+
+        s = set()
+        sadd = s.add
+        return [x for x in labels if x.strip() and not (x in s or sadd(x))]
+
+    """
+    ##########################################################################################
+    SETTINGS
+    ##########################################################################################
+    """
+
+    def column_settings(self):
+        """
+        Returns the settings for each column
+        :return: dict
+        """
+
+        column_settings = dict()
+
+        for column in range(self.columnCount()):
+            label = self.label_from_column(column)
+            hidden = self.isColumnHidden(column)
+            width = self.columnWidth(column)
+            column_settings[label] = {
+                'index': column,
+                'hidden': hidden,
+                'width': width
+            }
+
+        return column_settings
+
+    def set_column_settings(self, settings):
+        """
+        Set the settings for each column
+        :param settings: dict
+        """
+
+        for label in settings:
+            if self.is_header_label(label):
+                column = self.column_from_label(label)
+                width = settings[label].get('width', 100)
+                if width < 5:
+                    width = 100
+                self.setColumnWidth(column, width)
+                hidden = settings[label].et('hidden', False)
+                self.setColumnHidden(column, hidden)
+            else:
+                tpQtLib.logger.debug('Cannot set the column setting for header label: {}'.format(label))
+
+    """
+    ##########################################################################################
+    MENUS
+    ##########################################################################################
+    """
+
+    def show_header_menu(self, pos):
+        """
+        Creates and show the header menu at the cursor position
+        :param pos: QPoint
+        :return: QMenu
+        """
+
+        header = self.header()
+        column = header.logicalIndexAt(pos)
+        menu = self._create_header_menu(column)
+        menu.addSeparator()
+        sub_menu = self._create_hide_column_menu()
+        menu.addMenu(sub_menu)
+        menu.exec_(QCursor.pos())
+
+    def _create_header_menu(self, column):
+        """
+        Internal function that creates a new header menu
+        :param column, iht
+        :return: QMenu
+        """
+
+        menu = QMenu(self)
+        label = self.label_from_column(column)
+        hide_action = menu.addAction('Hide "{}"'.format(label))
+        hide_action.triggered.connect(partial(self.setColumnHidden, column, True))
+        menu.addSeparator()
+        resize_action = menu.addAction('Resize to Contents')
+        resize_action.triggered.connect(partial(self.resizeColumnToContents, column))
+
+        return menu
+
+    def _create_hide_column_menu(self):
+        """
+        Internal function that creates the hide column menu
+        :return: QMenu
+        """
+
+        menu = QMenu('Show/Hide Column', self)
+        show_all_action = menu.addAction('Show All')
+        show_all_action.triggered.connect(self.show_all_columns)
+        hide_all_action = menu.addAction('Hide All')
+        hide_all_action.triggered.connect(self.hide_all_columns)
+        menu.addSeparator()
+        for column in range(self.columnCount()):
+            label = self.label_from_column(column)
+            is_hidden = self.isColumnHidden(column)
+            action = menu.addAction(label)
+            action.setCheckable(True)
+            action.setChecked(not is_hidden)
+            action.triggered.connect(partial(self.setColumnHidden, column, not is_hidden))
+
+        return menu
+
+    """
+    ##########################################################################################
+    CLIPBOARD
+    ##########################################################################################
+    """
+
+    def copy_text(self, column):
+        """
+        Copy the given column text to clipboard
+        :param column: int or text
+        """
+
+        items = self.selectedItems()
+        text = '\n'.join([item.text(column) for item in items])
+        clipboard = QApplication.clipboard()
+        clipboard.setText(text, QClipboard.Clipboard)
+
+    def _create_copy_text_men(self):
+        """
+        Creates a menu to cpoy the selected item data to the clipboard
+        :return: QMenu
+        """
+
+        menu = QMenu('Copy Text', self)
+        if self.selectedItems():
+            for column in range(self.columnCount()):
+                label = self.label_from_column(column)
+                action = menu.addAction(label)
+                action.triggered.connect(partial(self.copy_text, column))
+        else:
+            action = menu.addAction('No items selected')
+            action.setEnabled(False)
+
+        return menu
+
+    """
+    ##########################################################################################
+    CALLBACKS
+    ##########################################################################################
+    """
+
     def _on_show_header_menu(self):
         """
         Internal callback function that is called when the user right click TreeWidget
@@ -1616,6 +2208,20 @@ class LibraryTreeWidget(LibraryViewWidgetMixin, QTreeWidget):
         """
 
         print('Showing Header Menu ...')
+
+    def _on_item_clicked(self, item):
+        """
+        Internal callback function that is called when an item of the tree is clicked
+        """
+
+        item.clicked()
+
+    def _on_item_double_clicked(self, item):
+        """
+        Internal callback function that is called when an item of the tree is double clicked
+        """
+
+        item.double_clicked()
 
 
 class LibraryListView(LibraryViewWidgetMixin, QListView):
@@ -1840,6 +2446,17 @@ class LibraryViewer(base.BaseWidget, object):
     DEFAULT_MIN_LIST_SIZE = LibraryConsts.VIEWER_DEFAULT_MIN_LIST_SIZE
     DEFAULT_MIN_ICON_SIZE = LibraryConsts.VIEWER_DEFAULT_MIN_ICON_SIZE
 
+    DEFAULT_TEXT_COLOR = LibraryConsts.VIEWER_DEFAULT_TEXT_COLOR
+    DEFAULT_SELECTED_TEXT_COLOR = LibraryConsts.VIEWER_DEFAULT_SELECTED_TEXT_COLOR
+    DEFAULT_BACKGROUND_COLOR = LibraryConsts.VIEWER_DEFAULT_BACKGROUND_COLOR
+    DEFAULT_BACKGORUND_HOVER_COLOR = LibraryConsts.VIEWER_DEFAULT_BACKGROUND_HOVER_COLOR
+    DEFAULT_BACKGROUND_SELECTED_COLOR = LibraryConsts.VIEWER_DEFAULT_BACKGROUND_SELECTED_COLOR
+
+    TREE_WIDGET_CLASS = LibraryTreeWidget
+    LIST_VIEW_CLASS = LibraryListView
+    DELEGATE_CLASS = LibraryItemDelegate
+
+
     itemClicked = Signal(object)
     itemDoubleClicked = Signal(object)
     zoomChanged = Signal(object)
@@ -1856,24 +2473,42 @@ class LibraryViewer(base.BaseWidget, object):
         self._list_widget = None
         self._delegate = None
         self._is_item_text_visible = True
+        self._toast_enabled = True
 
         self._zoom_amount = self.DEFAULT_ZOOM_AMOUNT
         self._icon_size = QSize(self._zoom_amount, self._zoom_amount)
         self._item_size_hint = QSize(self._zoom_amount, self._zoom_amount)
 
+        self._text_color = self.DEFAULT_TEXT_COLOR
+        self._text_selected_color = self.DEFAULT_SELECTED_TEXT_COLOR
+        self._background_color = self.DEFAULT_BACKGROUND_COLOR
+        self._background_hover_color = self.DEFAULT_BACKGORUND_HOVER_COLOR
+        self._background_selected_color = self.DEFAULT_BACKGROUND_SELECTED_COLOR
+
         super(LibraryViewer, self).__init__(parent=parent)
+
+    def get_main_layout(self):
+        main_layout = QHBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        return main_layout
 
     def ui(self):
         super(LibraryViewer, self).ui()
 
-        self._tree_widget = LibraryTreeWidget(self)
+        self._tree_widget = self.TREE_WIDGET_CLASS(self)
 
-        self._list_view = LibraryListView(self)
+        self._list_view = self.LIST_VIEW_CLASS(self)
         self._list_view.set_tree_widget(self._tree_widget)
 
-        self._delegate = LibraryItemDelegate()
+        self._delegate = self.DELEGATE_CLASS()
+
+        self._toast_widget = toast.ToastWidget(self)
+        self._toast_widget.hide()
 
         self.main_layout.addWidget(self._tree_widget)
+        self.main_layout.addWidget(self._list_view)
+
+        header = self.tree_widget().header()
 
     """
     ##########################################################################################
@@ -1898,6 +2533,237 @@ class LibraryViewer(base.BaseWidget, object):
         self._library = library
         self.set_column_labels(library.Fields)
         library.searchFinished.connect(self._on_update_items)
+
+    def is_icon_view(self):
+        """
+        Returns whether widget is in icon mode or not
+        :return: bool
+        """
+
+        return not self._list_view.isHidden()
+
+    def is_table_view(self):
+        """
+        Returns whether widget is in list mode or not
+        :return: bool
+        """
+
+        return not self._tree_widget.isHidden()
+
+    def set_view_mode(self, mode):
+        """
+        Sets the view mode for this widget
+        :param mode: str
+        """
+
+        if mode == self.IconMode:
+            self.set_zoom_amount(self.DEFAULT_MIN_ICON_SIZE)
+        elif mode == self.TableMode:
+            self.set_zoom_amount(self.DEFAULT_MIN_ICON_SIZE)
+
+    def set_list_mode(self):
+        """
+        Sets the tree widget visible
+        """
+
+        self._list_view.hide()
+        self._tree_widget.show()
+        self._tree_widget.setFocus()
+
+    def set_icon_mode(self):
+        """
+        Sets the list view visible
+        """
+
+        self._tree_widget.hide()
+        self._list_view.show()
+        self._list_view.setFocus()
+
+    def zoom_amount(self):
+        """
+        Returns the zoom amount for the widget
+        :return: int
+        """
+
+        return self._zoom_amount
+
+    def set_zoom_amount(self, value):
+        """
+        Sets the zoom amount for the widget
+        :param value: int
+        """
+
+        if value < self.DEFAULT_MIN_LIST_SIZE:
+            value = self.DEFAULT_MIN_LIST_SIZE
+
+        self._zoom_amount = value
+        size = QSize(value * self.dpi(), value * self.dpi())
+        self.set_icon_size(size)
+        if value >= self.DEFAULT_MIN_LIST_SIZE:
+            self._set_view_mode(self.IconMode)
+        else:
+            self._set_view_mode(self.TableMode)
+        column_width = value * self.dpi() + self.item_text_height()
+        self._tree_widget.setIndentation(0)
+        self._tree_widget.setColumnWidth(0, column_width)
+        self.scroll_to_selected_item()
+        self.show_toast_message('Size: {}%'.format(value))
+
+    def vertical_scrollbar(self):
+        """
+        Returns the active vertical scroll bar
+        :return: QScrollBar
+        """
+
+        if self.is_table_view():
+            return self.tree_widget().verticalScrollBar()
+        else:
+            return self.list_view().verticalScrollBar()
+
+    def visual_item_rect(self, item):
+        """
+        Returns the visual rect for the item
+        :param item: LibraryItem
+        :return: QRect
+        """
+
+        if self.is_table_view():
+            visual_rect = self.tree_widget().visual_item_rect(item)
+        else:
+            index = self.tree_widget().index_from_item(item)
+            visual_rect = self.list_view().visualRect(index)
+
+        return visual_rect
+
+    def is_item_visible(self, item):
+        """
+        Returns whether given item is visible or not
+        :param item: LibraryItem
+        :return: bool
+        """
+
+        height = self.height()
+        item_rect = self.visual_item_rect(item)
+        scroll_bar_y = self.vertical_scrollbar().value()
+        y = (scroll_bar_y - item_rect.y()) + height
+
+        return y > scroll_bar_y and y < scroll_bar_y + height
+
+    def scroll_to_item(self, item):
+        """
+        Ensures the given item is visible
+        :param item: LibraryItem
+        """
+
+        position = QAbstractItemView.PositionAtCenter
+        if self.is_table_view():
+            self.tree_widget().scroll_to_item(item, position)
+        elif self.is_icon_view():
+            self.list_view().scroll_to_item(item, position)
+
+    def scroll_to_selected_item(self):
+        """
+        Ensures that selected item is visible
+        """
+
+        item = self.selected_item()
+        if item:
+            self.scroll_to_item(item)
+
+    def item_at(self, pos):
+        """
+        Returns the current item at the given position
+        :param pos: QPoint
+        :return: LibraryItem
+        """
+
+        if self.is_icon_view():
+            return self.list_view().item_at(pos)
+        else:
+            return self.tree_widget().item_at(pos)
+
+    def create_group_item(self, text, children=None):
+        """
+        Internal function that creates a new item for the given text and children
+        :param text: str
+        :param children: list(LibraryItem)
+        """
+
+        group_item = LibraryGroupItem()
+        group_item.set_name(text)
+        group_item.set_stretch_to_widget(self)
+        group_item.set_children(children)
+
+        return group_item
+
+    def _set_view_mode(self, mode):
+        """
+        Internal function that sets the view mode ro this widget
+        :param mode: str
+        :return: str
+        """
+
+        if mode == self.IconMode:
+            self.set_icon_mode()
+        elif mode == self.TableMode:
+            self.set_list_mode()
+
+    """
+    ##########################################################################################
+    DPI
+    ##########################################################################################
+    """
+
+    def dpi(self):
+        """
+        Returns zoom multiplier
+        :return: int
+        """
+
+        return self._dpi
+
+    def set_dpi(self, dpi):
+        """
+        Sets the zoom multiplier
+        :param dpi: int
+        """
+
+        self._dpi = dpi
+        self.refresh_size()
+
+    """
+    ##########################################################################################
+    TOAST WIDGET
+    ##########################################################################################
+    """
+
+    def toast_enabled(self):
+        """
+        Returns whether toast message widget is enabled or not
+        :return: bool
+        """
+
+        return self._toast_enabled
+
+    def set_toast_enabled(self, flag):
+        """
+        Sets whether toast widget is enabled or not
+        :param flag: bool
+        """
+
+        self._toast_enabled = flag
+
+    def show_toast_message(self, text, duration=300):
+        """
+        Shows a toast with the given text for the given duration
+        :param text: str
+        :param duration: None or int
+        """
+
+        if self.toast_enabled():
+            self._toast_widget.set_duration(duration)
+            self._toast_widget.setText(text)
+            self._toast_widget.show()
 
     """
     ##########################################################################################
@@ -1941,19 +2807,14 @@ class LibraryViewer(base.BaseWidget, object):
         labels = [x for x in labels if x.strip() and not (x in labels_set or set_add(x))]
         self.tree_widget().setHeaderLabels(labels)
 
-    def create_group_item(self, text, children=None):
+    def index_from_item(self, item):
         """
-        Internal function that creates a new item for the given text and children
-        :param text: str
-        :param children: list(LibraryItem)
+        Returns the QModelIndex associated with the given item
+        :param item: LibraryItem
+        :return: QModelIndex
         """
 
-        group_item = LibraryGroupItem()
-        group_item.set_name(text)
-        group_item.set_stretch_to_widget(self)
-        group_item.set_children(children)
-
-        return group_item
+        return self._tree_widget.index_from_item(item)
 
     def items(self):
         """
@@ -1979,6 +2840,45 @@ class LibraryViewer(base.BaseWidget, object):
 
         self._tree_widget.addTopLevelItems(items)
 
+    def selected_item(self):
+        """
+        Returns the last non-hidden selected item
+        :return: LibraryItem
+        """
+
+        return self._tree_widget.selected_item()
+
+    def selected_items(self):
+        """
+        Returns a list with all selected non-hiden items
+        :return: list(QTreeWidgetItem)
+        """
+
+        return self._tree_widget.selectedItems()
+
+    def clear_selection(self):
+        """
+        Cleras the user selection
+        """
+
+        self._tree_widget.clearSelection()
+
+    def selection_model(self):
+        """
+        Returns the current selection model
+        :return: QItemSelectionModel
+        """
+
+        return self._tree_widget.selectionModel()
+
+    def model(self):
+        """
+        Returns the model the viewer is representing
+        :return: QAbstractItemModel
+        """
+
+        return self._tree_widget.model()
+
     def update_items(self):
         """
         Sets the items to the viewer
@@ -2003,29 +2903,6 @@ class LibraryViewer(base.BaseWidget, object):
             self.select_items(selected_items)
             self.scroll_to_selected_item()
 
-    def selected_items(self):
-        """
-        Returns a list with all selected non-hiden items
-        :return: list(QTreeWidgetItem)
-        """
-
-        return self._tree_widget.selectedItems()
-
-    def clear_selection(self):
-        """
-        Cleras the user selection
-        """
-
-        self._tree_widget.clearSelection()
-
-    def model(self):
-        """
-        Returns the model the viewer is representing
-        :return: QAbstractItemModel
-        """
-
-        return self._tree_widget.model()
-
     def clear(self):
         """
         Clear all elements in tree widget
@@ -2035,6 +2912,33 @@ class LibraryViewer(base.BaseWidget, object):
 
     def _on_update_items(self):
         self.update_items()
+
+    """
+    ##########################################################################################
+    LIST WIDGET
+    ##########################################################################################
+    """
+
+    def list_view(self):
+        """
+        Returns the list view that contains the items
+        :return: LibraryListView
+        """
+
+        return self._list_view
+
+    def set_locked(self, value):
+        """
+        Disables drag and drop
+        :param value: bool
+        """
+
+        self.list_view().setDragEnabled(not value)
+        self.list_view().setDropEnabled(not value)
+
+
+
+
 
 
 class LibrarySearchWidget(QLineEdit, object):
