@@ -22,6 +22,9 @@ from tpQtLib.widgets import button, search
 
 class TreeWidget(QTreeWidget, object):
 
+    ITEM_WIDGET = QTreeWidgetItem
+    ITEM_WIDGET_SIZE = None
+
     SelectionChanged = Signal()
 
     def __init__(self, parent=None):
@@ -132,24 +135,6 @@ class TreeWidget(QTreeWidget, object):
     # endregion
 
     # region Public Functions
-    def get_item_widget(self):
-        """
-        Returns the item that are created when a new item is added to the tree
-        Should be override to add custom TreeItemWidgets
-        :return: QTreeWidgetItem
-        """
-
-        return QTreeWidgetItem()
-
-    def get_item_widget_size(self):
-        """
-        Returns the size the new items added to the will have
-        Override to define custom sizes, by default non size is force
-        :return: QSize || None
-        """
-
-        return None
-
     def position(self, pos, rect):
         """
         Function that returns whether the cursor is over, below or on an item
@@ -603,7 +588,7 @@ class ManageTreeWidget(base.BaseWidget, object):
         self.tree_widget = tree_widget
 
 
-class FilterTreeWidget(base.BaseWidget, object):
+class FilterTreeWidget(base.DirectoryWidget, object):
     NameFilterChanged = Signal(object)
 
     def __init__(self, parent=None):
@@ -854,13 +839,19 @@ class FilterTreeDirectoryWidget(base.DirectoryWidget, object):
 
 
 class FileTreeWidget(TreeWidget, object):
+
     refreshed = Signal()
+
+    HEADER_LABELS = ['Name', 'Size MB', 'Time']
+    NEW_ITEM_NAME = 'new_rig'
+    NEW_ITEM_WIDGET = QTreeWidgetItem
+    EXCLUDE_EXTENSIONS = list()
 
     def __init__(self, parent=None):
         self.directory = None
         super(FileTreeWidget, self).__init__(parent)
 
-        self.setHeaderLabels(self.get_header())
+        self.setHeaderLabels(self.HEADER_LABELS)
 
     # region Override Functions
     def _add_sub_items(self, tree_item):
@@ -881,42 +872,6 @@ class FileTreeWidget(TreeWidget, object):
     # endregion
 
     # region Public Functions
-    def get_header(self):
-        """
-        Returns a list with all the headers used by the TreeWidget
-        Should be override to setup custom headers
-        :return: list<str>
-        """
-
-        return ['Name', 'Size MB', 'Time']
-
-    def get_new_item_name(self):
-        """
-        Returns the default name that should be used when a new item is added to the tree
-        Should be override to setup custom item names
-        :return: str
-        """
-
-        return 'new_folder'
-
-    def get_item_widget(self):
-        """
-        Returns the item that are created when a new item is added to the tree
-        Should be override to add custom TreeItemWidets
-        :return: QTreeWidgetItem
-        """
-
-        return QTreeWidgetItem()
-
-    def get_exclude_extensions(self):
-        """
-        Returns a list with file extensions that should be excluded from the tree
-        Should be override to exclude custom extensions
-        :return: list<str>
-        """
-
-        return list()
-
     def get_item_directory(self, tree_item):
         """
         Returns the full path of the given tree item
@@ -957,7 +912,7 @@ class FileTreeWidget(TreeWidget, object):
             item_path = self.directory
 
         if not name:
-            name = self.get_new_item_name()
+            name = self.NEW_ITEM_NAME
 
         folder.create_folder(name=name, directory=item_path)
 
@@ -1069,7 +1024,7 @@ class FileTreeWidget(TreeWidget, object):
                     found = item
 
         # Check if the item should be excluded or not from the tree
-        exclude = self.get_exclude_extensions()
+        exclude = self.EXCLUDE_EXTENSIONS
         if exclude:
             split_name = file_name.split('.')
             extension = split_name[-1]
@@ -1079,10 +1034,10 @@ class FileTreeWidget(TreeWidget, object):
         if found:
             item = found
         else:
-            item = self.get_item_widget()
+            item = self.ITEM_WIDGET()
 
         # Constrain item size if necessary
-        size = self.get_item_widget_size()
+        size = self.ITEM_WIDGET_SIZE
         if size:
             size = QSize(*size)
             item.setSizeHint(self._title_text_index, size)
@@ -1103,7 +1058,7 @@ class FileTreeWidget(TreeWidget, object):
         # NOTE: Sub files are added dynamically when the user expands an item
         if sub_files:
             self.delete_tree_item_children(item)
-            exclude_extensions = self.get_exclude_extensions()
+            exclude_extensions = self.EXCLUDE_EXTENSIONS
             exclude_count = 0
             if exclude_extensions:
                 for f in sub_files:
@@ -1127,10 +1082,40 @@ class FileTreeWidget(TreeWidget, object):
     # endregion
 
 
+    def get_tree_widget(self):
+        """
+        Returns TreeWidget being used by this widget
+        Overrides to use custom TreeWidgets
+        :return: QTreeWidget
+        """
+
+        return FileTreeWidget()
+
+    def get_manager_widget(self):
+        """
+        Returns the widet that manages the tree widget
+        :return: ManageTreeWidget
+        """
+
+        return ManageTreeWidget()
+
+    def get_filter_widget(self):
+        """
+        Returns the filter widget used to filter tree contents
+        :return: FilterTreeWidget
+        """
+
+        return FilterTreeDirectoryWidget()
+
+
 class EditFileTreeWidget(base.DirectoryWidget, object):
 
     itemClicked = Signal(object, object)
     description = 'EditTree'
+
+    TREE_WIDGET = FileTreeWidget
+    MANAGER_WIDGET = ManageTreeWidget
+    FILTER_WIDGET = FilterTreeWidget
 
     def __init__(self, parent=None):
         super(EditFileTreeWidget, self).__init__(parent)
@@ -1141,12 +1126,12 @@ class EditFileTreeWidget(base.DirectoryWidget, object):
     def ui(self):
         super(EditFileTreeWidget, self).ui()
 
-        self.tree_widget = self.get_tree_widget()
+        self.tree_widget = self.TREE_WIDGET()
 
-        self.manager_widget = self.get_manager_widget()
+        self.manager_widget = self.MANAGER_WIDGET()
         self.manager_widget.set_tree_widget(self.tree_widget)
 
-        self.filter_widget = self.get_filter_widget()
+        self.filter_widget = self.FILTER_WIDGET()
         self.filter_widget.set_tree_widget(self.tree_widget)
         self.filter_widget.set_directory(self.directory)
         drag_reorder_icon = tpQtLib.resource.icon('drag_reorder')
@@ -1183,31 +1168,6 @@ class EditFileTreeWidget(base.DirectoryWidget, object):
     # endregion
 
     # region Public Functions
-    def get_tree_widget(self):
-        """
-        Returns TreeWidget being used by this widget
-        Overrides to use custom TreeWidgets
-        :return: QTreeWidget
-        """
-
-        return FileTreeWidget()
-
-    def get_manager_widget(self):
-        """
-        Returns the widet that manages the tree widget
-        :return: ManageTreeWidget
-        """
-
-        return ManageTreeWidget()
-
-    def get_filter_widget(self):
-        """
-        Returns the filter widget used to filter tree contents
-        :return: FilterTreeWidget
-        """
-
-        return FilterTreeDirectoryWidget()
-
     def get_current_item(self):
         """
         Returns the current selected item on the tree
@@ -1289,6 +1249,9 @@ class TreeWidgetItem(QTreeWidgetItem, object):
 
 
 class HistoryTreeWidget(FileTreeWidget, object):
+
+    HEADER_LABELS = ['Version', 'Comment', 'Size MB', 'User', 'Time']
+
     def __init__(self):
         super(HistoryTreeWidget, self).__init__()
 
@@ -1303,9 +1266,6 @@ class HistoryTreeWidget(FileTreeWidget, object):
         self._padding = 1
 
     # region Override Functions
-    def get_header(self):
-        return ['Version', 'Comment', 'Size MB', 'User', 'Time']
-
     def _get_files(self):
         if self.directory:
             version_file = version.VersionFile(file_path=self.directory)

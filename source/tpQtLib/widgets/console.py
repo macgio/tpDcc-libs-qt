@@ -11,6 +11,8 @@ from tpQtLib.Qt.QtCore import *
 from tpQtLib.Qt.QtWidgets import *
 from tpQtLib.Qt.QtGui import *
 
+from io import StringIO
+
 
 class ConsoleInput(QLineEdit, object):
     def __init__(self, commands=[], parent=None):
@@ -29,8 +31,11 @@ class ConsoleInput(QLineEdit, object):
 
 
 class Console(QTextEdit, object):
-    def __init__(self, parent=None):
+    def __init__(self, logger=None, parent=None):
         super(Console, self).__init__(parent=parent)
+
+        self._logger = logger
+        self._buffer = StringIO()
 
         size_policy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
         size_policy.setHorizontalStretch(0)
@@ -38,19 +43,107 @@ class Console(QTextEdit, object):
         size_policy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
         self.setSizePolicy(size_policy)
 
-        self.setMaximumSize(QSize(16777215, 16777215))
-        self.setStyleSheet(
-            """
-            background-color: rgb(49, 49, 49);
-            font: 8pt "Consolas";
-            color: rgb(200, 200, 200);
-            """
-        )
-
-        self.setLineWrapMode(QTextEdit.NoWrap)
         self.setReadOnly(True)
-        self.setContextMenuPolicy(Qt.ActionsContextMenu)
+        self.setMaximumSize(QSize(16777215, 16777215))
+        self.setFocusPolicy(Qt.StrongFocus)
+        self.setLineWrapMode(QTextEdit.NoWrap)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._generate_context_menu)
 
-        self._clear_action = QAction('Clear', self)
-        self._clear_action.triggered.connect(lambda: self.clear())
-        self.addAction(self._clear_action)
+    def __getattr__(self, attr):
+        """
+        Fall back to the buffer object if an attribute cannot be found
+        """
+
+        return getattr(self._buffer, attr)
+
+    def enterEvent(self, event):
+        self.setFocus()
+
+    def write(self, msg):
+        """
+        Add message to the console's output, on a new line
+        :param msg: str
+        """
+
+        self.insertPlainText(msg + '\n')
+        self.moveCursor(QTextCursor.End)
+        self._buffer.write(unicode(msg))
+        if self._logger:
+            self._logger.debug('{}\n'.format(msg))
+
+    def write_error(self, msg):
+        """
+        Adds an error message to the console
+        :param msg: str
+        """
+
+        msg_html = "<font color=\"Red\">ERROR: " + msg + "\n</font><br>"
+        msg = 'ERROR: ' + msg
+        self.insertHtml(msg_html)
+        self.moveCursor(QTextCursor.End)
+        self._buffer.write(unicode(msg))
+        if self._logger:
+            self._logger.error('{}\n'.format(msg))
+
+    def write_ok(self, msg):
+        """
+        Adds an ok green message to the console
+        :param msg: str
+        """
+
+        msg_html = "<font color=\"Lime\"> " + msg + "\n</font><br>"
+        self.insertHtml(msg_html)
+        self.moveCursor(QTextCursor.End)
+        self._buffer.write(unicode(msg))
+        if self._logger:
+            self._logger.debug('{}\n'.format(msg))
+
+    def write_warning(self, msg):
+        """
+        Adds a warning yellow message to the console
+        :param msg: str
+        """
+
+        msg_html = "<font color=\"Yellow\"> " + msg + "\n</font><br>"
+        self.insertHtml(msg_html)
+        self.moveCursor(QTextCursor.End)
+        self._buffer.write(unicode(msg))
+        if self._logger:
+            self._logger.warning('{}\n'.format(msg))
+
+    def output_buffer_to_file(self, filepath):
+        pass
+
+    def _generate_context_menu(self, pos):
+        """
+        Internal function that generates context menu of the console
+        :param pos: QPos
+        :return: QMneu
+        """
+
+        menu = self.createStandardContextMenu()
+        clear_action = QAction('Clear', menu)
+        clear_action.triggered.connect(self.clear)
+        menu.addSeparator()
+        menu.addAction(clear_action)
+        # menu.addSeparator()
+        # undo_action = QAction('Undo', menu)
+        # undo_action.setShortcut('Ctrl+Z')
+        # menu.addAction(undo_action)
+        # redo_action = QAction('Redo', menu)
+        # redo_action.setShortcut('Ctrl+Y')
+        # menu.addAction(redo_action)
+        # undo_action.setEnabled(self.isUndoRedoEnabled())
+        # redo_action.setEnabled(self.isUndoRedoEnabled())
+        # undo_action.triggered.connect(self._on_undo)
+        # redo_action.triggered.connect(self._on_redo)
+        menu.popup(self.mapToGlobal(pos))
+
+    def _on_undo(self):
+        if self.isUndoRedoEnabled():
+            self.undo()
+
+    def _on_redo(self):
+        if self.isUndoRedoEnabled():
+            self.redo()

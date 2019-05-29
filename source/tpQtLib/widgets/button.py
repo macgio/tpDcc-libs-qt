@@ -454,3 +454,53 @@ class ButtonStyles(object):
     FlatStyle = FlatButtonStyle()
     Style3D = ButtonStyle3D()
     CloseStyle = CloseButtonStyle()
+
+
+class HoverButton(QPushButton, object):
+    """
+    Button widget that allows to setup different icons during mouse interaction
+    """
+
+    def __init__(self, icon=None, hover_icon=None, pressed_icon=None, parent=None):
+        super(HoverButton, self).__init__(parent)
+
+        self.normal_icon = icon
+        self.hover_icon = hover_icon
+        self.pressed_icon = pressed_icon
+        self._mouse_pressed = False
+
+        self.setIcon(self.normal_icon)
+
+    def enterEvent(self, event):
+        if self.hover_icon:
+            self.setIcon(self.hover_icon)
+        super(HoverButton, self).enterEvent(event)
+
+    def leaveEvent(self, event):
+        self.setIcon(self.normal_icon)
+        super(HoverButton, self).leaveEvent(event)
+
+    def mousePressEvent(self, event):
+        if self.rect().contains(event.pos()):
+            if self.pressed_icon:
+                self.setIcon(self.pressed_icon)
+            self._mouse_pressed = True
+        super(HoverButton, self).mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if not self.rect().contains(event.pos()):
+            self.setIcon(self.normal_icon)
+        else:
+            if self._mouse_pressed:
+                if self.pressed_icon:
+                    self.setIcon(self.pressed_icon)
+
+        super(HoverButton, self).mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if self.rect().contains(event.pos()):
+            self.setIcon(self.hover_icon)
+        else:
+            self.setIcon(self.normal_icon)
+        self._mouse_pressed = False
+        super(HoverButton, self).mouseReleaseEvent(event)

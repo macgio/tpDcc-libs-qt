@@ -35,7 +35,7 @@ if tp.is_maya():
     show_arrow_cursor_decorator = maya_decorators.show_arrow_cursor
 else:
     show_wait_cursor_decorator = decorators.empty_decorator
-    show_arrow_cursor_decorator = decorators.empty_decorator()
+    show_arrow_cursor_decorator = decorators.empty_decorator
 
 
 class LibraryConsts(object):
