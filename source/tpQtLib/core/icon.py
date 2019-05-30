@@ -43,3 +43,27 @@ class Icon(QIcon, object):
 
         icon = QIcon(pixmap)
         self.swap(icon)
+
+    def set_badge(self, x, y, w, h, color=None):
+        """
+        Set badge for the icon
+        :param x: int
+        :param y: int
+        :param w: int
+        :param h: int
+        :param color: QColor or None
+        """
+
+        color = color or QColor(240, 100, 100)
+        size = self.actualSize(QSize(256, 256))
+        pixmap = self.pixmap(size)
+        painter = QPainter(pixmap)
+        pen = QPen(color)
+        pen.setWidth(0)
+        painter.setPen(pen)
+        painter.setBrush(color)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.drawEllipse(x, y, w, h)
+        painter.end()
+        icon = QIcon(pixmap)
+        self.swap(icon)

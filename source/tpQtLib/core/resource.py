@@ -12,7 +12,7 @@ import os
 from tpQtLib.Qt.QtGui import *
 
 from tpPyUtils import folder, path
-from tpQtLib.core import qtutils, pixmap as pixmap_resource
+from tpQtLib.core import qtutils, pixmap as pixmap_resource, icon as icon_resource
 
 
 class Resource(object):
@@ -75,7 +75,7 @@ class Resource(object):
         :param name: str, name of the icon
         :param extension: str, extension of the icon
         :param color: QColor, color of the icon
-        :return: QIcon
+        :return: icon_resource.Icon
         """
 
         return cls()._icon(*args, **kwargs)
@@ -122,15 +122,15 @@ class Resource(object):
 
     def _icon(self, name, extension='png', color=None):
         """
-        Returns a QIcon object from the given resource name
+        Returns a icon_resource.Icon object from the given resource name
         :param name: str, name of the icon
         :param extension: str, extension of the icon
         :param color: QColor, color of the icon
-        :return: QIcon
+        :return: icon_resource.Icon
         """
 
         p = self._pixmap(name=name, category='icons', extension=extension, color=color)
-        return QIcon(p)
+        return icon_resource.Icon(p)
 
     def _pixmap(self, name, category='images', extension='png', color=None):
         """

@@ -13,7 +13,6 @@ from tpQtLib.Qt.QtGui import *
 
 from tpQtLib.core import animation
 
-
 class ToastWidget(QLabel, object):
     """
     Toast widget used to show quick messages to user
@@ -66,14 +65,14 @@ class ToastWidget(QLabel, object):
 
         self.setGeometry(x, y, width, height)
 
-    def setText(self, text):
+    def setText(self, *args, **kwargs):
         """
         Overrides base QLabel setText function
         Updates the size depending on the text width
         :param text: str
         """
 
-        super(ToastWidget, self).setText(text)
+        super(ToastWidget, self).setText(*args, **kwargs)
         self.updateGeometry()
 
     def show(self):
