@@ -9,9 +9,14 @@ from __future__ import print_function, division, absolute_import
 
 import os
 import json
+import shutil
 from collections import OrderedDict, Mapping
 
+import tpPyUtils
+from tpPyUtils.externals import six
 from tpPyUtils import path as path_utils
+
+from tpQtLib.widgets.library import exceptions
 
 
 def absolute_path(data, start):
@@ -180,6 +185,27 @@ def replace_json(path, old, new, count=-1):
     return data
 
 
+def generate_unique_path(path, max_attempts=1000):
+    """
+    Generates a unique path on disk
+    :param path: str
+    :param max_attempts: int
+    :return: str
+    """
+
+    attempt = 1
+    dirname, name, extension = path_utils.split_path(path)
+    path_ = '{dirname}/{name} ({number}){extension}'
+
+    while os.path.exists(path):
+        attempt += 1
+        path = path_.format(name=name, number=attempt, dirname=dirname, extension=extension)
+        if attempt >= max_attempts:
+            raise ValueError('Cannot generate unique name for path {}'.format(path))
+
+    return path
+
+
 def rename_path_in_file(path, source, target):
     """
     Renames the given source path to the given target path
@@ -206,3 +232,121 @@ def rename_path_in_file(path, source, target):
         target2 += "/"
 
     replace_json(path, source2, target2)
+
+
+def rename_path(source, target, extension=None, force=False):
+    """
+    Renames the given source path to the given destination path
+    :param source: str
+    :param target: str
+    :param extension: str
+    :param force: bool
+    :return: str
+    """
+
+    dirname = os.path.dirname(source)
+
+    if '/' not in target:
+        target = os.path.join(dir(dirname, target))
+
+    if extension and extension not in target:
+        target += extension
+
+    source = path_utils.normalize_path(source)
+    target = path_utils.normalize_path(target)
+    tpPyUtils.logger.debug('Renaming: {} > {}'.format(source, target))
+
+    if source == target and not force:
+        raise exceptions.RenamePathError('The source path and destination path are the same: {}'.format(source))
+    if os.path.exists(target) and not force:
+        raise exceptions.RenamePathError('Cannot save over an existing path: "{}"'.format(target))
+    if not os.path.exists(dirname):
+        raise exceptions.RenamePathError('The system cannot find the specified path: "{}"'.format(dirname))
+    if not os.path.exists(os.path.dirname(target)) and force:
+        os.mkdir(os.path.dirname(target))
+    if not os.path.exists(source):
+        raise exceptions.RenamePathError('The system cannot find the specified path: "{}"'.format(source))
+
+    os.rename(source, target)
+    tpPyUtils.logger.debug('Renamed: {} > {}'.format(source, target))
+
+    return target
+
+
+def copy_path(source, target):
+    """
+    Makes a copy of the given source path to the given destination path
+    :param source: str
+    :param target: str
+    :return: str
+    """
+
+    dirname = os.path.dirname(source)
+    if '/' not in target:
+        target = os.path.join(dirname, target)
+
+    source = path_utils.normalize_path(source)
+    target = path_utils.normalize_path(target)
+
+    if source == target:
+        raise IOError('The source path and destination path are the same: {}'.format(source))
+    if os.path.exists(target):
+        raise IOError('Cannot copy over an existing path: {}'.format(target))
+    if os.path.isfile(source):
+        shutil.copy(source, target)
+    else:
+        shutil.copytree(source, target)
+
+    return target
+
+
+def move_path(source, target):
+    """
+    Moves the given source path to the given destination path
+    :param source: str
+    :param target: str
+    :return: str
+    """
+
+    source = six.u(source)
+    dirname, name, extension = path_utils.split_path(source)
+    if not os.path.exists(source):
+        raise exceptions.MovePathError('No such file or directory: {}'.format(source))
+    if os.path.isdir(source):
+        target = '{}/{}{}'.format(target, name, extension)
+        target = generate_unique_path(target)
+    shutil.move(source, target)
+
+    return target
+
+
+def move_paths(source_paths, target):
+    """
+    Moves the given paths to the given destination paths
+    :param source_paths: list(str)
+    :param target: str
+    :return: list(str)
+    """
+
+    if not os.path.exists(target):
+        os.makedirs(target)
+
+    for source in source_paths or list():
+        if not source:
+            continue
+        basename = os.path.basename(source)
+        target_ = path_utils.normalize_path(os.path.join(target, basename))
+        tpPyUtils.logger.debug('Moving Content: {} > {}'.format(source, target_))
+        shutil.move(source, target_)
+
+
+def remove_path(path):
+    """
+    Removes the given path from disk
+    :param path: str
+    """
+
+    if os.path.isfile(path):
+        os.remove(path)
+    elif os.path.isdir(path):
+        shutil.rmtree(path)

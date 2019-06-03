@@ -37,17 +37,18 @@ class ToastWidget(QLabel, object):
         if self.parent():
             self.parent().installEventFilter(self)
 
-    def eventFilter(self, obj, event):
-        """
-        Overrides base QLabel eventFilter function
-        Updates the geometry when the parent widget changes size
-        :param obj: QWidget
-        :param event: QEvent
-        """
+    # def eventFilter(self, obj, event):
+    #     """
+    #     Overrides base QLabel eventFilter function
+    #     Updates the geometry when the parent widget changes size
+    #     :param obj: QWidget
+    #     :param event: QEvent
+    #     """
+    #
+    #     if event.type() == QEvent.Resize:
+    #         self.updateGeometry()
+    #     return super(ToastWidget, self).eventFilter(obj, event)
 
-        if event.type() == QEvent.Resize:
-            self.updateGeometry()
-        return super(ToastWidget, self).eventFilter(obj, event)
 
     def updateGeometry(self):
         """

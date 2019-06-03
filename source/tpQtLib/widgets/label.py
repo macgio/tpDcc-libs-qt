@@ -62,6 +62,37 @@ class ClickLabel(QLabel, object):
         super(ClickLabel, self).mousePressEvent(event)
 
 
+class RightElidedLabel(QLabel, object):
+    """
+    Custom label which supports elide right
+    """
+
+    def __init__(self, *args):
+        super(RightElidedLabel, self).__init__(*args)
+        self._text = ''
+
+    def setText(self, text):
+        """
+        Overrides base QLabel setText function
+        Used to store original text
+        :param text: str
+        """
+
+        self._text = text
+        super(RightElidedLabel, self).setText(text)
+
+    def resizeEvent(self, event):
+        """
+        Overrides base QLabel resizeEvent function
+        Modifies the text with elided text
+        :param event: QResizeEvent
+        """
+
+        metrics = QFontMetrics(self.font())
+        elided = metrics.elidedText(self._text, Qt.ElideRight, self.width())
+        super(RightElidedLabel, self).setText(elided)
+
+
 class ElidedLabel(QLabel, object):
     """
     This label elides text and adds ellipses if the text does not fit

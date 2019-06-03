@@ -21,11 +21,12 @@ import tpDccLib as tp
 
 import tpQtLib
 from tpQtLib.core import base, icon, menu, qtutils
+from tpQtLib.widgets import stack, messagebox
 from tpQtLib.widgets.library import consts, utils, library, viewer, widgets
 
 if tp.is_maya():
     from tpMayaLib.core import decorators as maya_decorators
-    show_wait_cursor_decorator = maya_decorators.repeat_static_command
+    show_wait_cursor_decorator = maya_decorators.show_wait_cursor
     show_arrow_cursor_decorator = maya_decorators.show_arrow_cursor
 else:
     show_wait_cursor_decorator = decorators.empty_decorator
@@ -50,7 +51,7 @@ class LibraryWindow(tpQtLib.MainWindow, object):
     class SidebarFrame(QFrame):
         pass
 
-    def __init__(self, parent=None, name='', path='', **kwargs):
+    def __init__(self, parent=None, name='', path='', library_icon_path=None, allow_non_path=False, **kwargs):
 
         self._dpi = 1.0
         self._items = list()
@@ -63,6 +64,8 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         self._current_item = None
         self._library = None
         self._refresh_enabled = False
+        self._library_icon_path = library_icon_path
+        self._allow_non_path = allow_non_path
 
         self._trash_enabled = consts.TRASH_ENABLED
         self._recursive_search_enabled = consts.DEFAULT_RECURSIVE_SEARCH_ENABLED
@@ -112,6 +115,9 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         self.setMinimumWidth(5)
         self.setMinimumHeight(5)
 
+        self.stack = stack.SlidingStackedWidget()
+        self.main_layout.addWidget(self.stack)
+
         lib = self.LIBRARY_CLASS(library_window=self)
         lib.dataChanged.connect(self.refresh)
         lib.searchTimeFinished.connect(self._on_search_finished)
@@ -138,6 +144,8 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         self._menubar_widget = self.MENUBAR_WIDGET_CLASS(self)
         self._sidebar_widget = self.SIDEBAR_WIDGET_CLASS(self)
 
+        sidebar_frame_lyt.addWidget(self._sidebar_widget)
+
         self._search_widget = self.SEARCH_WIDGET_CLASS(self)
         self._menubar_widget.addWidget(self._search_widget)
 
@@ -146,17 +154,25 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         self._splitter.setHandleWidth(2)
         self._splitter.setChildrenCollapsible(False)
 
-        self._splitter.insertWidget(0, self._sidebar_frame)
-        self._splitter.insertWidget(1, self._viewer)
-        self._splitter.insertWidget(2, self._preview_frame)
+        self._splitter.addWidget(self._sidebar_frame)
+        self._splitter.addWidget(self._viewer)
+        # self._splitter.insertWidget(2, self._preview_frame)
 
         self._splitter.setStretchFactor(0, False)
         self._splitter.setStretchFactor(1, True)
         self._splitter.setStretchFactor(2, False)
 
-        self.main_layout.addWidget(self._menubar_widget)
-        self.main_layout.addWidget(self._splitter)
-        self.main_layout.addWidget(self._status_widget)
+        base_widget = QWidget()
+        base_layout = QVBoxLayout()
+        base_layout.setContentsMargins(0, 0, 0, 0)
+        base_layout.setSpacing(0)
+        base_widget.setLayout(base_layout)
+        base_layout.addWidget(self._menubar_widget)
+        base_layout.addWidget(self._splitter)
+        base_layout.addWidget(self._status_widget)
+
+        self.stack.addWidget(base_widget)
+        self.stack.addWidget(self._preview_frame)
 
         self._sort_by_menu.set_library(lib)
         self._group_by_menu.set_library(lib)
@@ -177,22 +193,21 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         icon_color = self.icon_color()
         name = 'New Item'
         icon = tpQtLib.resource.icon('add')
-        icon.set_color(icon_color)
+        # icon.set_color(icon_color)
         tip = 'Add a new item to the selected folder'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_new_menu)
 
         name = 'Filters'
         icon = tpQtLib.resource.icon('filter')
-        icon.set_color(icon_color)
+        # icon.set_color(icon_color)
         tip = 'Filter the current results by type.\nCtrl + Click will hide the ohters and show the selected one.'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_filter_by_menu)
 
         name = 'View'
-        icon = tpQtLib.resource.icon('view')
-        icon.set_color(icon_color)
+        icon = tpQtLib.resource.icon('add')
+        # icon.set_color(icon_color)
         tip = 'Choose to show/hide both the preview and navigation pane\nCtrl + click will hide the menu bar as well.'
         self.add_menubar_action(name, icon, tip, callback=self._on_toggle_view)
-
 
     # def event(self, ev):
     #     """
@@ -294,6 +309,18 @@ class LibraryWindow(tpQtLib.MainWindow, object):
 
         self._is_loaded = flag
 
+    def set_sizes(self, sizes):
+        """
+        Set sizes of window splitters
+        :param sizes: list(int, int, int)
+        """
+
+        f_size, c_size, p_size = sizes
+        p_size = p_size if p_size > 0 else 200
+        f_size = f_size if f_size > 0 else 120
+        self._splitter.setSizes([f_size, c_size, p_size])
+        self._splitter.setStretchFactor(1, 1)
+
     def is_locked(self):
         """
         Returns whether the library is locked or not
@@ -337,6 +364,13 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         self.refresh_sidebar()
         self.update_window_title()
 
+    def update_window_title(self):
+        """
+        Updates the window title
+        """
+
+        pass
+
     def name(self):
         """
         Return the name of the library
@@ -346,7 +380,7 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         if not self._library:
             return
 
-        return self._library.name
+        return self._library.name()
 
     def path(self):
         """
@@ -357,7 +391,7 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         if not self._library:
             return
 
-        return self._library.path
+        return self._library.path()
 
     def set_path(self, path):
         """
@@ -375,6 +409,9 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         if not os.path.exists(library.data_path()):
             library.sync()
 
+        if self.stack.currentIndex() != 0:
+            self.stack.slide_in_index(0)
+
         self.refresh()
         self.library().search()
         self.update_preview_widget()
@@ -385,14 +422,18 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         :param create_widget: QWidget
         """
 
+        if not create_widget:
+            return
+
         self.set_preview_widget_visible(True)
         self.viewer().clear_selection()
 
-        fsize, rsize, psize = self._splitter.sizes()
-        if psize < 150:
-            self.set_sizes((fsize, rsize, 180))
+        # fsize, rsize, psize = self._splitter.sizes()
+        # if psize < 150:
+        #     self.set_sizes((fsize, rsize, 180))
 
         self.set_preview_widget(create_widget)
+        self.stack.slide_in_index(1)
 
     def refresh(self):
         """
@@ -416,6 +457,7 @@ class LibraryWindow(tpQtLib.MainWindow, object):
 
         self.reload_stylesheet()
         settings = self.read_settings()
+        self.set_settings(settings)
 
     def read_settings(self):
         """
@@ -423,8 +465,8 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         :return: dict
         """
 
-        print('hoalal')
-        print(self._settings)
+        key = self.name()
+        return self.settings.get(key, {})
 
     def save_settings(self, settings=None):
         """
@@ -485,6 +527,15 @@ class LibraryWindow(tpQtLib.MainWindow, object):
 
         return settings
 
+    def set_theme_settings(self, settings):
+        """
+        Sets the theme from the given settings
+        :param settings: dict
+        :return:
+        """
+
+        pass
+
     def set_settings(self, settings):
         """
         Set the library window settings from the given dictionary
@@ -522,7 +573,7 @@ class LibraryWindow(tpQtLib.MainWindow, object):
 
             sidebar_visible = settings.get('sidebarWidgetVisible')
             if sidebar_visible:
-                self.set_folders_widget_visible(sidebar_visible)
+                self.set_sidebar_widget_visible(sidebar_visible)
 
             menubar_visible = settings.get('menuBarWidgetVisible')
             if menubar_visible:
@@ -822,12 +873,15 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         """
 
         path = self.path()
-        if not path:
-            return self.show_hello_dialog()
-        elif not os.path.exists(path):
-            return self.show_path_error_dialog()
+        if not path and self._allow_non_path:
+            return
+        else:
+            if not path:
+                return self.show_hello_dialog()
+            elif not os.path.exists(path):
+                return self.show_path_error_dialog()
 
-        self.update_sidebar()
+            self.update_sidebar()
 
     def update_sidebar(self):
         """
@@ -1238,19 +1292,6 @@ class LibraryWindow(tpQtLib.MainWindow, object):
 
         progress_bar = self.status_widget().progress_bar()
 
-    @show_arrow_cursor_decorator
-    def show_hello_dialog(self):
-        """
-        This function is called when there is not root path set for the library
-        """
-
-        name = self.name()
-
-        title = 'Welcome'
-        # title = title.format(self.manager().)
-
-        print('SHOWING HELLO DILA')
-
     """
     ##########################################################################################
     THEMES/STYLES
@@ -1333,6 +1374,86 @@ class LibraryWindow(tpQtLib.MainWindow, object):
 
         tpQtLib.logger.debug(msg)
 
+    @show_arrow_cursor_decorator
+    def show_hello_dialog(self):
+        """
+        This function is called when there is not root path set for the library
+        """
+
+        text = 'Please choose a folder location for storing the data'
+        dialog = messagebox.create_message_box(None, 'Welcome {}'.format(self.name()), text, header_pixmap=self._library_icon_path)
+        dialog.accepted.connect(self.show_change_path_dialog)
+        dialog.exec_()
+
+    @show_arrow_cursor_decorator
+    def show_path_error_dialog(self):
+        """
+        This function is called when the root path does not exists during refresh
+        """
+
+        path = self.path()
+        text = 'The current root path does not exists "{}". Please select a new root path to continue.'.format(path)
+        dialog = messagebox.create_message_box(self, 'Path Error', text)
+        dialog.show()
+        dialog.accepted.connect(self.show_change_path_dialog)
+
+    def show_change_path_dialog(self):
+        """
+        Shows a file browser dialog for changing the root path
+        :return: str
+        """
+
+        path = self._show_change_path_dialog()
+        if path:
+            self.set_path(path)
+        else:
+            self.refresh()
+
+    def show_info_dialog(self, title, text):
+        """
+        Function that shows an information dialog to the user
+        :param title: str
+        :param text: str
+        :return: QMessageBox.StandardButton
+        """
+
+        buttons = QMessageBox.Ok
+        return messagebox.MessageBox.question(self, title, text, buttons=buttons)
+
+    def show_question_dialog(self, title, text, buttons):
+        """
+        Function that shows a question dialog to the user
+        :param title: str
+        :param text: str
+        :param buttons: list(QMessageBox.StandardButton)
+        :return: QMessageBox.StandardButton
+        """
+
+        buttons = buttons or QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel
+        return messagebox.MessageBox.question(self, title, text, buttons=buttons)
+
+    def show_error_dialog(self, title, text):
+        """
+        Function that shows an error dialog to the user
+        :param title: str
+        :param text: str
+        :return: QMessageBox.StandardButton
+        """
+
+        self.show_error_message(text)
+        return messagebox.MessageBox.critical(self, title, text)
+
+    def show_exception_dialog(self, title, text):
+        """
+        Function that shows an exception dialog to the user
+        :param title: str
+        :param text: str
+        :return: QMessageBox.StandardButton
+        """
+
+        tpQtLib.logger.exception(text)
+        self.show_error_dialog(title, text)
+
     """
     ##########################################################################################
     OTHERS
@@ -1371,7 +1492,7 @@ class LibraryWindow(tpQtLib.MainWindow, object):
             icon = tpQtLib.resource.icon('view_all')
         else:
             icon = tpQtLib.resource.icon('view_compact')
-        icon.set_color(self.icon_color())
+        # icon.set_color(self.icon_color())
         action.setIcon(icon)
 
     def update_filters_button(self):
@@ -1381,7 +1502,7 @@ class LibraryWindow(tpQtLib.MainWindow, object):
 
         action = self.menubar_widget().find_action('Filters')
         icon = tpQtLib.resource.icon('filter')
-        icon.set_color(self.icon_color())
+        # icon.set_color(self.icon_color())
         if self._filter_by_menu.is_active():
             icon.set_badge(18, 1, 9, 9, color=consts.ICON_BADGE_COLOR)
         action.setIcon(icon)
@@ -1436,9 +1557,9 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         for cls in sorted(self.manager().registered_items(), key=_key):
             action = cls.create_action(menu, self)
             if action:
-                action_icon =icon.Icon(action.icon())
-                action_icon.set_color(self.icon_color())
-                action.setIcon(icon)
+                action_icon = icon.Icon(action.icon())
+                # action_icon.set_color(self.icon_color())
+                action.setIcon(action_icon)
                 menu.addAction(action)
 
         return menu
@@ -1496,6 +1617,33 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         context_menu.addSeparator()
 
         return context_menu
+
+    @show_arrow_cursor_decorator
+    def _show_change_path_dialog(self):
+        """
+        Internal function that opens a file dialog for setting a new root path
+        :return: str
+        """
+
+        path = self.path()
+        directory = path
+        if not directory:
+            directory = os.path.expanduser('~')
+        dialog = QFileDialog(None, Qt.WindowStaysOnTopHint)
+        dialog.setWindowTitle('Choose the root location')
+        dialog.setDirectory(directory)
+        dialog.setFileMode(QFileDialog.DirectoryOnly)
+        if dialog.exec_() == QFileDialog.Accepted:
+            selected_files = dialog.selectedFiles()
+            if selected_files:
+                path = selected_files[0]
+
+        if not path:
+            return
+
+        path = path_utils.normalize_path(path)
+
+        return path
 
     """
     ##########################################################################################

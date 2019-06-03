@@ -26,8 +26,12 @@ class Dialog(QDialog, object):
     Class to create basic Maya docked windows
     """
 
-    def __init__(self, name, **kwargs):
-        super(Dialog, self).__init__(parent=tp.Dcc.get_main_window())
+    def __init__(self, name, parent=None, **kwargs):
+
+        if not parent:
+            parent = tp.Dcc.get_main_window()
+
+        super(Dialog, self).__init__(parent=parent)
 
         # Window needs to have a unique name to avoid problems with Maya workspaces
         self._callbacks = list()
@@ -60,13 +64,30 @@ class Dialog(QDialog, object):
                 pass
         self._callbacks = list()
 
-    def center(self):
+    def set_width_height(self, width, height):
+        """
+        Sets the width and height of the dialog
+        :param width: int
+        :param height: int
+        """
+
+        x = self.geometry().x()
+        y = self.geometry().y()
+        self.setGeometry(x, y, width, height)
+
+    def center(self, to_cursor=False):
         """
         Move the dialog to the center of the current window
         """
 
         frame_geo = self.frameGeometry()
-        frame_geo.moveCenter(QDesktopWidget().availableGeometry().center())
+        if to_cursor:
+            pos = QApplication.desktop().cursor().pos()
+            screen = QApplication.desktop().screenNumber(pos)
+            center_point = QApplication.desktop().screenGeometry(screen).center()
+        else:
+            center_point = QDesktopWidget().availableGeometry().center()
+        frame_geo.moveCenter(center_point)
         self.move(frame_geo.topLeft())
 
     def ui(self):

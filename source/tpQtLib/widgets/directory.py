@@ -248,8 +248,7 @@ class SelectFolder(QWidget, object):
         main_layout.setSpacing(2)
         self.setLayout(main_layout)
 
-        self._folder_label = QLabel('{0}'.format(self._label_text)) if self._label_text == '' else QLabel(
-            '{0}:'.format(self._label_text))
+        self._folder_label = QLabel('{0}'.format(self._label_text)) if self._label_text == '' else QLabel('{0}:'.format(self._label_text))
         self._folder_line = FolderEditLine()
         self._folder_line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         if os.path.exists(self._directory):
@@ -260,6 +259,7 @@ class SelectFolder(QWidget, object):
             self._folder_btn = button.IconButton(icon=folder_icon, icon_padding=2, button_style=button.ButtonStyles.FlatStyle)
         else:
             self._folder_btn = button.BaseButton('Browse...')
+        self._folder_btn.setMaximumHeight(20)
 
         for widget in [self._folder_label, self._folder_line, self._folder_btn]:
             main_layout.addWidget(widget)

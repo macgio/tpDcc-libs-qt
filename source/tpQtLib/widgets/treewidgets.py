@@ -848,7 +848,7 @@ class FileTreeWidget(TreeWidget, object):
     EXCLUDE_EXTENSIONS = list()
 
     def __init__(self, parent=None):
-        self.directory = None
+        self._directory = None
         super(FileTreeWidget, self).__init__(parent)
 
         self.setHeaderLabels(self.HEADER_LABELS)
@@ -865,7 +865,7 @@ class FileTreeWidget(TreeWidget, object):
         self.delete_tree_item_children(tree_item)
 
         path_str = self.get_tree_item_path_string(tree_item)
-        full_path_str = path.join_path(self.directory, path_str)
+        full_path_str = path.join_path(self._directory, path_str)
         files = self._get_files(full_path_str)
 
         self._add_items(files, tree_item)
@@ -880,7 +880,7 @@ class FileTreeWidget(TreeWidget, object):
         """
 
         path_str = self.get_item_path_string(tree_item)
-        return path.join_path(self.directory, path_str)
+        return path.join_path(self._directory, path_str)
 
     def set_directory(self, directory, refresh=True):
         """
@@ -891,7 +891,7 @@ class FileTreeWidget(TreeWidget, object):
 
         tpQtLib.logger.debug('Setting Tree Tasks directory: {}'.format(directory))
 
-        self.directory = directory
+        self._directory = directory
         if refresh:
             self.refresh()
 
@@ -904,12 +904,12 @@ class FileTreeWidget(TreeWidget, object):
         current_item = self._current_item
         if current_item:
             item_path = self.get_tree_item_path_string(self._current_item)
-            item_path = path.join_path(self.directory, item_path)
+            item_path = path.join_path(self._directory, item_path)
             if path.is_file(item_path):
                 item_path = path.get_dirname(item_path)
                 current_item = self._current_item.parent()
         else:
-            item_path = self.directory
+            item_path = self._directory
 
         if not name:
             name = self.NEW_ITEM_NAME
@@ -969,7 +969,7 @@ class FileTreeWidget(TreeWidget, object):
         """
 
         if directory is None:
-            directory = self.directory
+            directory = self._directory
 
         return folder.get_files_and_folders(directory)
 
@@ -1043,7 +1043,7 @@ class FileTreeWidget(TreeWidget, object):
             item.setSizeHint(self._title_text_index, size)
 
         # Set item text
-        item_path = path.join_path(self.directory, path_name)
+        item_path = path.join_path(self._directory, path_name)
         sub_files = folder.get_files_and_folders(item_path)
         item.setText(self._title_text_index, file_name)
 
@@ -1267,8 +1267,8 @@ class HistoryTreeWidget(FileTreeWidget, object):
 
     # region Override Functions
     def _get_files(self):
-        if self.directory:
-            version_file = version.VersionFile(file_path=self.directory)
+        if self._directory:
+            version_file = version.VersionFile(file_path=self._directory)
             version_data = version_file.get_organized_version_data()
             if version_data:
                 self._padding = len(str(len(version_data)))

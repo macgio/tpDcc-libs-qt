@@ -40,7 +40,7 @@ class LibraryViewerDelegate(QStyledItemDelegate, object):
         :return: QSize
         """
 
-        item = self.viewr().item_from_index(index)
+        item = self.viewer().item_from_index(index)
         if isinstance(item, items.LibraryGroupItem):
             return item.sizeHint()
 
@@ -360,6 +360,35 @@ class LibraryViewer(base.BaseWidget, object):
         else:
             return self.tree_widget().item_at(pos)
 
+    def item_data(self, column_labels):
+        """
+        Returns all column data for the given column labels
+        :param column_labels: list(str)
+        :return: dict
+        """
+
+        data = dict()
+        for item in self.items():
+            key = item.id()
+            for column_label in column_labels:
+                column = self.treeWidget().column_from_label(column_label)
+                value = item.data(column, Qt.EditRole)
+                data.setdefault(key, dict())
+                data[key].setdefault(column_label, value)
+
+        return data
+
+    def set_item_data(self, data):
+        """
+        Sets the item data for all the curren items
+        :param data: dict
+        """
+
+        for item in self.items():
+            key = item.id()
+            if key in data:
+                item.set_item_data(data[key])
+
     def insert_items(self, items, item_at=None):
         """
         Inserts the given items at the given position
@@ -384,6 +413,21 @@ class LibraryViewer(base.BaseWidget, object):
         group_item.set_children(children)
 
         return group_item
+
+    def update_columns(self):
+        """
+        Updates the columns labels with the current item data
+        """
+
+        self.treeWidget().update_header_labels()
+
+    def column_labels(self):
+        """
+        Returns all the column labels
+        :return: list(str)
+        """
+
+        return self.treeWidget().column_labels()
 
     def refresh(self):
         """
@@ -566,6 +610,51 @@ class LibraryViewer(base.BaseWidget, object):
 
     """
     ##########################################################################################
+    SETTINGS
+    ##########################################################################################
+    """
+
+    def settings(self):
+        """
+        Returns the current state of the widget
+        :return: dict
+        """
+
+        settings = dict()
+        settings['columnLabels'] = self.column_labels()
+        settings['padding'] = self.padding()
+        settings['spacing'] = self.spacing()
+        settings['zoomAmount'] = self.zoom_amount()
+        settings['selectedPaths'] = self.selected_paths()
+        settings['textVisible'] = self.is_item_text_visible()
+        settings.update(self.treeWidget().settings())
+
+        return settings
+
+    def set_settings(self, settings):
+        """
+        Sets the current state of the widget
+        :param settings: dict
+        """
+
+        self.set_toast_enabled(False)
+        padding = settings.get('padding', 5)
+        spacing = settings.get('spacing', 2)
+        zoom_amount = settings.get('zoomAmount', 100)
+        selected_paths = settings.get('selectedPaths', list())
+        item_text_visible = settings.get('textVisible', True)
+        self.set_padding(padding)
+        self.set_spacing(spacing)
+        self.set_zoom_amount(zoom_amount)
+        self.select_paths(selected_paths)
+        self.set_item_text_visible(item_text_visible)
+        self.tree_widget().set_settings(settings)
+        self.set_toast_enabled(True)
+
+        return True
+
+    """
+    ##########################################################################################
     TOAST WIDGET
     ##########################################################################################
     """
@@ -628,6 +717,14 @@ class LibraryViewer(base.BaseWidget, object):
         """
 
         self.tree_widget().setColumnHidden(column, hidden)
+
+    def column_labels(self):
+        """
+        Set all the column labels
+        :return: list(str)
+        """
+
+        return self.tree_widget().column_labels()
 
     def set_column_labels(self, labels):
         """
@@ -713,6 +810,58 @@ class LibraryViewer(base.BaseWidget, object):
         """
 
         return self._tree_widget.selectedItems()
+
+    def set_item_hidden(self, item, value):
+        """
+        Sets the visibilty of given item
+        :param item: QTreeWidgetItem
+        :param value: bool
+        """
+
+        item.setHidden(value)
+
+    def set_items_hidden(self, items, value):
+        """
+        Set the visibility of given items
+        :param items: list(QTreeWidgetItem)
+        :param value: bool
+        """
+
+        for item in items:
+            self.set_item_hidden(item, value)
+
+    def selected_paths(self):
+        """
+        Returns the selected item paths
+        :return: list(str)
+        """
+
+        paths = list()
+        for item in self.selected_items():
+            path = item.url().toLocalFile()
+            paths.append(path)
+
+        return paths
+
+    def select_paths(self, paths):
+        """
+        Selected the items that have the given paths
+        :param paths: list(str)
+        """
+
+        for item in self.items():
+            path = item.id()
+            if path in paths:
+                item.setSelected(True)
+
+    def select_items(self, items):
+        """
+        Select the given items
+        :param items: list(LibraryItem)
+        """
+
+        paths = [item.id() for item in items]
+        self.select_paths(paths)
 
     def clear_selection(self):
         """

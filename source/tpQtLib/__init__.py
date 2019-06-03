@@ -12,7 +12,7 @@ import inspect
 
 from tpPyUtils import importer
 from tpQtLib.core import resource as resource_utils
-from tpQtLib.core import window
+from tpQtLib.core import dialog, window
 
 main = __import__('__main__')
 
@@ -23,6 +23,7 @@ resource = None
 MainWindow = window.MainWindow
 DockWindow = window.DockWindow
 SubWindow = window.SubWindow
+Dialog = dialog.Dialog
 
 # =================================================================================
 

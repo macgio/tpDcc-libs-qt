@@ -440,7 +440,7 @@ class Library(QObject, object):
         for item in items:
             key = item.id()
             if key in data:
-                item.set_item_idata(data[key])
+                item.set_item_data(data[key])
 
     def update_paths(self, paths, data):
         """
