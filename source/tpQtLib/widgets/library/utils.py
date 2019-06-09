@@ -8,15 +8,410 @@ Module that contains utils functions used by libraries
 from __future__ import print_function, division, absolute_import
 
 import os
+import abc
 import json
+import time
 import shutil
+import locale
+import getpass
 from collections import OrderedDict, Mapping
 
 import tpPyUtils
 from tpPyUtils.externals import six
-from tpPyUtils import path as path_utils
+from tpPyUtils import python, decorators, path as path_utils
 
+import tpQtLib
+import tpDccLib as tp
 from tpQtLib.widgets.library import exceptions
+
+if tp.is_maya():
+    from tpMayaLib.core import decorators as maya_decorators
+    show_wait_cursor_decorator = maya_decorators.show_wait_cursor
+else:
+    show_wait_cursor_decorator = decorators.empty_decorator
+
+
+class Node(object):
+
+    @classmethod
+    def ls(cls, objects=None, selection=False):
+        if objects is None and not selection:
+            objects = tp.Dcc.all_scene_objects(full_path=False)
+        else:
+            objects = objects or list()
+            if selection:
+                objects.extend(tp.Dcc.selected_nodes(full_path=False) or [])
+
+        return [cls(name) for name in objects]
+
+    def __init__(self, name, attributes=None):
+        try:
+            self._name = name.encode('ascii')
+        except UnicodeEncodeError:
+            raise UnicodeEncodeError('Not a valid ASCII name "{}".'.format(name))
+
+        self._short_name = None
+        self._namespace = None
+        self._mirror_axis = None
+        self._attributes = attributes
+
+    def __str__(self):
+        return self.name()
+
+    def name(self):
+        return self._name
+
+    def attributes(self):
+        return self._attributes
+
+    def short_name(self):
+        if self._short_name is None:
+            self._short_name = self.name().split('|')[-1]
+        return self._short_name
+
+    def to_short_name(self):
+        names = tp.Dcc.list_nodes(node_name=self.short_name())
+        if len(names) == 1:
+            return Node(names[0])
+        elif len(names) > 1:
+            raise exceptions.MoreThanOneObjectFoundError('More than one object found {}'.format(str(names)))
+        else:
+            raise exceptions.NoObjectFoundError('No object found {}'.format(self.short_name()))
+
+    def namespace(self):
+        if self._namespace is None:
+            self._namespace = ':'.join(self.short_name().split(':')[:-1])
+        return self._namespace
+
+    def strip_first_pipe(self):
+        if self.name().startswith('|'):
+            self._name = self.name()[1:]
+
+    def exists(self):
+        return tp.Dcc.object_exists(self.name())
+
+    def is_long(self):
+        return '|' in self.name()
+
+    def is_referenced(self):
+        return tp.Dcc.node_is_referenced(self.name())
+
+    def set_mirror_axis(self, mirror_axis):
+        """
+        Sets node mirror axis
+        :param mirror_axis: list(int)
+        """
+
+        self._mirror_axis = mirror_axis
+
+    def set_namespace(self, namespace):
+        """
+        Sets namespace for current node
+        :param namespace: str
+        """
+
+        new_name = self.name()
+        old_name = self.name()
+
+        new_namespace = namespace
+        old_namespace = self.namespace()
+
+        if new_namespace == old_namespace:
+            return self.name()
+
+        if old_namespace and new_namespace:
+            new_name = old_name.replace(old_namespace + ":", new_namespace + ":")
+        elif old_namespace and not new_namespace:
+            new_name = old_name.replace(old_namespace + ":", "")
+        elif not old_namespace and new_namespace:
+            new_name = old_name.replace("|", "|" + new_namespace + ":")
+            if new_namespace and not new_name.startswith("|"):
+                new_name = new_namespace + ":" + new_name
+
+        self._name = new_name
+
+        self._short_name = None
+        self._namespace = None
+
+        return self.name()
+
+
+class TransferObject(object):
+
+    @classmethod
+    def from_path(cls, path):
+        """
+        Returns a new transfer instance for the given path
+        :param path: str
+        :return: TransferObject
+        """
+
+        t = cls()
+        t.set_path(path)
+        t.read()
+
+        return t
+
+    @classmethod
+    def from_objects(cls, objects, **kwargs):
+        """
+        Returns a new transfer instance for the given objects
+        :param objects: list(str)
+        :param kwargs: dict
+        :return: TransferObject
+        """
+
+        t = cls(**kwargs)
+        for obj in objects:
+            t.add(obj)
+
+        return t
+
+    @staticmethod
+    def read_json(path):
+        """
+        Reeads the given JSON path
+        :param path: str
+        :return: dict
+        """
+
+        with open(path, 'r') as f:
+            data = f.read() or '{}'
+
+        data = json.loads(data)
+
+        return data
+
+    def __init__(self):
+        self._path = None
+        self._namespaces = None
+        self._data = {'metadata': {}, 'objects': {}}
+
+    @abc.abstractmethod
+    def load(self, *args, **kwargs):
+        pass
+
+    def path(self):
+        """
+        Returns the disk location for the transfer object
+        :return: str
+        """
+
+        return self._path
+
+    def set_path(self, path):
+        """
+        Set the disk location for loading and saving the transfer object
+        :param path: str
+        """
+
+        self._path = path
+
+    def validate(self, **kwargs):
+        """
+        Validates the given keyword arguments for the current IO object
+        :param kwargs: dict
+        """
+
+        namespaces = kwargs.get('namespaces')
+        if namespaces is not None:
+            scene_namespaces = tp.Dcc.scene_namespaces()
+            for namespace in namespaces:
+                if namespace and namespace not in scene_namespaces:
+                    msg = 'The namespace "{}" does not exists in the scene! Please choose a namespace which exists.'.format(namespace)
+                    raise ValueError(msg)
+
+    def mtime(self):
+        """
+        Returns the modification datetime of file path
+        :return: str
+        """
+
+        return os.path.getmtime(self.path())
+
+    def ctime(self):
+        """
+        Returns the creation datetime of file path
+        :return: str
+        """
+
+        return os.path.getctime(self.path())
+
+    def data(self):
+        """
+        Returns all the data for the transfer object
+        :return: dict
+        """
+
+        return self._data
+
+    def set_data(self, data):
+        """
+        Sets the data for the transfer object
+        :param data: dict
+        """
+
+        self._data = data
+
+    def objects(self):
+        """
+        Returns all the object data
+        :return: dict
+        """
+
+        return self.data().get('objects', {})
+
+    def object(self, name):
+        """
+        Returns the data for the given object name
+        :param name: str
+        :return: dict
+        """
+
+        return self.objects().get(name, {})
+
+    def create_object_data(self, name):
+        """
+        Creates the object data for the given object name
+        :param name: str
+        :return: dict
+        """
+
+        return dict()
+
+    def namespaces(self):
+        """
+        Returns the namespaces contained in the transfer object
+        :return: list(str)
+        """
+
+        if self._namespaces is None:
+            group = group_objects(self.objects())
+            self._namespaces = group.keys()
+
+        return self._namespaces
+
+    def count(self):
+        """
+        Returns the number of objects in the transfer object
+        :return: int
+        """
+
+        return len(self._objects() or list())
+
+    def add(self, objects):
+        """
+        Adds the given objects to the transfer object
+        :param objects: str or list(str)
+        """
+
+        objects = python.force_list(objects)
+
+        for name in objects:
+            self.objects()[name] = self.create_object_data(name)
+
+    def remove(self, objects):
+        """
+        Removes the given objecst from the transfer object
+        :param objects: str or list(str)
+        """
+
+        objects = python.force_list(objects)
+
+        for obj in objects:
+            del self.objects()[obj]
+
+    def metadata(self):
+        """
+        Returns the current metadata for the transfer object
+        :return: dict
+        """
+
+        return self.data().get('metadata', dict())
+
+    def set_metadata(self, key, value):
+        """
+        Sets the given key and value in the metadata
+        :param key: str
+        :param value: int or str or float or dict
+        """
+
+        self.data()['metadata'][key] = value
+
+    def update_metadata(self, metadata):
+        """
+        Updates the given key and value in the metadata
+        :param metadata:dict
+        """
+
+        self.data()['metadata'].update(metadata)
+
+    def read(self, path=''):
+        """
+        Returns the data from the path set on the Transfer Object
+        :param path: str
+        :return: dict
+        """
+
+        path = path or self.path()
+        data = self.read_json(path)
+        self.set_data(data)
+
+    def dump(self, data=None):
+        """
+        Dumps JSON info
+        :param data: str or dict
+        """
+
+        if data is None:
+            data = self.data()
+
+        return json.dumps(data, indent=2)
+
+    @show_wait_cursor_decorator
+    def save(self, path):
+        """
+        Saves the current metadata ond object data to the given path
+        :param path: str
+        """
+
+        tpQtLib.logger.info('Saving object: {}'.format(path))
+
+        encoding = locale.getpreferredencoding()
+        user = getpass.getuser()
+        if user:
+            user = user.decode(encoding)
+
+        ctime = str(time.time()).split('.')[0]
+        references = get_reference_data(self.objects())
+
+        self.set_metadata('user', user)
+        self.set_metadata('ctime', ctime)
+        self.set_metadata('version', '1.0.0')
+        self.set_metadata('references', references)
+        self.set_metadata('mayaVersion', str(tp.Dcc.get_version())),
+        self.set_metadata('mayaSceneFile', tp.Dcc.scene_name())
+
+        metadata = {'metadata': self.metadata()}
+        data = self.dump(metadata)[:-1] + ','
+
+        objects = {'objects': self.objects()}
+        data += self.dump(objects)[1:]
+
+        dirname = os.path.dirname(path)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+
+        with open(path, 'w') as f:
+            f.write(str(data))
+
+        tpQtLib.logger.debug('Saved object: {}'.format(path))
+
+
+
+
+
+
 
 
 def absolute_path(data, start):
@@ -350,3 +745,54 @@ def remove_path(path):
         os.remove(path)
     elif os.path.isdir(path):
         shutil.rmtree(path)
+
+
+def group_objects(objects):
+    """
+    Group objects as Nodes
+    :param objects: list(str)
+    :return: dict
+    """
+
+    results = dict()
+    for name in objects:
+        node = Node(name)
+        results.setdefault(node.namespace(), list())
+        results[node.namespace()].append(name)
+
+    return results
+
+
+def get_reference_paths(objects, without_copy_number=False):
+    """
+    Retursn the reference paths for the given objects
+    :param objects: list(str)
+    :param without_copy_number: bool
+    :return: list(str)
+    """
+
+    paths = list()
+    for obj in objects:
+        if tp.Dcc.node_is_referenced(obj):
+            paths.append(tp.Dcc.node_reference_path(obj, without_copy_number=without_copy_number))
+
+    return list(set(paths))
+
+def get_reference_data(objects):
+    """
+    Retruns the reference paths for the given objects
+    :param objects: list(str)
+    :return: list(dict)
+    """
+
+    data = list()
+    paths = get_reference_paths(objects)
+    for path in paths:
+        data.append({
+            'filename': path,
+            'unresolved': tp.Dcc.node_reference_path(path, without_copy_number=True),
+            'namespace': tp.Dcc.node_namespace(path),
+            'node': tp.Dcc.node_is_referenced(path)
+        })
+
+    return data

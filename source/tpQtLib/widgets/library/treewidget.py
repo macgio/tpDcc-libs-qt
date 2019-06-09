@@ -452,7 +452,7 @@ class LibraryTreeWidget(mixin.LibraryViewWidgetMixin, QTreeWidget):
                 if width < 5:
                     width = 100
                 self.setColumnWidth(column, width)
-                hidden = settings[label].et('hidden', False)
+                hidden = settings[label].get('hidden', False)
                 self.setColumnHidden(column, hidden)
             else:
                 tpQtLib.logger.debug('Cannot set the column setting for header label: {}'.format(label))

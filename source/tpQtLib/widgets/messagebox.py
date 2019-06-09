@@ -12,7 +12,7 @@ from tpQtLib.Qt.QtWidgets import *
 
 import tpQtLib
 import tpDccLib as tp
-from tpQtLib.core import animation, qtutils
+from tpQtLib.core import animation, qtutils, theme
 
 
 def create_message_box(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None, header_color=None, enable_input_edit=False, enable_dont_show_checkbox=False):
@@ -38,7 +38,14 @@ def create_message_box(parent, title, text, width=None, height=None, buttons=Non
     if header_pixmap:
         mb.setPixmap(header_pixmap)
 
-    header_color = header_color or 'rgb(50, 50, 150, 200)'
+    try:
+        theme_to_apply = parent.theme()
+    except AttributeError:
+        theme_to_apply = theme.Theme()
+
+    mb.setStyleSheet(theme_to_apply.stylesheet())
+
+    header_color = header_color or theme_to_apply.accent_color().to_string() or "rgb(50, 150, 200)"
     mb.set_header_color(header_color)
     mb.setWindowTitle(title)
     mb.set_title_text(title)
@@ -184,7 +191,7 @@ class MessageBox(tpQtLib.Dialog, object):
 
         self.setMinimumWidth(width or self.MAX_WIDTH)
         self.setMinimumHeight(height or self.MAX_HEIGHT)
-        self.setStyleSheet('background-color: rgb(68, 68, 68, 255);')
+        # self.setStyleSheet('background-color: rgb(68, 68, 68, 255);')
 
         parent = self.parent()
         if parent and parent != tp.Dcc.get_main_window():
@@ -256,7 +263,7 @@ class MessageBox(tpQtLib.Dialog, object):
 
         self.main_layout.addWidget(self._header)
         self.main_layout.addWidget(self._body)
-        self.main_layout.addWidget(self._button_box)
+        body_layout.addWidget(self._button_box)
 
         self.updateGeometry()
 

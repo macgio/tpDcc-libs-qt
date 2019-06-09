@@ -22,6 +22,143 @@ import tpQtLib
 from tpQtLib.widgets import label, color
 
 
+class FormDialog(QFrame, object):
+
+    accepted = Signal(object)
+    rejected = Signal(object)
+
+    def __init__(self, parent=None, form=None):
+        super(FormDialog, self).__init__(parent)
+
+        self._settings = None
+
+        lyt = QVBoxLayout(self)
+        lyt.setContentsMargins(0, 0, 0, 0)
+        lyt.setSpacing(0)
+        self.setLayout(lyt)
+
+        self._widgets = list()
+        self._validator = None
+
+        self._title = QLabel(self)
+        self._title.setObjectName('title')
+        self._title.setText('FORM')
+        self._description = QLabel(self)
+        self._description.setObjectName('description')
+        self._form_widget = FormWidget(self)
+        self._form_widget.setObjectName('formWidget')
+        self._form_widget.validated.connect(self._on_validated)
+        btn_layout = QHBoxLayout(self)
+        btn_layout.setContentsMargins(0, 0, 0, 0)
+        btn_layout.setSpacing(0)
+        self._accept_btn = QPushButton(self)
+        self._accept_btn.setObjectName('acceptButton')
+        self._accept_btn.setText('Accept')
+        self._accept_btn.clicked.connect(self.accept)
+        self._reject_btn = QPushButton(self)
+        self._reject_btn.setObjectName('rejectButton')
+        self._reject_btn.setText('Cancel')
+        self._reject_btn.clicked.connect(self.reject)
+        btn_layout.addSpacerItem(QSpacerItem(10, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
+        btn_layout.addWidget(self._accept_btn)
+        btn_layout.addWidget(self._reject_btn)
+
+        lyt.addWidget(self._title)
+        lyt.addWidget(self._description)
+        lyt.addWidget(self._form_widget)
+        lyt.addStretch(1)
+        lyt.addLayout(btn_layout)
+
+        if form:
+            self.set_settings(form)
+
+    def accept_button(self):
+        """
+        Returns the accept button
+        :return: QPushButton
+        """
+
+        return self._accept_btn
+
+    def reject_button(self):
+        """
+        Returns the reject button
+        :return: QPushButton
+        """
+
+        return self._reject_btn
+
+    def set_settings(self, settings):
+        """
+        Sets dialog form settings
+        :param settings: dict
+        """
+
+        self._settings = settings
+        title = settings.get("title")
+        if title is not None:
+            self._title.setText(title)
+        callback = settings.get("accepted")
+        if not callback:
+            self._settings["accepted"] = self._validate_accepted
+        callback = settings.get("rejected")
+        if not callback:
+            self._settings["rejected"] = self._validate_rejected
+        description = settings.get("description")
+        if description is not None:
+            self._description.setText(description)
+        validator = settings.get("validator")
+        if validator is not None:
+            self._form_widget.set_validator(validator)
+        layout = settings.get("layout")
+        schema = settings.get("schema")
+        if schema is not None:
+            self._form_widget.set_schema(schema, layout=layout)
+
+    def accept(self):
+        """
+        Function called when the dialog is accepted
+        """
+
+        callback = self._settings.get('accepted')
+        if callback:
+            callback(**self._form_widget.values())
+        self.close()
+
+    def reject(self):
+        """
+        Function called when the dialog is rejected
+        """
+
+        callback = self._settings.get('rejected')
+        if callback:
+            callback(**self._form_widget.default_values())
+        self.close()
+
+    def _validate_accepted(self, **kwargs):
+        """
+        Internal function called when the accept button has been clicked
+        :param kwargs: dict, default values of the form fields
+        """
+
+        self._form_widget.validator()(**kwargs)
+
+    def _validate_rejected(self, **kwargs):
+        """
+        Internal function called when reject button has been clicked
+        :param kwargs: dict, default values of the form fields
+        """
+
+        self._form_widget.validator()(**kwargs)
+
+    def _on_validated(self):
+        """
+        Internal callback function that is triggered when the has been validated
+        """
+
+        self._accept_btn.setEnabled(not self._form_widget.has_errors())
+
+
 class FormWidget(QFrame, object):
 
     accepted = Signal(object)
@@ -1123,7 +1260,7 @@ class ColorFieldWidget(FieldWidget, object):
         :param value: str
         """
 
-        self.widget().set_current_color()
+        self.widget().set_current_color(value)
 
     def _on_color_changed(self, new_color):
         """
@@ -1131,7 +1268,7 @@ class ColorFieldWidget(FieldWidget, object):
         :param new_color: QColor
         """
 
-        self.set_value(color)
+        self.set_value(new_color)
         self._on_emit_value_changed()
 
 

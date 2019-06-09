@@ -38,7 +38,7 @@ class Dialog(QDialog, object):
 
         self.setObjectName(name)
         self.setFocusPolicy(Qt.StrongFocus)
-        self.setWindowFlags(self.windowFlags() | Qt.Window)
+        # self.setWindowFlags(self.windowFlags() | Qt.Window)
 
         self.setWindowTitle(kwargs.pop('title', 'Maya Dialog'))
 
@@ -90,11 +90,15 @@ class Dialog(QDialog, object):
         frame_geo.moveCenter(center_point)
         self.move(frame_geo.topLeft())
 
+    def get_main_layout(self):
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+        return main_layout
+
     def ui(self):
         if self.main_layout is None:
-            self.main_layout = QVBoxLayout()
-            self.main_layout.setContentsMargins(0, 0, 0, 0)
-            self.main_layout.setSpacing(0)
+            self.main_layout = self.get_main_layout()
             self.setLayout(self.main_layout)
 
             title_layout = QHBoxLayout()

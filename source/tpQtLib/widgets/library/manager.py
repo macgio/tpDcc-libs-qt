@@ -13,6 +13,7 @@ from collections import OrderedDict
 from tpPyUtils import osplatform, path as path_utils
 
 import tpQtLib
+from tpQtLib.widgets.library import items
 
 try:
     from tpPyUtils.externals.scandir import walk
@@ -25,10 +26,29 @@ class LibraryManager(object):
     Class that manages library items registration
     """
 
-    def __init__(self):
+    def __init__(self, settings=None):
         super(LibraryManager, self).__init__()
 
+        self._settings = settings
         self._item_classes = OrderedDict()
+
+        self.register_item(items.LibraryFolderItem)
+
+    def settings(self):
+        """
+        Returns LibraryManager settings
+        :return: JSONSettings
+        """
+
+        return self._settings
+
+    def set_settings(self, settings):
+        """
+        Sets LibraryManager settings
+        :param settings: JSONSettings
+        """
+
+        self._settings = settings
 
     def register_item(self, cls):
         """
@@ -77,6 +97,24 @@ class LibraryManager(object):
         for ignore in self.get_ignore_paths():
             if ignore in path:
                 return None
+
+        for cls in self.registered_items():
+            if cls.match(path):
+                return cls(path, **kwargs)
+
+    def item_from_path(self, path, **kwargs):
+        """
+        Returns a new instance for the given path
+        :param path: str
+        :param kwargs: dict
+        :return: variant, LibraryItem or None
+        """
+
+        path = path_utils.normalize_path(path)
+        if self.settings():
+            for ignore in self.settings().get('ignorePaths', list()):
+                if ignore in path:
+                    return None
 
         for cls in self.registered_items():
             if cls.match(path):

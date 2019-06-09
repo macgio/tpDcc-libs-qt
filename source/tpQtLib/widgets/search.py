@@ -23,6 +23,8 @@ class SearchFindWidget(QWidget, object):
     def __init__(self, parent=None):
         super(SearchFindWidget, self).__init__(parent=parent)
 
+        self.setObjectName('SearchFindWidget')
+
         self.text = ''
         self._placeholder_text = ''
 
@@ -54,7 +56,7 @@ class SearchFindWidget(QWidget, object):
 
         self._search_line.setStyleSheet(
             """
-            QLineEdit { padding-left: %spx; padding-right: %spx; border-radius:10px; border:2px; border-color:red; } 
+            QLineEdit { padding-left: %spx; padding-right: %spx; border-radius:10px; border:2px; border-color:red; }
             """ % (self._search_button_padded_width(), self._clear_button_padded_width())
         )
         self._search_line.setMinimumSize(

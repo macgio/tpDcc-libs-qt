@@ -283,7 +283,9 @@ def create_python_qrc_file(qrc_file, py_file):
         raise RuntimeError('command {0} returned with error (code: {1}): {2}'.format(e.cmd, e.returncode, e.output))
     if not os.path.isfile(py_file):
         return
-    fileio.replace(py_file, "from PySide import QtCore", "from Qt import QtCore")
+
+
+    fileio.replace(py_file, "from PySide import QtCore", "from tpQtLib.Qt import QtCore")
 
 
 def create_qrc_file(src_paths, dst_file):

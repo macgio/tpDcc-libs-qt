@@ -43,10 +43,25 @@ class QtSettings(QSettings, object):
 
         return val
 
+    def getw(self, setting_name, default_value=None):
+        """
+        Returns the setting stored with the given name
+        :param setting_name: str
+        :param default_value: variant
+        :return:
+        """
+
+        val = self.value(self._window.objectName().upper() + '/' + setting_name)
+        if not val:
+            return default_value
+
+        return val
+
+
     def set(self, setting_name, setting_value):
         """
         Stores a new settings with the given name and the given value
-        If the given setting already exists, it will be overwrited
+        If the given setting already exists, it will be overwrite
         :param setting_name: str, setting name we want store
         :param setting_value: variant, setting value we want to store
         """
@@ -218,12 +233,16 @@ class QtSettings(QSettings, object):
                 pass
 
         result = None
+
+        if not groups:
+            return None
+
         group_name = groups[0]
         for group in groups[1:]:
             group_name += '/%s' % group
 
-        group_name += '/%s' % 'default'
         group_name += '/%s' % key
+        group_name += '/%s' % 'default'
 
         if group_name in self.allKeys():
             result = self.value(group_name)

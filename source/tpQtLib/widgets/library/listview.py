@@ -203,7 +203,7 @@ class LibraryListView(mixin.LibraryViewWidgetMixin, QListView):
         :return: QModelIndex
         """
 
-        return self.tree_widget().index_from_item(item)
+        return self.tree_widget().indexFromItem(item)
 
     def item_from_index(self, index):
         """

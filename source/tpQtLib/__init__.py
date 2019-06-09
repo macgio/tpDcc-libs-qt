@@ -13,6 +13,7 @@ import inspect
 from tpPyUtils import importer
 from tpQtLib.core import resource as resource_utils
 from tpQtLib.core import dialog, window
+from tpQtLib.resources import res
 
 main = __import__('__main__')
 

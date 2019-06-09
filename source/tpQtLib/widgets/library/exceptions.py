@@ -56,3 +56,23 @@ class ItemSaveError(Exception):
 
 class ItemLoadError(Exception):
     pass
+
+
+class DccUtilsError(Exception):
+    pass
+
+
+class ObjectsError(DccUtilsError):
+    pass
+
+
+class SelectionError(DccUtilsError):
+    pass
+
+
+class MoreThanOneObjectFoundError(DccUtilsError):
+    pass
+
+
+class ModelPanelNotInFocusError(DccUtilsError):
+    pass

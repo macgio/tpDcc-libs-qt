@@ -243,6 +243,9 @@ class Library(QObject, object):
         queries.extend(self._global_queries.values())
 
         items = self.create_items()
+        if not items:
+            return results
+
         for item in items:
             value = item.item_data().get(field)
             if value:
@@ -515,8 +518,6 @@ class Library(QObject, object):
 
         self.save(data)
 
-
-
     def find_items(self, queries):
         """
         Get the items that match the given queries
@@ -531,6 +532,9 @@ class Library(QObject, object):
         queries.extend(self._global_queries.values())
 
         items = self.create_items()
+        if not items:
+            return results
+
         for item in items:
             match = self.match(item.item_data(), queries)
             if match:
@@ -693,7 +697,10 @@ class Library(QObject, object):
         """
 
         if self.is_dirty():
-            paths = self.read().keys()
+            data = self.read()
+            if not data:
+                return
+            paths = data.keys()
             items = self._library_window.manager().items_from_paths(
                 paths=paths,
                 library=self,

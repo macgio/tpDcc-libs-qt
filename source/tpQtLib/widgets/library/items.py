@@ -8,9 +8,11 @@ Module that contains library item widget implementation
 from __future__ import print_function, division, absolute_import
 
 import os
+import math
 import shutil
 import tempfile
 import traceback
+from datetime import datetime
 from functools import partial
 
 from tpQtLib.Qt.QtCore import *
@@ -19,12 +21,12 @@ from tpQtLib.Qt.QtGui import *
 
 import tpDccLib as tp
 
-from tpPyUtils import decorators, path as path_utils
+from tpPyUtils import decorators, timedate, path as path_utils
 
 import tpQtLib
 from tpQtLib.core import image, qtutils
 from tpQtLib.widgets import messagebox
-from tpQtLib.widgets.library import consts, savewidget, exceptions, utils
+from tpQtLib.widgets.library import consts, savewidget, loadwidget, exceptions, utils
 
 if tp.is_maya():
     from tpMayaLib.core import decorators as maya_decorators
@@ -35,6 +37,12 @@ else:
 
 class GlobalSignals(QObject, object):
     blendChanged = Signal(float)
+
+
+class NamespaceOption(object):
+    FromFile = 'file'
+    FromCustom = 'custom'
+    FromSelection = 'selection'
 
 
 class LibraryItem(QTreeWidgetItem, object):
@@ -72,7 +80,7 @@ class LibraryItem(QTreeWidgetItem, object):
     TypeIconPath = ''
     DisplayInSidebar = False
     CreateWidgetClass = savewidget.SaveWidget
-    PreviewWidgetClass = None
+    PreviewWidgetClass = loadwidget.LoadWidget
 
     _libraryItemSignals = consts.LibraryItemSignals()
     saved = _libraryItemSignals.saved
@@ -139,6 +147,16 @@ class LibraryItem(QTreeWidgetItem, object):
         self._worker.signals.triggered.connect(self._on_thumbnail_from_image)
         self._worker_started = False
 
+        self._namespaces = list()
+        self._namespace_options = NamespaceOption.FromSelection
+
+        self._data_class = None
+        self._data_object = None
+
+        self._transfer_class = None
+        self._transfer_object = None
+        self._transfer_basename = None
+
         if library_window:
             self.set_library_window(library_window)
 
@@ -147,6 +165,8 @@ class LibraryItem(QTreeWidgetItem, object):
 
         if path:
             self.set_path(path)
+
+        self.set_transfer_class(utils.TransferObject)
 
     def __eq__(self, other):
         return id(other) == id(self)
@@ -313,6 +333,28 @@ class LibraryItem(QTreeWidgetItem, object):
 
         self.update_icon()
 
+    def setFont(self, column, font):
+        """
+        Overrides base QTreeWidgetItem setFont function
+        Sets the font for the given column
+        :param column: int
+        :param font: QFont
+        """
+
+        self._fonts[column] = font
+
+    def textAlignment(self, column):
+        """
+        Returns the text alinment for the label in the given column
+        :param column: int
+        :return: QAlignmentFlag
+        """
+
+        if self.viewer().is_icon_view():
+            return Qt.AlignCenter
+        else:
+            return QTreeWidgetItem.textAlignment(self, column)
+
     """
     ##########################################################################################
     BASE
@@ -362,6 +404,50 @@ class LibraryItem(QTreeWidgetItem, object):
         """
 
         return str(self.item_data().get(label, ''))
+
+    def dirname(self):
+        """
+        Returns item directory name
+        :return: str
+        """
+
+        return os.path.dirname(self.path())
+
+    def extension(self):
+        """
+        Returns item file extension
+        :return: str
+        """
+
+        _, extension = os.path.splitext(self.path())
+        return extension
+
+    def exists(self):
+        """
+        Returns whether item exists in disk or not
+        :return: bool
+        """
+
+        return os.path.exists(self.path())
+
+    def mtime(self):
+        """
+        Returns mtime of the item file
+        :return: str
+        """
+
+        return os.path.getmtime(self.path())
+
+    def ctime(self):
+        """
+        Returns when the item was created
+        :return: int
+        """
+
+        if not os.path.exists(self.path()):
+            return None
+
+        return int(os.path.getctime(self.path()))
 
     def move(self, target):
         """
@@ -467,6 +553,302 @@ class LibraryItem(QTreeWidgetItem, object):
 
         self._pixmap[column] = pixmap
 
+    def take_from_tree(self):
+        """
+        Takes this item from the tree
+        """
+
+        tree = self.treeWidget()
+        parent = self.parent()
+        if parent:
+            parent.takeChild(parent.indexOfChild(self))
+        else:
+            tree.takeTopLevelItem(tree.indexOfTopLevelItem(self))
+
+    def group_item(self):
+        """
+        Returns current group item
+        :return: LibraryGroupItem
+        """
+
+        return self._group_item
+
+    def set_group_item(self, group_item):
+        """
+        Sets current group item
+        :param group_item: LibraryGroupItem
+        """
+
+        self._group_item = group_item
+
+    def data_class(self):
+        """
+        Returns the data class for this item
+        :return: Data
+        """
+
+        return self._data_class
+
+    def set_data_class(self, class_name):
+        """
+        Sets the data class for this item
+        :param class_name: str
+        """
+
+        self._data_class = class_name
+
+    def data_object(self, name=None, path=None):
+        """
+        Returns the data object for this item
+        :param name: str
+        :param path: str
+        :return: Data
+        """
+
+        if not self._data_object:
+            name = name or self.name()
+            dirname = path or self.dirname()
+            self._data_object = self.data_class()(name, path)
+            self._data_object.set_directory(dirname)
+
+        return self._data_object
+
+    """
+    ##########################################################################################
+    ITEM PROPERTIES
+    ##########################################################################################
+    """
+
+    def transfer_class(self):
+        """
+        Returns the transfer class used to read and write data
+        :return: TransferObject
+        """
+
+        return self._transfer_class
+
+    def set_transfer_class(self, class_name):
+        """
+        Sets the transfer class used to read and write the data
+        :param class_name: TransferObject
+        """
+
+        self._transfer_class = class_name
+
+    def transfer_basename(self):
+        """
+        Returns the filename of the transfer path
+        :return: str
+        """
+
+        return self._transfer_basename
+
+    def set_transfer_basename(self, transfer_basename):
+        """
+        Sets the filename of the transfer path
+        :param transfer_basename: str
+        """
+
+        self._transfer_basename = transfer_basename
+
+    def transfer_path(self):
+        """
+        Returns the disk location to transfer path
+        :return: str
+        """
+
+        if self.transfer_basename():
+            return os.path.join(self.path(), self.transfer_basename())
+        else:
+            return self.path()
+
+    def transfer_object(self):
+        """
+        Returns the transfer object used to read and write the data
+        :return: TransferObject
+        """
+
+        if not self._transfer_object:
+            path = self.transfer_path()
+            self._transfer_object = self.transfer_class().from_path(path)
+
+        return self._transfer_object
+
+    def owner(self):
+        """
+        Returns the user who created this item
+        :return: str or None
+        """
+
+        return self.transfer_object().metadata().get('user', '')
+
+    def description(self):
+        """
+        Returns the user description for this item
+        :return: str
+        """
+
+        return self.transfer_object().metadata().get('description', '')
+
+    def object_count(self):
+        """
+        Returns the number of objects this item contains
+        :return: int
+        """
+
+        return self.transfer_object().count()
+
+    def info(self):
+        """
+        Returns the info to display to the user
+        :return: list(dict)
+        """
+
+        ctime = self.ctime()
+        if ctime:
+            ctime = timedate.time_ago(ctime)
+
+        count = self.object_count()
+        plural = 's' if count > 1 else ''
+        contains = str(count) + ' Object' + plural
+
+        return [
+            {
+                'name': 'name',
+                'value': self.name()
+            },
+            {
+                "name": "owner",
+                "value": self.owner(),
+            },
+            {
+                "name": "created",
+                "value": ctime,
+            },
+            {
+                "name": "contains",
+                "value": contains,
+            },
+            {
+                "name": "comment",
+                "value": self.description() or "No comment",
+            },
+        ]
+
+    """
+    ##########################################################################################
+    MOUSE/KEYBOARD
+    ##########################################################################################
+    """
+
+    def under_mouse(self):
+        """
+        Returns whether the items is under the mouse cursor or not
+        :return: bool
+        """
+
+        return self._under_mouse
+
+    def context_menu(self, menu):
+        """
+        Returns the context menu for the item
+        This function must be implemented in a subclass to return a custom context menu for the item
+        :param menu: QMenu
+        """
+
+        pass
+
+    def drop_event(self, event):
+        """
+        Reimplement in subclass to receive drop items for the item
+        :param event: QDropEvent
+        """
+
+        pass
+
+    def mouse_enter_event(self, event):
+        """
+        Reimplement in subclass to receive mouse enter events for the item
+        :param event: QMouseEvent
+        """
+
+        self._under_mouse = True
+        self.play()
+
+    def mouse_leave_event(self, event):
+        """
+        Reimplement in subclass to receive mouse leave events for the item
+        :param event: QMouseEvent
+        """
+
+        self._under_mouse = False
+        self.stop()
+
+    def mouse_move_event(self, event):
+        """
+        Reimplement in subclass to receive mouse move events for the item
+        :param event: QMouseEvent
+        """
+
+        self.blending_event(event)
+        self.image_sequence_event(event)
+
+    def mouse_press_event(self, event):
+        """
+        Reimplement in subclass to receive mouse press events for the item
+        :param event: QMouseEvent
+        """
+
+        if event.button() == Qt.MidButton:
+            self._blend_position = event.pos()
+
+    def mouse_release_event(self, event):
+        """
+        Reimplement in subclass to receive mouse release events for the item
+        :param event: QMouseEvent
+        """
+
+        if self.is_blending():
+            self._blend_position = None
+            self._blend_prev_value = self.blend_value()
+
+    def key_press_event(self, event):
+        """
+        Reimplement in subclass to receive key press events for the item
+        :param event: QKeyEvent
+        """
+
+        pass
+
+    def key_release_event(self, event):
+        """
+        Reimplement in subclass to receive key release events for the item
+        :param event: QKeyEvent
+        """
+
+        pass
+
+    def clicked(self):
+        """
+        Triggered when an item is clicked
+        """
+
+        pass
+
+    def double_clicked(self):
+        """
+        Triggered when an item is double clicked
+        """
+
+        pass
+
+    def selection_changed(self):
+        """
+        Triggered when an item has been either selected or deselected
+        """
+
+        self.reset_blending()
+
     """
     ##########################################################################################
     LIBRARY
@@ -569,6 +951,14 @@ class LibraryItem(QTreeWidgetItem, object):
         """
 
         self._mime_text = text
+
+    def url(self):
+        """
+        Used by the mime data when dragging/droping the item
+        :return: Qurl
+        """
+
+        return QUrl('file:///{}'.format(self.path()))
 
     """
     ##########################################################################################
@@ -778,9 +1168,46 @@ class LibraryItem(QTreeWidgetItem, object):
 
     """
     ##########################################################################################
+    PREVIEW WIDGET
+    ##########################################################################################
+    """
+
+    def preview_widget(self, library_window):
+        """
+        Returns the widget to be shown when the user clicks on the item
+        :param library_window: LibraryWindow
+        :return: QWidget or None
+        """
+
+        widget = None
+
+        if self.PreviewWidgetClass:
+            widget = self.PreviewWidgetClass(item=self)
+
+        return widget
+
+    def show_preview_widget(self, library_window):
+        """
+        Shows the preview widget for the item instance
+        :param library_window: LibraryWindow
+        """
+
+        widget = self.preview_widget(library_window)
+        library_window.set_preview_widget(widget)
+
+    """
+    ##########################################################################################
     THUMBNAIL
     ##########################################################################################
     """
+
+    def type_icon_path(self):
+        """
+        Returns the type icon path on disk
+        :return: str
+        """
+
+        return self.TypeIconPath
 
     def thumbnail_path(self):
         """
@@ -788,7 +1215,15 @@ class LibraryItem(QTreeWidgetItem, object):
         :return: str
         """
 
-        return ''
+        thumbnail_path = self.path() + '/thumbnail.jpg'
+        if os.path.exists(thumbnail_path):
+            return thumbnail_path
+
+        thumbnail_path = thumbnail_path.replace('.jpg', '.png')
+        if os.path.exists(thumbnail_path):
+            return thumbnail_path
+
+        return self.DefaultThumbnailPath
 
     """
     ##########################################################################################
@@ -838,11 +1273,13 @@ class LibraryItem(QTreeWidgetItem, object):
         if os.path.exists(path):
             self.show_already_existing_dialog()
 
-        temp_path = os.path.join(tempfile.mkdtemp(), self.__class__.__name__)
+        temp_path = os.path.join(tempfile.mkdtemp(), self.name())
         if not os.path.isdir(temp_path):
             os.mkdir(temp_path)
         self.write(temp_path, *args, **kwargs)
-        shutil.move(temp_path, os.path.dirname(path))
+        new_path = os.path.join(os.path.dirname(path), self.name())
+        shutil.move(temp_path, new_path)
+        self.set_path(new_path)
         self.save_item_data()
         if self.library_window():
             self.library_window().select_items([self])
@@ -1215,6 +1652,21 @@ class LibraryItem(QTreeWidgetItem, object):
         self.update_icon()
         self.update_frame()
 
+    def image_sequence_event(self, event):
+        """
+        :param event: QEvent
+        """
+
+        if self.image_sequence():
+            if qtutils.is_control_modifier():
+                if self.rect():
+                    x = event.pos().x() - self.rect().x()
+                    width = self.rect().width()
+                    percent = 1.0 - (float(width - x) / float(width))
+                    frame = int(self.image_sequence().frameCount() * percent)
+                    self.image_sequence().jumpToFrame(frame)
+                    self.update_frame()
+
     """ 
     ##########################################################################################
     THUMBNAIL 
@@ -1254,11 +1706,58 @@ class LibraryItem(QTreeWidgetItem, object):
 
         return self._thumbnail_icon
 
+    def _thumbnail_from_image(self, image):
+        """
+        Called after the given image object has finished loading
+        :param image: QImage
+        """
+
+        self.clear_cache()
+        pixmap = QPixmap()
+        pixmap.convertFromImage(image)
+        icon = QIcon(pixmap)
+        self._thumbnail_icon = icon
+        if self.viewer():
+            self.viewer().update()
+
     """ 
     ##########################################################################################
     PAINT
     ##########################################################################################
     """
+
+    def font_size(self):
+        """
+        Returns the font size for the item
+        :return: int
+        """
+
+        return self.DEFAULT_FONT_SIZE
+
+    def font(self, column):
+        """
+        Returns the font for the given column
+        :param column: int
+        :return: QFont
+        """
+
+        default = QTreeWidgetItem.font(self, column)
+        font = self._fonts.get(column, default)
+        font.setPixelSize(self.font_size() * self.dpi())
+        return font
+
+    def text_width(self, column):
+        """
+        Returns the text width of the given column
+        :param column: int
+        :return: int
+        """
+
+        text = self.text(column)
+        font = self.font(column)
+        metrics = QFontMetrics(font)
+        text_width = metrics.width(text)
+        return text_width
 
     def text_color(self):
         """
@@ -1344,10 +1843,10 @@ class LibraryItem(QTreeWidgetItem, object):
             self.paint_background(painter, option, index)
             if self.is_text_visible():
                 self.paint_text(painter, option, index)
-            self.paint_icon(painter, option, index)
-            if index.column() == 0:
-                if self.image_sequence():
-                    self.paint_playhead(painter, option)
+            # self.paint_icon(painter, option, index)
+            # if index.column() == 0:
+            #     if self.image_sequence():
+            #         self.paint_playhead(painter, option)
         finally:
             painter.restore()
 
@@ -1423,6 +1922,226 @@ class LibraryItem(QTreeWidgetItem, object):
 
         return self._pixmap_scaled
 
+    def paint_icon(self, painter, option, index, align=None):
+        """
+        Draws the icon for the item
+        :param painter: QPainter
+        :param option: QStyleOptionViewItem
+        :param index: int
+        :param align: Qt.Align
+        """
+
+        column = index.column()
+        pixmap = self.pixmap(column)
+        if not pixmap:
+            return
+
+        rect = self.icon_rect(option)
+        pixmap = self.scale_pixmap(pixmap, rect)
+        pixmap_rect = QRect(rect)
+        pixmap_rect.setWidth(pixmap.width())
+        pixmap_rect.setHeight(pixmap.height())
+
+        x, y = 0, 0
+        align = Qt.AlignHCenter | Qt.AlignVCenter
+
+        is_align_bottom = align == Qt.AlignBottom | Qt.AlignLeft or align == Qt.AlignBottom | Qt.AlignHCenter or align == Qt.AlignBottom | Qt.AlignRight
+        is_align_h_center = align == Qt.AlignHCenter or align == Qt.AlignCenter or align == Qt.AlignHCenter | Qt.AlignBottom or align == Qt.AlignHCenter | Qt.AlignTop
+        is_align_v_center = align == Qt.AlignVCenter or align == Qt.AlignCenter or align == Qt.AlignVCenter | Qt.AlignLeft or align == Qt.AlignVCenter | Qt.AlignRight
+        if is_align_h_center:
+            x += float(rect.width() - pixmap.width()) / 2
+        elif is_align_v_center:
+            y += float(rect.height() - pixmap.height()) / 2
+        elif is_align_bottom:
+            y += float(rect.height() - pixmap.height()) / 2
+
+        pixmap_rect.translate(x, y)
+        painter.drawPixmap(pixmap_rect, pixmap)
+
+    def draw_icon_border(self, painter, pixmap_rect):
+        """
+        Draws a border around the icon
+        :param painter: QPainter
+        :param pixmap_rect: QRect
+        """
+
+        pixmap_rect = QRect(pixmap_rect)
+        pixmap_rect.setX(pixmap_rect.x() - 5)
+        pixmap_rect.setY(pixmap_rect.y() - 5)
+        pixmap_rect.setWidth(pixmap_rect.width() + 5)
+        pixmap_rect.setHeight(pixmap_rect.height() + 5)
+        color = QColor(255, 255, 255, 10)
+        painter.setPen(QPen(Qt.NoPen))
+        painter.setBrush(QBrush(color))
+        painter.drawRect(pixmap_rect)
+
+    def paint_text(self, painter, option, index):
+        """
+        Draws the text for the item
+        :param painter: QPainter
+        :param option: QStyleOptionViewItem
+        :param index: int
+        """
+
+        column = index.column()
+        if column == 0 and self.viewer().is_table_view():
+            return
+
+        self._paint_text(painter, option, column)
+
+    def _paint_text(self, painter, option, column):
+        """
+        Internal function used to paint the text
+        :param painter: QPainter
+        :param option: QStyleOption
+        :param column: int
+        """
+
+        if self.viewer().is_icon_view():
+            text = self.name()
+        else:
+            label = self.label_from_column(column)
+            text = self.display_text(label)
+
+        color = self.text_color()
+        is_selected = option.state & QStyle.State_Selected
+        if is_selected:
+            color = self.text_selected_color()
+
+        visual_rect = self.visualRect(option)
+        width = visual_rect.width()
+        height = visual_rect.height()
+        padding = self.padding()
+        x = padding / 2
+        y = padding / 2
+        visual_rect.translate(x, y)
+        visual_rect.setWidth(width - padding)
+        visual_rect.setHeight(height - padding)
+
+        font = self.font(column)
+        align = self.textAlignment(column)
+        metrics = QFontMetrics(font)
+        text_width = 1
+        if text:
+            text_width = metrics.width(text)
+        if text_width > visual_rect.width() - padding:
+            visual_width = visual_rect.width()
+            text = metrics.elidedText(text, Qt.ElideRight, visual_width)
+            align = Qt.AlignLeft
+        if self.viewer().is_icon_view():
+            align = align | Qt.AlignBottom
+        else:
+            align = align | Qt.AlignVCenter
+
+        pen = QPen(color)
+        painter.setPen(pen)
+        painter.setFont(font)
+        painter.drawText(visual_rect, align, text)
+
+    """ 
+    ##########################################################################################
+    BLENDING 
+    ##########################################################################################
+    """
+
+    def is_blending_enabled(self):
+        """
+        Returns whether blending is enabled or not
+        :return: bool
+        """
+
+        return self._blending_enabled
+
+    def set_blending_enabled(self, flag):
+        """
+        Sets whether blending is enabled or not
+        :param flag: bool
+        """
+
+        self._blending_enabled = flag
+
+    def is_blending(self):
+        """
+        Returns whether blending is playing or not
+        :return: bool
+        """
+
+        return self.blend_position() is not None
+
+    def blend_value(self):
+        """
+        Returns the curreent blend value
+        :return: float
+        """
+
+        return self._blend_value
+
+    def set_blend_value(self, blend):
+        """
+        Sets the current blend value
+        :param blend: float
+        """
+
+        if self.is_blending_enabled():
+            self._blend_value = blend
+            self.blendChanged.emit(blend)
+
+    def blend_previous_value(self):
+        """
+        Returns the blend previous current value
+        :return: float
+        """
+
+        return self._blend_prev_value
+
+    def blend_position(self):
+        """
+        Returns current blend position
+        :return: QPoint
+        """
+
+        return self._blend_position
+
+    def blending_event(self, event):
+        """
+        Function that is called when the mouse moves while the middle mouse button is held down
+        :param event: QMouseEvent
+        """
+
+        if self.is_blending():
+            value = math.ceil((event.pos().x() - self.blend_position().x()) * 1.5) + self.blend_previous_value()
+            try:
+                self.set_blend_value(value)
+            except Exception:
+                self.stop_blending()
+
+    def start_blending_event(self, event):
+        """
+        Called when the middle mouse button is pressed
+        :param event: QMouseEvent
+        """
+
+        if self.is_blending_enabled():
+            if event.button() == Qt.MidButton:
+                self._blend_position = event.pos()
+
+    def stop_blending(self):
+        """
+        Called when the middle mouse button is released
+        :return: QMouseEvent
+        """
+
+        self._blend_position = None
+        self._blend_prev_value = self.blend_value()
+
+    def reset_blending(self):
+        """
+        Resets the blending value to zero
+        """
+
+        self._blend_value = 0.0
+        self._blend_prev_value = 0.09
+
 
     """ 
     ##########################################################################################
@@ -1430,7 +2149,7 @@ class LibraryItem(QTreeWidgetItem, object):
     ##########################################################################################
     """
 
-    def _context_edit_menu(self, menu, items=None):
+    def context_edit_menu(self, menu, items=None):
         """
         This function is called when the user opens context menu
         The given menu is shown as a submenu of the main context menu
@@ -1452,13 +2171,18 @@ class LibraryItem(QTreeWidgetItem, object):
 
         rename_action.triggered.connect(self._on_show_delete_dialog)
         move_to_action.triggered.connect(self._on_move_dialog)
-        show_in_folder_action.triggerered.connect(self._on_show_in_folder)
+        show_in_folder_action.triggered.connect(self._on_show_in_folder)
         copy_path_action.triggered.connect(self._on_copy_path)
 
         menu.addAction(rename_action)
         menu.addAction(move_to_action)
         menu.addAction(show_in_folder_action)
         menu.addAction(copy_path_action)
+
+        if self.library_window():
+            select_folder_action = QAction('Select Folder', menu)
+            select_folder_action.triggered.connect(self._on_select_folder)
+            menu.addAction(select_folder_action)
 
     """
     ##########################################################################################
@@ -1493,6 +2217,15 @@ class LibraryItem(QTreeWidgetItem, object):
 
     def _on_copy_path(self):
         pass
+
+    def _on_select_folder(self):
+        """
+        Internal callback function that is triggered when Select Folder action is clicked
+        """
+
+        if self.library_window():
+            path = '/'.join(path_utils.normalize_path(self.path()).split('/')[:-1])
+            self.library_window().select_folder_path(path)
 
 
 class LibraryGroupItem(LibraryItem, object):
@@ -1574,10 +2307,11 @@ class LibraryGroupItem(LibraryItem, object):
         self.set_rect(QRect(option.rect()))
         painter.save()
         try:
-            self.paint_background(painter, option, index)
-            if self.is_text_visible():
-                self._paint_text(painter, option, 1)
-            self.paint_icon(painter, option, index)
+            pass
+            # self.paint_background(painter, option, index)
+            # if self.is_text_visible():
+            #     self._paint_text(painter, option, 1)
+            # self.paint_icon(painter, option, index)
         finally:
             painter.restore()
 
@@ -1590,22 +2324,22 @@ class LibraryGroupItem(LibraryItem, object):
         :param index: QModelIndex
         """
 
-        super(LibraryGroupItem, self).paint_background(painter, option, index)
-
-        painter.setPen(QPen(Qt.NoPen))
-        visual_rect = self.visualRect(option)
-        text = self.name()
-        metrics = QFontMetrics(self._font)
-        text_width = metrics.width(text)
-        padding = (25 * self.dpi())
-        visual_rect.setX(text_width + padding)
-        visual_rect.setY(visual_rect.y() + (visual_rect.height() * 2))
-        visual_rect.setRight(2 * self.dpi())
-        visual_rect.setWidth(visual_rect.width() - padding)
-
-        color = QColor(self.text_color().red(), self.text_color.green(), self.text_color().blue(), 10)
-        painter.setBrush(QBrush(color))
-        painter.drawRect(visual_rect)
+        # super(LibraryGroupItem, self).paint_background(painter, option, index)
+        #
+        # painter.setPen(QPen(Qt.NoPen))
+        # visual_rect = self.visualRect(option)
+        # text = self.name()
+        # metrics = QFontMetrics(self._font)
+        # text_width = metrics.width(text)
+        # padding = (25 * self.dpi())
+        # visual_rect.setX(text_width + padding)
+        # visual_rect.setY(visual_rect.y() + (visual_rect.height() * 2))
+        # visual_rect.setRight(2 * self.dpi())
+        # visual_rect.setWidth(visual_rect.width() - padding)
+        #
+        # color = QColor(self.text_color().red(), self.text_color().green(), self.text_color().blue(), 10)
+        # painter.setBrush(QBrush(color))
+        # painter.drawRect(visual_rect)
 
     def children(self):
         """
@@ -1674,3 +2408,113 @@ class LibraryGroupItem(LibraryItem, object):
         return QColor(0, 0, 0, 0)
 
 
+class LibraryFolderItem(LibraryItem, object):
+
+    RegisterOrder = 100
+    EnableNestedItems = True
+    DisplayInSidebar = True
+
+    MenuName = 'Folder'
+    MenuOrder = 1
+    MenuIconPath = tpQtLib.resource.get('icons', 'folder.png')
+    DefaultThumbnailPath = tpQtLib.resource.get('icons', 'folder.png')
+    TrashIconPath = tpQtLib.resource.get('icons', 'trash.png')
+
+    @classmethod
+    def match(cls, path):
+        """
+        Returns whether the given path is supported by the item or not
+        :param path: str
+        :return: bool
+        """
+
+        if os.path.isdir(path):
+            return True
+
+        return False
+
+    @classmethod
+    def show_create_widget(cls, library_window):
+        """
+        Shows the dialog for creating a new folder
+        :param library_window: LibraryWindow
+        """
+
+        path = library_window.selected_folder_path() or library_window.path()
+        name, btn = messagebox.MessageBox.input(library_window, 'Create folder', 'Create a new folder with the name:')
+        name = name.strip()
+        if name and btn == QDialogButtonBox.Ok:
+            path = os.path.join(path, name)
+            item = cls(path, library_window=library_window)
+            item.save(path)
+            if library_window:
+                library_window.refresh()
+                library_window.select_folder_path(path)
+
+    def info(self):
+        """
+        Returns the info to display to the user
+        :return: list(dict)
+        """
+
+        created = os.stat(self.path()).st_ctime
+        created = datetime.fromtimestamp(created).strftime("%Y-%m-%d %H:%M %p")
+        modified = os.stat(self.path()).st_mtime
+        modified = datetime.fromtimestamp(modified).strftime("%Y-%m-%d %H:%M %p")
+
+        return [
+            {
+                "name": "name",
+                "value": self.name()
+            },
+            {
+                "name": "path",
+                "value": self.path()
+            },
+            {
+                "name": "created",
+                "value": created,
+            },
+            {
+                "name": "modified",
+                "value": modified,
+            }
+        ]
+
+    def double_clicked(self):
+        """
+        Overrides this method to show the items contained in the folder
+        """
+
+        self.library_window().select_folder_path(self.path())
+
+    def write(self, path, *args, **kwargs):
+        """
+        Overrides function to avoid not implemented exception
+        :param path: str
+        :param args: list
+        :param kwargs: dict
+        """
+
+        pass
+
+    def create_item_data(self):
+        """
+        Overrides this function to force the item type to Folder
+        """
+
+        item_data = super(LibraryFolderItem, self).create_item_data()
+        item_data['type'] = 'Folder'
+        return item_data
+
+    def item_data(self):
+        """
+        Overrides this function to set the trash icon
+        :return: dict
+        """
+
+        data = super(LibraryFolderItem, self).item_data()
+        if data.get('path').endswith('Trash'):
+            data['iconPath'] = self.TrashIconPath
+
+        return data

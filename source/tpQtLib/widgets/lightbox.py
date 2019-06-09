@@ -19,7 +19,7 @@ class Lightbox(QFrame, object):
     def __init__(self, parent, widget=None, duration=DEFAULT_DURATION):
         super(Lightbox, self).__init__(parent)
 
-        self.setObjectName('lightbox')
+        self.setObjectName('Lightbox')
 
         self._widget = None
         self._accepted = False

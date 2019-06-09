@@ -9,9 +9,11 @@ from __future__ import print_function, division, absolute_import
 
 from tpQtLib.Qt.QtCore import *
 from tpQtLib.Qt.QtWidgets import *
+from tpQtLib.Qt.QtGui import *
 
+import tpQtLib
 from tpQtLib.core import base
-from tpQtLib.widgets import toast
+from tpQtLib.widgets import toast, action
 from tpQtLib.widgets.library import consts, treewidget, listview, items
 
 
@@ -44,7 +46,7 @@ class LibraryViewerDelegate(QStyledItemDelegate, object):
         if isinstance(item, items.LibraryGroupItem):
             return item.sizeHint()
 
-        return self.viewer().item_size_hint(index)
+        return self.viewer().item_size_hint()
 
     def paint(self, painter, option, index):
         """
@@ -187,6 +189,17 @@ class LibraryViewer(base.BaseWidget, object):
             delta = (num_steps * self.wheel_scroll_step())
             value = self.zoom_amount() + delta
             self.set_zoom_amount(value)
+
+    def contextMenuEvent(self, event):
+        """
+        Overrides base contextMenuEvent function
+        Shows context menu for this widget
+        :param event: QEvent
+        """
+
+        menu = self.create_context_menu()
+        point = QCursor.pos()
+        return menu.exec_(point)
 
     """
     ##########################################################################################
@@ -627,7 +640,7 @@ class LibraryViewer(base.BaseWidget, object):
         settings['zoomAmount'] = self.zoom_amount()
         settings['selectedPaths'] = self.selected_paths()
         settings['textVisible'] = self.is_item_text_visible()
-        settings.update(self.treeWidget().settings())
+        settings.update(self.tree_widget().settings())
 
         return settings
 
@@ -969,6 +982,227 @@ class LibraryViewer(base.BaseWidget, object):
         """
 
         self.list_view().move_items(items, item_at=item_at)
+
+    """
+    ##########################################################################################
+    MENUS
+    ##########################################################################################
+    """
+
+    def create_item_settings_menu(self):
+        """
+        Cretas and returns the item settings menu for this widget
+        :return: QMenu
+        """
+
+        menu = QMenu('Item View', self)
+
+        view_settings_action = action.SeparatorAction('View Settings', menu)
+        menu.addAction(view_settings_action)
+
+        size_action = action.SliderAction('Size', menu)
+        size_action.slider().setMinimum(10)
+        size_action.slider().setMaximum(200)
+        size_action.slider().setValue(self.zoom_amount())
+        size_action.slider().valueChanged.connect(self.set_zoom_amount)
+        menu.addAction(size_action)
+
+        border_action = action.SliderAction('Border', menu)
+        border_action.slider().setMinimum(0)
+        border_action.slider().setMaximum(20)
+        border_action.slider().setValue(self.padding())
+        border_action.slider().valueChanged.connect(self.set_padding)
+        menu.addAction(border_action)
+
+        spacing_action = action.SliderAction('Spacing', menu)
+        spacing_action.slider().setMinimum(self.DEFAULT_MIN_SPACING)
+        spacing_action.slider().setMaximum(self.DEFAULT_MAX_SPACING)
+        spacing_action.slider().setValue(self.spacing())
+        spacing_action.slider().valueChanged.connect(self.set_spacing)
+        menu.addAction(spacing_action)
+
+        item_options = action.SeparatorAction('Item Options')
+        menu.addAction(item_options)
+
+        show_labels_action = QAction('Show labels', menu)
+        show_labels_action.setCheckable(True)
+        show_labels_action.setChecked(self.is_item_text_visible())
+        show_labels_action.triggered[bool].connect(self.set_item_text_visible)
+        menu.addAction(show_labels_action)
+
+        return menu
+
+    def create_settings_menu(self):
+        """
+        Creates and returns the settings menu for this widget
+        :return: QMenu
+        """
+
+        menu = QMenu('Item View', self)
+        menu.addSeparator()
+
+        show_labels_action = QAction('Show labels', menu)
+        show_labels_action.setCheckable(True)
+        show_labels_action.setChecked(self.is_item_text_visible())
+        show_labels_action.triggered[bool].connect(self.set_item_text_visible)
+        menu.addAction(show_labels_action)
+        menu.addSeparator()
+
+        copy_text_menu = self.tree_widget().create_copy_text_menu()
+        menu.addAction(copy_text_menu)
+        menu.addSeparator()
+
+        size_action = action.SliderAction('Size', menu)
+        size_action.slider().setMinimum(10)
+        size_action.slider().setMaximum(200)
+        size_action.slider().setValue(self.zoom_amount())
+        size_action.slider().valueChanged.connect(self.set_zoom_amount)
+        menu.addAction(size_action)
+
+        border_action = action.SliderAction('Border', menu)
+        border_action.slider().setMinimum(0)
+        border_action.slider().setMaximum(20)
+        border_action.slider().setValue(self.padding())
+        border_action.slider().valueChanged.connect(self.set_padding)
+        menu.addAction(border_action)
+
+        spacing_action = action.SliderAction('Spacing', menu)
+        spacing_action.slider().setMinimum(self.DEFAULT_MIN_SPACING)
+        spacing_action.slider().setMaximum(self.DEFAULT_MAX_SPACING)
+        spacing_action.slider().setValue(self.spacing())
+        spacing_action.slider().valueChanged.connect(self.set_spacing)
+        menu.addAction(spacing_action)
+
+        return menu
+
+    def create_items_menu(self, items=None):
+        """
+        Creates the item menu for the given items
+        :param items: list(LibraryItem)
+        :return: QMenu
+        """
+
+        item = items or self.selected_item()
+        menu = QMenu(self)
+        if item:
+            try:
+                item.context_menu(menu)
+            except Exception as e:
+                tpQtLib.logger.exception(e)
+        else:
+            item_action = QAction(menu)
+            item_action.setText('No Item selected')
+            item_action.setDisabled(True)
+            menu.addAction(item_action)
+
+        return menu
+
+    def create_copy_text_menu(self):
+        """
+        Returns copy text menu for this widget
+        :return: QMenu
+        """
+
+        return self.tree_widget().create_copy_text_menu()
+
+    def create_context_menu(self):
+        """
+        Creates and returns the context menu for this widget
+        :return: QMenu
+        """
+
+        menu = self.create_items_menu()
+        settings_menu = self.create_settings_menu()
+        menu.addMenu(settings_menu)
+
+        return menu
+
+    """
+    ##########################################################################################
+    PAINT
+    ##########################################################################################
+    """
+
+    def text_color(self):
+        """
+        Returns the item text color
+        :return: QColor
+        """
+
+        return self._text_color
+
+    def set_text_color(self, color):
+        """
+        Sets the item text color
+        :param color: QColor
+        """
+
+        self._text_color = color
+
+    def text_selected_color(self):
+        """
+        Returns the item text color when selected
+        :return: QColor
+        """
+
+        return self._text_selected_color
+
+    def set_text_selected_color(self, color):
+        """
+        Sets the text color when an item is selected
+        :param color: QColor
+        """
+
+        self._text_selected_color = color
+
+    def background_color(self):
+        """
+        Returns item background color
+        :return: QColor
+        """
+
+        return self._background_color
+
+    def set_background_color(self, color):
+        """
+        Sets the item background color
+        :param color: QColor
+        """
+
+        self._background_color = color
+
+    def background_hover_color(self):
+        """
+        Returns the background color when the mouse is over an item
+        :return: QColor
+        """
+
+        return self._background_hover_color
+
+    def set_background_hover_color(self, color):
+        """
+        Sets the background color when the mouse hovers over the item
+        :param color: QColor
+        """
+
+        self._background_hover_color = color
+
+    def background_selected_color(self):
+        """
+        Returns the background color when an item is selected
+        :return: QColor
+        """
+
+        return self._background_selected_color
+
+    def set_background_selected_color(self, color):
+        """
+        Sets the background color when an item is selected
+        :param color: QColor
+        """
+
+        self._background_selected_color = color
+        self._list_view.ser_rubber_band_color(QColor(200, 200, 200, 255))
 
     """
     ##########################################################################################

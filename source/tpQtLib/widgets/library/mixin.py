@@ -30,7 +30,10 @@ class LibraryViewWidgetMixin(object):
         :param deselected: QItemSelection
         """
 
-        selected_items_ = self.selected_items()
+        if hasattr(self, 'selectedItems'):
+            selected_items_ = self.selectedItems()
+        else:
+            selected_items_ = self.selected_items()
         if self._current_selection != selected_items_:
             self._current_selection = selected_items_
             indexes1 = selected.indexes()
@@ -63,7 +66,7 @@ class LibraryViewWidgetMixin(object):
         :param event: QKeyEvent
         """
 
-        item = self.selectedItems()
+        item = self.selected_items()
         if item:
             self.item_key_press_event(item, event)
 
@@ -169,7 +172,7 @@ class LibraryViewWidgetMixin(object):
         :param event: QMouseEvent
         """
 
-        item.item_mouse_move_event(event)
+        item.mouse_move_event(event)
 
     def item_mouse_press_event(self, item, event):
         """
@@ -256,7 +259,10 @@ class LibraryViewWidgetMixin(object):
 
         items = dict()
         for index in indexes:
-            item = self.itemFromIndex(index)
+            if hasattr(self, 'itemFromIndex'):
+                item = self.itemFromIndex(index)
+            else:
+                item = self.item_from_index(index)
             items[id(item)] = item
 
         return items.values()

@@ -13,20 +13,22 @@ import traceback
 from tpQtLib.Qt.QtCore import *
 from tpQtLib.Qt.QtWidgets import *
 
+import tpQtLib
 import tpDccLib as tp
 from tpPyUtils import path, folder
-from tpQtLib.core import qtutils, settings
+from tpQtLib.core import qtutils, settings, animation, color, theme
+from tpQtLib.widgets import statusbar, dragger, formwidget, lightbox
 
 
 class MainWindow(QMainWindow, object):
     """
-    Base class to create windows
+    Main class to create windows
     """
 
     windowClosed = Signal()
 
-    DOCK_CONTROL_NAME = 'my_workspcae_control'
-    DOCK_LABEL_NAME = 'my workspcae control'
+    DOCK_CONTROL_NAME = 'my_workspace_control'
+    DOCK_LABEL_NAME = 'my workspace control'
 
     class DockWindowContainer(QDockWidget, object):
         """
@@ -51,63 +53,204 @@ class MainWindow(QMainWindow, object):
                 w.close()
                 w.deleteLater()
 
+        self._kwargs = None
+        self._is_loaded = False
+
         if parent is None:
-            parent = tp.Dcc.get_main_window()
+            parent = main_window
         super(MainWindow, self).__init__(parent=parent)
 
-        self.setProperty('saveWindowPref', True)
+        self._dpi = kwargs.get('dip', 1.0)
+        self._theme = None
+        self._callbacks = list()
+        self._show_dragger = kwargs.get('show_dragger', True)
+
         self.setObjectName(name)
-        # self.setWindowFlags(Qt.Window)
+
+        if self._show_dragger:
+            self.setAttribute(Qt.WA_TranslucentBackground)
+            self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
+
         self.setWindowTitle(kwargs.pop('title', 'Maya Window'))
 
-        self._theme = None
-        self._kwargs = dict()
-        self._callbacks = list()
-
-        has_settings = kwargs.pop('has_settings', True)
         win_settings = kwargs.pop('settings', None)
         if win_settings:
-            self.settings = win_settings
+            self._settings = win_settings
         else:
-            if has_settings:
-                self.settings = settings.QtSettings(filename=self.get_settings_file(), window=self)
-                self.settings.setFallbacksEnabled(False)
-            else:
-                self.settings = None
+            self._settings = settings.QtSettings(filename=self.get_settings_file(), window=self)
+            self._settings.setFallbacksEnabled(False)
 
-        self._load_window_data()
         self.ui()
         self.setup_signals()
 
+        auto_load = kwargs.get('auto_load', True)
+        if auto_load:
+            self.load()
+
     def closeEvent(self, event):
-        self._save_window_data()
+        self.save_settings()
         self.remove_callbacks()
         self.windowClosed.emit()
         self.deleteLater()
 
-    def set_kwargs(self, kwargs):
+    def load(self):
+        self.load_settings()
+
+    def settings(self):
         """
-        Set the keyword arguments used to open the library window
-        :param kwargs: dict
+        Returns window settings
+        :return: QtSettings
         """
 
-        self._kwargs.update(kwargs)
+        return self._settings
 
-    def load_window_data(self):
+    def default_settings(self):
         """
-        Function used to restore the data of the current window
-        Overrides in specific window to load custom data
-        """
-
-        pass
-
-    def save_window_data(self):
-        """
-        Function used to store the data of the current window
-        Overrides in specific window to save custom data
+        Returns default settings values
+        :return: dict
         """
 
-        pass
+        return {
+            "theme": {
+            "accentColor": "rgb(0, 175, 240, 255)",
+            "backgroundColor": "rgb(60, 64, 79, 255)",
+            }
+        }
+
+    def set_settings(self, settings):
+        """
+        Set window settings
+        :param settings:
+        """
+
+        self._settings = settings
+
+        def_settings = self.default_settings()
+
+        def_geometry = self.settings().get_default_value('geometry', self.objectName().upper())
+        geometry = self.settings().getw('geometry', def_geometry)
+        if geometry:
+            self.restoreGeometry(geometry)
+        def_window_state = self.settings().get_default_value('windowState', self.objectName().upper())
+        window_state = self.settings().getw('windowState', def_window_state)
+        if window_state:
+            self.restoreState(window_state)
+
+        def_theme_settings = def_settings.get('theme')
+        theme_settings = {
+            "accentColor": self.settings().getw('theme/accentColor') or def_theme_settings['accentColor'],
+            "backgroundColor": self.settings().getw('theme/backgroundColor') or def_theme_settings['backgroundColor']
+        }
+        self.set_theme_settings(theme_settings)
+
+    def load_settings(self, settings=None):
+        """
+        Loads window settings from disk
+        """
+
+        settings = settings or self.settings()
+
+        self.set_settings(settings)
+
+    def save_settings(self, settings=None):
+        """
+        Saves window settings
+        """
+
+        settings = settings or self.settings()
+        if not settings:
+            return
+
+        settings.setw('geometry', self.saveGeometry())
+        settings.setw('windowState', self.saveState())
+
+    def dpi(self):
+        """
+        Return the current dpi for the window
+        :return: float
+        """
+
+        return float(self._dpi)
+
+    def set_dpi(self, dpi):
+        """
+        Sets current dpi for the window
+        :param dpi: float
+        """
+
+        self._dpi = dpi
+
+    def theme(self):
+        """
+        Returns the current theme
+        :return: Theme
+        """
+
+        if not self._theme:
+            self._theme = theme.Theme()
+
+        return self._theme
+
+    def set_theme(self, theme):
+        """
+        Sets current window theme
+        :param theme: Theme
+        """
+
+        self._theme = theme
+        self._theme.updated.connect(self.reload_stylesheet)
+        self.reload_stylesheet()
+
+    def set_theme_settings(self, settings):
+        """
+        Sets the theme settings from the given settings
+        :param settings: dict
+        """
+
+        new_theme = theme.Theme()
+        new_theme.set_settings(settings)
+        self.set_theme(new_theme)
+
+    def reload_stylesheet(self):
+        """
+        Reloads the stylesheet to the current theme
+        """
+
+        current_theme = self.theme()
+        current_theme.set_dpi(self.dpi())
+        options = current_theme.options()
+        stylesheet = current_theme.stylesheet()
+
+        all_widgets = self.main_layout.findChildren(QObject)
+
+        text_color = color.Color.from_string(options["ITEM_TEXT_COLOR"])
+        text_selected_color = color.Color.from_string(options["ITEM_TEXT_SELECTED_COLOR"])
+        background_color = color.Color.from_string(options["ITEM_BACKGROUND_COLOR"])
+        background_hover_color = color.Color.from_string(options["ITEM_BACKGROUND_HOVER_COLOR"])
+        background_selected_color = color.Color.from_string(options["ITEM_BACKGROUND_SELECTED_COLOR"])
+
+        self.setStyleSheet(stylesheet)
+
+        for w in all_widgets:
+            found = False
+            if hasattr(w, 'set_text_color'):
+                w.set_text_color(text_color)
+                found = True
+            if hasattr(w, 'set_text_selected_color'):
+                w.set_text_selected_color(text_selected_color)
+                found = True
+            if hasattr(w, 'set_background_color'):
+                w.set_background_color(background_color)
+                found = True
+            if hasattr(w, 'set_background_hover_color'):
+                w.set_background_hover_color(background_hover_color)
+                found = True
+            if hasattr(w, 'set_background_selected_color'):
+                w.set_background_selected_color(background_selected_color)
+                found = True
+
+            if found:
+                w.update()
 
     def add_toolbar(self, name, area=Qt.TopToolBarArea):
         """
@@ -142,29 +285,52 @@ class MainWindow(QMainWindow, object):
         :return: QLayout
         """
 
-        return QVBoxLayout()
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+
+        return main_layout
 
     def ui(self):
         """
         Function used to define UI of the window
         """
 
-        from tpQtLib.widgets import statusbar
-
         self._base_layout = QVBoxLayout()
         self._base_layout.setContentsMargins(0, 0, 0, 0)
         self._base_layout.setSpacing(0)
         self._base_layout.setAlignment(Qt.AlignTop)
         base_widget = QFrame()
-        base_widget.setFrameStyle(QFrame.StyledPanel)
+        base_widget.setObjectName('mainFrame')
+        base_widget.setFrameStyle(QFrame.NoFrame)
+        base_widget.setFrameShadow(QFrame.Plain)
+        base_widget.setStyleSheet("""
+        QFrame#mainFrame
+        {
+        background-color: rgb(35, 35, 35);
+        border-radius: 25px;
+        }""")
         base_widget.setLayout(self._base_layout)
         self.setCentralWidget(base_widget)
+
+        self._main_title = dragger.WindowDragger(parent=self)
+        self._main_title.setVisible(self._show_dragger)
+        self._base_layout.addWidget(self._main_title)
+
+        if self._settings:
+            self._button_settings = QPushButton()
+            self._button_settings.setIconSize(QSize(25, 25))
+            self._button_settings.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
+            self._button_settings.setIcon(tpQtLib.resource.icon('winsettings'))
+            self._button_settings.setStyleSheet('QWidget {background-color: rgba(255, 255, 255, 0); border:0px;}')
+            self._button_settings.clicked.connect(self._on_show_settings_dialog)
+            self._main_title.buttons_layout.insertWidget(3, self._button_settings)
 
         self.statusBar().showMessage('')
         # self.statusBar().setSizeGripEnabled(not self._fixed_size)
 
         self._status_bar = statusbar.StatusWidget()
-        self.statusBar().setStyleSheet("QStatusBar::item { border: 0px}")
+        # self.statusBar().setStyleSheet("QStatusBar::item { border: 0px}")
         self.statusBar().addWidget(self._status_bar)
 
         self.menubar = QMenuBar()
@@ -173,12 +339,11 @@ class MainWindow(QMainWindow, object):
         self._base_window = QMainWindow(base_widget)
         self._base_window.setAttribute(Qt.WA_AlwaysShowToolTips, True)
         self._base_window.setWindowFlags(Qt.Widget)
-        self._base_window.setDockOptions(
-            QMainWindow.AnimatedDocks | QMainWindow.AllowNestedDocks | QMainWindow.AllowTabbedDocks)
+        self._base_window.setDockOptions(QMainWindow.AnimatedDocks | QMainWindow.AllowNestedDocks | QMainWindow.AllowTabbedDocks)
         self._base_layout.addWidget(self._base_window)
         window_layout = QVBoxLayout()
-        window_layout.setContentsMargins(2, 2, 2, 2)
-        window_layout.setSpacing(2)
+        window_layout.setContentsMargins(0, 0, 0, 0)
+        window_layout.setSpacing(0)
         self._base_window.setLayout(window_layout)
 
         self.main_layout = self.get_main_layout()
@@ -223,6 +388,9 @@ class MainWindow(QMainWindow, object):
         center_point = desktop.screenGeometry(screen).center()
         geometry.moveCenter(center_point)
         self.window().setGeometry(geometry)
+
+    def fade_close(self):
+        animation.fade_window(start=1, end=0, duration=400, object=self, on_finished=self.close)
 
     def dock(self):
         """
@@ -310,25 +478,93 @@ class MainWindow(QMainWindow, object):
 
         return docks
 
-    def _load_window_data(self):
+    def _settings_validator(self, **kwargs):
         """
-        Internal function used to restore the data of the current window
+        Validator used for the settings dialog
+        :param kwargs: dict
         """
 
-        if not self.settings:
+        fields = list()
+
+        clr = kwargs.get("accentColor")
+        if clr and self.theme().accent_color().to_string() != clr:
+            self.theme().set_accent_color(clr)
+
+        clr = kwargs.get("backgroundColor")
+        if clr and self.theme().background_color().to_string() != clr:
+            self.theme().set_background_color(clr)
+
+        return fields
+
+    def _settings_accepted(self, **kwargs):
+        """
+        Function that is called when window settings dialog are accepted
+        :param kwargs: dict
+        """
+
+        if not self.settings():
             return
 
-        self.load_window_data()
+        theme_name = self.theme().name()
+        accent_color = self.theme().accent_color().to_string()
+        background_color = self.theme().background_color().to_string()
+        if theme_name:
+            self.settings().setw('theme/name', theme_name)
+        self.settings().setw('theme/accentColor', accent_color)
+        self.settings().setw('theme/backgroundColor', background_color)
 
-    def _save_window_data(self):
-        """
-        Internal function used to store the data of the current window
-        """
+    def _on_show_settings_dialog(self):
+        accent_color = self.theme().accent_color().to_string()
+        background_color = self.theme().background_color().to_string()
 
-        if not self.settings:
-            return
+        form = {
+            "title": "Settings",
+            "description": "Your local settings",
+            "layout": "vertical",
+            "schema": [
+                {
+                    "name": "accentColor",
+                    "type": "color",
+                    "value": accent_color,
+                    "colors": [
+                        "rgb(230, 80, 80, 255)",
+                        "rgb(230, 125, 100, 255)",
+                        "rgb(230, 120, 40)",
+                        "rgb(240, 180, 0, 255)",
+                        "rgb(80, 200, 140, 255)",
+                        "rgb(50, 180, 240, 255)",
+                        "rgb(110, 110, 240, 255)",
+                    ]
+                },
+                {
+                    "name": "backgroundColor",
+                    "type": "color",
+                    "value": background_color,
+                    "colors": [
+                        "rgb(40, 40, 40)",
+                        "rgb(68, 68, 68)",
+                        "rgb(80, 60, 80)",
+                        "rgb(85, 60, 60)",
+                        "rgb(60, 75, 75)",
+                        "rgb(60, 64, 79)",
+                        "rgb(245, 245, 255)",
+                    ]
+                },
+            ],
+            "validator": self._settings_validator,
+            "accepted": self._settings_accepted
+        }
 
-        self.save_window_data()
+        widget = formwidget.FormDialog(form=form)
+        widget.setMinimumWidth(300)
+        widget.setMinimumHeight(300)
+        widget.setMaximumWidth(400)
+        widget.setMaximumHeight(400)
+        widget.accept_button().setText('Save')
+
+        self._lightbox = lightbox.Lightbox(self)
+        self._lightbox.set_widget(widget)
+        self._lightbox.show()
 
 
 class DetachedWindow(QMainWindow):
@@ -529,8 +765,8 @@ class DockWindow(QMainWindow, object):
         self.main_widget = main_widget
 
         self.main_layout.expandingDirections()
-        self.main_layout.setContentsMargins(1, 1, 1, 1)
-        self.main_layout.setSpacing(2)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
 
         # ==========================================================================================
 
@@ -613,7 +849,7 @@ class SubWindow(MainWindow, object):
     """
 
     def __init__(self, parent=None, **kwargs):
-        super(SubWindow, self).__init__(parent=parent, **kwargs)
+        super(SubWindow, self).__init__(parent=parent, show_dragger=False, **kwargs)
 
 
 class DirectoryWindow(MainWindow, object):
@@ -623,7 +859,7 @@ class DirectoryWindow(MainWindow, object):
 
     def __init__(self, parent=None, **kwargs):
         self.directory = None
-        super(DirectoryWindow, self).__init__(parent=parent, **kwargs)
+        super(DirectoryWindow, self).__init__(parent=parent, show_dragger=False, **kwargs)
 
     def set_directory(self, directory):
         """

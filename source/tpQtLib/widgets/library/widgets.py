@@ -8,6 +8,7 @@ Module that contains different widgets used in libraries
 from __future__ import print_function, division, absolute_import
 
 import traceback
+from functools import partial
 from collections import OrderedDict
 
 from tpQtLib.Qt.QtCore import *
@@ -15,8 +16,8 @@ from tpQtLib.Qt.QtWidgets import *
 from tpQtLib.Qt.QtGui import *
 
 import tpQtLib
-from tpQtLib.core import animation, image, icon, qtutils
-from tpQtLib.widgets import statusbar, progressbar, toolbar
+from tpQtLib.core import animation, image, icon, qtutils, color, pixmap
+from tpQtLib.widgets import statusbar, progressbar, toolbar, action
 
 
 class LibraryImageSequenceWidget(QToolButton, object):
@@ -245,6 +246,8 @@ class LibrarySearchWidget(QLineEdit, object):
     SPACE_OPEARTOR = 'and'
     PLACEHOLDER_TEXT = 'Search'
 
+    searchChanged = Signal()
+
     def __init__(self, *args):
         super(LibrarySearchWidget, self).__init__(*args)
 
@@ -354,7 +357,7 @@ class LibrarySearchWidget(QLineEdit, object):
         Run the search query on the library
         """
 
-        if self.librar():
+        if self.library():
             self.library().add_query(self.query())
             self.library().search()
         else:
@@ -554,6 +557,153 @@ class LibrarySideBarWidgetItem(QTreeWidgetItem, object):
         self._collapsed_icon_path = None
 
         self._settings = dict()
+
+    def path(self):
+        """
+        Returns item path
+        :return: str
+        """
+
+        return self._path
+
+    def set_path(self, path):
+        """
+        Sets the path for the item
+        :param path: str
+        """
+
+        self._path = path
+
+    def default_icon_path(self):
+        """
+        Returns the default icon path
+        :return: str
+        """
+
+        return ''
+
+    def expanded_icon_path(self):
+        """
+        Returns the icon path to be shown when expanded
+        :return: str
+        """
+
+        return self._expanded_icon_path or tpQtLib.resource.get('icons', 'open_folder')
+
+    def collapsed_icon_path(self):
+        """
+        Returns the icon path to be shown when collapsed
+        :return: str
+        """
+
+        return self._collapsed_icon_path or tpQtLib.resource.get('icons', 'folder')
+
+    def icon_path(self):
+        """
+        Returns the icon path for the item
+        :return: str
+        """
+
+        return self._icon_path or self.default_icon_path()
+
+    def set_icon_path(self, path):
+        """
+        Sets the icon path for the item
+        :param path: str
+        """
+
+        self._icon_path = path
+        self.update_icon()
+
+    def default_icon_color(self):
+        """
+        Returns the default icon color
+        :return: str
+        """
+
+        palette = self.treeWidget().palette()
+        clr = palette.color(self.treeWidget().foregroundRole())
+        clr = color.Color.from_color(clr).to_string()
+
+        return str(clr)
+
+    def icon_color(self):
+        """
+        Returns the icon color
+        :return: variant, QColor or None
+        """
+
+        return self._icon_color or self.default_icon_color()
+
+    def set_icon_color(self, icon_color):
+        """
+        Sets the icon color
+        :param icon_color: variant, QColor or str
+        """
+
+        if isinstance(icon_color, QColor):
+            icon_color = color.Color.from_color(icon_color)
+        elif isinstance(icon_color, (str, unicode)):
+            icon_color = color.Color.from_string(icon_color)
+
+        self._icon_color = icon_color.to_string()
+        self.update_icon()
+
+    def bold(self):
+        """
+        Returns whether item text is bold or not
+        :return: bool
+        """
+
+        return self.font(0).bold()
+
+    def set_bold(self, flag):
+        """
+        Sets whether item text is bold or not
+        :param flag: bool
+        """
+
+        if flag:
+            self._settings['bold'] = flag
+
+        font = self.font(0)
+        font.setBold(flag)
+        self.setFont(0, font)
+
+    def update_icon(self):
+        """
+        Forces the icon to update
+        """
+
+        path = self.icon_path()
+        if not path:
+            if self.isExpanded():
+                path = self.expanded_icon_path()
+            else:
+                path = self.collapsed_icon_path()
+
+        clr = self.icon_color()
+        px = pixmap.Pixmap(path)
+        # px.set_color(clr)
+
+        self.setIcon(0, px)
+
+    def update(self):
+        """
+        Updates item
+        """
+
+        self.update_icon()
+
+    def settings(self):
+        """
+        Returns the current state of the item as a dictionary
+        :return: dict
+        """
+
+        settings = dict()
+
+        return settings
 
 
 class LibrarySidebarWidget(QTreeWidget, object):
@@ -766,7 +916,7 @@ class LibrarySidebarWidget(QTreeWidget, object):
             self._index[path] = item
             if self.root_text():
                 item.setText(0, self.root_text())
-                item.setBold(True)
+                item.set_bold(True)
                 item.set_icon_path('none')
                 item.setExpanded(True)
 
@@ -776,7 +926,7 @@ class LibrarySidebarWidget(QTreeWidget, object):
                     p = split.join([p, text])
                     child = LibrarySideBarWidgetItem()
                     child.setText(0, str(text))
-                    child.setPath(p)
+                    child.set_path(p)
                     parent.addChild(child)
                     self._index[p] = child
                     _recursive(child, val, split=split)
@@ -1210,3 +1360,156 @@ class FilterByMenu(QMenu, object):
                 return True
 
         return False
+
+    def set_options(self, options):
+        """
+        Sets the options to be used by the filters menu
+        :param options: dict
+        """
+
+        self._options = options
+
+    def show(self, point=None):
+        """
+        Shows the menu options
+        :param point: variant, QPoint or None
+        """
+
+        self.clear()
+
+        field = self._options.get('field')
+        queries = self.library().queries(exclude=self.name())
+        self._facets = self.library().distinct(field, queries=queries)
+        separator_action = action.SeparatorAction('Show {}'.format(field.title()), self)
+        self.addAction(separator_action)
+        label_action = action.LabelAction('Show All', self)
+        self.addAction(label_action)
+
+        label_action.setEnabled(not self.is_show_all_enabled())
+        callback = partial(self._on_show_all_clicked)
+        label_action.triggered.connect(callback)
+
+        self.addSeparator()
+
+        for facet in self._facets:
+            name = facet.get('name', '')
+            checked = self.settings().get(name, True)
+            filter_by_action = FilterByAction(self)
+            filter_by_action.set_facet(facet)
+            filter_by_action.setChecked(checked)
+            self.addAction(filter_by_action)
+            callback = partial(self._on_action_checked, name, not checked)
+            filter_by_action.triggered.connect(callback)
+
+        point = point or QCursor.pos()
+
+        self.exec_(point)
+
+    def _on_search_init(self):
+        """
+        Internal callback function that is triggered before each search to update the filter menu query
+        """
+
+        filters = list()
+        settings = self.settings()
+        field = self._options.get('field')
+        for name in settings:
+            checked = settings.get(name, True)
+            if not checked:
+                filters.append((field, 'not', name))
+
+        query = {
+            'name': self.name(),
+            'operator': 'and',
+            'filters': filters
+        }
+
+        self.library().add_query(query)
+
+    def _on_action_checked(self, name, checked):
+        """
+        Internal callback function triggered when an action has been clicked
+        :param name: str
+        :param checked: bool
+        """
+
+        if qtutils.is_control_modifier():
+            self.set_all_enabled(False)
+            self._settings[name] = True
+        else:
+            self._settings[name] = checked
+
+        self.library().search()
+
+    def _on_show_all_clicked(self):
+        """
+        Internal callback function that is triggered when the user clicks the show all action
+        """
+
+        self.set_all_enabled(True)
+        self.library().search()
+
+
+class FilterByAction(QWidgetAction, object):
+    def __init__(self, parent=None):
+        super(FilterByAction, self).__init__(parent)
+
+        self._facet = None
+        self._checked = False
+
+    def setChecked(self, checked):
+        """
+        Overrides base QWidgetAction setChecked function
+        :param checked: bool
+        """
+
+        self._checked = checked
+
+    def set_facet(self, facet):
+        """
+        Sets action facet
+        :param facet:
+        """
+
+        self._facet = facet
+
+    def createWidget(self, menu):
+        """
+        Overrides base QWidgetAction createWidget function
+        :param menu: QMenu
+        :return: QWidget
+        """
+
+        widget = QFrame(self.parent())
+        widget.setObjectName('filterByAction')
+        facet = self._facet
+        name = facet.get('name', '')
+        count = str(facet.get('count', 0))
+        title = name.replace('.', '').title()
+        label = QCheckBox(widget)
+        label.setAttribute(Qt.WA_TransparentForMouseEvents)
+        label.setText(title)
+        label.installEventFilter(self)
+        label.setChecked(self._checked)
+        label2 = QLabel(widget)
+        label2.setObjectName('actionCounter')
+        label2.setText(count)
+        layout = QHBoxLayout(widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addWidget(label, stretch=1)
+        layout.addWidget(label2)
+        widget.setLayout(layout)
+
+        label.toggled.connect(self._on_triggered)
+
+        return widget
+
+    def _on_triggered(self, checked=None):
+        """
+        Triggered when teh checkbox value has changed
+        :param checked: bool
+        """
+
+        self.triggered.emit()
+        self.parent().close()
