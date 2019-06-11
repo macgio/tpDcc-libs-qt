@@ -580,38 +580,39 @@ class LibraryWindow(tpQtLib.MainWindow, object):
             #     if path and os.path.exists(path):
             #         self.set_path(path)
 
-            dpi = self.settings().get('{}/dpi'.format(library_name), 1.0)
+            dpi = float(self.settings().get('{}/dpi'.format(library_name), 1.0))
             self.set_dpi(dpi)
 
             sizes = self.settings().get('{}/panelSizes'.format(library_name), [160, 280, 180])
+            sizes = [int(i) for i in sizes]
             if sizes and len(sizes) == 3:
                 self.set_sizes(sizes)
 
-            sidebar_visible = self.settings().get('{}/sidebarWidgetVisible'.format(library_name), True)
+            sidebar_visible = bool(self.settings().get('{}/sidebarWidgetVisible'.format(library_name), True))
             if sidebar_visible:
                 self.set_sidebar_widget_visible(sidebar_visible)
 
-            menubar_visible = self.settings().get('{}/menuBarWidgetVisible'.format(library_name), True)
+            menubar_visible = bool(self.settings().get('{}/menuBarWidgetVisible'.format(library_name), True))
             if menubar_visible:
                 self.set_menubar_widget_visible(menubar_visible)
 
-            preview_visible = self.settings().get('{}/previewWidgetVisible'.format(library_name), True)
+            preview_visible = bool(self.settings().get('{}/previewWidgetVisible'.format(library_name), True))
             if preview_visible:
                 self.set_preview_widget_visible(preview_visible)
 
-            status_visible = self.settings().get('{}/statusBarWidgetVisible'.format(library_name), True)
+            status_visible = bool(self.settings().get('{}/statusBarWidgetVisible'.format(library_name), True))
             if status_visible:
                 self.set_status_widget_visible(status_visible)
 
-            search_widget = self.settings().get('{}/searchWidget'.format(library_name), {'text': ''})
+            search_widget = dict(self.settings().get('{}/searchWidget'.format(library_name), {'text': ''}))
             if search_widget:
                 self.search_widget().set_settings(search_widget)
 
-            recursive_search = self.settings().get('{}/recursiveSearchEnabled'.format(library_name), True)
+            recursive_search = bool(self.settings().get('{}/recursiveSearchEnabled'.format(library_name), True))
             if recursive_search:
                 self.set_recursive_search_enabled(recursive_search)
 
-            filter_by_menu = self.settings().get('{}/filterByMenu'.format(library_name), {'Folder': False})
+            filter_by_menu = dict(self.settings().get('{}/filterByMenu'.format(library_name), {'Folder': False}))
             if filter_by_menu:
                 self._filter_by_menu.set_settings(filter_by_menu)
         finally:
@@ -619,15 +620,15 @@ class LibraryWindow(tpQtLib.MainWindow, object):
             self.set_refresh_enabled(is_refresh_enabled)
             self.refresh()
 
-        library_settings = self.settings().get('{}/library'.format(library_name), {'sortBy': ['name:asc'], 'groupBy': ['category:asc']})
+        library_settings = dict(self.settings().get('{}/library'.format(library_name), {'sortBy': ['name:asc'], 'groupBy': ['category:asc']}))
         if library_settings:
             self.library().set_settings(library_settings)
 
-        trash_folder_visible = self.settings().get('{}/trashFolderVisible'.format(library_name), False)
+        trash_folder_visible = bool(self.settings().get('{}/trashFolderVisible'.format(library_name), False))
         if trash_folder_visible:
             self.set_trash_folder_visible(trash_folder_visible)
 
-        viewer_settings = self.settings().get('{}/viewerWidget'.format(library_name), {'spacing': 2, 'padding': 6, 'zoomAmount': 80, 'textVisible': True})
+        viewer_settings = dict(self.settings().get('{}/viewerWidget'.format(library_name), {'spacing': 2, 'padding': 6, 'zoomAmount': 80, 'textVisible': True}))
         if viewer_settings:
             self.viewer().set_settings(viewer_settings)
 

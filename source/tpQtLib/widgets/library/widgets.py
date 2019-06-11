@@ -869,6 +869,9 @@ class LibrarySidebarWidget(QTreeWidget, object):
         :return: str
         """
 
+        if not paths:
+            return
+
         path = paths[0]
         result = None
         separator = separator or cls.DEFAULT_SEPARATOR

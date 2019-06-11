@@ -573,7 +573,7 @@ class LibraryViewer(base.BaseWidget, object):
         self._icon_size = size
         if self.is_item_text_visible():
             w = size.width()
-            h = size.width() + float(self.item_text_height())
+            h = size.width() + self.item_text_height()
             self._item_size_hint = QSize(w, h)
         else:
             self._item_size_hint = size
