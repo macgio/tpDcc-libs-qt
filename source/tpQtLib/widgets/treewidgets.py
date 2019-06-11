@@ -889,7 +889,7 @@ class FileTreeWidget(TreeWidget, object):
         :param refresh: bool, Whether to refresh QTreeWidget items after setting working directory
         """
 
-        tpQtLib.logger.debug('Setting Tree Tasks directory: {}'.format(directory))
+        tpQtLib.logger.debug('Setting Tree directory: {}'.format(directory))
 
         self._directory = directory
         if refresh:

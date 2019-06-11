@@ -181,6 +181,17 @@ class Library(QObject, object):
 
         return results
 
+    def manager(self):
+        """
+        Returns data manager used by this library
+        :return: LibraryDataManager
+        """
+
+        if not self._library_window:
+            return None
+
+        return self._library_window.manager()
+
     def name(self):
         """
         Returns the name of the library
@@ -483,6 +494,28 @@ class Library(QObject, object):
         self.add_paths([target])
         return target
 
+    def rename_item(self, item, target, extension=None):
+        """
+        Renames given item
+        :param item: LibraryItem
+        :param target: str
+        :param extension: str
+        """
+
+        extension = extension or item.extension()
+        if target and extension not in target:
+            target += extension
+
+        source = item.path()
+
+        target = utils.rename_path(source, target)
+        self.rename_path(source, target)
+
+        item.set_path(target)
+        item.save_item_data()
+
+        return target
+
     def rename_path(self, source, target):
         """
         Renames the suorce path to the given target name
@@ -547,6 +580,24 @@ class Library(QObject, object):
             results = self.sorted(results, self.sort_by())
 
         return results
+
+    def find_items_by_path(self, item_path):
+        """
+        Returns item with given path
+        :param item_path: str
+        """
+
+        found_items = list()
+
+        items = self.create_items()
+        if not items:
+            return found_items
+
+        for item in items:
+            if item.path() == item_path:
+                found_items.append(item)
+
+        return found_items
 
     def queries(self, exclude=None):
         """

@@ -558,6 +558,16 @@ class LibrarySideBarWidgetItem(QTreeWidgetItem, object):
 
         self._settings = dict()
 
+    def setSelected(self, select):
+        """
+        Overrides base LibrarySideBarWidget setSelected function
+        :param select: bool
+        """
+
+        super(LibrarySideBarWidgetItem, self).setSelected(select)
+        if select:
+            self.set_expanded_parents(select)
+
     def path(self):
         """
         Returns item path
@@ -649,6 +659,30 @@ class LibrarySideBarWidgetItem(QTreeWidgetItem, object):
         self._icon_color = icon_color.to_string()
         self.update_icon()
 
+    def textColor(self):
+        """
+        Returns the foreground color of the item
+        :return: QColor
+        """
+
+        clr = self.foreground(0).color()
+        return color.Color.from_color(clr)
+
+    def setTextColor(self, text_color):
+        """
+        Sets the foreground color to the given color
+        :param text_color: variant, QColor or str
+        """
+
+        if isinstance(text_color, QColor):
+            text_color = color.Color.from_color(text_color)
+        elif isinstance(text_color, (str, unicode)):
+            text_color = color.Color.from_string(text_color)
+        self._settings['textColor'] = text_color.to_string()
+        brush = QBrush()
+        brush.setColor(text_color)
+        self.setForeground(0, brush)
+
     def bold(self):
         """
         Returns whether item text is bold or not
@@ -688,6 +722,40 @@ class LibrarySideBarWidgetItem(QTreeWidgetItem, object):
 
         self.setIcon(0, px)
 
+    def url(self):
+        """
+        Returns the url path
+        :return: QUrl
+        """
+
+        return QUrl(self.path())
+
+    def parents(self):
+        """
+        Returns all item parents
+        :return: list(LibrarySidebarWidgetItem)
+        """
+
+        parents = list()
+        parent = self.parent()
+        if parent:
+            parents.append(parent)
+            while parent.parent():
+                parent = parent.parent()
+                parents.append(parent)
+
+        return parents
+
+    def set_expanded_parents(self, expanded):
+        """
+        Sets all the parents of the item to the value of expanded
+        :param expanded: bool
+        """
+
+        parents = self.parents()
+        for parent in parents:
+            parent.setExpanded(expanded)
+
     def update(self):
         """
         Updates item
@@ -703,7 +771,57 @@ class LibrarySideBarWidgetItem(QTreeWidgetItem, object):
 
         settings = dict()
 
+        is_selected = self.isSelected()
+        if is_selected:
+            settings['selected'] = is_selected
+        is_expanded = self.isExpanded()
+        if is_expanded:
+            settings['expanded'] = is_expanded
+        icon_path = self.icon_path()
+        if icon_path != self.default_icon_path():
+            settings['iconPath'] = icon_path
+        icon_color = self.icon_color()
+        if icon_color != self.default_icon_color():
+            settings['iconColor'] = icon_color
+        bold = self._settings.get('bold')
+        if bold:
+            settings['bold'] = bold
+        text_color = self._settings.get('textColor')
+        if text_color:
+            settings['textColor'] = text_color
+
         return settings
+
+    def set_settings(self, settings):
+        """
+        Sets the current state of the item from a dictionary
+        :param settings: dict
+        """
+
+        print('Settings: {}'.format(settings))
+
+        text = settings.get('text')
+        if text:
+            self.setText(0, text)
+        icon_path = settings.get('iconPath')
+        if icon_path:
+            self.set_icon_path(icon_path)
+        icon_color = settings.get('iconColor')
+        if icon_color:
+            self.set_icon_color(icon_color)
+        is_selected = settings.get('selected')
+        if is_selected:
+            self.setSelected(is_selected)
+        is_expanded = settings.get('expanded')
+        if is_expanded and self.childCount() > 0:
+            self.setExpanded(is_expanded)
+        bold = settings.get('bold')
+        if bold:
+            self.set_bold(bold)
+        text_color = settings.get('textColor')
+        if text_color:
+            self.setTextColor(text_color)
+
 
 
 class LibrarySidebarWidget(QTreeWidget, object):
@@ -831,7 +949,7 @@ class LibrarySidebarWidget(QTreeWidget, object):
         for item in self.items():
             item_settings = item.settings()
             if item_settings:
-                settings[item.path()] = item.settings
+                settings[item.path()] = item.settings()
 
         return settings
 

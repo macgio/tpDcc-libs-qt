@@ -49,6 +49,9 @@ class LibraryTreeWidget(mixin.LibraryViewWidgetMixin, QTreeWidget):
     ##########################################################################################
     """
 
+    def _on_now(self, *args, **kwargs):
+        print('asdfasfasfasdfasdfasdf')
+
     def mouseMoveEvent(self, event):
         """
         Triggered when the user moves the mouse over the current viewport
@@ -194,7 +197,7 @@ class LibraryTreeWidget(mixin.LibraryViewWidgetMixin, QTreeWidget):
         for item in items:
             self.setItemSelected(item, value)
         if scroll_to:
-            self.items_widget().scroll_to_selected_item()
+            self.viewer().scroll_to_selected_item()
 
     def selected_item(self):
         """
@@ -534,7 +537,7 @@ class LibraryTreeWidget(mixin.LibraryViewWidgetMixin, QTreeWidget):
         clipboard = QApplication.clipboard()
         clipboard.setText(text, QClipboard.Clipboard)
 
-    def _create_copy_text_men(self):
+    def create_copy_text_menu(self):
         """
         Creates a menu to cpoy the selected item data to the clipboard
         :return: QMenu
@@ -571,6 +574,7 @@ class LibraryTreeWidget(mixin.LibraryViewWidgetMixin, QTreeWidget):
         Internal callback function that is called when an item of the tree is clicked
         """
 
+        print('cliccked')
         item.clicked()
 
     def _on_item_double_clicked(self, item):
@@ -578,4 +582,5 @@ class LibraryTreeWidget(mixin.LibraryViewWidgetMixin, QTreeWidget):
         Internal callback function that is called when an item of the tree is double clicked
         """
 
+        print('duble lcick')
         item.double_clicked()

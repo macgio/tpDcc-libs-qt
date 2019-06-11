@@ -16,7 +16,6 @@ from tpQtLib.Qt.QtCore import *
 from tpQtLib.Qt.QtWidgets import *
 from tpQtLib.Qt.QtGui import *
 
-import tpQtLib
 import tpDccLib as tp
 from tpQtLib.widgets import splitters, directory
 
@@ -43,9 +42,11 @@ class Dialog(QDialog, object):
         self.setWindowTitle(kwargs.pop('title', 'Maya Dialog'))
 
         self.main_layout = None
+        self._dpi = kwargs.get('dpi', 1.0)
         self._has_title = kwargs.pop('has_title', False)
         self._title = kwargs.pop('title', 'tpRigToolkit')
         self._title_pixmap = kwargs.pop('title_pixmap', None)
+        self._theme = None
 
         self.ui()
         self.setup_signals()
@@ -120,6 +121,22 @@ class Dialog(QDialog, object):
             if self._has_title and self._title_pixmap:
                 self._logo_scene.addPixmap(self._title_pixmap)
                 title_layout.addWidget(self.logo_view)
+
+    def dpi(self):
+        """
+        Return the current dpi for the window
+        :return: float
+        """
+
+        return float(self._dpi)
+
+    def set_dpi(self, dpi):
+        """
+        Sets current dpi for the window
+        :param dpi: float
+        """
+
+        self._dpi = dpi
 
     def setup_signals(self):
         pass

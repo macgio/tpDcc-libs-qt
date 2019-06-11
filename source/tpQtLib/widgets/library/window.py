@@ -9,7 +9,6 @@ from __future__ import print_function, division, absolute_import
 
 import os
 import time
-import copy
 from functools import partial
 
 from tpQtLib.Qt.QtCore import *
@@ -22,7 +21,7 @@ import tpDccLib as tp
 
 import tpQtLib
 from tpQtLib.core import base, icon, menu, qtutils, animation
-from tpQtLib.widgets import stack, messagebox
+from tpQtLib.widgets import stack, messagebox, action
 from tpQtLib.widgets.library import consts, utils, library, viewer, widgets
 
 if tp.is_maya():
@@ -32,6 +31,22 @@ if tp.is_maya():
 else:
     show_wait_cursor_decorator = decorators.empty_decorator
     show_arrow_cursor_decorator = decorators.empty_decorator
+
+
+class GlobalSignal(QObject):
+    """
+    Signals that are triggered by all library instances
+    """
+
+    debugModeChanged = Signal(object, object)
+    folderSelectionChanged = Signal(object, object)
+
+
+class PreviewFrame(QFrame):
+    pass
+
+class SidebarFrame(QFrame):
+    pass
 
 
 class LibraryWindow(tpQtLib.MainWindow, object):
@@ -47,6 +62,7 @@ class LibraryWindow(tpQtLib.MainWindow, object):
     FILTERBY_MENU_CLASS = widgets.FilterByMenu
     PROGRESS_BAR_VISIBLE = consts.PROGRESS_BAR_VISIBLE
 
+    globalSignal = GlobalSignal()
     loaded = Signal()
     lockChanged = Signal(object)
     debugModeChanged = Signal(object)
@@ -55,12 +71,6 @@ class LibraryWindow(tpQtLib.MainWindow, object):
     folderRenamed = Signal(str, str)
     folderSelectionChanged = Signal(object)
 
-    class PreviewFrame(QFrame):
-        pass
-
-    class SidebarFrame(QFrame):
-        pass
-
     def __init__(self, parent=None, name='', path='', library_icon_path=None, allow_non_path=False, **kwargs):
 
         self._items = list()
@@ -68,6 +78,7 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         self._is_debug = False
         self._is_locked = False
         self._preview_widget = None
+        self._new_item_widget = None
         self._progress_bar = None
         self._current_item = None
         self._library = None
@@ -85,6 +96,7 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         self._sidebar_widget_visible = True
         self._preview_widget_visible = True
         self._status_widget_visible = True
+        self._new_item_widget_visible = False
 
         super(LibraryWindow, self).__init__(name=name, parent=parent, show_dragger=False, auto_load=False, **kwargs)
 
@@ -132,19 +144,19 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         lib.dataChanged.connect(self.refresh)
         lib.searchTimeFinished.connect(self._on_search_finished)
 
-        self._sidebar_frame = LibraryWindow.SidebarFrame(self)
+        self._sidebar_frame = SidebarFrame(self)
         sidebar_frame_lyt = QVBoxLayout(self)
         sidebar_frame_lyt.setContentsMargins(0, 1, 0, 0)
         self._sidebar_frame.setLayout(sidebar_frame_lyt)
 
-        self._new_item_frame = LibraryWindow.PreviewFrame(self)
+        self._new_item_frame = PreviewFrame(self)
         self._new_item_frame.setMinimumWidth(5)
         new_item_lyt = QVBoxLayout()
         new_item_lyt.setSpacing(0)
         new_item_lyt.setContentsMargins(0, 0, 0, 0)
         self._new_item_frame.setLayout(new_item_lyt)
 
-        self._preview_frame = LibraryWindow.PreviewFrame(self)
+        self._preview_frame = PreviewFrame(self)
         self._preview_frame.setMinimumWidth(5)
         preview_frame_lyt = QVBoxLayout()
         preview_frame_lyt.setSpacing(0)
@@ -289,7 +301,7 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         """
 
         for item in self.selected_items():
-            item.keyReleaseEvent(event)
+            item.key_release_event(event)
         super(LibraryWindow, self).keyReleaseEvent(event)
 
     def show(self, **kwargs):
@@ -418,7 +430,11 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         :param path: str
         """
 
-        path = path_utils.real_path(path)
+        if path is None:
+            path = ''
+        else:
+            path = path_utils.real_path(path)
+
         if path == self.path():
             tpQtLib.logger.warning('Path is already set!')
             return
@@ -444,14 +460,15 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         if not create_widget:
             return
 
-        self.set_preview_widget_visible(True)
-        self.viewer().clear_selection()
+        self.set_new_item_widget_visible(True)
+        # self.viewer().clear_selection()
 
-        fsize, rsize, psize = self._splitter.sizes()
-        if psize < 150:
-            self.set_sizes((fsize, rsize, 180))
+        # fsize, rsize, psize = self._splitter.sizes()
+        # if psize < 150:
+        #     self.set_sizes((fsize, rsize, 180))
 
-        self.set_preview_widget(create_widget)
+        # self.set_preview_widget(create_widget)
+        self.set_new_item_widget(create_widget)
         self.stack.slide_in_index(1)
 
     def refresh(self):
@@ -529,7 +546,6 @@ class LibraryWindow(tpQtLib.MainWindow, object):
             return
 
         library_name = self.objectName().upper()
-        print(self.settings().fileName())
         self.settings().set('{}/path'.format(library_name), self.path())
         self.settings().set('{}/dpi'.format(library_name), self.dpi())
         self.settings().set('{}/panelSizes'.format(library_name), self._splitter.sizes())
@@ -559,13 +575,12 @@ class LibraryWindow(tpQtLib.MainWindow, object):
             self.set_refresh_enabled(False)
             self.viewer().set_toast_enabled(False)
 
-            if not self.path():
-                path = self.settings().get('{}/path'.format(library_name))
-                if path and os.path.exists(path):
-                    self.set_path(path)
+            # if not self.path():
+            #     path = self.settings().get('{}/path'.format(library_name))
+            #     if path and os.path.exists(path):
+            #         self.set_path(path)
 
             dpi = self.settings().get('{}/dpi'.format(library_name), 1.0)
-            print('DPI: {}'.format(dpi))
             self.set_dpi(dpi)
 
             sizes = self.settings().get('{}/panelSizes'.format(library_name), [160, 280, 180])
@@ -605,7 +620,6 @@ class LibraryWindow(tpQtLib.MainWindow, object):
             self.refresh()
 
         library_settings = self.settings().get('{}/library'.format(library_name), {'sortBy': ['name:asc'], 'groupBy': ['category:asc']})
-        print(library_settings)
         if library_settings:
             self.library().set_settings(library_settings)
 
@@ -620,23 +634,6 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         self.viewer().set_toast_enabled(True)
 
         self.update_filters_button()
-
-    # def set_geometry_settings(self, settings):
-    #     """
-    #     Set the geometry of the widget with the given values
-    #     :param settings: list(int)
-    #     """
-    #
-    #     x, y, width, height = settings
-    #
-    #     screen_geo = QApplication.desktop().screenGeometry()
-    #     screen_width = screen_geo.width()
-    #     screen_height = screen_geo.height()
-    #
-    #     if x <= 0 or y <= 0 or x >= screen_width or y >= screen_height:
-    #         self.center(width, height)
-    #     else:
-    #         self.window().setGeometry(x, y, width, height)
 
     def update_settings(self, settings):
         """
@@ -1004,7 +1001,7 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         queries = [{'filters': [('type', 'is', 'Folder')]}]
 
         items = self.library().find_items(queries)
-        trash_icon_path = tpQtLib.resource.icon('trash')
+        trash_icon_path = tpQtLib.resource.get('icons', 'trash')
 
         for item in items:
             path = item.path()
@@ -1056,11 +1053,91 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         path = self.selected_folder_path()
         items = list()
         if path:
-            item = self.manager.item_from_path(path, library_window=self)
+            item = self.manager().item_from_path(path, library_window=self)
             if item:
                 items = [item]
 
         return self._create_item_context_menu(items)
+
+    """
+    ##########################################################################################
+    NEW ITEM WIDGET
+    ##########################################################################################
+    """
+
+    def new_item_widget(self):
+        """
+        Returns the current new item widget
+        :return: QWidget
+        """
+
+        return self._new_item_widget
+
+    def set_new_item_widget(self, widget):
+        """
+        Sets the new item widget
+        :param widget: QWidget
+        """
+
+        if self._new_item_widget == widget:
+            msg = 'New Item widget already contains widghet {}'.format(widget)
+            tpQtLib.logger.debug(msg)
+        else:
+            self.close_new_item_widget()
+            self._new_item_widget = widget
+            if self._new_item_widget:
+                self._new_item_frame.layout().addWidget(self._new_item_widget)
+                self._new_item_widget.show()
+
+    def is_new_item_widget_visible(self):
+        """
+        Returns whether new item widget is visible or not
+        :return: bool
+        """
+
+        return self._new_item_widget_visible
+
+    def set_new_item_widget_visible(self, flag):
+        """
+        Set if the New Item widget should be showed or not
+        :param flag: bool
+        """
+
+        flag = bool(flag)
+        self._new_item_widget_visible = flag
+
+        if flag:
+            self.stack.slide_in_index(1)
+            self._new_item_frame.show()
+        else:
+            self.stack.slide_in_index(0)
+            self._new_item_frame.hide()
+
+        self.update_view_button()
+
+    def clear_new_item_widget(self):
+        """
+        Set the default new item widget
+        """
+
+        self._new_item_widget = None
+        widget = base.PlaceholderWidget()
+        self.set_new_item_widget(widget)
+
+    def close_new_item_widget(self):
+        """
+        Close and delete the new item widget
+        """
+
+        lyt = self._new_item_frame.layout()
+
+        while lyt.count():
+            item = lyt.takeAt(0)
+            item.widget().hide()
+            item.widget().close()
+            item.widget().deleteLater()
+
+        self._new_item_widget = None
 
     """
     ##########################################################################################
@@ -1410,12 +1487,10 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         self.reload_stylesheet()
 
     @show_wait_cursor_decorator
-    def sync(self):
+    def sync(self, force_start=False):
         """
         Sync any data that might be out of date with the model
         """
-
-        progress_bar = self.status_widget().progress_bar()
 
         @show_wait_cursor_decorator
         def _sync():
@@ -1424,13 +1499,20 @@ class LibraryWindow(tpQtLib.MainWindow, object):
             elapsed_time = time.time() - elapsed_time
             self.status_widget().show_info_message('Synced items in {0:.3f} seconds'.format(elapsed_time))
             self.set_progress_bar_value('Done')
-            animation.fade_out_widget(progress_bar, duration=500, on_finished=progress_bar.close)
+            if force_start:
+                progress_bar.close()
+            else:
+                animation.fade_out_widget(progress_bar, duration=500, on_finished=progress_bar.close)
 
-        self.set_progress_bar_value('Syncing')
-        animation.fade_in_widget(progress_bar, duration=1, on_finished=_sync)
-
+        progress_bar = self.status_widget().progress_bar()
         if self.PROGRESS_BAR_VISIBLE:
             progress_bar.show()
+        self.set_progress_bar_value('Syncing')
+
+        if force_start:
+            _sync()
+        else:
+            animation.fade_in_widget(progress_bar, duration=1, on_finished=_sync)
 
     def set_progress_bar_value(self, label, value=-1):
         """
@@ -1782,13 +1864,77 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         context_menu.setTitle('Settings')
 
         if consts.SETTINGS_DIALOG_ENABLED:
-            action = context_menu.addAction('Settings')
-            action.triggered.connect(self._on_show_settings_dialog)
+            settings_action = context_menu.addAction('Settings')
+            settings_action.triggered.connect(self._on_show_settings_dialog)
 
         sync_action = context_menu.addAction('Sync')
         sync_action.triggered.connect(self.sync)
 
         context_menu.addSeparator()
+
+        if consts.DPI_ENABLED:
+            dpi_action = action.SliderAction('Dpi', context_menu)
+            dpi = self.dpi() * 100.0
+            dpi_action.slider().setRange(consts.DPI_MIN_VALUE, consts.DPI_MAX_VALUE)
+            dpi_action.slider().setValue(dpi)
+            dpi_action.valueChanged.connect(self._on_dpi_slider_changed)
+            context_menu.addAction(dpi_action)
+            context_menu.addSeparator()
+
+        show_menu_action = QAction('Show Menu', context_menu)
+        show_menu_action.setCheckable(True)
+        show_menu_action.setChecked(self.is_menubar_widget_visible())
+        show_menu_action.triggered[bool].connect(self.set_menubar_widget_visible)
+        context_menu.addAction(show_menu_action)
+
+        show_sidebar_action = QAction('Show Sidebar', context_menu)
+        show_sidebar_action.setCheckable(True)
+        show_sidebar_action.setChecked(self.is_sidebar_widget_visible())
+        show_sidebar_action.triggered[bool].connect(self.set_sidebar_widget_visible)
+        context_menu.addAction(show_sidebar_action)
+
+        show_preview_action = QAction('Show Preview', context_menu)
+        show_preview_action.setCheckable(True)
+        show_preview_action.setChecked(self.is_preview_widget_visible())
+        show_preview_action.triggered[bool].connect(self.set_preview_widget_visible)
+        context_menu.addAction(show_preview_action)
+
+        show_status_action = QAction('Show Status', context_menu)
+        show_status_action.setCheckable(True)
+        show_status_action.setChecked(self.is_status_widget_visible())
+        show_status_action.triggered[bool].connect(self.set_status_widget_visible)
+        context_menu.addAction(show_status_action)
+
+        context_menu.addSeparator()
+
+        if self.trash_enabled():
+            show_trash_action = QAction('Show Trash Folder', context_menu)
+            show_trash_action.setEnabled(self.trash_folder_exists())
+            show_trash_action.setCheckable(True)
+            show_trash_action.setChecked(self.is_trash_folder_visible())
+            show_trash_action.triggered[bool].connect(self.set_trash_folder_visible)
+            context_menu.addAction(show_trash_action)
+
+        context_menu.addSeparator()
+
+        recursive_search_action = QAction('Enable Recrusive Search', context_menu)
+        recursive_search_action.setCheckable(True)
+        recursive_search_action.setChecked(self.is_recursive_search_enabled())
+        recursive_search_action.triggered[bool].connect(self.set_recursive_search_enabled)
+        context_menu.addAction(recursive_search_action)
+
+        context_menu.addSeparator()
+
+        view_menu = self.viewer().create_settings_menu()
+        context_menu.addMenu(view_menu)
+
+        # context_menu.addSeparator()
+        #
+        # debug_mode_action = QAction('Debug Mode')
+        # debug_mode_action.setCheckable(True)
+        # debug_mode_action.setChecked(self.is_debug())
+        # debug_mode_action.triggered[bool].connect(self.set_debug_mode)
+        # context_menu.addAction(debug_mode_action)
 
         return context_menu
 
@@ -1924,7 +2070,7 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         :param item, LibraryItem
         """
 
-        pass
+        self.save_custom_order()
 
     def _on_item_dropped(self, event):
         """
@@ -1946,7 +2092,14 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         self.itemSelectionChanged.emit(item)
 
     def _on_folder_selection_changed(self):
-        pass
+        """
+        Internal callback function that is triggered when a folder is selected or deselected
+        """
+
+        path = self.selected_folder_path()
+        self.library().search()
+        self.folderSelectionChanged.emit(path)
+        self.globalSignal.folderSelectionChanged.emit(self, path)
 
     def _on_show_folder_menu(self, pos=None):
         """
@@ -1955,3 +2108,11 @@ class LibraryWindow(tpQtLib.MainWindow, object):
 
         self.show_folder_menu(pos=pos)
 
+    def _on_dpi_slider_changed(self, value):
+        """
+        Internal callback function triggered when the dpi action slider changes its values
+        :param value: float
+        """
+
+        dpi = value / 100.0
+        self.set_dpi(dpi)

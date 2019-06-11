@@ -642,7 +642,7 @@ def rename_path(source, target, extension=None, force=False):
     dirname = os.path.dirname(source)
 
     if '/' not in target:
-        target = os.path.join(dir(dirname, target))
+        target = os.path.join(dirname, target)
 
     if extension and extension not in target:
         target += extension

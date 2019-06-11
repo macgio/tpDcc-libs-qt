@@ -39,12 +39,6 @@ class GlobalSignals(QObject, object):
     blendChanged = Signal(float)
 
 
-class NamespaceOption(object):
-    FromFile = 'file'
-    FromCustom = 'custom'
-    FromSelection = 'selection'
-
-
 class LibraryItem(QTreeWidgetItem, object):
     """
     Stores information to work on Library views
@@ -69,6 +63,7 @@ class LibraryItem(QTreeWidgetItem, object):
     EnableDelete = consts.ITEM_DEFAULT_ENABLE_DELETE
     EnableNestedItems = consts.ITEM_DEFAULT_ENABLE_NESTED_ITEMS
 
+    DataType = None
     Extension = consts.ITEM_DEFAULT_EXTENSION
     Extensions = list()
 
@@ -136,26 +131,12 @@ class LibraryItem(QTreeWidgetItem, object):
         self._library = None
         self._library_window = None
 
-        self._current_load_values = dict()
-        self._current_load_schema = list()
-        self._current_save_schema = list()
-
         super(LibraryItem, self).__init__(*args)
 
         self._worker = image.ImageWorker()
         self._worker.setAutoDelete(False)
         self._worker.signals.triggered.connect(self._on_thumbnail_from_image)
         self._worker_started = False
-
-        self._namespaces = list()
-        self._namespace_options = NamespaceOption.FromSelection
-
-        self._data_class = None
-        self._data_object = None
-
-        self._transfer_class = None
-        self._transfer_object = None
-        self._transfer_basename = None
 
         if library_window:
             self.set_library_window(library_window)
@@ -166,7 +147,6 @@ class LibraryItem(QTreeWidgetItem, object):
         if path:
             self.set_path(path)
 
-        self.set_transfer_class(utils.TransferObject)
 
     def __eq__(self, other):
         return id(other) == id(self)
@@ -211,7 +191,7 @@ class LibraryItem(QTreeWidgetItem, object):
         :param library_window: LibraryWindow
         """
 
-        settings = library_window.settings
+        settings = library_window.settings()
 
         widget = cls.CreateWidgetClass(item=cls(), settings=settings, parent=library_window)
         widget.set_library_window(library_window)
@@ -301,11 +281,11 @@ class LibraryItem(QTreeWidgetItem, object):
         :return: QIcon
         """
 
-        icon = QTreeWidgetItem.icon(self, column)
-        if not icon and column == self.DEFAULT_THUMBNAIL_COLUMN:
-            icon = self.thumbnail_icon()
+        ic = QTreeWidgetItem.icon(self, column)
+        if not ic and column == self.DEFAULT_THUMBNAIL_COLUMN:
+            ic = self.thumbnail_icon()
 
-        return icon
+        return ic
 
     def setIcon(self, column, icon, color=None):
         """
@@ -457,26 +437,21 @@ class LibraryItem(QTreeWidgetItem, object):
 
         self.rename(target)
 
-    def rename(self, target, extension=None):
+    def rename(self, target, extension=None, rename_file=False):
         """
         Renames the current path to the give destination path
         :param target: str
         :param extension: bool or None
+        :param rename_file: bool or None
         """
 
-        extension = extension or self.extension()
-        if target and extension not in target:
-            target += extension
+        library = self.library()
+        if not library:
+            tpQtLib.logger.error('Impossible to rename item because library is not defined!')
+            return
 
         source = self.path()
-
-        # Rename path in filesystem and database
-        target = utils.rename_path(source, target)
-        if self.library():
-            self.library().rename_path(source, target)
-
-        self.set_path(target)
-        self.save_item_data()
+        self.library().rename_item(self, target, extension, rename_file=rename_file)
 
         self.renamed.emit(self, source, target)
 
@@ -581,159 +556,13 @@ class LibraryItem(QTreeWidgetItem, object):
 
         self._group_item = group_item
 
-    def data_class(self):
-        """
-        Returns the data class for this item
-        :return: Data
-        """
-
-        return self._data_class
-
-    def set_data_class(self, class_name):
-        """
-        Sets the data class for this item
-        :param class_name: str
-        """
-
-        self._data_class = class_name
-
-    def data_object(self, name=None, path=None):
-        """
-        Returns the data object for this item
-        :param name: str
-        :param path: str
-        :return: Data
-        """
-
-        if not self._data_object:
-            name = name or self.name()
-            dirname = path or self.dirname()
-            self._data_object = self.data_class()(name, path)
-            self._data_object.set_directory(dirname)
-
-        return self._data_object
-
-    """
-    ##########################################################################################
-    ITEM PROPERTIES
-    ##########################################################################################
-    """
-
-    def transfer_class(self):
-        """
-        Returns the transfer class used to read and write data
-        :return: TransferObject
-        """
-
-        return self._transfer_class
-
-    def set_transfer_class(self, class_name):
-        """
-        Sets the transfer class used to read and write the data
-        :param class_name: TransferObject
-        """
-
-        self._transfer_class = class_name
-
-    def transfer_basename(self):
-        """
-        Returns the filename of the transfer path
-        :return: str
-        """
-
-        return self._transfer_basename
-
-    def set_transfer_basename(self, transfer_basename):
-        """
-        Sets the filename of the transfer path
-        :param transfer_basename: str
-        """
-
-        self._transfer_basename = transfer_basename
-
-    def transfer_path(self):
-        """
-        Returns the disk location to transfer path
-        :return: str
-        """
-
-        if self.transfer_basename():
-            return os.path.join(self.path(), self.transfer_basename())
-        else:
-            return self.path()
-
-    def transfer_object(self):
-        """
-        Returns the transfer object used to read and write the data
-        :return: TransferObject
-        """
-
-        if not self._transfer_object:
-            path = self.transfer_path()
-            self._transfer_object = self.transfer_class().from_path(path)
-
-        return self._transfer_object
-
-    def owner(self):
-        """
-        Returns the user who created this item
-        :return: str or None
-        """
-
-        return self.transfer_object().metadata().get('user', '')
-
-    def description(self):
-        """
-        Returns the user description for this item
-        :return: str
-        """
-
-        return self.transfer_object().metadata().get('description', '')
-
-    def object_count(self):
-        """
-        Returns the number of objects this item contains
-        :return: int
-        """
-
-        return self.transfer_object().count()
-
     def info(self):
         """
         Returns the info to display to the user
         :return: list(dict)
         """
 
-        ctime = self.ctime()
-        if ctime:
-            ctime = timedate.time_ago(ctime)
-
-        count = self.object_count()
-        plural = 's' if count > 1 else ''
-        contains = str(count) + ' Object' + plural
-
-        return [
-            {
-                'name': 'name',
-                'value': self.name()
-            },
-            {
-                "name": "owner",
-                "value": self.owner(),
-            },
-            {
-                "name": "created",
-                "value": ctime,
-            },
-            {
-                "name": "contains",
-                "value": contains,
-            },
-            {
-                "name": "comment",
-                "value": self.description() or "No comment",
-            },
-        ]
+        return list()
 
     """
     ##########################################################################################
@@ -840,7 +669,7 @@ class LibraryItem(QTreeWidgetItem, object):
         Triggered when an item is double clicked
         """
 
-        pass
+        self.load_from_current_options()
 
     def selection_changed(self):
         """
@@ -1215,6 +1044,9 @@ class LibraryItem(QTreeWidgetItem, object):
         :return: str
         """
 
+        if not self.path():
+            return self.DefaultThumbnailPath
+
         thumbnail_path = self.path() + '/thumbnail.jpg'
         if os.path.exists(thumbnail_path):
             return thumbnail_path
@@ -1416,7 +1248,7 @@ class LibraryItem(QTreeWidgetItem, object):
 
         if btn == QMessageBox.Yes:
             library = self.library()
-            item = LibraryItem(path=path, librar=library)
+            item = LibraryItem(path=path, library=library)
             self.library_window().move_items_to_trash([item])
             self.set_path(path)
         else:
@@ -1445,23 +1277,7 @@ class LibraryItem(QTreeWidgetItem, object):
         :return: dict
         """
 
-        return [
-            {
-                'name': 'name',
-                'type': 'string',
-                'layout': 'vertical'
-            },
-            {
-                'name': 'comment',
-                'type': 'text',
-                'layout': 'vertical'
-            },
-            {
-                'name': 'contains',
-                'type': 'label',
-                'label': {'visible': False}
-            }
-        ]
+        return list()
 
     def load_schema(self):
         """
@@ -1469,7 +1285,7 @@ class LibraryItem(QTreeWidgetItem, object):
         :return: list(dict)
         """
 
-        return []
+        return list()
 
     def save_validator(self, **fields):
         """
@@ -1478,19 +1294,7 @@ class LibraryItem(QTreeWidgetItem, object):
         :return: list(dict)
         """
 
-        self._current_save_schema = fields
-
-        selection = tp.Dcc.selected_nodes(full_path=True) or list()
-        count = len(selection)
-        plural = 's' if count > 1 else ''
-        msg = '{} object{} selected for saving'.format(count, plural)
-
-        return [
-            {
-                'name': 'contains',
-                'value': msg
-            }
-        ]
+        return list()
 
     def load_validator(self, **options):
         """
@@ -1499,7 +1303,7 @@ class LibraryItem(QTreeWidgetItem, object):
         :return: list(dict)
         """
 
-        self._current_load_values = options
+        return list()
 
     """
     ##########################################################################################
@@ -1843,10 +1647,10 @@ class LibraryItem(QTreeWidgetItem, object):
             self.paint_background(painter, option, index)
             if self.is_text_visible():
                 self.paint_text(painter, option, index)
-            # self.paint_icon(painter, option, index)
-            # if index.column() == 0:
-            #     if self.image_sequence():
-            #         self.paint_playhead(painter, option)
+            self.paint_icon(painter, option, index)
+            if index.column() == 0:
+                if self.image_sequence():
+                    self.paint_playhead(painter, option)
         finally:
             painter.restore()
 
@@ -2169,7 +1973,7 @@ class LibraryItem(QTreeWidgetItem, object):
         show_in_folder_action = QAction('Show in Folder', menu)
         copy_path_action = QAction('Copy Path', menu)
 
-        rename_action.triggered.connect(self._on_show_delete_dialog)
+        rename_action.triggered.connect(self._on_show_rename_dialog)
         move_to_action.triggered.connect(self._on_move_dialog)
         show_in_folder_action.triggered.connect(self._on_show_in_folder)
         copy_path_action.triggered.connect(self._on_copy_path)
@@ -2190,8 +1994,18 @@ class LibraryItem(QTreeWidgetItem, object):
     ##########################################################################################
     """
 
-    def _on_thumbnail_from_image(self):
-        pass
+    def _on_thumbnail_from_image(self, image):
+        """
+        Internal callback function that is called when an image object has finished loading
+        """
+
+        self.clear_cache()
+        pixmap = QPixmap()
+        pixmap.convertFromImage(image)
+        icon = QIcon(pixmap)
+        self._thumbnail_icon = icon
+        if self.viewer():
+            self.viewer().update()
 
     def _on_frame_changed(self, frame):
         """
@@ -2203,8 +2017,8 @@ class LibraryItem(QTreeWidgetItem, object):
         if not qtutils.is_control_modifier():
             self.update_frame()
 
-    def _on_show_delete_dialog(self):
-        pass
+    def _on_show_rename_dialog(self):
+        self.show_rename_dialog()
 
     def _on_show_delete_dialog(self):
         pass
@@ -2324,22 +2138,22 @@ class LibraryGroupItem(LibraryItem, object):
         :param index: QModelIndex
         """
 
-        # super(LibraryGroupItem, self).paint_background(painter, option, index)
-        #
-        # painter.setPen(QPen(Qt.NoPen))
-        # visual_rect = self.visualRect(option)
-        # text = self.name()
-        # metrics = QFontMetrics(self._font)
-        # text_width = metrics.width(text)
-        # padding = (25 * self.dpi())
-        # visual_rect.setX(text_width + padding)
-        # visual_rect.setY(visual_rect.y() + (visual_rect.height() * 2))
-        # visual_rect.setRight(2 * self.dpi())
-        # visual_rect.setWidth(visual_rect.width() - padding)
-        #
-        # color = QColor(self.text_color().red(), self.text_color().green(), self.text_color().blue(), 10)
-        # painter.setBrush(QBrush(color))
-        # painter.drawRect(visual_rect)
+        super(LibraryGroupItem, self).paint_background(painter, option, index)
+
+        painter.setPen(QPen(Qt.NoPen))
+        visual_rect = self.visualRect(option)
+        text = self.name()
+        metrics = QFontMetrics(self._font)
+        text_width = metrics.width(text)
+        padding = (25 * self.dpi())
+        visual_rect.setX(text_width + padding)
+        visual_rect.setY(visual_rect.y() + (visual_rect.height() / 2))
+        visual_rect.setHeight(2 * self.dpi())
+        visual_rect.setWidth(visual_rect.width() - padding)
+
+        color = QColor(self.text_color().red(), self.text_color().green(), self.text_color().blue(), 10)
+        painter.setBrush(QBrush(color))
+        painter.drawRect(visual_rect)
 
     def children(self):
         """
@@ -2518,3 +2332,319 @@ class LibraryFolderItem(LibraryItem, object):
             data['iconPath'] = self.TrashIconPath
 
         return data
+
+
+class NamespaceOption(object):
+    FromFile = 'file'
+    FromCustom = 'custom'
+    FromSelection = 'selection'
+
+
+class BaseItem(LibraryItem, object):
+    def __init__(self, *args, **kwargs):
+        super(BaseItem, self).__init__(*args, **kwargs)
+
+        self._current_load_values = dict()
+        self._current_load_schema = list()
+        self._current_save_schema = list()
+
+        self._namespaces = list()
+        self._namespace_options = NamespaceOption.FromSelection
+
+        self._transfer_class = None
+        self._transfer_object = None
+        self._transfer_basename = None
+
+        self.set_transfer_class(utils.TransferObject)
+
+    """
+    ##########################################################################################
+    OVERRIDES
+    ##########################################################################################
+    """
+
+    def load(self, objects=None, namespaces=None, **kwargs):
+        """
+        Loads teh data from the transfer object
+        :param objects: list(str) or None
+        :param namespaces: list(str) or None
+        :param kwargs: dict
+        """
+
+        tpQtLib.logger.debug('Loading: {}'.format(self.transfer_path()))
+        self.transfer_object().load(objects=objects, namespaces=namespaces, **kwargs)
+        tpQtLib.logger.debug('Loaded: {}'.format(self.transfer_path()))
+
+    def load_validator(self, **options):
+        """
+        Validates the current load options
+        :param options: dict
+        :return: list(dict)
+        """
+
+        self._current_load_values = options
+
+    def save_validator(self, **fields):
+        """
+        Validates the given save fields
+        :param fields: dict
+        :return: list(dict)
+        """
+
+        self._current_save_schema = fields
+
+        selection = tp.Dcc.selected_nodes(full_path=True) or list()
+        count = len(selection)
+        plural = 's' if count > 1 else ''
+        msg = '{} object{} selected for saving'.format(count, plural)
+
+        return [
+            {
+                'name': 'contains',
+                'value': msg
+            }
+        ]
+
+    def save_schema(self):
+        """
+        Returns the schema used for saving the item
+        :return: dict
+        """
+
+        return [
+            {
+                'name': 'name',
+                'type': 'string',
+                'layout': 'vertical'
+            },
+            {
+                'name': 'comment',
+                'type': 'text',
+                'layout': 'vertical'
+            },
+            {
+                'name': 'contains',
+                'type': 'label',
+                'label': {'visible': False}
+            }
+        ]
+
+    def info(self):
+        """
+        Returns the info to display to the user
+        :return: list(dict)
+        """
+
+        ctime = self.ctime()
+        if ctime:
+            ctime = timedate.time_ago(ctime)
+
+        count = self.object_count()
+        plural = 's' if count > 1 else ''
+        contains = str(count) + ' Object' + plural
+
+        return [
+            {
+                'name': 'name',
+                'value': self.name()
+            },
+            {
+                "name": "owner",
+                "value": self.owner(),
+            },
+            {
+                "name": "created",
+                "value": ctime,
+            },
+            {
+                "name": "contains",
+                "value": contains,
+            },
+            {
+                "name": "comment",
+                "value": self.description() or "No comment",
+            },
+        ]
+
+    """
+    ##########################################################################################
+    LOAD/SAVE
+    ##########################################################################################
+    """
+
+    def load_from_current_options(self):
+        """
+        Loads the data of the item
+        """
+
+        kwargs = self.options_from_settings()
+        namespaces = self.namespaces()
+        objects = tp.Dcc.selected_nodes(full_path=False) or list()
+
+        try:
+            self.load(objects=objects, namespaces=namespaces, **kwargs)
+        except Exception as e:
+            self.show_error_dialog('Item Error', str(e))
+            raise
+
+    """
+    ##########################################################################################
+    SCHEMA
+    ##########################################################################################
+    """
+
+    def settings(self):
+        """
+        Returns tpRigBuilder library settings file
+        :return: JSONSettings
+        """
+
+        raise NotImplementedError('settings function bor BaseItem not implemented!')
+
+    def default_options(self):
+        """
+        Returns default options
+        :return: dict
+        """
+
+        options = dict()
+        for option in self.load_schema():
+            options[option.get('name')] = option.get('default')
+
+        return options
+
+    def options_from_settings(self):
+        """
+        Returns the options from the user settings
+        :return: dict
+        """
+
+        settings = self.settings()
+        settings = settings.get(self.__class__.__name__, {})
+        options = settings.get('loadOptions', {})
+        default_options = self.default_options()
+
+        if options:
+            for option in self.load_schema():
+                name = option.get('name')
+                persistent = option.get('persistent')
+                if not persistent and name in options:
+                    options[name] = default_options[name]
+
+        return options
+
+    def current_load_value(self, name):
+        """
+        Returns the current filed value for the given name
+        :param name: str
+        :return: variant
+        """
+
+        return self._current_load_values.get(name, None)
+
+    def current_load_schema(self):
+        """
+        Returns the current options ste by the user
+        :return: dict
+        """
+
+        return self._current_load_schema or self.options_from_settings()
+
+    """
+    ##########################################################################################
+    ITEM PROPERTIES
+    ##########################################################################################
+    """
+
+    def transfer_class(self):
+        """
+        Returns the transfer class used to read and write data
+        :return: TransferObject
+        """
+
+        return self._transfer_class
+
+    def set_transfer_class(self, class_name):
+        """
+        Sets the transfer class used to read and write the data
+        :param class_name: TransferObject
+        """
+
+        self._transfer_class = class_name
+
+    def transfer_basename(self):
+        """
+        Returns the filename of the transfer path
+        :return: str
+        """
+
+        return self._transfer_basename
+
+    def set_transfer_basename(self, transfer_basename):
+        """
+        Sets the filename of the transfer path
+        :param transfer_basename: str
+        """
+
+        self._transfer_basename = transfer_basename
+
+    def transfer_path(self):
+        """
+        Returns the disk location to transfer path
+        :return: str
+        """
+
+        if self.transfer_basename():
+            return os.path.join(self.path(), self.transfer_basename())
+        else:
+            return self.path()
+
+    def transfer_object(self):
+        """
+        Returns the transfer object used to read and write the data
+        :return: TransferObject
+        """
+
+        if not self._transfer_object:
+            path = self.transfer_path()
+            self._transfer_object = self.transfer_class().from_path(path)
+
+        return self._transfer_object
+
+    def owner(self):
+        """
+        Returns the user who created this item
+        :return: str or None
+        """
+
+        return self.transfer_object().metadata().get('user', '')
+
+    def description(self):
+        """
+        Returns the user description for this item
+        :return: str
+        """
+
+        return self.transfer_object().metadata().get('description', '')
+
+    def object_count(self):
+        """
+        Returns the number of objects this item contains
+        :return: int
+        """
+
+        return self.transfer_object().count()
+
+    """
+    ##########################################################################################
+    SCENE
+    ##########################################################################################
+    """
+
+    def namespaces(self):
+        """
+        Returns the namespaces for this item depending on the namespace option
+        :return: list(str)
+        """
+
+        return list()

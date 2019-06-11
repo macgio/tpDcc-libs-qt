@@ -131,6 +131,19 @@ class MainWindow(QMainWindow, object):
         geometry = self.settings().getw('geometry', def_geometry)
         if geometry:
             self.restoreGeometry(geometry)
+
+            # Reposition window in the center of the screen if the window is outside of the screen
+            geometry = self.geometry()
+            x = geometry.x()
+            y = geometry.y()
+            width = geometry.width()
+            height = geometry.height()
+            screen_geo = QApplication.desktop().screenGeometry()
+            screen_width = screen_geo.width()
+            screen_height = screen_geo.height()
+            if x <= 0 or y <= 0 or x >= screen_width or y >= screen_height:
+                self.center(width, height)
+
         def_window_state = self.settings().get_default_value('windowState', self.objectName().upper())
         window_state = self.settings().getw('windowState', def_window_state)
         if window_state:

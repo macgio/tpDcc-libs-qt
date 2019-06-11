@@ -173,6 +173,8 @@ class LibraryViewer(base.BaseWidget, object):
         header.sortIndicatorChanged.connect(self._on_sort_indicator_changed)
         self._list_view.itemClicked.connect(self._on_item_clicked)
         self._list_view.itemDoubleClicked.connect(self._on_item_double_clicked)
+        self._tree_widget.itemClicked.connect(self._on_item_clicked)
+        self._tree_widget.itemDoubleClicked.connect(self._on_item_double_clicked)
 
     def wheelEvent(self, event):
         """
@@ -288,13 +290,14 @@ class LibraryViewer(base.BaseWidget, object):
             value = self.DEFAULT_MIN_LIST_SIZE
 
         self._zoom_amount = value
-        size = QSize(value * self.dpi(), value * self.dpi())
+        dpi = float(self.dpi())
+        size = QSize(int(value * dpi), int(value * dpi))
         self.set_icon_size(size)
         if value >= self.DEFAULT_MIN_LIST_SIZE:
             self._set_view_mode(self.IconMode)
         else:
             self._set_view_mode(self.TableMode)
-        column_width = value * self.dpi() + self.item_text_height()
+        column_width = value * dpi + self.item_text_height()
         self._tree_widget.setIndentation(0)
         self._tree_widget.setColumnWidth(0, column_width)
         self.scroll_to_selected_item()
@@ -570,7 +573,7 @@ class LibraryViewer(base.BaseWidget, object):
         self._icon_size = size
         if self.is_item_text_visible():
             w = size.width()
-            h = size.width() + self.item_text_height()
+            h = size.width() + float(self.item_text_height())
             self._item_size_hint = QSize(w, h)
         else:
             self._item_size_hint = size
@@ -1049,7 +1052,7 @@ class LibraryViewer(base.BaseWidget, object):
         menu.addSeparator()
 
         copy_text_menu = self.tree_widget().create_copy_text_menu()
-        menu.addAction(copy_text_menu)
+        menu.addMenu(copy_text_menu)
         menu.addSeparator()
 
         size_action = action.SliderAction('Size', menu)
@@ -1222,6 +1225,8 @@ class LibraryViewer(base.BaseWidget, object):
         Internal callback function that is called when an item has been clicked
         :param item: LibraryItem
         """
+
+        print('hahahahaha')
 
         if isinstance(item, items.LibraryGroupItem):
             self.groupClicked.emit(item)

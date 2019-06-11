@@ -15,7 +15,7 @@ from tpQtLib.Qt.QtGui import *
 
 import tpQtLib
 from tpQtLib.core import base
-from tpQtLib.widgets import formwidget
+from tpQtLib.widgets import formwidget, splitters
 from tpQtLib.widgets.library import widgets
 
 
@@ -28,6 +28,7 @@ class LoadWidget(base.BaseWidget, object):
         self._script_job = None
         self._options_widget = None
 
+        self.setObjectName('Load')
         self.set_item(item)
         # self.load_settings()
 
@@ -65,9 +66,10 @@ class LoadWidget(base.BaseWidget, object):
         icon_toggle_box_header.setLayout(icon_toggle_box_header_lyt)
 
         icon_toggle_box_btn = QPushButton('ICON')
+        icon_toggle_box_btn.setObjectName('iconButton')
         icon_toggle_box_btn.setCheckable(True)
         icon_toggle_box_btn.setChecked(True)
-        icon_toggle_box_btn.setFlat(True)
+        # icon_toggle_box_btn.setFlat(True)
         icon_toggle_box_header_lyt.addWidget(icon_toggle_box_btn)
 
         icon_toggle_box_frame = QFrame()
@@ -92,6 +94,7 @@ class LoadWidget(base.BaseWidget, object):
         self._thumbnail_frame.setLayout(thumbnail_frame_layout)
         thumbnail_layout.addWidget(self._thumbnail_frame)
         self._thumbnail_btn = QToolButton()
+        self._thumbnail_btn.setObjectName('thumbnailButton')
         self._thumbnail_btn.setMinimumSize(QSize(0, 0))
         self._thumbnail_btn.setMaximumSize(QSize(150, 150))
         self._thumbnail_btn.setStyleSheet('color: rgb(40, 40, 40);\nborder: 1px solid rgb(0, 0, 0, 0);\nbackground-color: rgb(254, 255, 230, 0);')
@@ -120,9 +123,10 @@ class LoadWidget(base.BaseWidget, object):
         info_toggle_box_header.setLayout(info_toggle_box_header_lyt)
 
         self._info_toggle_box_btn = QPushButton('INFO')
+        self._info_toggle_box_btn.setObjectName('infoButton')
         self._info_toggle_box_btn.setCheckable(True)
         self._info_toggle_box_btn.setChecked(True)
-        self._info_toggle_box_btn.setFlat(True)
+        # self._info_toggle_box_btn.setFlat(True)
         info_toggle_box_header_lyt.addWidget(self._info_toggle_box_btn)
 
         self._info_toggle_box_frame = QFrame()
@@ -186,27 +190,47 @@ class LoadWidget(base.BaseWidget, object):
         #
         # options_toggle_box_lyt.addWidget(options_toggle_box_header)
         # options_toggle_box_lyt.addWidget(info_toggle_box_frame)
-        #
-        # preview_buttons_frame = QFrame()
-        # preview_buttons_frame.setFrameShape(QFrame.NoFrame)
-        # preview_buttons_frame.setFrameShadow(QFrame.Plain)
-        # preview_buttons_frame_lyt = QVBoxLayout()
-        # preview_buttons_frame_lyt.setContentsMargins(9, 9, 9, 9)
-        # preview_buttons_frame_lyt.setSpacing(0)
-        # preview_buttons_frame_lyt.addItem(QSpacerItem(10, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
-        # apply_btn = QPushButton('Apply')
-        # preview_buttons_frame_lyt.addWidget(apply_btn)
-        # preview_buttons_frame_lyt.addItem(QSpacerItem(10, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
+
+        preview_buttons_frame = QFrame()
+        preview_buttons_frame.setObjectName('previewButtons')
+        preview_buttons_frame.setFrameShape(QFrame.NoFrame)
+        preview_buttons_frame.setFrameShadow(QFrame.Plain)
+        self._preview_buttons_frame_lyt = QHBoxLayout()
+        self._preview_buttons_frame_lyt.setContentsMargins(9, 9, 9, 9)
+        self._preview_buttons_frame_lyt.setSpacing(0)
+        self._preview_buttons_lyt = QHBoxLayout()
+        self._preview_buttons_lyt.setContentsMargins(0, 0, 0, 0)
+        self._preview_buttons_lyt.setSpacing(2)
+        self._load_btn = QPushButton('Load')
+        self._load_btn.setObjectName('loadButton')
+        self._load_btn.setMinimumSize(QSize(60, 35))
+        self._load_btn.setMaximumSize(QSize(125, 35))
+        self._preview_buttons_frame_lyt.addItem(QSpacerItem(10, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
+        self._preview_buttons_frame_lyt.addLayout(self._preview_buttons_lyt)
+        self._preview_buttons_frame_lyt.addItem(QSpacerItem(10, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
+        self._preview_buttons_lyt.addWidget(self._load_btn)
+        preview_buttons_frame.setLayout(self._preview_buttons_frame_lyt)
 
         self.main_layout.addLayout(title_layout)
         self.main_layout.addWidget(icon_toggle_box)
         self.main_layout.addWidget(info_toggle_box)
         # self.main_layout.addWidget(options_toggle_box)
+        self.main_layout.addWidget(splitters.Splitter())
+        self.main_layout.addWidget(preview_buttons_frame)
         self.main_layout.addItem(QSpacerItem(0, 250, QSizePolicy.Preferred, QSizePolicy.Expanding))
 
     def setup_signals(self):
         self._info_toggle_box_btn.clicked.connect(self.save_settings)
         self._info_toggle_box_btn.toggled[bool].connect(self._info_toggle_box_frame.setVisible)
+        self._load_btn.clicked.connect(self.load)
+
+    def load_btn(self):
+        """
+        Returns button that loads the data
+        :return: QPushButton
+        """
+
+        return self._load_btn
 
     def icon_path(self):
         """
@@ -293,3 +317,14 @@ class LoadWidget(base.BaseWidget, object):
 
     def save_settings(self):
         pass
+
+    def load(self):
+        """
+        Loads current item
+        """
+
+        if not self.item():
+            return
+
+        self.item().load_from_current_options()
+

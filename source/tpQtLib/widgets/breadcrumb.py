@@ -37,6 +37,8 @@ class BreadcrumbWidget(QWidget, object):
     def __init__(self, parent=None):
         super(BreadcrumbWidget, self).__init__(parent=parent)
 
+        self.setObjectName('BreadcrumbWidget')
+
         main_layout = QHBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)

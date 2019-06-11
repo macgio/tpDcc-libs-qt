@@ -13,7 +13,7 @@ from tpQtLib.Qt.QtGui import *
 
 
 class Splitter(QWidget, object):
-    def __init__(self, text=None, shadow=True, color=(150, 150, 150)):
+    def __init__(self, text=None, shadow=False, color=(150, 150, 150)):
         """
         Basic standard splitter with optional text
         :param str text: Optional text to include as title in the splitter
@@ -23,13 +23,14 @@ class Splitter(QWidget, object):
 
         super(Splitter, self).__init__()
 
-        self.setMinimumHeight(2)
+        self.setMinimumHeight(10)
         self.setLayout(QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(0)
         self.layout().setAlignment(Qt.AlignVCenter)
 
         first_line = QFrame()
+        first_line.setMaximumHeight(1)
         first_line.setFrameStyle(QFrame.HLine)
         self.layout().addWidget(first_line)
 
@@ -48,6 +49,7 @@ class Splitter(QWidget, object):
         first_line.setStyleSheet(style_sheet)
 
         if text is None:
+            self.setMinimumHeight(2)
             return
 
         first_line.setMaximumWidth(5)
@@ -67,6 +69,7 @@ class Splitter(QWidget, object):
         self.layout().addWidget(self._label)
 
         second_line = QFrame()
+        second_line.setMaximumHeight(1)
         second_line.setFrameStyle(QFrame.HLine)
         second_line.setStyleSheet(style_sheet)
 

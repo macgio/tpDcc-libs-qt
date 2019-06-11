@@ -316,17 +316,25 @@ class SaveWidget(base.BaseWidget, object):
         :param sequence: bool
         """
 
+
         source = os.path.normpath(source)
-        filename, extension = os.path.split(source)
-        with path_utils.temp_dir() as dir_path:
-            target = os.path.join(dir_path, 'thumbnail{}'.format(extension))
-            shutil.copyfile(source, target)
-            tpQtLib.logger.debug('Source Thumbnail: {}'.format(source))
-            tpQtLib.logger.debug('Target Thumbnail: {}'.format(target))
-            self._icon_path = target
-            self._thumbnail_btn.set_path(target)
-            if sequence:
-                self.set_sequence_path(source)
+
+        # TODO: Find a way to remove temp folder afteer saving the file
+        # filename, extension = os.path.splitext(source)
+        # with path_utils.temp_dir() as dir_path:
+        # dir_path = path_utils.temp_dir()
+        # target = os.path.join(dir_path, 'thumbnail{}'.format(extension))
+        # shutil.copyfile(source, target)
+        # tpQtLib.logger.debug('Source Thumbnail: {}'.format(source))
+        # tpQtLib.logger.debug('Target Thumbnail: {}'.format(target))
+        # self._icon_path = target
+        # self._thumbnail_btn.set_path(target)
+
+        self._icon_path = source
+        self._thumbnail_btn.set_path(source)
+
+        if sequence:
+            self.set_sequence_path(source)
 
     def save_settings(self):
         """

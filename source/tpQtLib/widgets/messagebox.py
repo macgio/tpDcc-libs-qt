@@ -15,7 +15,7 @@ import tpDccLib as tp
 from tpQtLib.core import animation, qtutils, theme
 
 
-def create_message_box(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None, header_color=None, enable_input_edit=False, enable_dont_show_checkbox=False):
+def create_message_box(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None, header_color=None, enable_input_edit=False, enable_dont_show_checkbox=False, theme_to_apply=None):
     """
     Opens a question message box with the given options
     :param parent: QWidget
@@ -28,6 +28,7 @@ def create_message_box(parent, title, text, width=None, height=None, buttons=Non
     :param header_color: str
     :param enable_input_edit: bool
     :param enable_dont_show_checkbox: bool
+    :param theme_to_apply: bool
     :return: MessageBox
     """
 
@@ -38,10 +39,12 @@ def create_message_box(parent, title, text, width=None, height=None, buttons=Non
     if header_pixmap:
         mb.setPixmap(header_pixmap)
 
-    try:
-        theme_to_apply = parent.theme()
-    except AttributeError:
-        theme_to_apply = theme.Theme()
+    theme_to_apply = theme_to_apply
+    if not theme_to_apply:
+        if hasattr(parent, 'theme'):
+            theme_to_apply = parent.theme()
+        else:
+            theme_to_apply = theme.Theme()
 
     mb.setStyleSheet(theme_to_apply.stylesheet())
 
@@ -53,7 +56,7 @@ def create_message_box(parent, title, text, width=None, height=None, buttons=Non
     return mb
 
 
-def show_message_box(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None, header_color=None, enable_dont_show_checkbox=False, force=False):
+def show_message_box(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None, header_color=None, enable_dont_show_checkbox=False, force=False, theme_to_apply=None):
     """
     Opens a question message box with the given options
     :param parent: QWidget
@@ -66,6 +69,7 @@ def show_message_box(parent, title, text, width=None, height=None, buttons=None,
     :param header_color: str
     :param enable_dont_show_checkbox: bool
     :param force: bool
+    :param theme_to_apply: Theme
     :return: MessageBox
     """
 
@@ -78,7 +82,7 @@ def show_message_box(parent, title, text, width=None, height=None, buttons=None,
         force = True
 
     if force or not enable_dont_show_checkbox or not enable_dont_show_checkbox:
-        mb = create_message_box(parent=parent, title=title, text=text, width=width, height=height, buttons=buttons, header_pixmap=header_pixmap, header_color=header_color, enable_dont_show_checkbox=enable_dont_show_checkbox)
+        mb = create_message_box(parent=parent, title=title, text=text, width=width, height=height, buttons=buttons, header_pixmap=header_pixmap, header_color=header_color, enable_dont_show_checkbox=enable_dont_show_checkbox, theme_to_apply=theme_to_apply)
         mb.exec_()
         mb.close()
 
@@ -94,7 +98,7 @@ class MessageBox(tpQtLib.Dialog, object):
     MAX_HEIGHT = 220
 
     @staticmethod
-    def input(parent, title, text, input_text='', width=None, height=None, buttons=None, header_pixmap=None, header_color=None):
+    def input(parent, title, text, input_text='', width=None, height=None, buttons=None, header_pixmap=None, header_color=None, theme_to_apply=None):
         """
         Helper dialog function to get a single text value from the user
         :param parent: QWidget
@@ -106,11 +110,12 @@ class MessageBox(tpQtLib.Dialog, object):
         :param buttons: list(QMessageBox.StandardButton)
         :param header_pixmap: QPixmap
         :param header_color: str
+        :param theme_to_apply: Theme
         :return: QMessageBox.StandardButton
         """
 
         buttons = buttons or QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-        dialog = create_message_box(parent=parent, title=title, text=text, width=width, height=height, buttons=buttons, header_pixmap=header_pixmap, header_color=header_color, enable_input_edit=True)
+        dialog = create_message_box(parent=parent, title=title, text=text, width=width, height=height, buttons=buttons, header_pixmap=header_pixmap, header_color=header_color, enable_input_edit=True, theme_to_apply=theme_to_apply)
         dialog.set_input_text(input_text)
         dialog.exec_()
         clicked_btn = dialog.clicked_standard_button()
@@ -118,7 +123,7 @@ class MessageBox(tpQtLib.Dialog, object):
         return dialog.input_text(), clicked_btn
 
     @staticmethod
-    def question(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None, header_color=None, enable_dont_show_checkbox=False):
+    def question(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None, header_color=None, enable_dont_show_checkbox=False, theme_to_apply=None):
         """
         Helper dialog function to get a single text value from the user
         :param parent: QWidget
@@ -130,11 +135,12 @@ class MessageBox(tpQtLib.Dialog, object):
         :param header_pixmap: QPixmap
         :param header_color: str
         :param enable_dont_show_checkbox: bool
+        :param theme_to_apply: Theme
         :return: QMessageBox.StandardButton
         """
 
         buttons = buttons or QDialogButtonBox.Yes | QDialogButtonBox.No | QDialogButtonBox.Cancel
-        clicked_btn = show_message_box(parent=parent, title=title, text=text, width=width, height=height, buttons=buttons, header_pixmap=header_pixmap, header_color=header_color, enable_dont_show_checkbox=enable_dont_show_checkbox)
+        clicked_btn = show_message_box(parent=parent, title=title, text=text, width=width, height=height, buttons=buttons, header_pixmap=header_pixmap, header_color=header_color, enable_dont_show_checkbox=enable_dont_show_checkbox, theme_to_apply=theme_to_apply)
         return clicked_btn
 
     @staticmethod
@@ -191,6 +197,8 @@ class MessageBox(tpQtLib.Dialog, object):
 
         self.setMinimumWidth(width or self.MAX_WIDTH)
         self.setMinimumHeight(height or self.MAX_HEIGHT)
+        self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
         # self.setStyleSheet('background-color: rgb(68, 68, 68, 255);')
 
         parent = self.parent()

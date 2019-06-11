@@ -57,7 +57,38 @@ class LibraryListView(mixin.LibraryViewWidgetMixin, QListView):
         self._drop_enabled = True
 
         self.clicked.connect(self._on_index_clicked)
-        self.itemDoubleClicked.connect(self._on_index_double_clicked)
+        self.doubleClicked.connect(self._on_index_double_clicked)
+
+    """
+    ##########################################################################################
+    OVERRIDES
+    ##########################################################################################
+    """
+
+    def mousePressEvent(self, event):
+        """
+        Overrides base QListView mousePressEvent function
+        :param event: QMouseEvent
+        """
+
+        item = self.item_at(event.pos())
+        if not item:
+            self.clearSelection()
+
+        mixin.LibraryViewWidgetMixin.mousePressEvent(self, event)
+        if event.isAccepted():
+            QListView.mousePressEvent(self, event)
+            self.viewer().tree_widget().setItemSelected(item, True)
+
+        # self.end_drag()
+        # self._drag_start_pos = event.pos()
+        #
+        # is_left_button = self.mouse_press_button() == Qt.LeftButton
+        # is_item_draggable = item and item.drag_enabled()
+        # is_selection_empty = not self.selected_items()
+        #
+        # if is_left_button and (is_selection_empty or not is_item_draggable):
+        #     self.rubber_band_start_event(event)
 
     """
     ##########################################################################################
@@ -76,6 +107,20 @@ class LibraryListView(mixin.LibraryViewWidgetMixin, QListView):
         pos = pos or QAbstractItemView.PositionAtCenter
 
         self.scrollTo(index, pos)
+
+    """
+    ##########################################################################################
+    EVENTS
+    ##########################################################################################
+    """
+
+    def validate_darg_event(self, event):
+        """
+        Validates the drag event
+        :param event: QMouseEvent
+        """
+
+        return Qt.LeftButton == event.mouseButtons()
 
     """
     ##########################################################################################
@@ -287,6 +332,6 @@ class LibraryListView(mixin.LibraryViewWidgetMixin, QListView):
         """
 
         item = self.item_from_index(index)
-        self.set_item_selected([item], True)
-        item.doubleClicked()
+        self.set_items_selected([item], True)
+        item.double_clicked()
         self.itemDoubleClicked.emit(item)

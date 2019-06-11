@@ -66,7 +66,7 @@ class LibraryViewWidgetMixin(object):
         :param event: QKeyEvent
         """
 
-        item = self.selected_items()
+        item = self.selected_item()
         if item:
             self.item_key_press_event(item, event)
 
@@ -231,7 +231,7 @@ class LibraryViewWidgetMixin(object):
                 self._current_item = None
                 self._current_selection = None
 
-    def items_widget(self):
+    def viewer(self):
         """
         Returns parent widget of the library widget
         :return:
