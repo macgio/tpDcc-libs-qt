@@ -80,15 +80,129 @@ class LibraryListView(mixin.LibraryViewWidgetMixin, QListView):
             QListView.mousePressEvent(self, event)
             self.viewer().tree_widget().setItemSelected(item, True)
 
-        # self.end_drag()
-        # self._drag_start_pos = event.pos()
-        #
-        # is_left_button = self.mouse_press_button() == Qt.LeftButton
-        # is_item_draggable = item and item.drag_enabled()
-        # is_selection_empty = not self.selected_items()
-        #
-        # if is_left_button and (is_selection_empty or not is_item_draggable):
-        #     self.rubber_band_start_event(event)
+        self.endDrag()
+        self._drag_start_pos = event.pos()
+
+        is_left_button = self.mouse_press_button() == Qt.LeftButton
+        is_item_draggable = item and item.drag_enabled()
+        is_selection_empty = not self.selected_items()
+
+        if is_left_button and (is_selection_empty or not is_item_draggable):
+            self.rubber_band_start_event(event)
+
+    def mouseMoveEvent(self, event):
+        """
+        Overrides base QListView mouseMoveEvent function
+        :param event: QMouseEvent
+        """
+
+        if not self.is_dragging_items():
+            is_left_button = self.mouse_press_button() == Qt.LeftButton
+            if is_left_button and self.rubber_band().isHidden() and self.selected_items():
+                self.startDrag(event)
+            else:
+                mixin.LibraryViewWidgetMixin.mouseMoveEvent(self, event)
+                QListView.mouseMoveEvent(self, event)
+            if is_left_button:
+                self.rubber_band_move_event(event)
+
+    def mouseReleaseEvent(self, event):
+        """
+        Override base QListView mouseReleaseEvent function
+        :param event: QMouseEvent
+        """
+
+        item = self.item_at(event.pos())
+        items = self.selected_items()
+        mixin.LibraryViewWidgetMixin.mouseReleaseEvent(self, event)
+        if item not in items:
+            if event.button() != Qt.MidButton:
+                QListView.mouseReleaseEvent(self, event)
+        elif not items:
+            QListView.mouseReleaseEvent(self, event)
+
+        self.endDrag()
+        self.rubber_band().hide()
+
+    def startDrag(self, event):
+        """
+        Overrides bae QListView startDrag function
+        :param event: QEvent
+        """
+
+        if not self.dragEnabled():
+            return
+
+        if self._drag_start_pos and hasattr(event, 'pos'):
+            item = self.item_at(event.pos())
+            if item and item.drag_enabled():
+                self._drag_start_index = self.indexAt(event.pos())
+                point = self._drag_start_pos - event.pos()
+                dt = self.drag_threshold()
+                if point.x() > dt or point.y() > dt or point.x() < -dt or point.y() < -dt:
+                    items = self.selected_items()
+                    mime_data = self.mime_data(items)
+                    pixmap = self._drag_pixmap(item, items)
+                    hotspot = QPoint(pixmap.width() * 0.5, pixmap.height() * 0.5)
+                    self._drag = QDrag(self)
+                    self._drag.setPixmap(pixmap)
+                    self._drag.setHotSpot(hotspot)
+                    self._drag.setMimeData(mime_data)
+                    self._drag.start(Qt.MoveAction)
+
+    def endDrag(self):
+        """
+        Function that ends current drag
+        """
+
+        self._drag_start_pos = None
+        self._drag_start_index = None
+        if self._drag:
+            del self._drag
+            self._drag = None
+
+    def dragEnterEvent(self, event):
+        """
+        Overrides bae QListView dragEnterEvent function
+        :param event: QDragEvent
+        """
+
+        mimedata = event.mimeData()
+        if (mimedata.hasText() or mimedata.hasUrls()) and self.drop_enabled():
+            event.accept()
+        else:
+            event.ignore()
+
+    def dragMoveEvent(self, event):
+        """
+        Overrides bae QListView dragMoveEvent function
+        :param event: QDragEvent
+        """
+
+        mimedata = event.mimeData()
+        if (mimedata.hasText() or mimedata.hasUrls()) and self.drop_enabled():
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        """
+        Overrides bae QListView dropEvent function
+        :param event: QDropEvent
+        """
+
+        item = self.item_at(event.pos())
+        selected_items = self.selected_item()
+        if selected_items and item:
+            if self.tree_widget().is_sort_by_custom_order():
+                self.move_items(selected_items, item)
+            else:
+                tpQtLib.logger.info('You can only re-order items when sorting by custom order')
+
+        if item:
+            item.dropEvent(event)
+
+        self.itemDropped.emit(event)
 
     """
     ##########################################################################################
@@ -114,13 +228,119 @@ class LibraryListView(mixin.LibraryViewWidgetMixin, QListView):
     ##########################################################################################
     """
 
-    def validate_darg_event(self, event):
+    def validate_drag_event(self, event):
         """
         Validates the drag event
         :param event: QMouseEvent
         """
 
         return Qt.LeftButton == event.mouseButtons()
+
+    def rubber_band_start_event(self, event):
+        """
+        Function called when the user presses an empty area
+        :param event: QMouseEvent
+        """
+
+        self._rubber_band_start_pos = event.pos()
+        rect = QRect(self._rubber_band_start_pos, QSize())
+        rubber_band = self.rubber_band()
+        rubber_band.setGeometry(rect)
+        rubber_band.show()
+
+    def rubber_band_move_event(self, event):
+        """
+        Function called when the user moves the mouse over the current viewport
+        :param event: QMouseEvent
+        """
+
+        if self.rubber_band() and self._rubber_band_start_pos:
+            rect = QRect(self._rubber_band_start_pos, event.pos())
+            rect = rect.normalized()
+            self.rubber_band().setGeometry(rect)
+
+    """
+    ##########################################################################################
+    DRAG & DROP
+    ##########################################################################################
+    """
+
+    def drop_enabled(self):
+        """
+        Returns whether drop functionality is enabled or not
+        :return: bool
+        """
+
+        return self._drop_enabled
+
+    def set_drop_enabled(self, flag):
+        """
+        Sets whether drop functionality is enabled or not
+        :param flag: bool
+        """
+
+        self._drop_enabled = flag
+
+    def drag_threshold(self):
+        """
+        Returns current drag threshold
+        :return: float
+        """
+
+        return self.DEFAULT_DRAG_THRESHOLD
+
+    def is_dragging_items(self):
+        """
+        Returns whether the user is currently dragging items or not
+        :return: bool
+        """
+
+        return bool(self._drag)
+
+    def mime_data(self, items):
+        """
+        Returns drag mime data
+        :param items: list(LibraryItem)
+        :return: QMimeData
+        """
+
+        mimedata = QMimeData()
+        urls = [item.url() for item in items]
+        text = '\n'.join([item.mime_text() for item in items])
+        mimedata.setUrls(urls)
+        mimedata.setText(text)
+
+        return mimedata
+
+    def _drag_pixmap(self, item, items):
+        """
+        Internal function that shows the pixmap for the given item during drag operation
+        :param item: LibraryItem
+        :param items: list(LibraryItem)
+        :return: QPixmap
+        """
+
+        rect = self.visualRect(self.index_from_item(item))
+        pixmap = QPixmap()
+        pixmap = pixmap.grabWidget(self, rect)
+        if len(items) > 1:
+            custom_width = 35
+            custom_padding = 5
+            custom_text = str(len(items))
+            custom_x = pixmap.rect().center().x() - float(custom_width * 0.5)
+            custom_y = pixmap.rect().top() + custom_padding
+            custom_rect = QRect(custom_x, custom_y, custom_width, custom_width)
+            painter = QPainter(pixmap)
+            painter.setRenderHint(QPainter.Antialiasing)
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(self.viewer().background_selected_color())
+            painter.drawEllipse(custom_rect.center(), float(custom_width * 0.5), float(custom_width * 0.5))
+            font = QFont('Serif', 12, QFont.Light)
+            painter.setFont(font)
+            painter.setPen(self.viewer().text_selected_color())
+            painter.drawText(custom_rect, Qt.AlignCenter, str(custom_text))
+
+        return pixmap
 
     """
     ##########################################################################################

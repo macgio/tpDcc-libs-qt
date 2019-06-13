@@ -771,6 +771,9 @@ class LibraryItem(QTreeWidgetItem, object):
         :return: str
         """
 
+        if self.path():
+            return self.path()
+
         return self._mime_text or self.text(0)
 
     def set_mime_text(self, text):
@@ -787,7 +790,21 @@ class LibraryItem(QTreeWidgetItem, object):
         :return: Qurl
         """
 
-        return QUrl('file:///{}'.format(self.path()))
+        if self.path():
+            return QUrl('file:///{}'.format(self.path()))
+
+        if not self._url:
+            self._url = QUrl(self.text(0))
+
+        return self._url
+
+    def set_url(self, url):
+        """
+        Sets the url object of the current item
+        :param url: QUrl or None
+        """
+
+        self._url = url
 
     """
     ##########################################################################################
@@ -886,31 +903,6 @@ class LibraryItem(QTreeWidgetItem, object):
         """
 
         self._metadata = metadata
-
-    """
-    ##########################################################################################
-    URL
-    ##########################################################################################
-    """
-
-    def url(self):
-        """
-        Returns the url object for the current item
-        :return: QUrl or None
-        """
-
-        if not self._url:
-            self._url = QUrl(self.text(0))
-
-        return self._url
-
-    def set_url(self, url):
-        """
-        Sets the url object of the current item
-        :param url: QUrl or None
-        """
-
-        self._url = url
 
     """
     ##########################################################################################

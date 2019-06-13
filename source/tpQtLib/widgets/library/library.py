@@ -180,7 +180,7 @@ class Library(QObject, object):
         tpQtLib.logger.debug('Group Items Took {}'.format(time.time() - t))
 
         return results
-
+    
     def manager(self):
         """
         Returns data manager used by this library

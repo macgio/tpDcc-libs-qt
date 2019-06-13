@@ -88,32 +88,32 @@ class TreeWidget(QTreeWidget, object):
         index = self.indexAt(position)
         self.doubleClicked.emit(index)
 
-    def dragMoveEvent(self, event):
-        item = self.itemAt(event.pos())
-
-        if item:
-            index = self.indexFromItem(item)
-            rect = self.visualRect(index)
-            rect_left = self.visualRect(index.sibling(index.row(), 0))
-            rect_right = self.visualRect(index.sibling(index.row(), self.header().logicalIndex(self.columnCount()-1)))
-            self.dropIndicatorPosition = self.position(event.pos(), rect)
-            if self.dropIndicatorPosition == self.AboveItem:
-                self._drop_indicator_rect = QRect(rect_left.left(), rect_left.top(), rect_right.right() - rect_left.left(), 0)
-                event.accept()
-            elif self.dropIndicatorPosition == self.BelowItem:
-                self._drop_indicator_rect = QRect(rect_left.left(), rect_left.bottom(), rect_right.right() - rect_left.left(), 0)
-                event.accept()
-            elif self.dropIndicatorPosition == self.OnItem:
-                self._drop_indicator_rect = QRect(rect_left.left(), rect_left.top(), rect_right.right() - rect_left.left(), rect.height())
-                event.accept()
-            else:
-                self._drop_indicator_rect = QRect()
-
-            self.model().setData(index, self.dropIndicatorPosition, Qt.UserRole)
-
-        self.viewport().update()
-
-        super(TreeWidget, self).dragMoveEvent(event)
+    # def dragMoveEvent(self, event):
+    #     item = self.itemAt(event.pos())
+    #
+    #     if item:
+    #         index = self.indexFromItem(item)
+    #         rect = self.visualRect(index)
+    #         rect_left = self.visualRect(index.sibling(index.row(), 0))
+    #         rect_right = self.visualRect(index.sibling(index.row(), self.header().logicalIndex(self.columnCount()-1)))
+    #         self.dropIndicatorPosition = self.position(event.pos(), rect)
+    #         if self.dropIndicatorPosition == self.AboveItem:
+    #             self._drop_indicator_rect = QRect(rect_left.left(), rect_left.top(), rect_right.right() - rect_left.left(), 0)
+    #             event.accept()
+    #         elif self.dropIndicatorPosition == self.BelowItem:
+    #             self._drop_indicator_rect = QRect(rect_left.left(), rect_left.bottom(), rect_right.right() - rect_left.left(), 0)
+    #             event.accept()
+    #         elif self.dropIndicatorPosition == self.OnItem:
+    #             self._drop_indicator_rect = QRect(rect_left.left(), rect_left.top(), rect_right.right() - rect_left.left(), rect.height())
+    #             event.accept()
+    #         else:
+    #             self._drop_indicator_rect = QRect()
+    #
+    #         self.model().setData(index, self.dropIndicatorPosition, Qt.UserRole)
+    #
+    #     self.viewport().update()
+    #
+    #     super(TreeWidget, self).dragMoveEvent(event)
 
     def addTopLevelItem(self, item):
         super(TreeWidget, self).addTopLevelItem(item)

@@ -823,7 +823,6 @@ class LibrarySideBarWidgetItem(QTreeWidgetItem, object):
             self.setTextColor(text_color)
 
 
-
 class LibrarySidebarWidget(QTreeWidget, object):
 
     itemRenamed = Signal(str, str)
