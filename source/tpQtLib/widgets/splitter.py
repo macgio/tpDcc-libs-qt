@@ -20,13 +20,13 @@ class CollapsibleSplitter(QSplitter, object):
     doExpand = Signal()
     doCollapse = Signal()
 
-    def __init__(self, parent=None):
+    def __init__(self, orientation=Qt.Vertical, parent=None):
 
         self._handle = None
         super(CollapsibleSplitter, self).__init__(parent)
 
         self.setHandleWidth(16)
-        self.setOrientation(Qt.Vertical)
+        self.setOrientation(orientation)
 
     def createHandle(self):
         self._handle = CollapsibleSplitterHandle(self.orientation(), self)

@@ -8,6 +8,7 @@ Module that contains main window widget used in libraries
 from __future__ import print_function, division, absolute_import
 
 import os
+import re
 import time
 from functools import partial
 
@@ -85,6 +86,9 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         self._refresh_enabled = False
         self._library_icon_path = library_icon_path
         self._allow_non_path = allow_non_path
+        self._superusers = None
+        self._lock_reg_exp = None
+        self._unlock_reg_exp = None
 
         self._trash_enabled = consts.TRASH_ENABLED
         self._recursive_search_enabled = consts.DEFAULT_RECURSIVE_SEARCH_ENABLED
@@ -178,7 +182,6 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         sidebar_frame_lyt.addWidget(self._sidebar_widget)
 
         self._search_widget = self.SEARCH_WIDGET_CLASS(self)
-        self._menubar_widget.addWidget(self._search_widget)
 
         self._splitter = QSplitter(Qt.Horizontal, self)
         self._splitter.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Expanding)
@@ -213,8 +216,6 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         self._sidebar_widget.set_library(lib)
         self.set_library(lib)
 
-        self.menubar_widget().addWidget(self._search_widget)
-
         self._setup_menubar()
 
     def setup_signals(self):
@@ -228,35 +229,39 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         self._sidebar_widget.itemSelectionChanged.connect(self._on_folder_selection_changed)
         self._sidebar_widget.customContextMenuRequested.connect(self._on_show_folder_menu)
 
+        self.folderSelectionChanged.connect(self.update_lock)
+
     def _setup_menubar(self):
         icon_color = self.icon_color()
         name = 'New Item'
-        icon = tpQtLib.resource.icon('add')
-        # icon.set_color(icon_color)
+        icon = tpQtLib.resource.icon('plus', theme='black')
+        icon.set_color(icon_color)
         tip = 'Add a new item to the selected folder'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_new_menu)
 
+        self._menubar_widget.addWidget(self._search_widget)
+
         name = 'Filters'
-        icon = tpQtLib.resource.icon('filter')
-        # icon.set_color(icon_color)
+        icon = tpQtLib.resource.icon('filter', theme='black')
+        icon.set_color(icon_color)
         tip = 'Filter the current results by type.\nCtrl + Click will hide the ohters and show the selected one.'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_filter_by_menu)
 
         name = 'Item View'
-        icon = tpQtLib.resource.icon('view_settings')
-        # icon.set_color(icon_color)
+        icon = tpQtLib.resource.icon('slider', theme='black')
+        icon.set_color(icon_color)
         tip = 'Change the style of the item view'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_item_view_menu)
 
         name = 'Group By'
-        icon = tpQtLib.resource.icon('groupby')
-        # icon.set_color(icon_color)
+        icon = tpQtLib.resource.icon('grid_view', theme='black')
+        icon.set_color(icon_color)
         tip = 'Group the current items in the view by column'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_group_by_menu)
 
         name = 'Sort By'
-        icon = tpQtLib.resource.icon('sortby')
-        # icon.set_color(icon_color)
+        icon = tpQtLib.resource.icon('descending_sorting', theme='black')
+        icon.set_color(icon_color)
         tip = 'Sort the current items in the view by column'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_sort_by_menu)
 
@@ -267,14 +272,14 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         self.add_menubar_action(name, icon, tip, callback=self._on_toggle_view)
 
         name = 'Sync Items'
-        icon = tpQtLib.resource.icon('sync')
-        # icon.set_color(icon_color)
+        icon = tpQtLib.resource.icon('sync', theme='black')
+        icon.set_color(icon_color)
         tip = 'Sync with the filesystem'
         self.add_menubar_action(name, icon, tip, callback=self._on_sync)
 
         name = 'Settings'
-        icon = tpQtLib.resource.icon('settings')
-        # icon.set_color(icon_color)
+        icon = tpQtLib.resource.icon('settings', theme='black')
+        icon.set_color(icon_color)
         tip = 'Settings menu'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_settings_menu)
 
@@ -367,6 +372,88 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         """
 
         self._is_locked = flag
+
+        self.sidebar_widget().set_locked(flag)
+        self.viewer().set_locked(flag)
+        self.update_create_item_button()
+        self.update_window_title()
+        self.lockChanged.emit(flag)
+
+    def superusers(self):
+        """
+        Returns the superusers for the window
+        :return: list(str)
+        """
+
+        return self._superusers
+
+    def set_superusers(self, superusers):
+        """
+        Sets the valid superusres for the library widget
+        This will lock all folders unless the current user is a superuser
+        :param superusers: list(str)
+        """
+
+        self._superusers = superusers
+        self.update_lock()
+
+    def lock_reg_exp(self):
+        """
+        Returns the lock regular expression used for locking the widget
+        :return: str
+        """
+
+        return self._lock_reg_exp
+
+    def set_lock_reg_exp(self, reg_exp):
+        """
+        Sets the lock regular expression used for locking the widget
+        Locks only folders that contain the given regular expression in their path
+        :param reg_exp: str
+        """
+
+        self._lock_reg_exp = reg_exp
+        self.update_lock()
+
+    def unlock_reg_exp(self):
+        """
+        Returns the unlock regular expression used for unlocking the widget
+        :return: str
+        """
+
+        return self._unlock_reg_exp
+
+    def set_unlock_reg_exp(self, reg_exp):
+        """
+        Sets the unlock regular expression used for locking the widget
+        Unlocks only folders that contain the given regular expression in their path
+        :param reg_exp: str
+        """
+
+        self._unlock_reg_exp = reg_exp
+        self.update_lock()
+
+    def is_lock_reg_exp_enabled(self):
+        """
+        Returns whether the lock regular expression or unlock regular expression has been set
+        :return: bool
+        """
+
+        return not (self.superusers() is None and self.lock_reg_exp() is None and self.unlock_reg_exp() is None)
+
+    def update_lock(self):
+        """
+        Updates the lock state for the library
+        """
+
+        if not self.is_lock_reg_exp_enabled():
+            return
+
+        superusers = self.superusers() or list()
+        re_locked = re.compile(self.lock_reg_exp() or '')
+        re_unlocked = re.compile(self.unlock_reg_exp() or '')
+
+        print('Updating Lock ...')
 
     def is_refresh_enabled(self):
         """
@@ -1002,7 +1089,7 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         queries = [{'filters': [('type', 'is', 'Folder')]}]
 
         items = self.library().find_items(queries)
-        trash_icon_path = tpQtLib.resource.get('icons', 'trash')
+        trash_icon_path = tpQtLib.resource.get('icons', 'black', 'trash')
 
         for item in items:
             path = item.path()
@@ -1746,10 +1833,10 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         compact = self.is_compact_view()
         action = self.menubar_widget().find_action('View')
         if not compact:
-            icon = tpQtLib.resource.icon('view_all')
+            icon = tpQtLib.resource.icon('view_all', theme='black')
         else:
-            icon = tpQtLib.resource.icon('view_compact')
-        # icon.set_color(self.icon_color())
+            icon = tpQtLib.resource.icon('view_compact', theme='black')
+        icon.set_color(self.icon_color())
         action.setIcon(icon)
 
     def update_filters_button(self):
@@ -1758,8 +1845,8 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         """
 
         action = self.menubar_widget().find_action('Filters')
-        icon = tpQtLib.resource.icon('filter')
-        # icon.set_color(self.icon_color())
+        icon = tpQtLib.resource.icon('filter', theme='black')
+        icon.set_color(self.icon_color())
         if self._filter_by_menu.is_active():
             icon.set_badge(18, 1, 9, 9, color=consts.ICON_BADGE_COLOR)
         action.setIcon(icon)
@@ -2053,10 +2140,22 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         menu.exec_(point)
 
     def _on_show_group_by_menu(self):
-        pass
+        """
+        Internal callback function called when the user presses group by action
+        """
+
+        widget = self.menubar_widget().find_tool_button('Group By')
+        point = widget.mapToGlobal(QPoint(0, widget.height()))
+        self._group_by_menu.show(point)
 
     def _on_show_sort_by_menu(self):
-        pass
+        """
+        Internal callback function called when the user presses Sort by action
+        """
+
+        widget = self.menubar_widget().find_tool_button('Sort By')
+        point = widget.mapToGlobal(QPoint(0, widget.height()))
+        self._sort_by_menu.show(point)
 
     def _on_toggle_view(self):
         """

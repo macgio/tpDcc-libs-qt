@@ -75,13 +75,13 @@ class SearchFindWidget(QWidget, object):
         self._clear_btn.clicked.connect(self.clear)
         self._search_btn.clicked.connect(self._popup_menu)
 
-    def get_text(self):
-        return self._text
-
-    def set_text(self, text):
-        self._text = text
-
-    text = property(get_text, set_text)
+    # def get_text(self):
+    #     return self._text
+    #
+    # def set_text(self, text):
+    #     self._text = text
+    #
+    # text = property(get_text, set_text)
 
     def changeEvent(self, event):
         if event.type() == QEvent.EnabledChange:

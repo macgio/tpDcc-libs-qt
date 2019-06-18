@@ -334,7 +334,7 @@ class MainWindow(QMainWindow, object):
             self._button_settings = QPushButton()
             self._button_settings.setIconSize(QSize(25, 25))
             self._button_settings.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
-            self._button_settings.setIcon(tpQtLib.resource.icon('winsettings'))
+            self._button_settings.setIcon(tpQtLib.resource.icon('winsettings', theme='window'))
             self._button_settings.setStyleSheet('QWidget {background-color: rgba(255, 255, 255, 0); border:0px;}')
             self._button_settings.clicked.connect(self._on_show_settings_dialog)
             self._main_title.buttons_layout.insertWidget(3, self._button_settings)

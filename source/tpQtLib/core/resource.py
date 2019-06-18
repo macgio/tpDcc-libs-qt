@@ -120,7 +120,7 @@ class Resource(object):
 
         return path.clean_path(os.path.join(self.dirname(), *args))
 
-    def _icon(self, name, extension='png', color=None):
+    def _icon(self, name, extension='png', color=None, theme='color'):
         """
         Returns a icon_resource.Icon object from the given resource name
         :param name: str, name of the icon
@@ -129,10 +129,10 @@ class Resource(object):
         :return: icon_resource.Icon
         """
 
-        p = self._pixmap(name=name, category='icons', extension=extension, color=color)
+        p = self._pixmap(name=name, category='icons', extension=extension, color=color, theme=theme)
         return icon_resource.Icon(p)
 
-    def _pixmap(self, name, category='images', extension='png', color=None):
+    def _pixmap(self, name, category='images', extension='png', color=None, theme=None):
         """
         Return a QPixmap object from the given resource anme
         :param name: str, name of the pixmap
@@ -142,7 +142,10 @@ class Resource(object):
         :return: QPixmap
         """
 
-        path = self._get(category, name + '.' + extension)
+        if theme:
+            path = self._get(category, theme, name+'.'+extension)
+        else:
+            path = self._get(category, name + '.' + extension)
         p = pixmap_resource.Pixmap(path)
         if color:
             p.set_color(new_color=color)

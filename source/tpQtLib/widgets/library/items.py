@@ -451,7 +451,7 @@ class LibraryItem(QTreeWidgetItem, object):
             return
 
         source = self.path()
-        self.library().rename_item(self, target, extension, rename_file=rename_file)
+        self.library().rename_item(self, target, extension)
 
         self.renamed.emit(self, source, target)
 

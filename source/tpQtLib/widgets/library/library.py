@@ -23,7 +23,28 @@ from tpQtLib.widgets.library import consts, utils
 class Library(QObject, object):
 
     Name = consts.LIBRARY_DEFAULT_NAME
-    Fields = list()
+
+    Fields = [
+        'icon',
+        'name',
+        'path',
+        'type',
+        'folder',
+        'category'
+    ]
+
+    SortFields = [
+        'name',
+        'path',
+        'type',
+        'folder',
+        'category'
+    ]
+
+    GroupFields = [
+        'type',
+        'category'
+    ]
 
     dataChanged = Signal()
     searchStarted = Signal()
@@ -352,7 +373,7 @@ class Library(QObject, object):
 
         if not self.path():
             tpQtLib.logger.info('No path set for reading the data from disk')
-            return
+            return self._data
 
         if self.is_dirty():
             self._data = utils.read_json(self.data_path())
@@ -749,8 +770,8 @@ class Library(QObject, object):
 
         if self.is_dirty():
             data = self.read()
-            if not data:
-                return
+            # if not data:
+            #     return
             paths = data.keys()
             items = self._library_window.manager().items_from_paths(
                 paths=paths,

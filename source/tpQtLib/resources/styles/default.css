@@ -22,8 +22,49 @@ QLineEdit, QToolBar, QToolButton, QTabBar, QTabBar::tab
 }
 
 QPushButton {
-    background-color: BACKGROUND_COLOR;
+    background-color: BACKGROUND_COLOR_DARKER;
+    border: solid BACKGROUND_COLOR_LIGHTER;
+    border-radius: 2*DPIpx;
+    outline: none;
+    /*margin-bottom: 4px;*/
+    min-height: 25px;
+    border-width: 0px 0px 2px 0px;
 }
+
+IconButton
+{
+    min-height: 0px;
+}
+
+/*QPushButton:selected*/
+/*{*/
+    /*padding-bottom: 4px;*/
+    /*border-bottom: solid ACCENT_COLOR;*/
+    /*border-width: 0px 0px 2px 0px;*/
+/*}*/
+
+/*QTabBar::tab:!selected*/
+/*{*/
+    /*border-bottom-style: solid;*/
+    /*margin-top: 4px;*/
+/*}*/
+
+
+QPushButton:hover
+{
+    border-bottom: solid ACCENT_COLOR;
+    border-width: 0px 0px 2px 0px;
+    padding-bottom: 2*DPIpx;
+}
+
+QPushButton:pressed
+{
+    border-bottom: solid ACCENT_COLOR_DARKER;
+    border-width: 0px 0px 1px 0px;
+    padding-bottom: 1*DPIpx;
+}
+
+
 
 MenuBarWidget, QToolBar, QToolButton  {
 	color: ACCENT_FOREGROUND_COLOR;
@@ -203,6 +244,9 @@ QPushButton:pressed {
 
 QPushButton:checked {
     background-color: ACCENT_COLOR_DARKER;
+    border-bottom: solid ACCENT_COLOR;
+    border-width: 0px 0px 2px 0px;
+    padding-bottom: 0px;
 }
 
 QPushButton#infoButton:!checked {
@@ -375,12 +419,28 @@ QTreeView {
 	color: FOREGROUND_COLOR;
 }
 
-QTreeView, QListView, QPushButton {
+ QTreeView {
+     alternate-background-color: FOREGROUND_COLOR_LIGHTER;
+ }
+
+QTreeView, QListView {
     border: 0px;
     outline: none;
 }
 
-QTreeView::item, QTreeView::branch {
+/*QPushButton {*/
+    /*border: 0px;*/
+    /*outline: none;*/
+/*}*/
+
+QTreeView::item {
+	height: 24*DPIpx;
+	show-decoration-selected: 1; /* make the selection span the entire width of the view */
+	/*background-color: BACKGROUND_COLOR;*/
+    padding:3*DPIpx;
+}
+
+QTreeView::branch {
 	height: 24*DPIpx;
 	show-decoration-selected: 1; /* make the selection span the entire width of the view */
 	/*background-color: BACKGROUND_COLOR;*/
@@ -389,6 +449,18 @@ QTreeView::item, QTreeView::branch {
 QTreeView::item:focus{
 	border: 0px;
 	outline: none;
+}
+
+QTreeView::item:!selected:hover {
+    background-color: ACCENT_COLOR;
+    margin-left:-3px;
+    border-left:0px;
+}
+
+ QTreeView::item:selected {
+    background-color: ACCENT_COLOR_DARKER;
+    border-left:2px solid ACCENT_COLOR;
+    padding-left:2px;
 }
 
 /*!*QTreeView::branch:has-children:!has-siblings:closed,*/
@@ -431,13 +503,21 @@ QTreeView::branch::closed:has-children {
     image: url(:/icons/arrow_right);
 }
 
-QTreeView::item:selected, QTreeView::item:selected:active,
-QListView::item:selected, QListView::item:selected:active {
+QTreeView::item:selected, QListView::item:selected,
+QTreeView::item:selected:active, QListView::item:selected:active {
     color: ACCENT_FOREGROUND_COLOR;
-    background-color: ACCENT_COLOR;
+    background-color: ACCENT_COLOR_DARKER;
+    border-left:2px solid ACCENT_COLOR;
+    padding-left:2px;
 }
 
-
+QTreeView::item:selected:hover, QListView::item:selected:hover,
+QTreeView::item:selected:active:hover, QListView::item:selected:active:hover {
+    color: ACCENT_FOREGROUND_COLOR;
+    background-color: ACCENT_COLOR;
+    border-left:2px solid ACCENT_COLOR;
+    padding-left:2px;
+}
 
 QCheckBox::indicator, QRadioButton::indicator  {
 	width: 18px;
@@ -618,21 +698,21 @@ QMenu::item:selected {
  --------------------------------------------------------------------------
 */
 
-QSplitter {
-	background-color: BACKGROUND_COLOR_LIGHTER;
-    width: 4px;
-    border: none;
-}
+/*QSplitter {*/
+	/*background-color: BACKGROUND_COLOR_LIGHTER;*/
+    /*width: 4px;*/
+    /*border: none;*/
+/*}*/
 
-QSplitter:handle {
-	background-color: BACKGROUND_COLOR_LIGHTER;
-    width: 4px;
+/*QSplitter:handle {*/
+	/*background-color: BACKGROUND_COLOR_LIGHTER;*/
+    /*width: 4px;*/
 
-}
+/*}*/
 
-QSplitter::handle:hover {
-    background-color: ACCENT_COLOR;
-}
+/*QSplitter::handle:hover {*/
+    /*background-color: ACCENT_COLOR;*/
+/*}*/
 
 QMainWindow::separator
 {

@@ -200,7 +200,7 @@ class LibraryListView(mixin.LibraryViewWidgetMixin, QListView):
                 tpQtLib.logger.info('You can only re-order items when sorting by custom order')
 
         if item:
-            item.dropEvent(event)
+            item.drop_event(event)
 
         self.itemDropped.emit(event)
 

@@ -8,7 +8,6 @@ Module that contains base save widget for items
 from __future__ import print_function, division, absolute_import
 
 import os
-import shutil
 import tempfile
 import traceback
 
@@ -18,7 +17,6 @@ from tpQtLib.Qt.QtGui import *
 
 import tpQtLib
 import tpDccLib as tp
-from tpPyUtils import path as path_utils
 from tpQtLib.core import base, qtutils
 from tpQtLib.widgets import directory, formwidget, messagebox
 from tpQtLib.widgets.library import widgets
@@ -44,6 +42,12 @@ class SaveWidget(base.BaseWidget, object):
         self.set_item(item)
         self.create_sequence_widget()
         self.update_thumbnail_size()
+
+        try:
+            self._on_selection_changed()
+            # self.set_script_job_enabled(True)
+        except NameError as e:
+            tpQtLib.logger.error('{} | {}'.format(e, traceback.format_exc()))
 
     def ui(self):
         super(SaveWidget, self).ui()
@@ -463,8 +467,16 @@ class SaveWidget(base.BaseWidget, object):
 
         self.close()
 
+    def _on_selection_changed(self):
+        """
+        Internal callback functino that is called when DCC selection changes
+        """
+
+        if self._options_widget:
+            self._options_widget.validate()
+
     def _on_thumbnail_capture(self):
-        pass
+        self.thumbnail_capture(show=False)
 
     def _on_thumbnail_captured(self, captured_path):
         """
@@ -482,7 +494,13 @@ class SaveWidget(base.BaseWidget, object):
         self.thumbnail_capture(show=True)
 
     def _on_show_browse_image_dialog(self):
-        pass
+        """
+        Internal callback function that shows a file dialog for choosing an image from disk
+        """
+
+        file_dialog = QFileDialog(self, caption='Open Image', filter='Image Files (*.png *.jpg)')
+        file_dialog.fileSelected.connect(self.set_thumbnail)
+        file_dialog.exec_()
 
     def _on_options_changed(self):
         """

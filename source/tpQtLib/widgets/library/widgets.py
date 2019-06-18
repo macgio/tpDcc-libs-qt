@@ -17,7 +17,7 @@ from tpQtLib.Qt.QtGui import *
 
 import tpQtLib
 from tpQtLib.core import animation, image, icon, qtutils, color, pixmap
-from tpQtLib.widgets import statusbar, progressbar, toolbar, action
+from tpQtLib.widgets import statusbar, progressbar, toolbar, action, button
 
 
 class LibraryImageSequenceWidget(QToolButton, object):
@@ -248,32 +248,29 @@ class LibrarySearchWidget(QLineEdit, object):
 
     searchChanged = Signal()
 
-    def __init__(self, *args):
-        super(LibrarySearchWidget, self).__init__(*args)
+    def __init__(self, parent=None):
+        super(LibrarySearchWidget, self).__init__(parent=parent)
 
         self._library = None
         self._space_operator = 'and'
-        self._icon_btn = QPushButton(self)
+        search_icon = tpQtLib.resource.icon('search', theme='black')
+        self._icon_btn = button.IconButton(search_icon, icon_padding=2, parent=self)
         self._icon_btn.clicked.connect(self._on_icon_clicked)
-        search_icon = tpQtLib.resource.icon('search')
         self.set_icon(search_icon)
-        self._clear_btn = QPushButton(self)
+        cross_icon = tpQtLib.resource.icon('delete', theme='black')
+        self._clear_btn = button.IconButton(cross_icon, icon_padding=2, parent=self)
         self._clear_btn.setCursor(Qt.ArrowCursor)
-        cross_icon = tpQtLib.resource.icon('cross')
-        self._clear_btn.setIcon(cross_icon)
         self._clear_btn.setToolTip('Clear all search text')
         self._clear_btn.clicked.connect(self._on_clear_clicked)
-        self._clear_btn.setStyleSheet('background-color: transparent')
         self.setPlaceholderText(self.PLACEHOLDER_TEXT)
         self.textChanged.connect(self._on_text_changed)
         self.update()
 
-        self._icon_btn.setVisible(False)
-        self._clear_btn.setVisible(False)
-
         tip = 'Search all current items'
         self.setToolTip(tip)
         self.setStatusTip(tip)
+
+        self.setStyleSheet('border-radius: 10px; padding-left: 2px; padding-right: 2px; border: 2px;')
 
     def update(self):
         """
@@ -282,6 +279,27 @@ class LibrarySearchWidget(QLineEdit, object):
 
         self.update_icon_color()
         self.update_clear_button()
+
+    def resizeEvent(self, event):
+        """
+        Overrides base QLineEdit resizeEvent function
+        :param event: QResizeEvent
+        """
+
+        super(LibrarySearchWidget, self).resizeEvent(event)
+
+        self.setTextMargins(self.height(), 0, 0, 0)
+        size = QSize(self.height(), self.height())
+        self._icon_btn.setIconSize(size)
+        self._icon_btn.setFixedSize(size)
+        self._clear_btn.setIconSize(size)
+        x = self.width() - self.height()
+        self._clear_btn.setGeometry(x, 0, self.height(), self.height())
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            self.clear()
+        super(LibrarySearchWidget, self).keyPressEvent(event)
 
     def library(self):
         """
@@ -395,14 +413,24 @@ class LibrarySearchWidget(QLineEdit, object):
         :param color: QColor
         """
 
-        pass
+        btn_icon = self._icon_btn.icon()
+        btn_icon = icon.Icon(btn_icon)
+        btn_icon.set_color(color)
+        self._icon_btn.setIcon(btn_icon)
+
+        clear_icon = self._clear_btn.icon()
+        clear_icon = icon.Icon(clear_icon)
+        clear_icon.set_color(color)
+        self._clear_btn.setIcon(clear_icon)
 
     def update_icon_color(self):
         """
         Updates the icon colors to the current foreground role
         """
 
-        color = self.palette().color(self.foregroundRole())
+        clr = self.palette().color(self.foregroundRole())
+        clr = color.Color.from_color(clr)
+        self.set_icon_color(clr)
 
     def _on_icon_clicked(self):
         """
@@ -598,7 +626,7 @@ class LibrarySideBarWidgetItem(QTreeWidgetItem, object):
         :return: str
         """
 
-        return self._expanded_icon_path or tpQtLib.resource.get('icons', 'open_folder')
+        return self._expanded_icon_path or tpQtLib.resource.get('icons', 'black', 'open_folder')
 
     def collapsed_icon_path(self):
         """
@@ -606,7 +634,7 @@ class LibrarySideBarWidgetItem(QTreeWidgetItem, object):
         :return: str
         """
 
-        return self._collapsed_icon_path or tpQtLib.resource.get('icons', 'folder')
+        return self._collapsed_icon_path or tpQtLib.resource.get('icons', 'black', 'folder')
 
     def icon_path(self):
         """
@@ -718,7 +746,7 @@ class LibrarySideBarWidgetItem(QTreeWidgetItem, object):
 
         clr = self.icon_color()
         px = pixmap.Pixmap(path)
-        # px.set_color(clr)
+        px.set_color(clr)
 
         self.setIcon(0, px)
 
@@ -927,6 +955,14 @@ class LibrarySidebarWidget(QTreeWidget, object):
 
         for item in self.items():
             item.update()
+
+    def selectionChanged(self, *args):
+        """
+        Overrides base QTreeWidget selectionChanged function
+        :param args: list
+        """
+
+        self.search()
 
     def items(self):
         """
@@ -1355,6 +1391,53 @@ class SortByMenu(QMenu, object):
 
         self._library = None
 
+    def show(self, point=None):
+        """
+        Overrides base QMenu show function
+        :param point: QPoint
+        """
+
+        self.clear()
+
+        sort_by = self.library().sort_by()
+        if sort_by:
+            current_field = self.library().sort_by()[0].split(':')[0]
+            current_order = 'dsc' if 'dsc' in self.library().sort_by()[0] else 'asc'
+        else:
+            current_field = ''
+            current_order = ''
+
+        separator_action = action.SeparatorAction('Sort By', self)
+        self.addAction(separator_action)
+
+        fields = self.library().SortFields
+        for field in fields:
+            field_action = self.addAction(field.title())
+            field_action.setCheckable(True)
+            field_action.setChecked(bool(current_field == field))
+            callback = partial(self.set_sort_by, field, current_order)
+            field_action.triggered.connect(callback)
+
+        separator_action = action.SeparatorAction('Sort Order', self)
+        self.addAction(separator_action)
+
+        ascending_action = self.addAction('Ascending')
+        ascending_action.setCheckable(True)
+        ascending_action.setChecked(bool(current_order == 'asc'))
+        callback = partial(self.set_sort_by, current_field, 'asc')
+        ascending_action.triggered.connect(callback)
+
+        descending_action = self.addAction('Descending')
+        descending_action.setCheckable(True)
+        descending_action.setChecked(bool(current_order == 'dsc'))
+        callback = partial(self.set_sort_by, current_field, 'dsc')
+        descending_action.triggered.connect(callback)
+
+        if not point:
+            point = QCursor.pos()
+
+        self.exec_(point)
+
     def library(self):
         """
         Returns the library model for the menu
@@ -1371,6 +1454,19 @@ class SortByMenu(QMenu, object):
 
         self._library = library
 
+    def set_sort_by(self, sort_name, sort_order):
+        """
+        Sets the sort by value for the library
+        :param sort_name: str
+        :param sort_order: str
+        """
+
+        if sort_name == 'Custom Order':
+            sort_order = 'asc'
+
+        value = sort_name + ':' + sort_order
+        self.library().set_sort_by([value])
+        self.library().search()
 
 class GroupByMenu(QMenu, object):
     def __init__(self, *args, **kwargs):
@@ -1378,6 +1474,58 @@ class GroupByMenu(QMenu, object):
 
         self._library = None
 
+    def show(self, point=None):
+        """
+        Overrides base QMenu show function
+        :param point: QPoint
+        """
+
+        self.clear()
+
+        group_by = self.library().group_by()
+        if group_by:
+            current_field = group_by[0].split(':')[0]
+            current_order = 'dsc' if 'dsc' in group_by[0]else 'asc'
+        else:
+            current_field = ''
+            current_order = ''
+
+        separator_action = action.SeparatorAction('Group By', self)
+        self.addAction(separator_action)
+
+        none_action = self.addAction('None')
+        none_action.setCheckable(True)
+        callback = partial(self.set_group_by, None, None)
+        none_action.triggered.connect(callback)
+
+        fields = self.library().GroupFields
+        for field in fields:
+            field_action = self.addAction(field.title())
+            field_action.setCheckable(True)
+            field_action.setChecked(bool(current_field == field))
+            callback = partial(self.set_group_by, field, current_order)
+            field_action.triggered.connect(callback)
+
+        separator_action = action.SeparatorAction('Group Order', self)
+        self.addAction(separator_action)
+
+        ascending_action = self.addAction('Ascending')
+        ascending_action.setCheckable(True)
+        ascending_action.setChecked(bool(current_order == 'asc'))
+        callback = partial(self.set_group_by, current_field, 'asc')
+        ascending_action.triggered.connect(callback)
+
+        descending_action = self.addAction('Descending')
+        descending_action.setCheckable(True)
+        descending_action.setChecked(bool(current_order == 'dsc'))
+        callback = partial(self.set_group_by, current_field, 'dsc')
+        descending_action.triggered.connect(callback)
+
+        if not point:
+            point = QCursor.pos()
+
+        self.exec_(point)
+
     def library(self):
         """
         Returns the library model for the menu
@@ -1393,6 +1541,21 @@ class GroupByMenu(QMenu, object):
         """
 
         self._library = library
+
+    def set_group_by(self, group_name, group_order):
+        """
+        Sets the group by value for the library
+        :param group_name: str
+        :param group_order: str
+        """
+
+        if group_name:
+            value = [group_name + ':' + group_order]
+        else:
+            value = None
+
+        self.library().set_group_by(value)
+        self.library().search()
 
 
 class FilterByMenu(QMenu, object):

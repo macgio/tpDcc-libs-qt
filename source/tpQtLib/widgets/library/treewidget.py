@@ -341,6 +341,14 @@ class LibraryTreeWidget(mixin.LibraryViewWidgetMixin, QTreeWidget):
 
         return label in self._header_labels
 
+    def is_sort_by_custom_order(self):
+        """
+        Returns True if items are currently sorted by custom order
+        :return: bool
+        """
+
+        return 'Custom Order' in str(self.viewer().library().sort_by())
+
     def column_labels(self):
         """
         Returns all header labels for the tree widget
