@@ -15,7 +15,7 @@ QWidget:disabled {
     color: rgb(FOREGROUND_COLOR_R, FOREGROUND_COLOR_G, FOREGROUND_COLOR_B, 100);
 }
 
-QLineEdit, QToolBar, QToolButton, QTabBar, QTabBar::tab
+QLineEdit, QToolBar, QTabBar, QTabBar::tab
 {
     border: 0px;
     background-color: BACKGROUND_COLOR;
@@ -34,6 +34,11 @@ QPushButton {
 IconButton
 {
     min-height: 0px;
+}
+
+QToolButton {
+    background-color: transparent;
+    outline: none;
 }
 
 /*QPushButton:selected*/
@@ -519,29 +524,33 @@ QTreeView::item:selected:active:hover, QListView::item:selected:active:hover {
     padding-left:2px;
 }
 
+QCheckBox {
+    background-color: transparent;
+}
+
 QCheckBox::indicator, QRadioButton::indicator  {
 	width: 18px;
 	height: 18px;
 }
 
 QRadioButton::indicator:checked {
-    image: url("RESOURCE_DIRNAME/icons/radio_button_checked_DARKNESS.png");
+    image: url("RESOURCE_DIRNAME/icons/DARKNESS/radio_button_checked_DARKNESS.png");
 }
 
 QRadioButton::indicator:unchecked {
-    image: url("RESOURCE_DIRNAME/icons/radio_button_unchecked_DARKNESS.png");
+    image: url("RESOURCE_DIRNAME/icons/DARKNESS/radio_button_unchecked_DARKNESS.png");
 }
 
 QCheckBox::indicator:checked, QMenu::indicator:non-exclusive:checked {
-    image: url("RESOURCE_DIRNAME/icons/check_box_checked_DARKNESS.png");
+    image: url("RESOURCE_DIRNAME/icons/DARKNESS/check_box_checked_DARKNESS.png");
 }
 
 QCheckBox::indicator:unchecked, QMenu::indicator:non-exclusive:unchecked  {
-    image: url("RESOURCE_DIRNAME/icons/check_box_unchecked_DARKNESS.png");
+    image: url("RESOURCE_DIRNAME/icons/DARKNESS/check_box_unchecked_DARKNESS.png");
 }
 
 QCheckBox::indicator:disabled, QMenu::indicator:non-exclusive:disabled  {
-    image: url("RESOURCE_DIRNAME/icons/check_box_unchecked_DARKNESS.png");
+    image: url("RESOURCE_DIRNAME/icons/DARKNESS/check_box_unchecked_DARKNESS.png");
 }
 
 
@@ -610,6 +619,7 @@ QComboBox QAbstractItemView::item {
 QLabel {
     selection-color: ACCENT_FOREGROUND_COLOR;
 	selection-background-color: ACCENT_COLOR;
+    background-color: transparent;
 }
 
 /*
@@ -991,6 +1001,10 @@ QFrame#messageBoxBody {
     background-color: rgb(BACKGROUND_COLOR_R,BACKGROUND_COLOR_G,BACKGROUND_COLOR_B,210);
 }
 
+#messageBox QLabel {
+    font: 16px;
+    color: ACCENT_FOREGROUND_COLOR;
+}
 
 /*#filterByAction QWidget {*/
     /*background-color: transparent;*/

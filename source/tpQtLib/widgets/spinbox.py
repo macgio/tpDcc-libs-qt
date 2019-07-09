@@ -120,7 +120,12 @@ class DragDoubleSpinBoxLine(QLineEdit, object):
         super(DragDoubleSpinBoxLine, self).paintEvent(event)
         p = QPainter()
         p.begin(self)
-        v = float(self.text())
+
+        try:
+            v = float(self.text())
+        except Exception:
+            v = 0.0000001
+
         try:
             v /= self._max if v > 0 else (self._min * -1)
         except Exception:
@@ -137,7 +142,10 @@ class DragDoubleSpinBoxLine(QLineEdit, object):
         return QDoubleValidator()
 
     def value(self):
-        return float(self.text())
+        try:
+            return float(self.text())
+        except Exception:
+            return 0.0
 
     # NOTE: Here I'm breaking naming nomenclature on purpose. Doing this we follow nomenclature of Qt SpinBoxes
     def setValue(self, new_value):

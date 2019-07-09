@@ -23,6 +23,7 @@ class ExpandablePanel(base.BaseWidget, object):
 
     def __init__(self, header_text, min_height=30, max_height=1000, show_header_text=True, is_opened=False, parent=None):
 
+        self.setObjectName('ExpandablePanel')
         self._header_text = header_text
         self._show_header_text = show_header_text
         self._min_height = min_height

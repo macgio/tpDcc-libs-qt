@@ -19,17 +19,11 @@ class BaseGroup(QGroupBox, object):
 
         self.setTitle(name)
 
-        base_layout = QHBoxLayout()
-        self._base_widget = QWidget()
-        base_layout.addWidget(self._base_widget)
-
         self.main_layout = QVBoxLayout()
         self.main_layout.setContentsMargins(2, 2, 2, 2)
         self.main_layout.setSpacing(2)
         self.main_layout.setAlignment(Qt.AlignCenter)
-        self._base_widget.setLayout(self.main_layout)
-
-        self.setLayout(base_layout)
+        self.setLayout(self.main_layout)
 
         self.ui()
         self.setup_signals()

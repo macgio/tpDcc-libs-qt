@@ -88,32 +88,32 @@ class TreeWidget(QTreeWidget, object):
         index = self.indexAt(position)
         self.doubleClicked.emit(index)
 
-    # def dragMoveEvent(self, event):
-    #     item = self.itemAt(event.pos())
-    #
-    #     if item:
-    #         index = self.indexFromItem(item)
-    #         rect = self.visualRect(index)
-    #         rect_left = self.visualRect(index.sibling(index.row(), 0))
-    #         rect_right = self.visualRect(index.sibling(index.row(), self.header().logicalIndex(self.columnCount()-1)))
-    #         self.dropIndicatorPosition = self.position(event.pos(), rect)
-    #         if self.dropIndicatorPosition == self.AboveItem:
-    #             self._drop_indicator_rect = QRect(rect_left.left(), rect_left.top(), rect_right.right() - rect_left.left(), 0)
-    #             event.accept()
-    #         elif self.dropIndicatorPosition == self.BelowItem:
-    #             self._drop_indicator_rect = QRect(rect_left.left(), rect_left.bottom(), rect_right.right() - rect_left.left(), 0)
-    #             event.accept()
-    #         elif self.dropIndicatorPosition == self.OnItem:
-    #             self._drop_indicator_rect = QRect(rect_left.left(), rect_left.top(), rect_right.right() - rect_left.left(), rect.height())
-    #             event.accept()
-    #         else:
-    #             self._drop_indicator_rect = QRect()
-    #
-    #         self.model().setData(index, self.dropIndicatorPosition, Qt.UserRole)
-    #
-    #     self.viewport().update()
-    #
-    #     super(TreeWidget, self).dragMoveEvent(event)
+    def dragMoveEvent(self, event):
+        item = self.itemAt(event.pos())
+
+        if item:
+            index = self.indexFromItem(item)
+            rect = self.visualRect(index)
+            rect_left = self.visualRect(index.sibling(index.row(), 0))
+            rect_right = self.visualRect(index.sibling(index.row(), self.header().logicalIndex(self.columnCount()-1)))
+            self._drop_indicator_position = self.position(event.pos(), rect, index)
+            if self._drop_indicator_position == self.AboveItem:
+                self._drop_indicator_rect = QRect(rect_left.left(), rect_left.top(), rect_right.right() - rect_left.left(), 0)
+                event.accept()
+            elif self._drop_indicator_position == self.BelowItem:
+                self._drop_indicator_rect = QRect(rect_left.left(), rect_left.bottom(), rect_right.right() - rect_left.left(), 0)
+                event.accept()
+            elif self._drop_indicator_position == self.OnItem:
+                self._drop_indicator_rect = QRect(rect_left.left(), rect_left.top(), rect_right.right() - rect_left.left(), rect.height())
+                event.accept()
+            else:
+                self._drop_indicator_rect = QRect()
+
+            self.model().setData(index, self._drop_indicator_position, Qt.UserRole)
+
+        self.viewport().update()
+
+        super(TreeWidget, self).dragMoveEvent(event)
 
     def addTopLevelItem(self, item):
         super(TreeWidget, self).addTopLevelItem(item)
@@ -135,11 +135,12 @@ class TreeWidget(QTreeWidget, object):
     # endregion
 
     # region Public Functions
-    def position(self, pos, rect):
+    def position(self, pos, rect, index):
         """
         Function that returns whether the cursor is over, below or on an item
         :param pos: QPos
         :param rect: QRect
+        :param rect: QModelIndex
         :return: QAbstractItemView.DropIndicatorPosition
         """
 
@@ -335,7 +336,7 @@ class TreeWidget(QTreeWidget, object):
                 color = Qt.white
 
             brush = QBrush(QColor(color))
-            pen = QPen(brush, 2, Qt.DotLine)
+            pen = QPen(brush, 1, Qt.DotLine)
             painter.setPen(pen)
             if rect.height() == 0:
                 painter.drawLine(rect.topLeft(), rect.topRight())
@@ -1079,8 +1080,6 @@ class FileTreeWidget(TreeWidget, object):
         self.setCurrentItem(item)
 
         return item
-    # endregion
-
 
     def get_tree_widget(self):
         """
@@ -1122,7 +1121,6 @@ class EditFileTreeWidget(base.DirectoryWidget, object):
 
         self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
 
-    # region Override Functions
     def ui(self):
         super(EditFileTreeWidget, self).ui()
 
@@ -1165,9 +1163,7 @@ class EditFileTreeWidget(base.DirectoryWidget, object):
 
         if hasattr(self.manager_widget, 'set_directory'):
             self.manager_widget.set_directory(directory)
-    # endregion
 
-    # region Public Functions
     def get_current_item(self):
         """
         Returns the current selected item on the tree
@@ -1192,6 +1188,38 @@ class EditFileTreeWidget(base.DirectoryWidget, object):
 
         item = self.get_current_item()
         return self.tree_widget.get_item_directory(item)
+
+    def enable_edit_mode(self):
+        """
+        Enables edit mode
+        """
+
+        if not self.edit_mode_btn.isChecked():
+            self.edit_mode_btn.blockSignals(True)
+            try:
+                self.edit_mode_btn.setChecked(True)
+            finally:
+                self.edit_mode_btn.blockSignals(False)
+
+        self.tree_widget.setDragEnabled(True)
+        self.tree_widget.setAcceptDrops(True)
+        self.tree_widget.setDropIndicatorShown(True)
+
+    def disable_edit_mode(self):
+        """
+        Enables edit mode
+        """
+
+        if self.edit_mode_btn.isChecked():
+            self.edit_mode_btn.blockSignals(True)
+            try:
+                self.edit_mode_btn.setChecked(False)
+            finally:
+                self.edit_mode_btn.blockSignals(False)
+
+        self.tree_widget.setDragEnabled(False)
+        self.tree_widget.setAcceptDrops(False)
+        self.tree_widget.setDropIndicatorShown(False)
 
     def refresh(self):
         """
@@ -1225,10 +1253,10 @@ class EditFileTreeWidget(base.DirectoryWidget, object):
         :param flag: bool
         """
 
-        self.tree_widget.setDragEnabled(flag)
-        self.tree_widget.setAcceptDrops(flag)
-        self.tree_widget.setDropIndicatorShown(flag)
-    # endregion
+        if flag:
+            self.enable_edit_mode()
+        else:
+            self.disable_edit_mode()
 
 
 class TreeWidgetItem(QTreeWidgetItem, object):

@@ -80,12 +80,15 @@ class MainWindow(QMainWindow, object):
             self._settings = settings.QtSettings(filename=self.get_settings_file(), window=self)
             self._settings.setFallbacksEnabled(False)
 
-        self.ui()
-        self.setup_signals()
-
         auto_load = kwargs.get('auto_load', True)
         if auto_load:
             self.load()
+
+        self.ui()
+        self.setup_signals()
+
+        if auto_load:
+            self.load_theme()
 
     def closeEvent(self, event):
         self.save_settings()
@@ -95,6 +98,15 @@ class MainWindow(QMainWindow, object):
 
     def load(self):
         self.load_settings()
+
+    def load_theme(self):
+        def_settings = self.default_settings()
+        def_theme_settings = def_settings.get('theme')
+        theme_settings = {
+            "accentColor": self.settings().getw('theme/accentColor') or def_theme_settings['accentColor'],
+            "backgroundColor": self.settings().getw('theme/backgroundColor') or def_theme_settings['backgroundColor']
+        }
+        self.set_theme_settings(theme_settings)
 
     def settings(self):
         """
@@ -149,13 +161,6 @@ class MainWindow(QMainWindow, object):
         if window_state:
             self.restoreState(window_state)
 
-        def_theme_settings = def_settings.get('theme')
-        theme_settings = {
-            "accentColor": self.settings().getw('theme/accentColor') or def_theme_settings['accentColor'],
-            "backgroundColor": self.settings().getw('theme/backgroundColor') or def_theme_settings['backgroundColor']
-        }
-        self.set_theme_settings(theme_settings)
-
     def load_settings(self, settings=None):
         """
         Loads window settings from disk
@@ -176,6 +181,8 @@ class MainWindow(QMainWindow, object):
 
         settings.setw('geometry', self.saveGeometry())
         settings.setw('windowState', self.saveState())
+
+        return settings
 
     def dpi(self):
         """
