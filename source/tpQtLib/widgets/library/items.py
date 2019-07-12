@@ -12,6 +12,7 @@ import math
 import shutil
 import tempfile
 import traceback
+
 from datetime import datetime
 from functools import partial
 
@@ -21,7 +22,9 @@ from tpQtLib.Qt.QtGui import *
 
 import tpDccLib as tp
 
-from tpPyUtils import decorators, timedate, path as path_utils
+from tpQtLib.core import qtutils
+
+from tpPyUtils import decorators, timedate, fileio, path as path_utils, folder as folder_utils
 
 import tpQtLib
 from tpQtLib.core import image, qtutils
@@ -212,9 +215,9 @@ class LibraryItem(QTreeWidgetItem, object):
         return False
 
     @decorators.abstractmethod
-    def context_menu(self):
+    def context_menu(self, menu):
         """
-        Returns the context men ufor the item
+        Returns the context menu for the item
         This function MUST be implemented in subclass to return a custom context menu for the item
         :return: QMenu
         """
@@ -563,6 +566,17 @@ class LibraryItem(QTreeWidgetItem, object):
         """
 
         return list()
+
+    def show_in_folder(self):
+        """
+        Opens folder in OS folder explorer where file is located
+        """
+
+        path = self.path()
+        if not os.path.isdir(path):
+            return
+
+        folder_utils.open_folder(path)
 
     """
     ##########################################################################################
@@ -1100,13 +1114,28 @@ class LibraryItem(QTreeWidgetItem, object):
         temp_path = os.path.join(tempfile.mkdtemp(), self.name())
         if not os.path.isdir(temp_path):
             os.mkdir(temp_path)
-        self.write(temp_path, *args, **kwargs)
+        valid_save = self.write(temp_path, *args, **kwargs)
+        if not valid_save:
+            tpQtLib.logger.warning('Item {} not saved!'.format(path))
+            if self.library_window():
+                self.library_window().show_warning_message('Item {} not saved!'.format(path))
+            return
+
         new_path = os.path.join(os.path.dirname(path), self.name())
         shutil.move(temp_path, new_path)
         self.set_path(new_path)
         self.save_item_data()
         if self.library_window():
             self.library_window().select_items([self])
+
+        version = fileio.FileVersion(os.path.join(new_path, self.name()))
+        comment = kwargs.get('comment', None)
+        if not comment:
+            comment = qtutils.get_comment(parent=self)
+            if not comment:
+                comment = '-'
+        version.save(comment)
+
         self.saved.emit(self)
         tpQtLib.logger.debug('Item Saved: {}'.format(self.path()))
 
@@ -2019,7 +2048,11 @@ class LibraryItem(QTreeWidgetItem, object):
         pass
 
     def _on_show_in_folder(self):
-        pass
+        """
+        Internal callback function that is called when Show in Folder action is clicked
+        """
+
+        self.show_in_folder()
 
     def _on_copy_path(self):
         pass
@@ -2357,7 +2390,7 @@ class BaseItem(LibraryItem, object):
 
     def load(self, objects=None, namespaces=None, **kwargs):
         """
-        Loads teh data from the transfer object
+        Loads the data from the transfer object
         :param objects: list(str) or None
         :param namespaces: list(str) or None
         :param kwargs: dict
@@ -2609,7 +2642,9 @@ class BaseItem(LibraryItem, object):
         :return: str or None
         """
 
-        return self.transfer_object().metadata().get('user', '')
+        return None
+
+        # return self.transfer_object().metadata().get('user', '')
 
     def description(self):
         """

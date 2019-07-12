@@ -30,7 +30,7 @@ class LoadWidget(base.BaseWidget, object):
 
         self.setObjectName('Load')
         self.set_item(item)
-        # self.load_settings()
+        self.load_settings()
 
         self.create_sequence_widget()
         self.update_thumbnail_size()
@@ -65,20 +65,20 @@ class LoadWidget(base.BaseWidget, object):
         icon_toggle_box_header_lyt.setSpacing(0)
         icon_toggle_box_header.setLayout(icon_toggle_box_header_lyt)
 
-        icon_toggle_box_btn = QPushButton('ICON')
-        icon_toggle_box_btn.setObjectName('iconButton')
-        icon_toggle_box_btn.setCheckable(True)
-        icon_toggle_box_btn.setChecked(True)
+        self._icon_toggle_box_btn = QPushButton('ICON')
+        self._icon_toggle_box_btn.setObjectName('iconButton')
+        self._icon_toggle_box_btn.setCheckable(True)
+        self._icon_toggle_box_btn.setChecked(True)
         # icon_toggle_box_btn.setFlat(True)
-        icon_toggle_box_header_lyt.addWidget(icon_toggle_box_btn)
+        icon_toggle_box_header_lyt.addWidget(self._icon_toggle_box_btn)
 
-        icon_toggle_box_frame = QFrame()
-        icon_toggle_box_frame.setFrameShape(QFrame.NoFrame)
-        icon_toggle_box_frame.setFrameShadow(QFrame.Plain)
+        self._icon_toggle_box_frame = QFrame()
+        self._icon_toggle_box_frame.setFrameShape(QFrame.NoFrame)
+        self._icon_toggle_box_frame.setFrameShadow(QFrame.Plain)
         icon_toggle_box_frame_lyt = QVBoxLayout()
         icon_toggle_box_frame_lyt.setContentsMargins(0, 3, 0, 0)
         icon_toggle_box_frame_lyt.setSpacing(3)
-        icon_toggle_box_frame.setLayout(icon_toggle_box_frame_lyt)
+        self._icon_toggle_box_frame.setLayout(icon_toggle_box_frame_lyt)
 
         thumbnail_layout = QHBoxLayout()
         thumbnail_layout.setContentsMargins(0, 0, 0, 0)
@@ -104,7 +104,7 @@ class LoadWidget(base.BaseWidget, object):
         thumbnail_frame_layout.addWidget(self._thumbnail_btn)
 
         icon_toggle_box_lyt.addWidget(icon_toggle_box_header)
-        icon_toggle_box_lyt.addWidget(icon_toggle_box_frame)
+        icon_toggle_box_lyt.addWidget(self._icon_toggle_box_frame)
 
         info_toggle_box = QFrame()
         info_toggle_box.setFrameShape(QFrame.NoFrame)
@@ -149,48 +149,6 @@ class LoadWidget(base.BaseWidget, object):
         info_toggle_box_lyt.addWidget(info_toggle_box_header)
         info_toggle_box_lyt.addWidget(self._info_toggle_box_frame)
 
-        # options_toggle_box = QFrame()
-        # options_toggle_box.setFrameShape(QFrame.NoFrame)
-        # options_toggle_box.setFrameShadow(QFrame.Plain)
-        # options_toggle_box_lyt = QVBoxLayout()
-        # options_toggle_box_lyt.setContentsMargins(0, 0, 0, 0)
-        # options_toggle_box_lyt.setSpacing(0)
-        # options_toggle_box.setLayout(info_toggle_box_lyt)
-        #
-        # options_toggle_box_header = QFrame()
-        # options_toggle_box_header.setFrameShape(QFrame.NoFrame)
-        # options_toggle_box_header.setFrameShadow(QFrame.Plain)
-        # options_toggle_box_header_lyt = QVBoxLayout()
-        # options_toggle_box_header.setContentsMargins(0, 0, 0, 0)
-        # options_toggle_box_header_lyt.setSpacing(0)
-        # options_toggle_box_header.setLayout(options_toggle_box_header_lyt)
-        #
-        # options_toggle_box_btn = QPushButton('ICON')
-        # options_toggle_box_btn.setCheckable(True)
-        # options_toggle_box_btn.setChecked(True)
-        # options_toggle_box_btn.setFlat(True)
-        # options_toggle_box_header_lyt.addWidget(info_toggle_box_btn)
-        #
-        # options_toggle_box_frame = QFrame()
-        # options_toggle_box_frame.setFrameShape(QFrame.NoFrame)
-        # options_toggle_box_frame.setFrameShadow(QFrame.Plain)
-        # options_toggle_box_frame_lyt = QVBoxLayout()
-        # options_toggle_box_frame_lyt.setContentsMargins(0, 3, 0, 3)
-        # options_toggle_box_frame_lyt.setSpacing(3)
-        # options_toggle_box_frame.setLayout(info_toggle_box_frame_lyt)
-        #
-        # options_frame = QFrame()
-        # options_frame.setFrameShape(QFrame.NoFrame)
-        # options_frame.setFrameShadow(QFrame.Plain)
-        # options_frame_lyt = QVBoxLayout()
-        # options_frame_lyt.setContentsMargins(0, 0, 0, 0)
-        # options_frame_lyt.setSpacing(0)
-        # options_frame.setLayout(info_toggle_box_frame_lyt)
-        # options_toggle_box_lyt.addWidget(options_frame)
-        #
-        # options_toggle_box_lyt.addWidget(options_toggle_box_header)
-        # options_toggle_box_lyt.addWidget(info_toggle_box_frame)
-
         preview_buttons_frame = QFrame()
         preview_buttons_frame.setObjectName('previewButtons')
         preview_buttons_frame.setFrameShape(QFrame.NoFrame)
@@ -220,9 +178,20 @@ class LoadWidget(base.BaseWidget, object):
         self.main_layout.addItem(QSpacerItem(0, 250, QSizePolicy.Preferred, QSizePolicy.Expanding))
 
     def setup_signals(self):
+
         self._info_toggle_box_btn.clicked.connect(self.save_settings)
         self._info_toggle_box_btn.toggled[bool].connect(self._info_toggle_box_frame.setVisible)
+        self._icon_toggle_box_btn.clicked.connect(self.save_settings)
+        self._icon_toggle_box_btn.toggled[bool].connect(self._icon_toggle_box_frame.setVisible)
         self._load_btn.clicked.connect(self.load)
+
+    def resizeEvent(self, event):
+        """
+        Function that overrides base.BaseWidget function
+        :param event: QSizeEvent
+        """
+
+        self.update_thumbnail_size()
 
     def load_btn(self):
         """
@@ -285,6 +254,20 @@ class LoadWidget(base.BaseWidget, object):
         info_widget.set_schema(item.info())
         self._info_frame.layout().addWidget(info_widget)
 
+    def is_editable(self):
+        """
+        Returns whether the user can edit the item or not
+        :return: bool
+        """
+
+        item = self.item()
+        editable = True
+
+        if item and item.library_window():
+            editable = not item.library_window().is_locked()
+
+        return editable
+
     def create_sequence_widget(self):
         """
         Creates a sequence widget to replace the static thumbnail widget
@@ -315,7 +298,23 @@ class LoadWidget(base.BaseWidget, object):
         self._thumbnail_btn.setMaximumSize(size)
         self._thumbnail_frame.setMaximumSize(size)
 
+    def settings(self):
+        """
+        Returns the current state of the widget
+        :return: dict
+        """
+
+        settings = dict()
+
+        settings['iconToggleBoxChecked'] = self._icon_toggle_box_btn.isChecked()
+        settings['infoToggleBoxChecked'] = self._info_toggle_box_btn.isChecked()
+
+        return settings
+
     def save_settings(self):
+        pass
+
+    def load_settings(self):
         pass
 
     def load(self):

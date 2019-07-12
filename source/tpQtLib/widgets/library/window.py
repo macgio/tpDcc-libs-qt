@@ -1920,7 +1920,7 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         item = None
         if items:
             item = items[-1]
-            item.context_menu(menu)
+            item.context_menu(context_menu)
 
         if not self.is_locked():
             context_menu.addMenu(self._create_new_item_menu())
