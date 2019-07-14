@@ -122,10 +122,12 @@ class MainWindow(QMainWindow, object):
         :return: dict
         """
 
+        # "accentColor": "rgb(0, 175, 240, 255)",
+
         return {
             "theme": {
-            "accentColor": "rgb(0, 175, 240, 255)",
-            "backgroundColor": "rgb(60, 64, 79, 255)",
+            "accentColor": "rgb(40, 40, 40, 255)",
+            "backgroundColor": "rgb(65, 65, 65, 255)",
             }
         }
 
@@ -289,7 +291,7 @@ class MainWindow(QMainWindow, object):
         :return: str
         """
 
-        return os.path.join(os.getenv('APPDATA'), 'tpRigToolkit', self.objectName())
+        return os.path.join(os.getenv('APPDATA'), self.objectName())
 
     def get_settings_file(self):
         """

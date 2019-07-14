@@ -601,7 +601,7 @@ QComboBox QAbstractItemView:item {
 
 QComboBox, QLineEdit {
 	border: 0px;
-    background-color: BACKGROUND_COLOR_DARKER;
+    background-color: ACCENT_COLOR_DARKER;
 	border-bottom: 2px solid rgb(0,0,0,0);
 }
 
