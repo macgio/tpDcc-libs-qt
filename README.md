@@ -1,5 +1,10 @@
 # tpQtLib
 
+<p align="left">
+    <a href="https://github.com/tpoveda/tpPyUtils/blob/master/LICENSE" alt="License">
+        <img src="https://img.shields.io/github/license/tpoveda/tpQtLib.svg" /></a>
+</p>
+
 Collection of Python modules to make your life easier when working with PySide/PyQt.
 
 Also, when working with specific DCCs, tpQtLib will auto import proper modules and will use
