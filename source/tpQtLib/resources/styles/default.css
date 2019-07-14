@@ -482,7 +482,7 @@ QTreeView::item:!selected:hover {
 /*QTreeView::branch:open:has-children:has-siblings  {
     /*border-image: none;
     /*image: url("RESOURCE_DIRNAME/icons/branch_open_DARKNESS.png");
-/*}
+/*}*/
 
 QMenu::separator, QListView::item:hover,
 QTreeView::item:hover {

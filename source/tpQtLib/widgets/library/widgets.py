@@ -826,8 +826,6 @@ class LibrarySideBarWidgetItem(QTreeWidgetItem, object):
         :param settings: dict
         """
 
-        print('Settings: {}'.format(settings))
-
         text = settings.get('text')
         if text:
             self.setText(0, text)

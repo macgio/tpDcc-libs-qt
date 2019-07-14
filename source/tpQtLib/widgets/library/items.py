@@ -1126,16 +1126,25 @@ class LibraryItem(QTreeWidgetItem, object):
         if self.library_window():
             self.library_window().select_items([self])
 
-        version = fileio.FileVersion(os.path.join(new_path, self.name()))
         comment = kwargs.get('comment', None)
+        self.save_version(new_path, comment)
+
+        self.saved.emit(self)
+        tpQtLib.logger.debug('Item Saved: {}'.format(self.path()))
+
+    def save_version(self, path, comment):
+        """
+        Function that creates a new version of the item data
+        :param path: str
+        :param comment: str
+        """
+
+        version = fileio.FileVersion(os.path.join(path, self.name()))
         if not comment:
             comment = qtutils.get_comment(parent=self)
             if not comment:
                 comment = '-'
         version.save(comment)
-
-        self.saved.emit(self)
-        tpQtLib.logger.debug('Item Saved: {}'.format(self.path()))
 
     """
     ##########################################################################################
@@ -2253,7 +2262,7 @@ class LibraryFolderItem(LibraryItem, object):
 
     MenuName = 'Folder'
     MenuOrder = 1
-    MenuIconPath = tpQtLib.resource.get('icons', 'folder.png')
+    MenuIconPath = tpQtLib.resource.get('icons', 'color', 'folder.png')
     DefaultThumbnailPath = tpQtLib.resource.get('icons', 'folder.png')
     TrashIconPath = tpQtLib.resource.get('icons', 'trash.png')
 
@@ -2287,6 +2296,16 @@ class LibraryFolderItem(LibraryItem, object):
             if library_window:
                 library_window.refresh()
                 library_window.select_folder_path(path)
+
+    def save_version(self, path, comment):
+        """
+        Overrides base save_version function
+        When creating folders we do not create any kind of version
+        :param path: str
+        :param comment: str
+        """
+
+        return
 
     def info(self):
         """
@@ -2333,7 +2352,7 @@ class LibraryFolderItem(LibraryItem, object):
         :param kwargs: dict
         """
 
-        pass
+        return True
 
     def create_item_data(self):
         """
