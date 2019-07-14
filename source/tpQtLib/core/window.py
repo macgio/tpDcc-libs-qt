@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Collapsible accordion widget similar to Maya Attribute Editor
+Module that contains implementation for custom PySide/PyQt windows
 """
 
 from __future__ import print_function, division, absolute_import
