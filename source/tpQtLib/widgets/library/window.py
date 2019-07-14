@@ -1880,7 +1880,8 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         :return: QIcon
         """
 
-        return tpQtLib.resource.icon('add', color=color)
+        # return tpQtLib.resource.icon('add', color=color)
+        return tpQtLib.resource.icon('add')
 
     def _create_new_item_menu(self):
         """
@@ -1925,8 +1926,10 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         if not self.is_locked():
             context_menu.addMenu(self._create_new_item_menu())
             if item:
+                edit_icon = tpQtLib.resource.icon('edit')
                 edit_menu = menu.Menu(context_menu)
                 edit_menu.setTitle('Edit')
+                edit_menu.setIcon(edit_icon)
                 context_menu.addMenu(edit_menu)
                 item.context_edit_menu(edit_menu)
                 if self.trash_enabled():
@@ -1948,8 +1951,10 @@ class LibraryWindow(tpQtLib.MainWindow, object):
         :return: QMenu
         """
 
+        settings_icon = tpQtLib.resource.icon('settings')
         context_menu = menu.Menu('', self)
         context_menu.setTitle('Settings')
+        context_menu.setIcon(settings_icon)
 
         if consts.SETTINGS_DIALOG_ENABLED:
             settings_action = context_menu.addAction('Settings')

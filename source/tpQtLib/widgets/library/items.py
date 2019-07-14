@@ -21,8 +21,7 @@ from tpQtLib.Qt.QtWidgets import *
 from tpQtLib.Qt.QtGui import *
 
 import tpDccLib as tp
-
-from tpQtLib.core import qtutils
+from tpDccLib.core import consts as dcc_consts
 
 from tpPyUtils import decorators, timedate, fileio, path as path_utils, folder as folder_utils
 
@@ -149,7 +148,6 @@ class LibraryItem(QTreeWidgetItem, object):
 
         if path:
             self.set_path(path)
-
 
     def __eq__(self, other):
         return id(other) == id(self)
@@ -2380,7 +2378,10 @@ class BaseItem(LibraryItem, object):
         self._transfer_object = None
         self._transfer_basename = None
 
+        # In standard files we only use the data JSON to store properties of the file
+        # We can use transfer object to store other data in specific situations
         self.set_transfer_class(utils.TransferObject)
+        self.set_transfer_basename(dcc_consts.DATA_FILE)
 
     """
     ##########################################################################################
@@ -2399,6 +2400,19 @@ class BaseItem(LibraryItem, object):
         tpQtLib.logger.debug('Loading: {}'.format(self.transfer_path()))
         self.transfer_object().load(objects=objects, namespaces=namespaces, **kwargs)
         tpQtLib.logger.debug('Loaded: {}'.format(self.transfer_path()))
+
+    def write(self, path, objects, icon_path='', **options):
+        """
+        Writes all the given object data to the given path on disk
+        :param path: str
+        :param objects: list(str)
+        :param icon_path: str
+        :param options: dict
+        """
+
+        if icon_path:
+            base_name = os.path.basename(icon_path)
+            shutil.copy(icon_path, path+'/'+base_name)
 
     def load_validator(self, **options):
         """
@@ -2642,7 +2656,7 @@ class BaseItem(LibraryItem, object):
         :return: str or None
         """
 
-        return None
+        return self.transfer_object().metadata().get('user', 'Unknown')
 
         # return self.transfer_object().metadata().get('user', '')
 

@@ -15,8 +15,8 @@ from tpQtLib.Qt.QtGui import *
 
 import tpQtLib
 import tpDccLib as tp
-from tpPyUtils import path, fileio, folder, version
-from tpQtLib.core import base, qtutils
+from tpPyUtils import path, fileio, folder
+from tpQtLib.core import base
 from tpQtLib.widgets import button, search
 
 
@@ -1227,9 +1227,7 @@ class EditFileTreeWidget(base.DirectoryWidget, object):
         """
 
         self.tree_widget.refresh()
-    # endregion
 
-    # region Private Functions
     def _on_item_selection_changed(self):
         """
         Internal function that is called anytime the user selects an item on the TreeWidget
@@ -1267,62 +1265,8 @@ class TreeWidgetItem(QTreeWidgetItem, object):
         self.column = self.get_column()
         super(TreeWidgetItem, self).__init__(parent)
 
-    # region Public Functions
     def get_widget(self):
         return None
 
     def get_column(self):
         return 0
-    # endregion
-
-
-class HistoryTreeWidget(FileTreeWidget, object):
-
-    HEADER_LABELS = ['Version', 'Comment', 'Size MB', 'User', 'Time']
-
-    def __init__(self):
-        super(HistoryTreeWidget, self).__init__()
-
-        if qtutils.is_pyside() or qtutils.is_pyside2():
-            self.sortByColumn(0, Qt.SortOrder.DescendingOrder)
-
-        self.setColumnWidth(0, 70)
-        self.setColumnWidth(1, 200)
-        self.setColumnWidth(2, 70)
-        self.setColumnWidth(3, 70)
-        self.setColumnWidth(4, 70)
-        self._padding = 1
-
-    # region Override Functions
-    def _get_files(self):
-        if self._directory:
-            version_file = version.VersionFile(file_path=self._directory)
-            version_data = version_file.get_organized_version_data()
-            if version_data:
-                self._padding = len(str(len(version_data)))
-                return version_data
-            else:
-                return list()
-
-    def _add_item(self, version_data):
-        version, comment, user, file_size, file_date, version_file = version_data
-        version_str = str(version).zfill(self._padding)
-
-        item = QTreeWidgetItem()
-        item.setText(0, version_str)
-        item.setText(1, comment)
-        item.setText(2, str(file_size))
-        item.setText(3, user)
-        item.setText(4, file_date)
-        self.addTopLevelItem(item)
-        item.file_path = version_file
-
-    def _add_items(self, version_list):
-        if not version_list:
-            self.clear()
-
-        for version_data in version_list:
-            self._add_item(version_data)
-
-    def _on_item_activated(self, item):
-        return

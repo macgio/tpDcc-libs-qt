@@ -15,11 +15,14 @@ from tpQtLib.Qt.QtGui import *
 
 import tpQtLib
 from tpQtLib.core import base
-from tpQtLib.widgets import formwidget, splitters
+from tpQtLib.widgets import formwidget, splitters, history
 from tpQtLib.widgets.library import widgets
 
 
 class LoadWidget(base.BaseWidget, object):
+
+    HISTORY_WIDGET = history.HistoryFileWidget
+
     def __init__(self, item, parent=None):
         super(LoadWidget, self).__init__(parent=parent)
 
@@ -39,8 +42,8 @@ class LoadWidget(base.BaseWidget, object):
         super(LoadWidget, self).ui()
 
         title_layout = QHBoxLayout()
-        title_layout.setContentsMargins(2, 2, 0, 0)
-        title_layout.setSpacing(2)
+        title_layout.setContentsMargins(1, 1, 0, 0)
+        title_layout.setSpacing(1)
         self._icon_lbl = QLabel('')
         self._icon_lbl.setMaximumSize(QSize(14, 14))
         self._icon_lbl.setMinimumSize(QSize(14, 14))
@@ -53,8 +56,8 @@ class LoadWidget(base.BaseWidget, object):
         icon_toggle_box.setFrameShape(QFrame.NoFrame)
         icon_toggle_box.setFrameShadow(QFrame.Plain)
         icon_toggle_box_lyt = QVBoxLayout()
-        icon_toggle_box_lyt.setContentsMargins(0, 3, 0, 0)
-        icon_toggle_box_lyt.setSpacing(3)
+        icon_toggle_box_lyt.setContentsMargins(0, 1, 0, 0)
+        icon_toggle_box_lyt.setSpacing(1)
         icon_toggle_box.setLayout(icon_toggle_box_lyt)
 
         icon_toggle_box_header = QFrame()
@@ -76,8 +79,8 @@ class LoadWidget(base.BaseWidget, object):
         self._icon_toggle_box_frame.setFrameShape(QFrame.NoFrame)
         self._icon_toggle_box_frame.setFrameShadow(QFrame.Plain)
         icon_toggle_box_frame_lyt = QVBoxLayout()
-        icon_toggle_box_frame_lyt.setContentsMargins(0, 3, 0, 0)
-        icon_toggle_box_frame_lyt.setSpacing(3)
+        icon_toggle_box_frame_lyt.setContentsMargins(0, 1, 0, 0)
+        icon_toggle_box_frame_lyt.setSpacing(1)
         self._icon_toggle_box_frame.setLayout(icon_toggle_box_frame_lyt)
 
         thumbnail_layout = QHBoxLayout()
@@ -133,8 +136,8 @@ class LoadWidget(base.BaseWidget, object):
         self._info_toggle_box_frame.setFrameShape(QFrame.NoFrame)
         self._info_toggle_box_frame.setFrameShadow(QFrame.Plain)
         info_toggle_box_frame_lyt = QVBoxLayout()
-        info_toggle_box_frame_lyt.setContentsMargins(0, 3, 0, 0)
-        info_toggle_box_frame_lyt.setSpacing(3)
+        info_toggle_box_frame_lyt.setContentsMargins(0, 1, 0, 0)
+        info_toggle_box_frame_lyt.setSpacing(1)
         self._info_toggle_box_frame.setLayout(info_toggle_box_frame_lyt)
 
         self._info_frame = QFrame()
@@ -149,12 +152,58 @@ class LoadWidget(base.BaseWidget, object):
         info_toggle_box_lyt.addWidget(info_toggle_box_header)
         info_toggle_box_lyt.addWidget(self._info_toggle_box_frame)
 
+        version_toggle_box = QFrame()
+        version_toggle_box.setFrameShape(QFrame.NoFrame)
+        version_toggle_box.setFrameShadow(QFrame.Plain)
+        version_toggle_box_lyt = QVBoxLayout()
+        version_toggle_box_lyt.setContentsMargins(0, 0, 0, 0)
+        version_toggle_box_lyt.setSpacing(0)
+        version_toggle_box.setLayout(version_toggle_box_lyt)
+
+        version_toggle_box_header = QFrame()
+        version_toggle_box_header.setFrameShape(QFrame.NoFrame)
+        version_toggle_box_header.setFrameShadow(QFrame.Plain)
+        version_toggle_box_header_lyt = QVBoxLayout()
+        version_toggle_box_header.setContentsMargins(0, 0, 0, 0)
+        version_toggle_box_header_lyt.setSpacing(0)
+        version_toggle_box_header.setLayout(version_toggle_box_header_lyt)
+
+        self._version_toggle_box_btn = QPushButton('VERSION')
+        self._version_toggle_box_btn.setObjectName('versionButton')
+        self._version_toggle_box_btn.setCheckable(True)
+        self._version_toggle_box_btn.setChecked(True)
+        # self._info_toggle_box_btn.setFlat(True)
+        version_toggle_box_header_lyt.addWidget(self._version_toggle_box_btn)
+
+        self._version_toggle_box_frame = QFrame()
+        self._version_toggle_box_frame.setFrameShape(QFrame.NoFrame)
+        self._version_toggle_box_frame.setFrameShadow(QFrame.Plain)
+        version_toggle_box_frame_lyt = QVBoxLayout()
+        version_toggle_box_frame_lyt.setContentsMargins(0, 1, 0, 0)
+        version_toggle_box_frame_lyt.setSpacing(1)
+        self._version_toggle_box_frame.setLayout(version_toggle_box_frame_lyt)
+
+        self._version_frame = QFrame()
+        self._version_frame.setFrameShape(QFrame.NoFrame)
+        self._version_frame.setFrameShadow(QFrame.Plain)
+        version_frame_lyt = QVBoxLayout()
+        version_frame_lyt.setContentsMargins(0, 0, 0, 0)
+        version_frame_lyt.setSpacing(0)
+        self._version_frame.setLayout(version_frame_lyt)
+        version_toggle_box_frame_lyt.addWidget(self._version_frame)
+
+        self._history_widget = self.HISTORY_WIDGET()
+        version_frame_lyt.addWidget(self._history_widget)
+
+        version_toggle_box_lyt.addWidget(version_toggle_box_header)
+        version_toggle_box_lyt.addWidget(self._version_toggle_box_frame)
+
         preview_buttons_frame = QFrame()
         preview_buttons_frame.setObjectName('previewButtons')
         preview_buttons_frame.setFrameShape(QFrame.NoFrame)
         preview_buttons_frame.setFrameShadow(QFrame.Plain)
         self._preview_buttons_frame_lyt = QHBoxLayout()
-        self._preview_buttons_frame_lyt.setContentsMargins(9, 9, 9, 9)
+        self._preview_buttons_frame_lyt.setContentsMargins(2, 2, 2, 2)
         self._preview_buttons_frame_lyt.setSpacing(0)
         self._preview_buttons_lyt = QHBoxLayout()
         self._preview_buttons_lyt.setContentsMargins(0, 0, 0, 0)
@@ -172,6 +221,7 @@ class LoadWidget(base.BaseWidget, object):
         self.main_layout.addLayout(title_layout)
         self.main_layout.addWidget(icon_toggle_box)
         self.main_layout.addWidget(info_toggle_box)
+        self.main_layout.addWidget(version_toggle_box)
         # self.main_layout.addWidget(options_toggle_box)
         self.main_layout.addWidget(splitters.Splitter())
         self.main_layout.addWidget(preview_buttons_frame)
@@ -183,6 +233,8 @@ class LoadWidget(base.BaseWidget, object):
         self._info_toggle_box_btn.toggled[bool].connect(self._info_toggle_box_frame.setVisible)
         self._icon_toggle_box_btn.clicked.connect(self.save_settings)
         self._icon_toggle_box_btn.toggled[bool].connect(self._icon_toggle_box_frame.setVisible)
+        self._version_toggle_box_btn.clicked.connect(self.save_settings)
+        self._version_toggle_box_btn.toggled[bool].connect(self._version_toggle_box_frame.setVisible)
         self._load_btn.clicked.connect(self.load)
 
     def resizeEvent(self, event):
@@ -254,6 +306,23 @@ class LoadWidget(base.BaseWidget, object):
         info_widget.set_schema(item.info())
         self._info_frame.layout().addWidget(info_widget)
 
+        self.update_history()
+
+    def update_history(self):
+        """
+        Updates history version of the current selected item
+        """
+
+        if not self._item:
+            return
+
+        data_object = self._item.data_object()
+        if not data_object:
+            return
+
+        self._history_widget.set_directory(data_object.directory)
+        self._history_widget.refresh()
+
     def is_editable(self):
         """
         Returns whether the user can edit the item or not
@@ -308,6 +377,7 @@ class LoadWidget(base.BaseWidget, object):
 
         settings['iconToggleBoxChecked'] = self._icon_toggle_box_btn.isChecked()
         settings['infoToggleBoxChecked'] = self._info_toggle_box_btn.isChecked()
+        settings['versionToggleBoxChecked'] = self._version_toggle_box_btn.isChecked()
 
         return settings
 

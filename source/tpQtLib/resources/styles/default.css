@@ -262,6 +262,10 @@ QPushButton#iconButton:!checked {
     background-color: ACCENT_COLOR_DARKER;
 }
 
+QPushButton#versionButton:!checked {
+    background-color: ACCENT_COLOR_DARKER;
+}
+
 QPushButton#updateButton {
 	color: ACCENT_COLOR;
     height: 24px;
@@ -405,8 +409,8 @@ QAbstractItemView::separator{
 /*}*/
 
 QHeaderView::section {
-	font: 16*DPIpx;
-	height: 24*DPIpx;
+	font: 14*DPIpx;
+	height: 12*DPIpx;
 	border: 0px;
 	border-right: 2*DPIpx solid rgb(FOREGROUND_COLOR_R, FOREGROUND_COLOR_G, FOREGROUND_COLOR_B, 20);
 	padding: 5*DPIpx;
@@ -420,7 +424,7 @@ QHeaderView::section {
 */
 
 QTreeView {
-	font: 13*DPIpx;
+	font: 12*DPIpx;
 	color: FOREGROUND_COLOR;
 }
 
@@ -439,7 +443,7 @@ QTreeView, QListView {
 /*}*/
 
 QTreeView::item {
-	height: 24*DPIpx;
+	height: 12*DPIpx;
 	show-decoration-selected: 1; /* make the selection span the entire width of the view */
 	/*background-color: BACKGROUND_COLOR;*/
     padding:3*DPIpx;
@@ -468,17 +472,17 @@ QTreeView::item:!selected:hover {
     padding-left:2px;
 }
 
-/*!*QTreeView::branch:has-children:!has-siblings:closed,*/
-/*!*QTreeView::branch:closed:has-children:has-siblings {*/
-    /*!*border-image: none;*/
-    /*!*image: url("RESOURCE_DIRNAME/icons/branch_closed_DARKNESS.png");*/
-/*!*}*/
+/*QTreeView::branch:has-children:!has-siblings:closed,
+/*QTreeView::branch:closed:has-children:has-siblings {
+    /*border-image: none;
+    /*image: url("RESOURCE_DIRNAME/icons/branch_closed_DARKNESS.png");
+/*}
 
-/*/*QTreeView::branch:open:has-children:!has-siblings,*/
-/*/*QTreeView::branch:open:has-children:has-siblings  {*/
-    /*/*border-image: none;*/
-    /*/*image: url("RESOURCE_DIRNAME/icons/branch_open_DARKNESS.png");*/
-/*/*}*/
+/*QTreeView::branch:open:has-children:!has-siblings,
+/*QTreeView::branch:open:has-children:has-siblings  {
+    /*border-image: none;
+    /*image: url("RESOURCE_DIRNAME/icons/branch_open_DARKNESS.png");
+/*}
 
 QMenu::separator, QListView::item:hover,
 QTreeView::item:hover {

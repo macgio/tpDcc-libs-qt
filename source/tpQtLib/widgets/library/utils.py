@@ -18,7 +18,7 @@ from collections import OrderedDict, Mapping
 
 import tpPyUtils
 from tpPyUtils.externals import six
-from tpPyUtils import python, decorators, path as path_utils
+from tpPyUtils import python, decorators, fileio, path as path_utils
 
 import tpQtLib
 import tpDccLib as tp
@@ -138,8 +138,10 @@ class Node(object):
 
 class TransferObject(object):
 
+    DEFAULT_DATA ={'metadata': {}, 'objects': {}}
+
     @classmethod
-    def from_path(cls, path):
+    def from_path(cls, path, force_cration=False):
         """
         Returns a new transfer instance for the given path
         :param path: str
@@ -148,6 +150,12 @@ class TransferObject(object):
 
         t = cls()
         t.set_path(path)
+
+        if not os.path.isfile(path) and force_cration:
+            filename = os.path.basename(path)
+            filedir = os.path.dirname(path)
+            fileio.create_file(filename, filedir)
+
         t.read()
 
         return t
@@ -185,7 +193,7 @@ class TransferObject(object):
     def __init__(self):
         self._path = None
         self._namespaces = None
-        self._data = {'metadata': {}, 'objects': {}}
+        self._data = self.DEFAULT_DATA
 
     @abc.abstractmethod
     def load(self, *args, **kwargs):
@@ -251,7 +259,10 @@ class TransferObject(object):
         :param data: dict
         """
 
-        self._data = data
+        if not data:
+            self._data = self.DEFAULT_DATA
+        else:
+            self._data = data
 
     def objects(self):
         """
@@ -297,7 +308,7 @@ class TransferObject(object):
         :return: int
         """
 
-        return len(self._objects() or list())
+        return len(self.objects() or list())
 
     def add(self, objects):
         """
@@ -368,14 +379,12 @@ class TransferObject(object):
 
         return json.dumps(data, indent=2)
 
-    @show_wait_cursor_decorator
-    def save(self, path):
+    def data_to_save(self):
         """
-        Saves the current metadata ond object data to the given path
-        :param path: str
+        Returns data to save
+        Can be override to store custom data
+        :return: dict
         """
-
-        tpQtLib.logger.info('Saving object: {}'.format(path))
 
         encoding = locale.getpreferredencoding()
         user = getpass.getuser()
@@ -387,7 +396,6 @@ class TransferObject(object):
 
         self.set_metadata('user', user)
         self.set_metadata('ctime', ctime)
-        self.set_metadata('version', '1.0.0')
         self.set_metadata('references', references)
         self.set_metadata('mayaVersion', str(tp.Dcc.get_version())),
         self.set_metadata('mayaSceneFile', tp.Dcc.scene_name())
@@ -398,6 +406,20 @@ class TransferObject(object):
         objects = {'objects': self.objects()}
         data += self.dump(objects)[1:]
 
+        return data
+
+
+    @show_wait_cursor_decorator
+    def save(self, path=None):
+        """
+        Saves the current metadata ond object data to the given path
+        :param path: str
+        """
+
+        tpQtLib.logger.info('Saving object: {}'.format(path))
+
+        data = self.data_to_save()
+
         dirname = os.path.dirname(path)
         if not os.path.exists(dirname):
             os.makedirs(dirname)
@@ -406,13 +428,6 @@ class TransferObject(object):
             f.write(str(data))
 
         tpQtLib.logger.debug('Saved object: {}'.format(path))
-
-
-
-
-
-
-
 
 def absolute_path(data, start):
     """
