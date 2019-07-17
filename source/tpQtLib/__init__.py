@@ -93,4 +93,4 @@ def init_dcc(do_reload=False):
     elif 'nuke' in main.__dict__:
         raise NotImplementedError('Nuke is not a supported DCC yet!')
     else:
-        raise NotImplementedError('Current DCC is not supported yet!')
+        logger.warning('No DCC found, using abstracto one!')

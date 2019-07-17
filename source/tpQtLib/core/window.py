@@ -69,7 +69,10 @@ class MainWindow(QMainWindow, object):
 
         if self._show_dragger:
             self.setAttribute(Qt.WA_TranslucentBackground)
-            self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
+            if qtutils.is_pyside2():
+                self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
+            else:
+                self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
 
         self.setWindowTitle(kwargs.pop('title', 'Maya Window'))
 
@@ -126,8 +129,8 @@ class MainWindow(QMainWindow, object):
 
         return {
             "theme": {
-            "accentColor": "rgb(40, 40, 40, 255)",
-            "backgroundColor": "rgb(65, 65, 65, 255)",
+            "accentColor": "rgb(80, 80, 80, 255)",
+            "backgroundColor": "rgb(45, 45, 45, 255)",
             }
         }
 

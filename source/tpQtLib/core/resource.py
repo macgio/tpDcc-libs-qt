@@ -9,8 +9,6 @@ from __future__ import print_function, division, absolute_import
 
 import os
 
-from tpQtLib.Qt.QtGui import *
-
 from tpPyUtils import folder, path
 from tpQtLib.core import qtutils, pixmap as pixmap_resource, icon as icon_resource
 

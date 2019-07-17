@@ -443,7 +443,7 @@ QTreeView, QListView {
 /*}*/
 
 QTreeView::item {
-	height: 12*DPIpx;
+	height: 24*DPIpx;
 	show-decoration-selected: 1; /* make the selection span the entire width of the view */
 	/*background-color: BACKGROUND_COLOR;*/
     padding:3*DPIpx;
@@ -601,14 +601,14 @@ QComboBox QAbstractItemView:item {
 
 QComboBox, QLineEdit {
 	border: 0px;
-    background-color: ACCENT_COLOR_DARKER;
+    background-color: FOREGROUND_COLOR_LIGHTER;
 	border-bottom: 2px solid rgb(0,0,0,0);
 }
 
 QComboBox:focus, QLineEdit:focus {
 	border: 0px;
 	border-bottom: 2px solid ACCENT_COLOR;
-	background-color: rgb(FOREGROUND_COLOR_R, FOREGROUND_COLOR_G, FOREGROUND_COLOR_B, 30);
+	/*background-color: rgb(FOREGROUND_COLOR_R, FOREGROUND_COLOR_G, FOREGROUND_COLOR_B, 30);*/
 }
 
 QComboBox QAbstractItemView {
