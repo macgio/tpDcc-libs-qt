@@ -15,7 +15,7 @@ QWidget:disabled {
     color: rgb(FOREGROUND_COLOR_R, FOREGROUND_COLOR_G, FOREGROUND_COLOR_B, 100);
 }
 
-QLineEdit, QToolBar, QTabBar, QTabBar::tab
+QTableWidget, QLineEdit, QToolBar, QTabBar, QTabBar::tab
 {
     border: 0px;
     background-color: BACKGROUND_COLOR;
@@ -599,11 +599,11 @@ QComboBox QAbstractItemView:item {
 	selection-background-color: ACCENT_COLOR;
 }
 
-QComboBox, QLineEdit {
-	border: 0px;
-    background-color: FOREGROUND_COLOR_LIGHTER;
-	border-bottom: 2px solid rgb(0,0,0,0);
-}
+/*QLineEdit {*/
+/*	border: 0px;*/
+/*    background-color: FOREGROUND_COLOR_LIGHTER;*/
+/*	border-bottom: 2px solid rgb(0,0,0,0);*/
+/*}*/
 
 QComboBox:focus, QLineEdit:focus {
 	border: 0px;

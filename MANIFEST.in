@@ -1,0 +1,10 @@
+include source/tpQtLib/resources/*.*
+include source/tpQtLib/resources/icons/*.*
+include source/tpQtLib/resources/icons/black/*.*
+include source/tpQtLib/resources/icons/color/*.*
+include source/tpQtLib/resources/icons/common/*.*
+include source/tpQtLib/resources/icons/material/*.*
+include source/tpQtLib/resources/icons/white/*.*
+include source/tpQtLib/resources/icons/window/*.*
+include source/tpQtLib/resources/icons/windows/*.*
+include source/tpQtLib/resources/styles/*.*

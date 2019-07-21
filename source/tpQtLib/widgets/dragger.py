@@ -55,12 +55,12 @@ class WindowDragger(QFrame, object):
         main_layout.setSpacing(5)
         self.setLayout(main_layout)
 
-        lbl_icon = QLabel()
+        self._lbl_icon = QLabel()
         # lbl_icon.setPixmap(tpQtLib.resource.pixmap('solstice_tools', category='icons').scaled(20, 20, Qt.KeepAspectRatio))
-        title_text = QLabel(parent.windowTitle())
+        self._title_text = QLabel(parent.windowTitle())
 
-        main_layout.addWidget(lbl_icon)
-        main_layout.addWidget(title_text)
+        main_layout.addWidget(self._lbl_icon)
+        main_layout.addWidget(self._title_text)
         main_layout.addItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Fixed))
 
         buttons_widget = QWidget()
@@ -133,6 +133,22 @@ class WindowDragger(QFrame, object):
                     event.ignore()
                 self._mouse_press_pos = None
         super(WindowDragger, self).mouseReleaseEvent(event)
+
+    def set_icon(self, icon):
+        """
+        Sets the icon of the window dragger
+        :param icon: QIcon
+        """
+
+        self._lbl_icon.setPixmap(icon.pixmap(icon.actualSize(QSize(24, 24))))
+
+    def set_title(self, title):
+        """
+        Sets the title of the window dragger
+        :param title: str
+        """
+
+        self._title_text.setText(title)
 
     def _on_maximize_window(self):
         self._button_restored.setVisible(True)

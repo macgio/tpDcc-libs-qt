@@ -64,6 +64,7 @@ class MainWindow(QMainWindow, object):
         self._theme = None
         self._callbacks = list()
         self._show_dragger = kwargs.get('show_dragger', True)
+        self._fixed_size = kwargs.get('fixed_size', False)
 
         self.setObjectName(name)
 
@@ -73,8 +74,6 @@ class MainWindow(QMainWindow, object):
                 self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
             else:
                 self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
-
-        self.setWindowTitle(kwargs.pop('title', 'Maya Window'))
 
         win_settings = kwargs.pop('settings', None)
         if win_settings:
@@ -90,6 +89,8 @@ class MainWindow(QMainWindow, object):
         self.ui()
         self.setup_signals()
 
+        self.setWindowTitle(kwargs.pop('title', 'tpQtLib Window'))
+
         if auto_load:
             self.load_theme()
 
@@ -98,6 +99,16 @@ class MainWindow(QMainWindow, object):
         self.remove_callbacks()
         self.windowClosed.emit()
         self.deleteLater()
+
+    def setWindowIcon(self, icon):
+        if self._show_dragger:
+            self._main_title.set_icon(icon)
+        super(MainWindow, self).setWindowIcon(icon)
+
+    def setWindowTitle(self, title):
+        if self._show_dragger:
+            self._main_title.set_title(title)
+        super(MainWindow, self).setWindowTitle(title)
 
     def load(self):
         self.load_settings()
@@ -352,7 +363,7 @@ class MainWindow(QMainWindow, object):
             self._main_title.buttons_layout.insertWidget(3, self._button_settings)
 
         self.statusBar().showMessage('')
-        # self.statusBar().setSizeGripEnabled(not self._fixed_size)
+        self.statusBar().setSizeGripEnabled(not self._fixed_size)
 
         self._status_bar = statusbar.StatusWidget()
         # self.statusBar().setStyleSheet("QStatusBar::item { border: 0px}")
@@ -590,6 +601,33 @@ class MainWindow(QMainWindow, object):
         self._lightbox = lightbox.Lightbox(self)
         self._lightbox.set_widget(widget)
         self._lightbox.show()
+
+    def show_info_message(self, message, msecs=None):
+        """
+        Set an info message to be displayed in the status bar
+        :param message: str
+        :param msecs: int
+        """
+
+        self._status_bar.show_info_message(message=message, msecs=msecs)
+
+    def show_warning_message(self, message, msecs=None):
+        """
+       Set a warning message to be displayed in the status widget
+       :param message: str
+       :param msecs: int
+       """
+
+        self._status_bar.show_warning_message(message=message, msecs=msecs)
+
+    def show_error_message(self, message, msecs=None):
+        """
+       Set an error message to be displayed in the status widget
+       :param message: str
+       :param msecs: int
+       """
+
+        self._status_bar.show_error_message(message=message, msecs=msecs)
 
 
 class DetachedWindow(QMainWindow):

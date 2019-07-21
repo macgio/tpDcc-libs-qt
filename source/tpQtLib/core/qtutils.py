@@ -431,6 +431,15 @@ def safe_delete_later(widget):
         widget.deleteLater()
 
 
+def show_info(parent, title, info):
+    """
+    Show a info QMessageBox with the given info
+    :return:
+    """
+
+    return QMessageBox.information(parent, title, info)
+
+
 def show_question(parent, title, question):
     """
     Show a question QMessageBox with the given question text
@@ -442,6 +451,17 @@ def show_question(parent, title, question):
     return QMessageBox.question(parent, title, question, flags)
 
 
+def show_warning(parent, title, warning):
+    """
+    Shows a warning QMessageBox with the given warning text
+    :param parent: QWidget
+    :param title: str
+    :param warning: str
+    :return:
+    """
+
+    return QMessageBox.warning(parent, title, warning)
+
 def show_error(parent, title, error):
     """
     Show a error QMessageBox with the given error
@@ -449,15 +469,6 @@ def show_error(parent, title, error):
     """
 
     return QMessageBox.critical(parent, title, error)
-
-
-def show_info(parent, title, info):
-    """
-    Show a info QMessageBox with the given info
-    :return:
-    """
-
-    return QMessageBox.information(parent, title, info)
 
 
 def clear_layout(layout):
@@ -673,10 +684,11 @@ def get_file(directory, parent=None):
         return directory
 
 
-def get_folder(directory, parent=None):
+def get_folder(directory=None, title='Select Folder', parent=None):
     """
     Shows a open folder dialog
     :param directory: str, root directory
+    :param title: str, select folder dialog title
     :param parent: QWidget
     :return: str, selected folder or None if no folder is selected
     """
@@ -684,7 +696,7 @@ def get_folder(directory, parent=None):
     file_dialog = QFileDialog(parent)
     if directory:
         file_dialog.setDirectory(directory)
-    directory = file_dialog.getExistingDirectory()
+    directory = file_dialog.getExistingDirectory(parent, title)
     if directory:
         return directory
 

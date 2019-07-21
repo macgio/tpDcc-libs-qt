@@ -37,7 +37,7 @@ class StatusWidget(QFrame, object):
 
         self._button = QPushButton(self)
         self._button.setMaximumSize(QSize(17, 17))
-        self._button.setIconSize(QSize(17, 17))
+        self._button.setIconSize(QSize(20, 20))
         self._button.hide()
 
         self.main_layout = QHBoxLayout(self)
