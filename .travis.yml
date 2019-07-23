@@ -1,9 +1,9 @@
 language: python
 install:
-- pip install -r requirements.txt
-- python setup.py install
+  - "pip install -r requirements.txt"
+  - "python setup.py install"
 script:
-- pytest
+  - pytest
 deploy:
   skip_cleanup: true
   provider: pypi

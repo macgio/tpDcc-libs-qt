@@ -70,3 +70,62 @@ you can set TPQTLIB_DEV environment variables to 'True'
     os.environ['TPQTLIB_DEV'] = 'True'
     import tpQtLib
     tpQtLib.init()
+
+
+Deploying new version (only for devs)
+-----------------------------------------
+
+Update version
+~~~~~~~~~~~~~~~~~~~~~~
+
+Make sure **setup.cfg** file version field is updated
+
+Installing libraries
+~~~~~~~~~~~~~~~~~~~~~~
+Make sure that you have installed the following packages:
+
+* **wheel**
+
+.. code-block:: console
+
+    pip install wheel
+
+* **twine**
+
+.. code-block:: console
+
+    pip install twine
+
+* **setuptools**
+
+.. code-block:: console
+
+    pip install setuptools
+
+Make sure to update setuptools to latest available version:
+
+.. code-block:: console
+
+    pip install setuptools --upgrade
+
+
+Generate wheel
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: console
+
+    python setup.py sdist bdist_wheel
+
+Validate wheel package generation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: console
+
+    twine check dist/*
+
+Upload package to PyPi
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: console
+
+    twine upload dist/*
