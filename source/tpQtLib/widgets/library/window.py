@@ -12,9 +12,9 @@ import re
 import time
 from functools import partial
 
-from tpQtLib.Qt.QtCore import *
-from tpQtLib.Qt.QtWidgets import *
-from tpQtLib.Qt.QtGui import *
+from Qt.QtCore import *
+from Qt.QtWidgets import *
+from Qt.QtGui import *
 
 from tpPyUtils import decorators, path as path_utils
 

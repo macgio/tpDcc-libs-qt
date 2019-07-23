@@ -7,7 +7,7 @@ Module that contains different types of Qt timers
 
 from __future__ import print_function, division, absolute_import
 
-from tpQtLib.Qt.QtCore import *
+from Qt.QtCore import *
 
 
 class ClickTimer(QObject, object):

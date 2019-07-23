@@ -12,8 +12,8 @@ import os
 import re
 from xml.dom import minidom
 
-from tpQtLib.Qt.QtCore import *
-from tpQtLib.Qt.QtGui import *
+from Qt.QtCore import *
+from Qt.QtGui import *
 
 
 _COMMANDS = set('MmZzLlHhVvCcSsQqTtAa')

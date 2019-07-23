@@ -7,7 +7,7 @@ Module that contains extended functionality for QMenus
 
 from __future__ import print_function, division, absolute_import
 
-from tpQtLib.Qt.QtWidgets import *
+from Qt.QtWidgets import *
 
 
 class Menu(QMenu, object):

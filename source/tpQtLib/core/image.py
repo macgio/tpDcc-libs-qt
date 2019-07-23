@@ -11,8 +11,8 @@ import os
 import re
 import base64
 
-from tpQtLib.Qt.QtCore import *
-from tpQtLib.Qt.QtGui import *
+from Qt.QtCore import *
+from Qt.QtGui import *
 
 import tpQtLib
 

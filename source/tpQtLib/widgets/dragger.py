@@ -12,9 +12,9 @@ __license__ = "MIT"
 __maintainer__ = "Tomas Poveda"
 __email__ = "tpoveda@cgart3d.com"
 
-from tpQtLib.Qt.QtCore import *
-from tpQtLib.Qt.QtWidgets import *
-from tpQtLib.Qt.QtGui import *
+from Qt.QtCore import *
+from Qt.QtWidgets import *
+from Qt.QtGui import *
 
 import tpQtLib
 

@@ -11,8 +11,8 @@ import os
 import json
 from collections import OrderedDict
 
-from tpQtLib.Qt.QtCore import *
-from tpQtLib.Qt.QtWidgets import *
+from Qt.QtCore import *
+from Qt.QtWidgets import *
 
 from tpQtLib.core import dialog
 from tpQtLib.widgets import accordion

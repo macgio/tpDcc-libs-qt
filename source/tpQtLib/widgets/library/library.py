@@ -12,7 +12,7 @@ import time
 import copy
 from collections import OrderedDict
 
-from tpQtLib.Qt.QtCore import *
+from Qt.QtCore import *
 
 from tpPyUtils import decorators, path as path_utils
 

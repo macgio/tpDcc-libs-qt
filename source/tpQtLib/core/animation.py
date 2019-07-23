@@ -8,9 +8,9 @@ Class with classes and function to work with GUI animations
 from __future__ import print_function, division, absolute_import
 
 import tpDccLib as tp
-from tpQtLib.Qt.QtCore import *
-from tpQtLib.Qt.QtWidgets import *
-from tpQtLib.Qt.QtGui import *
+from Qt.QtCore import *
+from Qt.QtWidgets import *
+from Qt.QtGui import *
 
 
 class BaseAnimObject(object):

@@ -7,9 +7,9 @@ Module that contains classes to create attribute editors
 
 from __future__ import print_function, division, absolute_import
 
-from tpQtLib.Qt.QtCore import *
-from tpQtLib.Qt.QtWidgets import *
-from tpQtLib.Qt.QtGui import *
+from Qt.QtCore import *
+from Qt.QtWidgets import *
+from Qt.QtGui import *
 
 import tpQtLib as tp
 from tpPyUtils import strings as string_utils

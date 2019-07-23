@@ -7,9 +7,9 @@ Class that creates a status widgets which can be used the state of an app
 
 from __future__ import print_function, division, absolute_import
 
-from tpQtLib.Qt.QtCore import *
-from tpQtLib.Qt.QtWidgets import *
-from tpQtLib.Qt.QtGui import *
+from Qt.QtCore import *
+from Qt.QtWidgets import *
+from Qt.QtGui import *
 
 import tpQtLib
 from tpQtLib.core import resource

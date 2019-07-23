@@ -10,9 +10,9 @@ from __future__ import print_function, division, absolute_import
 import os
 import math
 
-from tpQtLib.Qt.QtCore import *
-from tpQtLib.Qt.QtWidgets import *
-from tpQtLib.Qt.QtGui import *
+from Qt.QtCore import *
+from Qt.QtWidgets import *
+from Qt.QtGui import *
 
 import tpQtLib as tp
 from tpPyUtils import mathlib

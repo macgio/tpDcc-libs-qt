@@ -11,9 +11,9 @@ import os
 import tempfile
 import traceback
 
-from tpQtLib.Qt.QtCore import *
-from tpQtLib.Qt.QtWidgets import *
-from tpQtLib.Qt.QtGui import *
+from Qt.QtCore import *
+from Qt.QtWidgets import *
+from Qt.QtGui import *
 
 import tpQtLib
 import tpDccLib as tp

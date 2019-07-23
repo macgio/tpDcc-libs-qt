@@ -21,12 +21,12 @@ from tpPyUtils import python, fileio, strings, path
 
 QT_AVAILABLE = True
 try:
-    from tpQtLib.Qt.QtCore import *
-    from tpQtLib.Qt.QtWidgets import *
-    from tpQtLib.Qt.QtGui import *
-    from tpQtLib.Qt import QtGui
-    from tpQtLib.Qt import QtCompat
-    from tpQtLib.Qt import __binding__
+    from Qt.QtCore import *
+    from Qt.QtWidgets import *
+    from Qt.QtGui import *
+    from Qt import QtGui
+    from Qt import QtCompat
+    from Qt import __binding__
 except ImportError as e:
     QT_AVAILABLE = False
     print('Impossible to load Qt libraries. Qt dependant functionality will be disabled!')
@@ -285,7 +285,7 @@ def create_python_qrc_file(qrc_file, py_file):
         return
 
 
-    fileio.replace(py_file, "from PySide import QtCore", "from tpQtLib.Qt import QtCore")
+    fileio.replace(py_file, "from PySide import QtCore", "from Qt import QtCore")
 
 
 def create_qrc_file(src_paths, dst_file):

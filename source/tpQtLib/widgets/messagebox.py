@@ -7,8 +7,8 @@ Module that includes classes to create different types of message boxes
 
 from __future__ import print_function, division, absolute_import
 
-from tpQtLib.Qt.QtCore import *
-from tpQtLib.Qt.QtWidgets import *
+from Qt.QtCore import *
+from Qt.QtWidgets import *
 
 import tpQtLib
 import tpDccLib as tp

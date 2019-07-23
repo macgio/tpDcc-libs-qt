@@ -10,8 +10,8 @@ from __future__ import print_function, division, absolute_import
 import os
 import re
 
-from tpQtLib.Qt.QtCore import *
-from tpQtLib.Qt.QtGui import *
+from Qt.QtCore import *
+from Qt.QtGui import *
 
 import tpQtLib
 from tpQtLib.core import color

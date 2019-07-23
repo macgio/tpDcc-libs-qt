@@ -9,7 +9,7 @@ from __future__ import print_function, division, absolute_import
 
 import os
 
-from tpQtLib.Qt.QtWidgets import *
+from Qt.QtWidgets import *
 
 
 class ProgressBar(QFrame, object):

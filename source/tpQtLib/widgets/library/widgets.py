@@ -11,9 +11,9 @@ import traceback
 from functools import partial
 from collections import OrderedDict
 
-from tpQtLib.Qt.QtCore import *
-from tpQtLib.Qt.QtWidgets import *
-from tpQtLib.Qt.QtGui import *
+from Qt.QtCore import *
+from Qt.QtWidgets import *
+from Qt.QtGui import *
 
 import tpQtLib
 from tpQtLib.core import animation, image, icon, qtutils, color, pixmap

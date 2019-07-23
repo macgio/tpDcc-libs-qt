@@ -16,9 +16,9 @@ import traceback
 from datetime import datetime
 from functools import partial
 
-from tpQtLib.Qt.QtCore import *
-from tpQtLib.Qt.QtWidgets import *
-from tpQtLib.Qt.QtGui import *
+from Qt.QtCore import *
+from Qt.QtWidgets import *
+from Qt.QtGui import *
 
 import tpDccLib as tp
 from tpDccLib.core import consts as dcc_consts

@@ -9,8 +9,8 @@ from __future__ import print_function, division, absolute_import
 
 import copy
 
-from tpQtLib.Qt.QtCore import *
-from tpQtLib.Qt.QtGui import *
+from Qt.QtCore import *
+from Qt.QtGui import *
 
 from tpQtLib.core import color, pixmap as px
 

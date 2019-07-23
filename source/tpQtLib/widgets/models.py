@@ -7,7 +7,7 @@ Module that contains base classes for Qt models
 
 from __future__ import print_function, division, absolute_import
 
-from tpQtLib.Qt.QtCore import *
+from Qt.QtCore import *
 
 
 class ItemSelection(QItemSelection):

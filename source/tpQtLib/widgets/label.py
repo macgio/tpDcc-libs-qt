@@ -7,9 +7,9 @@ Module that contains classes to create different kind of labels
 
 from __future__ import print_function, division, absolute_import
 
-from tpQtLib.Qt.QtCore import *
-from tpQtLib.Qt.QtWidgets import *
-from tpQtLib.Qt.QtGui import *
+from Qt.QtCore import *
+from Qt.QtWidgets import *
+from Qt.QtGui import *
 
 from tpQtLib.core import qtutils
 from tpQtLib.widgets import graphicseffects
