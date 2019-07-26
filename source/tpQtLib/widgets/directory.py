@@ -23,11 +23,11 @@ class FileListWidget(QListWidget, object):
     Widgets that shows files and directories such Windows Explorer
     """
 
-    directory_activated = Signal(unicode)
-    file_activated = Signal(unicode)
-    file_selected = Signal(unicode)
-    folder_selected = Signal(unicode)
-    directory_selected = Signal(unicode)
+    directory_activated = Signal(str)
+    file_activated = Signal(str)
+    file_selected = Signal(str)
+    folder_selected = Signal(str)
+    directory_selected = Signal(str)
     files_selected = Signal(list)
     up_requested = Signal()
     update_requested = Signal()

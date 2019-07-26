@@ -165,7 +165,7 @@ class TearOffTabWidget(BaseTabWidget, object):
 
     tabAdded = Signal()
     tabDetached = Signal(int, QPoint)
-    tabBarRenamed = Signal(unicode, unicode)
+    tabBarRenamed = Signal(str, str)
     requestRemove = Signal(int)
     tabChanged = Signal(int)
     undoOpen = Signal()
@@ -429,12 +429,12 @@ class EditableTearOffTabWidget(TearOffTabWidget, object):
     """
 
     tab_size_changed = Signal(QSize)
-    tab_label_renamed = Signal(unicode, unicode)
-    tab_removed_text = Signal(unicode)
+    tab_label_renamed = Signal(str, str)
+    tab_removed_text = Signal(str)
     window_modified = Signal()
     add_item_on = Signal(QPointF, QColor, int)
-    add_item_with_set = Signal(QPointF, QColor, unicode, int)
-    add_previewed_item = Signal(QPointF, QColor, unicode, int)
+    add_item_with_set = Signal(QPointF, QColor, str, int)
+    add_previewed_item = Signal(QPointF, QColor, str, int)
     copy_items = Signal(list)
     selected_items_changed = Signal(list)
 

@@ -350,7 +350,7 @@ class EditableTearOffTabBar(TearOffTabBar, object):
         - Tear off functionality
     """
 
-    tab_label_renamed = Signal(unicode, unicode)
+    tab_label_renamed = Signal(str, str)
     request_remove = Signal(int)
     tab_changed = Signal(int)
 

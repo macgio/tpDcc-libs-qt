@@ -13,11 +13,11 @@ from Qt.QtGui import *
 
 
 class BaseItemCommunicator(QObject, object):
-    sendCommandData = Signal(unicode, list, list, list, unicode)
+    sendCommandData = Signal(str, list, list, list, str)
     itemChanged = Signal(str)
     sizeChanged = Signal()
     redefineMember = Signal(QGraphicsItem)
-    changeMember = Signal(QGraphicsItem, unicode, bool, unicode)
+    changeMember = Signal(QGraphicsItem, str, bool, str)
     editRemote = Signal(QGraphicsItem)
     mousePressed = Signal()
     mouseReleased = Signal()
