@@ -4,6 +4,10 @@ tpQtLib
 .. image:: https://img.shields.io/github/license/tpoveda/tpQtLib.svg
     :target: https://github.com/tpoveda/tpPyUtils/blob/master/LICENSE
 
+.. image:: https://travis-ci.com/tpoveda/tpQtLib.svg?branch=master
+    :target: https://travis-ci.com/tpoveda/tpQtLib
+
+
 Collection of Python modules to make your life easier when working with PySide/PyQt.
 
 Also, when working with specific DCCs, tpQtLib will auto import proper modules and will use
