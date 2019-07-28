@@ -30,6 +30,8 @@ class MainWindow(QMainWindow, object):
     DOCK_CONTROL_NAME = 'my_workspace_control'
     DOCK_LABEL_NAME = 'my workspace control'
 
+    STATUS_BAR_WIDGET = statusbar.StatusWidget
+
     class DockWindowContainer(QDockWidget, object):
         """
         Docked Widget used to dock windows inside other windows
@@ -365,7 +367,7 @@ class MainWindow(QMainWindow, object):
         self.statusBar().showMessage('')
         self.statusBar().setSizeGripEnabled(not self._fixed_size)
 
-        self._status_bar = statusbar.StatusWidget()
+        self._status_bar = self.STATUS_BAR_WIDGET()
         # self.statusBar().setStyleSheet("QStatusBar::item { border: 0px}")
         self.statusBar().addWidget(self._status_bar)
 
