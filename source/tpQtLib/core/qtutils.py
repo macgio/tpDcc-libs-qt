@@ -284,7 +284,6 @@ def create_python_qrc_file(qrc_file, py_file):
     if not os.path.isfile(py_file):
         return
 
-
     fileio.replace(py_file, "from PySide import QtCore", "from Qt import QtCore")
 
 
