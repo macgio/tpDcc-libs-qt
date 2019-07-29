@@ -12,8 +12,6 @@ import random
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-from tpQtLib.core import dialog
-
 _NUMERALS = '0123456789abcdefABCDEF'
 _HEXDEC = {v: int(v, 16) for v in (x+y for x in _NUMERALS for y in _NUMERALS)}
 
@@ -283,6 +281,7 @@ class ColorSwatch(QToolButton, object):
     def _on_open_color_picker(self):
 
         # THIS ONLY WORKS ON MAYA
+        from tpQtLib.core import dialog
 
         color_picker = dialog.ColorDialog()
         color_picker.exec_()

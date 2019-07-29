@@ -62,7 +62,7 @@ class MainWindow(QMainWindow, object):
             parent = main_window
         super(MainWindow, self).__init__(parent=parent)
 
-        self._dpi = kwargs.get('dip', 1.0)
+        self._dpi = kwargs.get('dpi', 1.0)
         self._theme = None
         self._callbacks = list()
         self._show_dragger = kwargs.get('show_dragger', True)

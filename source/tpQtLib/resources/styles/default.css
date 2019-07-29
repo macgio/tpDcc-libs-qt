@@ -71,10 +71,14 @@ QPushButton:pressed
 
 
 
-MenuBarWidget, QToolBar, QToolButton  {
+MenuBarWidget, QToolBar, QToolButton, QTextEdit  {
 	color: ACCENT_FOREGROUND_COLOR;
 	background-color: ACCENT_COLOR;
 	spacing:4*DPIpx;
+}
+
+QTextEdit:disabled {
+    background-color: BACKGROUND_COLOR;
 }
 
 /*QToolTip {*/

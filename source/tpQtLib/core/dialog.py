@@ -17,7 +17,8 @@ from Qt.QtWidgets import *
 from Qt.QtGui import *
 
 import tpDccLib as tp
-from tpQtLib.widgets import splitters, directory
+from tpQtLib.core import qtutils, color, animation, theme
+from tpQtLib.widgets import splitters, directory, dragger
 
 
 class Dialog(QDialog, object):
@@ -25,31 +26,72 @@ class Dialog(QDialog, object):
     Class to create basic Maya docked windows
     """
 
+    dialogClosed = Signal()
+
     def __init__(self, name, parent=None, **kwargs):
 
-        if not parent:
-            parent = tp.Dcc.get_main_window()
+        # Remove previous dialogs
+        main_window = tp.Dcc.get_main_window()
+        if main_window:
+            wins = tp.Dcc.get_main_window().findChildren(QWidget, name) or []
+            for w in wins:
+                w.close()
+                w.deleteLater()
 
+        if parent is None:
+            parent = main_window
         super(Dialog, self).__init__(parent=parent)
 
-        # Window needs to have a unique name to avoid problems with Maya workspaces
+        self._dpi = kwargs.get('dpi', 1.0)
+        self._theme = None
         self._callbacks = list()
+        self._show_dragger = kwargs.get('show_dragger', True)
+        self._fixed_size = kwargs.get('fixed_size', False)
+        self._has_title = kwargs.pop('has_title', False)
+        self._title_pixmap = kwargs.pop('title_pixmap', None)
 
         self.setObjectName(name)
         self.setFocusPolicy(Qt.StrongFocus)
-        # self.setWindowFlags(self.windowFlags() | Qt.Window)
 
-        self.setWindowTitle(kwargs.pop('title', 'Maya Dialog'))
+        if self._show_dragger:
+        #     self.setAttribute(Qt.WA_TranslucentBackground)
+            if qtutils.is_pyside2():
+                self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
+            else:
+                self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
 
-        self.main_layout = None
-        self._dpi = kwargs.get('dpi', 1.0)
-        self._has_title = kwargs.pop('has_title', False)
-        self._title = kwargs.pop('title', 'tpRigToolkit')
-        self._title_pixmap = kwargs.pop('title_pixmap', None)
-        self._theme = None
+        # self._title = kwargs.pop('title', 'tpRigToolkit')
 
         self.ui()
         self.setup_signals()
+
+        self.setWindowTitle(kwargs.pop('title', 'DCC Dialog'))
+
+        auto_load = kwargs.get('auto_load', True)
+        if auto_load:
+            self.load_theme()
+
+    def default_settings(self):
+        """
+        Returns default settings values
+        :return: dict
+        """
+
+        return {
+            "theme": {
+            "accentColor": "rgb(80, 80, 80, 255)",
+            "backgroundColor": "rgb(45, 45, 45, 255)",
+            }
+        }
+
+    def load_theme(self):
+        def_settings = self.default_settings()
+        def_theme_settings = def_settings.get('theme')
+        theme_settings = {
+            "accentColor": def_theme_settings['accentColor'],
+            "backgroundColor": def_theme_settings['backgroundColor']
+        }
+        self.set_theme_settings(theme_settings)
 
     def add_callback(self, callback_wrapper):
         if not isinstance(callback_wrapper, tp.Callback):
@@ -91,6 +133,9 @@ class Dialog(QDialog, object):
         frame_geo.moveCenter(center_point)
         self.move(frame_geo.topLeft())
 
+    def fade_close(self):
+        animation.fade_window(start=1, end=0, duration=400, object=self, on_finished=self.close)
+
     def get_main_layout(self):
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -98,29 +143,58 @@ class Dialog(QDialog, object):
         return main_layout
 
     def ui(self):
-        if self.main_layout is None:
-            self.main_layout = self.get_main_layout()
-            self.setLayout(self.main_layout)
 
-            title_layout = QHBoxLayout()
-            title_layout.setContentsMargins(0, 0, 0, 0)
-            title_layout.setSpacing(0)
-            title_layout.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
-            self.main_layout.addLayout(title_layout)
+        dlg_layout = QVBoxLayout()
+        dlg_layout.setContentsMargins(0, 0, 0, 0)
+        dlg_layout.setSpacing(0)
+        self.setLayout(dlg_layout)
 
-            self.logo_view = QGraphicsView()
-            self.logo_view.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-            self.logo_view.setMaximumHeight(100)
-            self._logo_scene = QGraphicsScene()
-            self._logo_scene.setSceneRect(QRectF(0, 0, 2000, 100))
-            self.logo_view.setScene(self._logo_scene)
-            self.logo_view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-            self.logo_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-            self.logo_view.setFocusPolicy(Qt.NoFocus)
+        self._base_layout = QVBoxLayout()
+        self._base_layout.setContentsMargins(0, 0, 0, 0)
+        self._base_layout.setSpacing(0)
+        self._base_layout.setAlignment(Qt.AlignTop)
+        base_widget = QFrame()
+        base_widget.setObjectName('mainFrame')
+        base_widget.setFrameStyle(QFrame.NoFrame)
+        base_widget.setFrameShadow(QFrame.Plain)
+        base_widget.setStyleSheet("""
+        QFrame#mainFrame
+        {
+        background-color: rgb(35, 35, 35);
+        border-radius: 25px;
+        }""")
+        base_widget.setLayout(self._base_layout)
+        dlg_layout.addWidget(base_widget)
 
-            if self._has_title and self._title_pixmap:
-                self._logo_scene.addPixmap(self._title_pixmap)
-                title_layout.addWidget(self.logo_view)
+        self._main_title = dragger.DialogDragger(parent=self)
+        self._main_title.setVisible(self._show_dragger)
+        self._base_layout.addWidget(self._main_title)
+
+        self.main_layout = self.get_main_layout()
+        dlg_layout.addLayout(self.main_layout)
+
+        title_layout = QHBoxLayout()
+        title_layout.setContentsMargins(0, 0, 0, 0)
+        title_layout.setSpacing(0)
+        title_layout.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
+        self.main_layout.addLayout(title_layout)
+
+        self.logo_view = QGraphicsView()
+        self.logo_view.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.logo_view.setMaximumHeight(100)
+        self._logo_scene = QGraphicsScene()
+        self._logo_scene.setSceneRect(QRectF(0, 0, 2000, 100))
+        self.logo_view.setScene(self._logo_scene)
+        self.logo_view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.logo_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.logo_view.setFocusPolicy(Qt.NoFocus)
+
+        if self._has_title and self._title_pixmap:
+            self._logo_scene.addPixmap(self._title_pixmap)
+            title_layout.addWidget(self.logo_view)
+
+        if not self._fixed_size:
+            dlg_layout.addWidget(QStatusBar(self))
 
     def dpi(self):
         """
@@ -138,6 +212,78 @@ class Dialog(QDialog, object):
 
         self._dpi = dpi
 
+    def theme(self):
+        """
+        Returns the current theme
+        :return: Theme
+        """
+
+        if not self._theme:
+            self._theme = theme.Theme()
+
+        return self._theme
+
+    def set_theme(self, theme):
+        """
+        Sets current window theme
+        :param theme: Theme
+        """
+
+        self._theme = theme
+        self._theme.updated.connect(self.reload_stylesheet)
+        self.reload_stylesheet()
+
+    def set_theme_settings(self, settings):
+        """
+        Sets the theme settings from the given settings
+        :param settings: dict
+        """
+
+        new_theme = theme.Theme()
+        new_theme.set_settings(settings)
+        self.set_theme(new_theme)
+
+    def reload_stylesheet(self):
+        """
+        Reloads the stylesheet to the current theme
+        """
+
+        current_theme = self.theme()
+        current_theme.set_dpi(self.dpi())
+        options = current_theme.options()
+        stylesheet = current_theme.stylesheet()
+
+        all_widgets = self.main_layout.findChildren(QObject)
+
+        text_color = color.Color.from_string(options["ITEM_TEXT_COLOR"])
+        text_selected_color = color.Color.from_string(options["ITEM_TEXT_SELECTED_COLOR"])
+        background_color = color.Color.from_string(options["ITEM_BACKGROUND_COLOR"])
+        background_hover_color = color.Color.from_string(options["ITEM_BACKGROUND_HOVER_COLOR"])
+        background_selected_color = color.Color.from_string(options["ITEM_BACKGROUND_SELECTED_COLOR"])
+
+        self.setStyleSheet(stylesheet)
+
+        for w in all_widgets:
+            found = False
+            if hasattr(w, 'set_text_color'):
+                w.set_text_color(text_color)
+                found = True
+            if hasattr(w, 'set_text_selected_color'):
+                w.set_text_selected_color(text_selected_color)
+                found = True
+            if hasattr(w, 'set_background_color'):
+                w.set_background_color(background_color)
+                found = True
+            if hasattr(w, 'set_background_hover_color'):
+                w.set_background_hover_color(background_hover_color)
+                found = True
+            if hasattr(w, 'set_background_selected_color'):
+                w.set_background_selected_color(background_selected_color)
+                found = True
+
+            if found:
+                w.update()
+
     def setup_signals(self):
         pass
 
@@ -152,6 +298,7 @@ class Dialog(QDialog, object):
 
     def cleanup(self):
         self.remove_callbacks()
+        self.dialogClosed.emit()
 
     def closeEvent(self, event):
         self.cleanup()
@@ -160,6 +307,16 @@ class Dialog(QDialog, object):
     def deleteLater(self):
         self.cleanup()
         super(Dialog, self).deleteLater()
+
+    def setWindowIcon(self, icon):
+        if self._show_dragger:
+            self._main_title.set_icon(icon)
+        super(Dialog, self).setWindowIcon(icon)
+
+    def setWindowTitle(self, title):
+        if self._show_dragger:
+            self._main_title.set_title(title)
+        super(Dialog, self).setWindowTitle(title)
 
     # def __del__(self):
     #     self.cleanup()
