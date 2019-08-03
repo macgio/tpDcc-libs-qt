@@ -58,6 +58,19 @@ class StatusWidget(QFrame, object):
 
         return self._blocking
 
+    def show_ok_message(self, message, msecs=None):
+        """
+        Set an ok message to be displayed in the status widget
+        :param message: str
+        :param msecs: int
+        """
+
+        if self.is_blocking():
+            return
+
+        icon = tpQtLib.resource.icon('ok', extension='png')
+        self._show_message(message, icon, msecs)
+
     def show_info_message(self, message, msecs=None):
         """
         Set an info message to be displayed in the status widget

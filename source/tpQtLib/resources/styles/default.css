@@ -15,10 +15,14 @@ QWidget:disabled {
     color: rgb(FOREGROUND_COLOR_R, FOREGROUND_COLOR_G, FOREGROUND_COLOR_B, 100);
 }
 
-QTableWidget, QLineEdit, QToolBar, QTabBar, QTabBar::tab
+QTableWidget, QToolBar, QTabBar, QTabBar::tab
 {
     border: 0px;
     background-color: BACKGROUND_COLOR;
+}
+
+QLineEdit {
+    background-color: BACKGROUND_COLOR_DARKER;
 }
 
 QPushButton {
@@ -101,6 +105,23 @@ QTabBar::tab {
     border-left: 1px solid BACKGROUND_COLOR_LIGHTER;
     /*border-bottom-style: none;*/
     background-color: BACKGROUND_COLOR_DARKER;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 3px;
+    padding-bottom: 2px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    margin-right: -1px;
+    margin-bottom: -1px;
+}
+
+QTabBar::tab:disabled {
+    color: ACCENT_FOREGROUND_COLOR;
+    border-top: 1px solid BACKGROUND_COLOR_LIGHTER;
+    border-right: 1px solid BACKGROUND_COLOR_LIGHTER;
+    border-left: 1px solid BACKGROUND_COLOR_LIGHTER;
+    /*border-bottom-style: none;*/
+    background-color: FOREGROUND_COLOR_DARKER;
     padding-left: 10px;
     padding-right: 10px;
     padding-top: 3px;
@@ -508,7 +529,7 @@ QTreeView::branch:selected {
     background-repeat: no-repeat;
 }
 
-QTreeView::branch::open {
+QTreeView::branch::open:has-children {
     image: url(:/icons/arrow_down);
 }
 

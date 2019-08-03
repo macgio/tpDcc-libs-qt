@@ -193,6 +193,13 @@ class Dialog(QDialog, object):
             self._logo_scene.addPixmap(self._title_pixmap)
             title_layout.addWidget(self.logo_view)
 
+        # title_background_pixmap = self._get_title_pixmap()
+        # if self._has_title and title_background_pixmap:
+        #     self._logo_scene.addPixmap(title_background_pixmap)
+        #     title_layout.addWidget(self.logo_view)
+        # else:
+        #     self.logo_view.setVisible(False)
+
         if not self._fixed_size:
             dlg_layout.addWidget(QStatusBar(self))
 
@@ -318,9 +325,12 @@ class Dialog(QDialog, object):
             self._main_title.set_title(title)
         super(Dialog, self).setWindowTitle(title)
 
-    # def __del__(self):
-    #     self.cleanup()
+    def _get_title_pixmap(self):
+        """
+        Internal function that sets the pixmap used for the title
+        """
 
+        return None
 
 class ColorDialog(Dialog, object):
 

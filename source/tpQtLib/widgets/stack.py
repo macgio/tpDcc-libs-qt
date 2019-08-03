@@ -16,6 +16,8 @@ class SlidingStackedWidget(QStackedWidget, object):
     QStackedWidget width sliding functionality
     """
 
+    animFinished = Signal(int)
+
     def __init__(self, parent=None, **kwargs):
         super(SlidingStackedWidget, self).__init__(parent)
 
@@ -129,15 +131,16 @@ class SlidingStackedWidget(QStackedWidget, object):
         self._anim_group = QParallelAnimationGroup()
         self._anim_group.addAnimation(anim_now)
         self._anim_group.addAnimation(anim_next)
-        self._anim_group.finished.connect(self.__animation_done_slot)
+        self._anim_group.finished.connect(self._animation_done_slot)
         self._anim_group.start()
 
         self._next = next
         self._now = now
 
-    def __animation_done_slot(self):
+    def _animation_done_slot(self):
         self.setCurrentIndex(self._next)
         self.widget(self._now).hide()
         self.widget(self._now).move(self._point_now)
         self.widget(self._now).update()
         self._active_state = False
+        self.animFinished.emit(self._next)

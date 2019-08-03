@@ -32,10 +32,10 @@ class FormDialog(QFrame, object):
 
         self._settings = None
 
-        lyt = QVBoxLayout(self)
-        lyt.setContentsMargins(0, 0, 0, 0)
-        lyt.setSpacing(0)
-        self.setLayout(lyt)
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
+        self.setLayout(self.main_layout)
 
         self._widgets = list()
         self._validator = None
@@ -63,11 +63,11 @@ class FormDialog(QFrame, object):
         btn_layout.addWidget(self._accept_btn)
         btn_layout.addWidget(self._reject_btn)
 
-        lyt.addWidget(self._title)
-        lyt.addWidget(self._description)
-        lyt.addWidget(self._form_widget)
-        lyt.addStretch(1)
-        lyt.addLayout(btn_layout)
+        self.main_layout.addWidget(self._title)
+        self.main_layout.addWidget(self._description)
+        self.main_layout.addWidget(self._form_widget)
+        self.main_layout.addStretch(1)
+        self.main_layout.addLayout(btn_layout)
 
         if form:
             self.set_settings(form)
@@ -1037,6 +1037,35 @@ class StringFieldWidget(FieldWidget, object):
         super(StringFieldWidget, self).set_value(value)
 
 
+class PasswordFieldWidget(FieldWidget, object):
+    def __init__(self, *args, **kwargs):
+        super(PasswordFieldWidget, self).__init__(*args, **kwargs)
+
+        widget = label.QLineEdit(self)
+        widget.setEchoMode(QLineEdit.EchoMode.Password)
+        widget.textChanged.connect(self._on_emit_value_changed)
+        self.set_widget(widget)
+
+    def value(self):
+        """
+        Implements FieldWidget value function
+        Returns the value of the widget
+        :return: str
+        """
+
+        return str(self.widget().text())
+
+    def set_value(self, value):
+        """
+        Overrides FileWidget set_value function
+        Sets the value of the widget
+        :param value: str
+        """
+
+        self.widget().setText(value)
+        super(PasswordFieldWidget, self).set_value(value)
+
+
 class TextFieldWidget(FieldWidget, object):
 
     DefaultLayout = 'vertical'
@@ -1344,6 +1373,7 @@ FIELD_WIDGET_REGISTRY = {
     "range": RangeFieldWidget,
     "color": ColorFieldWidget,
     "string": StringFieldWidget,
+    "password": PasswordFieldWidget,
     "slider": SliderFieldWidget,
     "separator": SeparatorFieldWidget
 }

@@ -24,6 +24,7 @@ class Resource(object):
         if os.path.isfile(dirname):
             dirname = os.path.dirname(dirname)
         self._dirname = dirname or self.RESOURCES_FOLDER
+        self._path = None
 
     @classmethod
     def generate_resources_file(cls, generate_qr_file=True, resources_folder=None):
@@ -116,7 +117,9 @@ class Resource(object):
         :return: str
         """
 
-        return path.clean_path(os.path.join(self.dirname(), *args))
+        self._path = path.clean_path(os.path.join(self.dirname(), *args))
+
+        return self._path
 
     def _icon(self, name, extension='png', color=None, theme='color'):
         """

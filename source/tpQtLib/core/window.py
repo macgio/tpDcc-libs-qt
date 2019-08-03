@@ -604,6 +604,15 @@ class MainWindow(QMainWindow, object):
         self._lightbox.set_widget(widget)
         self._lightbox.show()
 
+    def show_ok_message(self, message, msecs=None):
+        """
+        Set an ok message to be displayed in the status bar
+        :param message: str
+        :param msecs: int
+        """
+
+        self._status_bar.show_ok_message(message=message, msecs=msecs)
+
     def show_info_message(self, message, msecs=None):
         """
         Set an info message to be displayed in the status bar
