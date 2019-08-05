@@ -85,14 +85,14 @@ class SlidingStackedWidget(QStackedWidget, object):
         if self._wrap or now > 0:
             self.slide_in_index(now-1)
 
-    def slide_in_index(self, next):
+    def slide_in_index(self, next, force=False):
         """
         Slides to the given widget index
         :param next: int, index of the widget to slide
         """
 
         now = self.currentIndex()
-        if self._active_state or next == now :
+        if (self._active_state or next == now) and not force:
             return
         self._active_state = True
         width, height = self.frameRect().width() , self.frameRect().height()
@@ -141,6 +141,9 @@ class SlidingStackedWidget(QStackedWidget, object):
         self.setCurrentIndex(self._next)
         self.widget(self._now).hide()
         self.widget(self._now).move(self._point_now)
-        self.widget(self._now).update()
+        try:
+            self.widget(self._now).update()
+        except Exception:
+            pass
         self._active_state = False
         self.animFinished.emit(self._next)
