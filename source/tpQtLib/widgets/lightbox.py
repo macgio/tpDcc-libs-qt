@@ -79,10 +79,13 @@ class Lightbox(QFrame, object):
         :return: bool
         """
 
-        if event.type() == QEvent.Resize:
-            self.updateGeometry()
+        try:
+            if event.type() == QEvent.Resize:
+                self.updateGeometry()
 
-        return super(Lightbox, self).eventFilter(object, event)
+            return super(Lightbox, self).eventFilter(object, event)
+        except Exception:
+            return True
 
     def updateGeometry(self):
         """

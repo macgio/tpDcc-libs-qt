@@ -562,24 +562,28 @@ QCheckBox::indicator, QRadioButton::indicator  {
 	height: 18px;
 }
 
+QRadioButton {
+    background-color: transparent;
+}
+
 QRadioButton::indicator:checked {
-    image: url("RESOURCE_DIRNAME/icons/DARKNESS/radio_button_checked_DARKNESS.png");
+    image: url("RESOURCE_DIRNAME/icons/black/radio_button_checked_black.png");
 }
 
 QRadioButton::indicator:unchecked {
-    image: url("RESOURCE_DIRNAME/icons/DARKNESS/radio_button_unchecked_DARKNESS.png");
+    image: url("RESOURCE_DIRNAME/icons/black/radio_button_unchecked_black.png");
 }
 
 QCheckBox::indicator:checked, QMenu::indicator:non-exclusive:checked {
-    image: url("RESOURCE_DIRNAME/icons/DARKNESS/check_box_checked_DARKNESS.png");
+    image: url("RESOURCE_DIRNAME/icons/black/check_box_checked_black.png");
 }
 
 QCheckBox::indicator:unchecked, QMenu::indicator:non-exclusive:unchecked  {
-    image: url("RESOURCE_DIRNAME/icons/DARKNESS/check_box_unchecked_DARKNESS.png");
+    image: url("RESOURCE_DIRNAME/icons/black/check_box_unchecked_black.png");
 }
 
 QCheckBox::indicator:disabled, QMenu::indicator:non-exclusive:disabled  {
-    image: url("RESOURCE_DIRNAME/icons/DARKNESS/check_box_unchecked_DARKNESS.png");
+    image: url("RESOURCE_DIRNAME/icons/black/check_box_unchecked_black.png");
 }
 
 

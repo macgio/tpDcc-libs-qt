@@ -94,6 +94,7 @@ class SlidingStackedWidget(QStackedWidget, object):
         now = self.currentIndex()
         if (self._active_state or next == now) and not force:
             return
+
         self._active_state = True
         width, height = self.frameRect().width() , self.frameRect().height()
         next %= self.count()

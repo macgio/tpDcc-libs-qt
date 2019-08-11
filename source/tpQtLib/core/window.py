@@ -8,13 +8,13 @@ Module that contains implementation for custom PySide/PyQt windows
 from __future__ import print_function, division, absolute_import
 
 import os
-import traceback
 
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
 import tpQtLib
 import tpDccLib as tp
+from tpDccLib.core import callbackmanager
 from tpPyUtils import path, folder
 from tpQtLib.core import qtutils, settings, animation, color, theme
 from tpQtLib.widgets import statusbar, dragger, formwidget, lightbox
@@ -64,7 +64,6 @@ class MainWindow(QMainWindow, object):
 
         self._dpi = kwargs.get('dpi', 1.0)
         self._theme = None
-        self._callbacks = list()
         self._show_dragger = kwargs.get('show_dragger', True)
         self._fixed_size = kwargs.get('fixed_size', False)
 
@@ -98,7 +97,6 @@ class MainWindow(QMainWindow, object):
 
     def closeEvent(self, event):
         self.save_settings()
-        self.remove_callbacks()
         self.windowClosed.emit()
         self.deleteLater()
 
@@ -471,22 +469,21 @@ class MainWindow(QMainWindow, object):
 
         return dock
 
-    def add_callback(self, callback_wrapper):
-        if not isinstance(callback_wrapper, tp.Callback):
-            tp.logger.error('Impossible add callback of type: {}'.format(type(callback_wrapper)))
+    def register_callback(self, callback_type, fn):
+        """
+        Registers the given callback with the given function
+        :param callback_type: tpDccLib.DccCallbacks
+        :param fn: Python function to be called when callback is emitted
+        """
+
+        if type(callback_type) in [list, tuple]:
+            callback_type = callback_type[0]
+
+        if callback_type not in tp.callbacks():
+            tp.logger.warning('Callback Type: "{}" is not valid! Aborting callback creation ...'.format(callback_type))
             return
 
-        self._callbacks.append(callback_wrapper)
-
-    def remove_callbacks(self):
-        for c in self._callbacks:
-            try:
-                self._callbacks.remove(c)
-                del c
-            except Exception as e:
-                tp.logger.error('Impossible to clean callback {} | {}'.format(c, e))
-                tp.logger.error(traceback.format_exc())
-        self._callbacks = list()
+        return callbackmanager.CallbacksManager.register(callback_type=callback_type, fn=fn, owner=self)
 
     def set_active_dock_tab(self, dock_widget):
         """

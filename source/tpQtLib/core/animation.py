@@ -217,3 +217,33 @@ def slide_window(start=-100, end=0, duration=300, object=None, on_finished=None)
         animation.finished.connect(on_finished)
 
     return animation
+
+
+def fade_animation(start=0, end=1, duration=300, object=None, on_finished=None):
+    """
+    Fade animation for widgets
+     :param start: int, animation start value
+    :param end: int, animation end value
+    :param duration: int, duration of the effect
+    :param object: variant, QDialog || QMainWindow
+    :param on_finished: variant, function to call when the animation is finished
+    :return: QPropertyAnimation
+    """
+
+    anim_curve = QEasingCurve()
+    anim_curve.setType(QEasingCurve.OutQuint)
+
+    if start is 'current':
+        start = object.opacity()
+    if end is 'current':
+        end = object.opacity()
+
+    animation = QPropertyAnimation(object, 'opacity', object)
+    animation.setEasingCurve(anim_curve)
+    animation.setDuration(duration)
+    animation.setStartValue(start)
+    animation.setEndValue(end)
+    animation.start()
+
+    if on_finished:
+        animation.finished.connect(on_finished)

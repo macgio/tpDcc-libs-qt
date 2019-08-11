@@ -161,7 +161,7 @@ class Dialog(QDialog, object):
         QFrame#mainFrame
         {
         background-color: rgb(35, 35, 35);
-        border-radius: 25px;
+        border-radius: 10px;
         }""")
         base_widget.setLayout(self._base_layout)
         dlg_layout.addWidget(base_widget)
@@ -171,7 +171,7 @@ class Dialog(QDialog, object):
         self._base_layout.addWidget(self._main_title)
 
         self.main_layout = self.get_main_layout()
-        dlg_layout.addLayout(self.main_layout)
+        self._base_layout.addLayout(self.main_layout)
 
         title_layout = QHBoxLayout()
         title_layout.setContentsMargins(0, 0, 0, 0)

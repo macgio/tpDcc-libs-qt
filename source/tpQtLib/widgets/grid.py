@@ -54,6 +54,17 @@ class GridWidget(QTableWidget, object):
         container_widget.set_contained_widget(widget)
         self.setCellWidget(row, col, container_widget)
 
+    def add_widget_first_empty_cell(self, widget):
+        """
+        Adds a new QWidget into the first available cell in the grid
+        :param widget: QWidget
+        :return:
+        """
+
+        row, col = self.first_empty_cell()
+        self.addWidget(row, col, widget)
+        self.resizeRowsToContents()
+
     def first_empty_cell(self):
         """
         Returns the first empty cell in the table
