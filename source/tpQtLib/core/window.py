@@ -14,7 +14,6 @@ from Qt.QtWidgets import *
 
 import tpQtLib
 import tpDccLib as tp
-from tpDccLib.core import callbackmanager
 from tpPyUtils import path, folder
 from tpQtLib.core import qtutils, settings, animation, color, theme
 from tpQtLib.widgets import statusbar, dragger, formwidget, lightbox
@@ -97,7 +96,9 @@ class MainWindow(QMainWindow, object):
 
     def closeEvent(self, event):
         self.save_settings()
+        self.unregister_callbacks()
         self.windowClosed.emit()
+        self.setParent(None)
         self.deleteLater()
 
     def setWindowIcon(self, icon):
@@ -483,7 +484,16 @@ class MainWindow(QMainWindow, object):
             tp.logger.warning('Callback Type: "{}" is not valid! Aborting callback creation ...'.format(callback_type))
             return
 
+        from tpDccLib.core import callbackmanager
         return callbackmanager.CallbacksManager.register(callback_type=callback_type, fn=fn, owner=self)
+
+    def unregister_callbacks(self):
+        """
+        Unregisters all callbacks registered by this window
+        """
+
+        from tpDccLib.core import callbackmanager
+        callbackmanager.CallbacksManager.unregister_owner_callbacks(owner=self)
 
     def set_active_dock_tab(self, dock_widget):
         """
