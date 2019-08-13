@@ -31,6 +31,7 @@ class StatusWidget(QFrame, object):
         self.setMinimumWidth(5)
 
         self._label = QLabel('', self)
+        self._label.setStyleSheet('background-color: transparent;')
         self._label.setCursor(Qt.IBeamCursor)
         self._label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         self._label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
