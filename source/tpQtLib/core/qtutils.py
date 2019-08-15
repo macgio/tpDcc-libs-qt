@@ -678,9 +678,12 @@ def get_comment(text_message='Add Comment', title='Save', comment_text='', paren
 
     comment_dialog = QInputDialog()
     flags = comment_dialog.windowFlags() ^ Qt.WindowContextHelpButtonHint | Qt.WindowStaysOnTopHint
-    comment, ok = comment_dialog.getText(parent, title, text_message, flags=flags, text=comment_text)
-    if ok:
-        return comment
+    if is_pyside2() or is_pyqt5():
+        comment, ok = comment_dialog.getMultiLineText(parent, title, flags=flags, text=comment_text)
+    else:
+        comment, ok = comment_dialog.getText(parent, title, text_message, flags=flags, text=comment_text)
+        if ok:
+            return comment
 
 
 def get_file(directory, parent=None):
