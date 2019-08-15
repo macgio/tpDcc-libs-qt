@@ -57,6 +57,7 @@ class MainWindow(QMainWindow, object):
 
         self._kwargs = None
         self._is_loaded = False
+        self._qtui = None
 
         if parent is None:
             parent = main_window
@@ -72,7 +73,6 @@ class MainWindow(QMainWindow, object):
         self._ui_folder = kwargs.pop('ui_folder', None)
         self._ui_name = kwargs.pop('ui_name', None)
 
-        self._ui_folder = kwargs.pop('ui_folder', None)
         if self._ui_folder is None:
             try:
                 # If we try to create windows in not saved files (for example in Dcc Python editors) inspect will fail
@@ -80,7 +80,6 @@ class MainWindow(QMainWindow, object):
             except RuntimeError:
                 self._ui_folder = None
 
-        self._ui_name = kwargs.pop('ui_name', None)
         if self._ui_name is None:
             try:
                 # If we try to create windows in not saved files (for example in Dcc Python editors) inspect will fail
@@ -113,6 +112,14 @@ class MainWindow(QMainWindow, object):
 
         if auto_load:
             self.load_theme()
+
+    @property
+    def qtui(self):
+        """
+        Returns UI widget loaded by Qt laoder from .ui or .uic file
+        """
+
+        return self._qtui
 
     def closeEvent(self, event):
         self.save_settings()
@@ -559,7 +566,9 @@ class MainWindow(QMainWindow, object):
         if not os.path.isfile(ui_file):
             return None
 
-        loaded_ui = qtutils.load_ui
+        loaded_ui = qtutils.load_ui(ui_file=ui_file)
+
+        return loaded_ui
 
     def _settings_validator(self, **kwargs):
         """
