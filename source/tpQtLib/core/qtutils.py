@@ -67,6 +67,23 @@ def is_pyqt():
 
     return 'PyQt' in __binding__
 
+def is_pyqt4():
+    """
+    Retunrs True if the currente Qt binding is PyQt4
+    :return: bool
+    """
+
+    return __binding__ == 'PyQt4'
+
+
+def is_pyqt5():
+    """
+    Retunrs True if the currente Qt binding is PyQt5
+    :return: bool
+    """
+
+    return __binding__ == 'PyQt5'
+
 
 def is_pyside():
     """
