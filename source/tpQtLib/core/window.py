@@ -8,6 +8,7 @@ Module that contains implementation for custom PySide/PyQt windows
 from __future__ import print_function, division, absolute_import
 
 import os
+import inspect
 
 from Qt.QtCore import *
 from Qt.QtWidgets import *
@@ -61,12 +62,31 @@ class MainWindow(QMainWindow, object):
             parent = main_window
         super(MainWindow, self).__init__(parent=parent)
 
+        self.setObjectName(name)
+
         self._dpi = kwargs.get('dpi', 1.0)
         self._theme = None
         self._show_dragger = kwargs.get('show_dragger', True)
         self._fixed_size = kwargs.get('fixed_size', False)
+        self._load_ui = kwargs.pop('load_ui', False)
+        self._ui_folder = kwargs.pop('ui_folder', None)
+        self._ui_name = kwargs.pop('ui_name', None)
 
-        self.setObjectName(name)
+        self._ui_folder = kwargs.pop('ui_folder', None)
+        if self._ui_folder is None:
+            try:
+                # If we try to create windows in not saved files (for example in Dcc Python editors) inspect will fail
+                self._ui_folder = kwargs.pop('ui_folder', os.path.dirname(os.path.realpath(inspect.getfile(self.__class__))))
+            except RuntimeError:
+                self._ui_folder = None
+
+        self._ui_name = kwargs.pop('ui_name', None)
+        if self._ui_name is None:
+            try:
+                # If we try to create windows in not saved files (for example in Dcc Python editors) inspect will fail
+                self._ui_name = kwargs.pop('ui_name', os.path.splitext(os.path.basename(inspect.getfile(self.__class__)))[0])
+            except RuntimeError:
+                self._ui_name = None
 
         if self._show_dragger:
             self.setAttribute(Qt.WA_TranslucentBackground)
@@ -398,6 +418,12 @@ class MainWindow(QMainWindow, object):
 
         self.main_widget.setLayout(self.main_layout)
 
+        if self._load_ui and self._ui_folder and self._ui_name:
+            ui_file = os.path.join(self._ui_folder, self._ui_name + '.ui')
+            self._qtui = self._load_ui_from_file(ui_file=ui_file)
+            if self._qtui:
+                self.main_layout.addWidget(self._qtui)
+
     def setup_signals(self):
         """
         Override in derived class to setup signals
@@ -522,6 +548,18 @@ class MainWindow(QMainWindow, object):
                 docks.append(child)
 
         return docks
+
+    def _load_ui_from_file(self, ui_file):
+        """
+        Internal function that loads given UI file
+        :param ui_file: str
+        :return: QWidget or None
+        """
+
+        if not os.path.isfile(ui_file):
+            return None
+
+        loaded_ui = qtutils.load_ui
 
     def _settings_validator(self, **kwargs):
         """

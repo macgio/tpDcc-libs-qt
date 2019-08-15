@@ -12,12 +12,19 @@ import os
 import re
 import sys
 import inspect
-import traceback
 import subprocess
 import contextlib
+from xml.etree import ElementTree
+
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 import tpPyUtils
 from tpPyUtils import python, fileio, strings, path
+
+QT_ERROR_MESSAGE = 'Qt.py is not available and Qt related functionality will not be available!'
 
 QT_AVAILABLE = True
 try:
@@ -37,6 +44,10 @@ if QT_AVAILABLE:
             import shiboken2 as shiboken
         except ImportError:
             from PySide2 import shiboken2 as shiboken
+
+        import pyside2uic as pysideuic
+        from PySide2.QtCore import QMetaObject
+        from PySide2.QtUiTools import QUiLoader
     else:
         try:
             import shiboken
@@ -49,6 +60,17 @@ if QT_AVAILABLE:
                 except Exception:
                     pass
 
+        try:
+            import pysideuic
+        except Exception:
+            from tpQtLib.externals import pysideuic
+        from PySide.QtCore import QMetaObject
+        try:
+            from PySide.QtUiTools import QUiLoader
+        except ImportError:
+            from tpQtLib.externals.pysideutils.QtUiTools import QUiLoader
+
+import tpQtLib
 from tpQtLib.core import color
 
 # ==============================================================================
@@ -126,6 +148,102 @@ def get_ui_library():
                 except ImportError:
                     raise ImportError("No valid Gui library found!")
     return qt
+
+
+class UiLoader(QUiLoader):
+    """
+    Custom UILoader that support custom widgets definition
+    Qt.py QtCompat module does not handles custom widgets very well
+    This class create the user interface in the given baseinstance instance. If not given,
+    created widget is returned
+
+    https://github.com/spyder-ide/qtpy/blob/master/qtpy/uic.py
+    https://gist.github.com/cpbotha/1b42a20c8f3eb9bb7cb8
+    """
+
+    def __init__(self, baseinstance, customWidgets=None):
+        """
+        Constructor
+        :param baseinstance: loaded user interface is created in the given baseinstance which
+        must be an instance of the top-level class in the UI to load, or a subclass thereof
+        :param customWidgets: dict, dict mapping from class name to class object for custom widgets
+        """
+        super(UiLoader, self).__init__(baseinstance)
+
+        self.baseinstance = baseinstance
+
+        if customWidgets is None:
+            self.customWidgets = {}
+        else:
+            self.customWidgets = customWidgets
+
+    def createWidget(self, class_name, parent=None, name=''):
+        """
+        Function that is called for each widget defined in ui file,
+        overridden here to populate baseinstance instead.
+        """
+
+        if parent is None and self.baseinstance:
+            # supposed to create the top-level widget, return the base
+            # instance instead
+            return self.baseinstance
+
+        else:
+
+            # For some reason, Line is not in the list of available
+            # widgets, but works fine, so we have to special case it here.
+            if class_name in self.availableWidgets() or class_name == 'Line':
+                # create a new widget for child widgets
+                widget = QUiLoader.createWidget(self, class_name, parent, name)
+
+            else:
+                # If not in the list of availableWidgets, must be a custom
+                # widget. This will raise KeyError if the user has not
+                # supplied the relevant class_name in the dictionary or if
+                # customWidgets is empty.
+                try:
+                    widget = self.customWidgets[class_name](parent)
+                except KeyError:
+                    raise Exception('No custom widget ' + class_name + ' '
+                                    'found in customWidgets')
+
+            if self.baseinstance:
+                # set an attribute for the new child widget on the base
+                # instance, just like PyQt4.uic.loadUi does.
+                setattr(self.baseinstance, name, widget)
+
+            return widget
+
+    @staticmethod
+    def get_custom_widgets(ui_file):
+        """
+        This function is used to parse a ui file and look for the <customwidgets>
+        section, then automatically load all the custom widget classes.
+        """
+
+        import importlib
+        from xml.etree.ElementTree import ElementTree
+
+        etree = ElementTree()
+        ui = etree.parse(ui_file)
+
+        custom_widgets = ui.find('customwidgets')
+
+        if custom_widgets is None:
+            return {}
+
+        custom_widget_classes = {}
+
+        for custom_widget in custom_widgets.getchildren():
+
+            cw_class = custom_widget.find('class').text
+            cw_header = custom_widget.find('header').text
+
+            module = importlib.import_module(cw_header)
+
+            custom_widget_classes[cw_class] = getattr(module, cw_class)
+
+        return custom_widget_classes
 
 
 def wrapinstance(ptr, base=None):
@@ -250,9 +368,10 @@ def load_widget_ui(widget, path=None):
         os.chdir(cwd)
 
 
-def ui_loader(ui_file, widget=None):
+def compat_ui_loader(ui_file, widget=None):
     """
-    Loads GUI from .ui file
+    Loads GUI from .ui file using compat module
+    In some DCCs, such as 3ds Max this function does not work properly. In those cases use load_ui function
     :param ui_file: str, path to the UI file
     :param widget: parent widget
     """
@@ -268,6 +387,144 @@ def ui_loader(ui_file, widget=None):
             if not member.startswith('__') and member is not 'staticMetaObject':
                 setattr(widget, member, getattr(ui, member))
         return ui
+
+
+def load_ui(ui_file, parent_widget=None):
+    """
+    Loads GUI from .ui file
+    :param ui_file: str, path to the UI file
+    :param parent_widget: QWidget, base instance widget
+    :param force_pyside: bool, True to force using PySide1 load UI. Sometimes PySide2 gives error when working with custom widgets
+    """
+
+    if not QT_AVAILABLE:
+        tpQtLib.logger.warning(QT_ERROR_MESSAGE)
+        return None
+
+    customWidgets = UiLoader.get_custom_widgets(ui_file)
+    loader = UiLoader(parent_widget, customWidgets)
+    # if workingDirectory is not None:
+    #     loader.setWorkingDirectory(workingDirectory)
+    widget = loader.load(ui_file)
+    QMetaObject.connectSlotsByName(widget)
+    return widget
+
+
+def load_ui_type(ui_file):
+    """
+    Loads UI Designer file (.ui) and parse the file
+    :param ui_file: str, path to the UI file
+    """
+
+    if not QT_AVAILABLE:
+        tpQtLib.logger.warning(QT_ERROR_MESSAGE)
+        return None, None
+
+    parsed = ElementTree.parse(ui_file)
+    widget_class = parsed.find('widget').get('class')
+    form_class = parsed.find('class').text
+    with open(ui_file, 'r') as f:
+        o = StringIO()
+        frame = {}
+        pysideuic.compileUi(f, o, indent=0)
+        pyc = compile(o.getvalue(), '<string>', 'exec')
+        exec pyc in frame
+        # Fetch the base_class and form class based on their type in the XML from designer
+        form_class = frame['Ui_{}'.format(form_class)]
+        base_class = eval('{}'.format(widget_class))
+
+    return form_class, base_class
+
+
+def compile_ui(ui_file, py_file):
+    """
+    Compiles a Py. file from Qt Designer .ui file
+    :param ui_file: str
+    :param py_file: str
+    :return:
+    """
+
+    if not QT_AVAILABLE:
+        tpQtLib.logger.warning(QT_ERROR_MESSAGE)
+        return
+
+    if not os.path.isfile(ui_file):
+        tpQtLib.logger.warning('UI file "{}" does not exists!'.format(ui_file))
+        return
+
+    if os.path.isfile(ui_file):
+        f = open(py_file, 'w')
+        pysideuic.compileUi(ui_file, f, False, 4, False)
+        f.close()
+
+
+def compile_uis(root_path, recursive=True, use_qt=True):
+    """
+    Loops through all files starting from root_path and compiles all .ui files
+    :param root_path: str, path where we want to compiles uis from
+    :param recursive: bool, Whether to compile only ui files on given path or compiles all paths recursively
+    :param use_qt: bool, Whether to use Qt.py when importing Qt modules or use default PySide modules
+    """
+
+    if not QT_AVAILABLE:
+        tpQtLib.logger.warning(QT_ERROR_MESSAGE)
+        return
+
+    if not os.path.exists(root_path):
+        tpQtLib.logger.error('Impossible to compile UIs because path "{}" is not valid!'.format(root_path))
+        return
+
+    if recursive:
+        for root, _, files in os.walk(root_path):
+            for f in files:
+                if f.endswith('.ui'):
+                    ui_file = os.path.join(root, f)
+
+                    py_file = ui_file.replace('.ui', '_ui.py')
+
+                    tpQtLib.logger.debug('> COMPILING: {}'.format(ui_file))
+                    compile_ui(ui_file=ui_file, py_file=py_file)
+
+                    # pysideuic will use the proper Qt version used to compile it when generating .ui Python code
+                    # pysideuic: PySide | pysideuic2: PySide2
+                    # Here we replace PySide usage with Qt.py module usage
+                    if os.path.exists(py_file) and use_qt:
+
+                        fileio.replace(py_file, 'QtGui.', '')
+                        fileio.replace(py_file, 'QtCore.', '')
+                        fileio.replace(py_file, 'QtWidgets.', '')
+
+                        out_lines = ''
+                        lines = open(py_file, 'r').readlines()
+                        for line in lines:
+                            if 'from PySide' in line or 'from PySide2' in line:
+                                line = 'try:\n\tfrom PySide.QtCore import *\n\tfrom PySide.QtGui import *\nexcept:\n\tfrom PySide2.QtCore import *\n\tfrom PySide2.QtWidgets import *\n\tfrom PySide2.QtGui import *\nfrom Qt import __binding__\n\n'
+                            if 'QApplication.UnicodeUTF8' in line:
+                                line = line.replace('QApplication.UnicodeUTF8', 'QApplication.UnicodeUTF8 if __binding__ == "PySide" else -1')
+                            elif '-1' in line:
+                                line = line.replace('-1', 'QApplication.UnicodeUTF8 if __binding__ == "PySide" else -1')
+
+                            out_lines += '%s' % line
+                        out = open(py_file, 'w')
+                        out.writelines(out_lines)
+                        out.close()
+    else:
+        raise NotImplementedError()
+
+
+def clean_compiled_uis(root_path, recusive=True):
+    """
+    Loops through all files starting from root_path and removes all compile ui files
+    :param root_path: str, path where we want to compiles uis from
+    :param recursive: bool, Whether to compile only compiled ui files on given path or removes all paths recursively
+    """
+
+    if recusive:
+        for root, _, files in os.walk(root_path):
+            for f in files:
+                if f.endswith('_ui.py') or f.endswith('_ui.pyc'):
+                    os.remove(os.path.join(root, f))
+                    tpQtLib.logger.debug('Removed compiled UI: "{}"'.format(os.path.join(root, f)))
 
 
 def create_python_qrc_file(qrc_file, py_file):

@@ -8,6 +8,7 @@ Initialization module for tpQtLib
 from __future__ import print_function, division, absolute_import
 
 import os
+import sys
 import inspect
 
 from tpPyUtils import importer
@@ -57,6 +58,25 @@ class tpQtLib(importer.Importer, object):
 
         return mod_dir
 
+    def update_paths(self):
+        """
+        Adds path to system paths at startup
+        """
+
+        paths_to_update = [self.externals_path()]
+
+        for p in paths_to_update:
+            if os.path.exists(p) and p not in sys.path:
+                sys.path.append(p)
+
+    def externals_path(self):
+        """
+        Returns the paths where tpPyUtils externals packages are stored
+        :return: str
+        """
+
+        return os.path.join(self.get_module_path(), 'externals')
+
 
 def init(do_reload=False):
     """
@@ -65,6 +85,7 @@ def init(do_reload=False):
     """
 
     tpqtlib_importer = importer.init_importer(importer_class=tpQtLib, do_reload=do_reload)
+    tpqtlib_importer.update_paths()
 
     global logger
     global resource
