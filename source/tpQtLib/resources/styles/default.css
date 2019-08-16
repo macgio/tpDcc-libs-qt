@@ -26,7 +26,7 @@ QLineEdit {
 }
 
 QPushButton {
-    background-color: BACKGROUND_COLOR_LIGHTER;
+    background-color: BACKGROUND_COLOR_DARKER;
     border: solid BACKGROUND_COLOR_LIGHTER;
     border-radius: 2*DPIpx;
     outline: none;
