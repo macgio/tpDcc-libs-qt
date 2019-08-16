@@ -92,8 +92,8 @@ def init(do_reload=False):
     logger = tpqtlib_importer.logger
     resource = tpQtLibResource
 
-    tpqtlib_importer.import_modules()
-    tpqtlib_importer.import_packages(only_packages=True)
+    tpqtlib_importer.import_modules(skip_modules=['tpQtLib.externals'])
+    tpqtlib_importer.import_packages(only_packages=True, skip_modules=['tpQtLib.externals'])
 
     init_dcc(do_reload=do_reload)
 

@@ -8,3 +8,4 @@ include source/tpQtLib/resources/icons/white/*.*
 include source/tpQtLib/resources/icons/window/*.*
 include source/tpQtLib/resources/icons/windows/*.*
 include source/tpQtLib/resources/styles/*.*
+include source/tpQtLib/externals/pysideutils/QtUiTools.pyd
