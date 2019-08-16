@@ -68,7 +68,10 @@ if QT_AVAILABLE:
         try:
             from PySide.QtUiTools import QUiLoader
         except ImportError:
-            from tpQtLib.externals.pysideutils.QtUiTools import QUiLoader
+            try:
+                from PySide.QtUiTools import QUiLoader
+            except ImportError:
+                from tpQtLib.externals.pysideutils.QtUiTools import QUiLoader
 
 import tpQtLib
 from tpQtLib.core import color
