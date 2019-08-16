@@ -27,6 +27,7 @@ from tpPyUtils import python, fileio, strings, path
 QT_ERROR_MESSAGE = 'Qt.py is not available and Qt related functionality will not be available!'
 
 QT_AVAILABLE = True
+UILOADER_AVAILABLE = True
 try:
     from Qt.QtCore import *
     from Qt.QtWidgets import *
@@ -69,9 +70,9 @@ if QT_AVAILABLE:
             from PySide.QtUiTools import QUiLoader
         except ImportError:
             try:
-                from PySide.QtUiTools import QUiLoader
-            except ImportError:
                 from tpQtLib.externals.pysideutils.QtUiTools import QUiLoader
+            except ImportError:
+                UILOADER_AVAILABLE = False
 
 import tpQtLib
 from tpQtLib.core import color
@@ -153,100 +154,101 @@ def get_ui_library():
     return qt
 
 
-class UiLoader(QUiLoader):
-    """
-    Custom UILoader that support custom widgets definition
-    Qt.py QtCompat module does not handles custom widgets very well
-    This class create the user interface in the given baseinstance instance. If not given,
-    created widget is returned
-
-    https://github.com/spyder-ide/qtpy/blob/master/qtpy/uic.py
-    https://gist.github.com/cpbotha/1b42a20c8f3eb9bb7cb8
-    """
-
-    def __init__(self, baseinstance, customWidgets=None):
+if UILOADER_AVAILABLE:
+    class UiLoader(QUiLoader):
         """
-        Constructor
-        :param baseinstance: loaded user interface is created in the given baseinstance which
-        must be an instance of the top-level class in the UI to load, or a subclass thereof
-        :param customWidgets: dict, dict mapping from class name to class object for custom widgets
-        """
-        super(UiLoader, self).__init__(baseinstance)
+        Custom UILoader that support custom widgets definition
+        Qt.py QtCompat module does not handles custom widgets very well
+        This class create the user interface in the given baseinstance instance. If not given,
+        created widget is returned
 
-        self.baseinstance = baseinstance
-
-        if customWidgets is None:
-            self.customWidgets = {}
-        else:
-            self.customWidgets = customWidgets
-
-    def createWidget(self, class_name, parent=None, name=''):
-        """
-        Function that is called for each widget defined in ui file,
-        overridden here to populate baseinstance instead.
+        https://github.com/spyder-ide/qtpy/blob/master/qtpy/uic.py
+        https://gist.github.com/cpbotha/1b42a20c8f3eb9bb7cb8
         """
 
-        if parent is None and self.baseinstance:
-            # supposed to create the top-level widget, return the base
-            # instance instead
-            return self.baseinstance
+        def __init__(self, baseinstance, customWidgets=None):
+            """
+            Constructor
+            :param baseinstance: loaded user interface is created in the given baseinstance which
+            must be an instance of the top-level class in the UI to load, or a subclass thereof
+            :param customWidgets: dict, dict mapping from class name to class object for custom widgets
+            """
+            super(UiLoader, self).__init__(baseinstance)
 
-        else:
+            self.baseinstance = baseinstance
 
-            # For some reason, Line is not in the list of available
-            # widgets, but works fine, so we have to special case it here.
-            if class_name in self.availableWidgets() or class_name == 'Line':
-                # create a new widget for child widgets
-                widget = QUiLoader.createWidget(self, class_name, parent, name)
+            if customWidgets is None:
+                self.customWidgets = {}
+            else:
+                self.customWidgets = customWidgets
+
+        def createWidget(self, class_name, parent=None, name=''):
+            """
+            Function that is called for each widget defined in ui file,
+            overridden here to populate baseinstance instead.
+            """
+
+            if parent is None and self.baseinstance:
+                # supposed to create the top-level widget, return the base
+                # instance instead
+                return self.baseinstance
 
             else:
-                # If not in the list of availableWidgets, must be a custom
-                # widget. This will raise KeyError if the user has not
-                # supplied the relevant class_name in the dictionary or if
-                # customWidgets is empty.
-                try:
-                    widget = self.customWidgets[class_name](parent)
-                except KeyError:
-                    raise Exception('No custom widget ' + class_name + ' '
-                                    'found in customWidgets')
 
-            if self.baseinstance:
-                # set an attribute for the new child widget on the base
-                # instance, just like PyQt4.uic.loadUi does.
-                setattr(self.baseinstance, name, widget)
+                # For some reason, Line is not in the list of available
+                # widgets, but works fine, so we have to special case it here.
+                if class_name in self.availableWidgets() or class_name == 'Line':
+                    # create a new widget for child widgets
+                    widget = QUiLoader.createWidget(self, class_name, parent, name)
 
-            return widget
+                else:
+                    # If not in the list of availableWidgets, must be a custom
+                    # widget. This will raise KeyError if the user has not
+                    # supplied the relevant class_name in the dictionary or if
+                    # customWidgets is empty.
+                    try:
+                        widget = self.customWidgets[class_name](parent)
+                    except KeyError:
+                        raise Exception('No custom widget ' + class_name + ' '
+                                        'found in customWidgets')
 
-    @staticmethod
-    def get_custom_widgets(ui_file):
-        """
-        This function is used to parse a ui file and look for the <customwidgets>
-        section, then automatically load all the custom widget classes.
-        """
+                if self.baseinstance:
+                    # set an attribute for the new child widget on the base
+                    # instance, just like PyQt4.uic.loadUi does.
+                    setattr(self.baseinstance, name, widget)
 
-        import importlib
-        from xml.etree.ElementTree import ElementTree
+                return widget
 
-        etree = ElementTree()
-        ui = etree.parse(ui_file)
+        @staticmethod
+        def get_custom_widgets(ui_file):
+            """
+            This function is used to parse a ui file and look for the <customwidgets>
+            section, then automatically load all the custom widget classes.
+            """
 
-        custom_widgets = ui.find('customwidgets')
+            import importlib
+            from xml.etree.ElementTree import ElementTree
 
-        if custom_widgets is None:
-            return {}
+            etree = ElementTree()
+            ui = etree.parse(ui_file)
 
-        custom_widget_classes = {}
+            custom_widgets = ui.find('customwidgets')
 
-        for custom_widget in custom_widgets.getchildren():
+            if custom_widgets is None:
+                return {}
 
-            cw_class = custom_widget.find('class').text
-            cw_header = custom_widget.find('header').text
+            custom_widget_classes = {}
 
-            module = importlib.import_module(cw_header)
+            for custom_widget in custom_widgets.getchildren():
 
-            custom_widget_classes[cw_class] = getattr(module, cw_class)
+                cw_class = custom_widget.find('class').text
+                cw_header = custom_widget.find('header').text
 
-        return custom_widget_classes
+                module = importlib.import_module(cw_header)
+
+                custom_widget_classes[cw_class] = getattr(module, cw_class)
+
+            return custom_widget_classes
 
 
 def wrapinstance(ptr, base=None):
@@ -401,7 +403,11 @@ def load_ui(ui_file, parent_widget=None):
     """
 
     if not QT_AVAILABLE:
-        tpQtLib.logger.warning(QT_ERROR_MESSAGE)
+        tpQtLib.logger.error(QT_ERROR_MESSAGE)
+        return None
+
+    if not UILOADER_AVAILABLE:
+        tpQtLib.logger.error('QtUiLoader is not available, impossible teo load ui file!')
         return None
 
     customWidgets = UiLoader.get_custom_widgets(ui_file)
