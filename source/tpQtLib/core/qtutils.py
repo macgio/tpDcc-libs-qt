@@ -428,7 +428,7 @@ def load_ui_type(ui_file):
         frame = {}
         pysideuic.compileUi(f, o, indent=0)
         pyc = compile(o.getvalue(), '<string>', 'exec')
-        exec pyc in frame
+        exec(pyc in frame)
         # Fetch the base_class and form class based on their type in the XML from designer
         form_class = frame['Ui_{}'.format(form_class)]
         base_class = eval('{}'.format(widget_class))
