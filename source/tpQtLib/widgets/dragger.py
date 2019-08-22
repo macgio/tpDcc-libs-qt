@@ -89,21 +89,21 @@ class WindowDragger(QFrame, object):
         self._button_restored.setIcon(tpQtLib.resource.icon('restore', theme='window'))
         self._button_restored.setStyleSheet('QWidget {background-color: rgba(255, 255, 255, 0); border:0px;}')
         self._button_restored.setIconSize(QSize(25, 25))
-        button_closed = QPushButton()
+        self._button_closed = QPushButton()
         # button_closed.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
-        button_closed.setIcon(tpQtLib.resource.icon('close', theme='window'))
-        button_closed.setStyleSheet('QWidget {background-color: rgba(255, 255, 255, 0); border:0px;}')
-        button_closed.setIconSize(QSize(25, 25))
+        self._button_closed.setIcon(tpQtLib.resource.icon('close', theme='window'))
+        self._button_closed.setStyleSheet('QWidget {background-color: rgba(255, 255, 255, 0); border:0px;}')
+        self._button_closed.setIconSize(QSize(25, 25))
 
         self.buttons_layout.addWidget(self._button_minimized)
         self.buttons_layout.addWidget(self._button_maximized)
         self.buttons_layout.addWidget(self._button_restored)
-        self.buttons_layout.addWidget(button_closed)
+        self.buttons_layout.addWidget(self._button_closed)
 
         self._button_maximized.clicked.connect(self._on_maximize_window)
         self._button_minimized.clicked.connect(self._on_minimize_window)
         self._button_restored.clicked.connect(self._on_restore_window)
-        button_closed.clicked.connect(self._on_close_window)
+        self._button_closed.clicked.connect(self._on_close_window)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:

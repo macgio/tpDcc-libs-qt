@@ -48,6 +48,7 @@ class Dialog(QDialog, object):
         self._show_dragger = kwargs.get('show_dragger', True)
         self._fixed_size = kwargs.get('fixed_size', False)
         self._has_title = kwargs.pop('has_title', False)
+        self._size = kwargs.pop('size', (200, 125))
         self._title_pixmap = kwargs.pop('title_pixmap', None)
 
         self.setObjectName(name)
@@ -200,6 +201,9 @@ class Dialog(QDialog, object):
         # else:
         #     self.logo_view.setVisible(False)
 
+        if self._size:
+            self.resize(self._size[0], self._size[1])
+
         if not self._fixed_size:
             dlg_layout.addWidget(QStatusBar(self))
 
@@ -290,7 +294,7 @@ class Dialog(QDialog, object):
 
             if found:
                 w.update()
-
+    
     def setup_signals(self):
         pass
 

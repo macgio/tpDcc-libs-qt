@@ -14,6 +14,7 @@ from tpQtLib.core import animation
 
 class Lightbox(QFrame, object):
 
+    closed = Signal()
     DEFAULT_DURATION = 400
 
     def __init__(self, parent, widget=None, duration=DEFAULT_DURATION):
@@ -181,6 +182,7 @@ class Lightbox(QFrame, object):
             self.widget().__class__.accept(self.widget())
         finally:
             self.close()
+            self.closed.emit()
 
     def _on_reject_animation_finished(self):
         """
@@ -191,3 +193,4 @@ class Lightbox(QFrame, object):
             self.widget().__class__.reject(self.widget())
         finally:
             self.close()
+            self.closed.emit()
