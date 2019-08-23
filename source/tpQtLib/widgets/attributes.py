@@ -25,48 +25,62 @@ class AttributeEditor(base.BaseWidget, object):
         super(AttributeEditor, self).__init__(parent=parent)
         self.setObjectName(name)
 
-    # region Properties
     def get_objects(self):
         return self._objects
 
     objects = property(get_objects)
-    # endregion
 
-    # region Override Functions
     def ui(self):
         super(AttributeEditor, self).ui()
 
         self._main_group = QGroupBox()
         self._main_group.setProperty('class', 'attr_main_group')
         self._main_group.setFlat(False)
-        self.main_layout.addWidget(self._main_group)
         self._main_group.setTitle('')
 
-        self._main_group_layout = QVBoxLayout()
-        self._main_group_layout.setContentsMargins(5, 5, 5, 5)
-        self._main_group_layout.setAlignment(Qt.AlignTop)
+        self._main_group_layout = self.get_attributes_layout()
         self._main_group.setLayout(self._main_group_layout)
+
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setStyleSheet('QScrollArea { background-color: rgb(57,57,57);}')
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll_area.setWidget(self._main_group)
+
+        self.main_layout.addWidget(scroll_area)
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self._on_create_context_menu)
-    # endregion
 
-    # region Public Functions
+    def get_attributes_layout(self):
+        """
+        Returns layout used for the attributes
+        :return: QLayout
+        """
+
+        attributes_layout = QHBoxLayout()
+        attributes_layout.setContentsMargins(5, 5, 5, 5)
+        attributes_layout.setAlignment(Qt.AlignTop)
+
+        return attributes_layout
+
     def set_title(self, new_title):
         self._main_group.setTitle(new_title)
 
-    def clear_layout(self):
-        qtutils.clear_layout(self._main_group_layout)
-        self._main_group.setTitle('')
-    # endregion
+    def clear_layout(self, reset_title=True):
+        """
+        Clears main layout and resetes editor title
+        """
 
-    # region Private Functions
+        qtutils.clear_layout(self._main_group_layout)
+        if reset_title:
+            self._main_group.setTitle('')
+
     def _build_layout(self):
         pass
 
     def _on_create_context_menu(self):
         pass
-    # endregion
 
 
 class BaseEditor(QWidget, object):
@@ -83,7 +97,6 @@ class BaseEditor(QWidget, object):
         self.main_layout.setContentsMargins(1, 1, 1, 1)
         self.main_layout.setSpacing(3)
 
-    # region Properties
     def get_default_value(self):
         return self._default_value
 
@@ -99,19 +112,14 @@ class BaseEditor(QWidget, object):
 
     default_value = property(get_default_value, set_default_value)
     value = property(get_value)
-    # endregion
 
-    # region Events
     def OnValueUpdated(self):
         if self.value != self._current_value:
             self._current_value = self.value
             self.valueChanged.emit(self)
-    # endregion
 
-    # region To Override Functions
     def initialize_editor(self):
         pass
-    # endregion
 
 
 class FloatEditor(BaseEditor, object):
@@ -126,14 +134,11 @@ class FloatEditor(BaseEditor, object):
         self.value_line = lineedit.FloatLineEdit(self)
         self.main_layout.addWidget(self.value_line)
 
-    # region Overrided Properties
     def get_value(self):
         return self.value_line.value
 
     value = property(get_value)
-    # endregion
 
-    # region Override Functions
     def initialize_editor(self):
         editor_value = self.default_value
 
@@ -158,7 +163,6 @@ class FloatEditor(BaseEditor, object):
             self.value_line.setText(conn)
             self.value_line.setEnabled(False)
             self.value_line.setProperty('class', 'Connected')
-    # endregion
 
 
 class Float2Editor(BaseEditor, object):
@@ -175,14 +179,11 @@ class Float2Editor(BaseEditor, object):
         self.main_layout.addWidget(self.value1_line)
         self.main_layout.addWidget(self.value2_line)
 
-    # region Override Properties
     def get_value(self):
         return self.value1_line.value, self.value2_line.value
 
     value = property(get_value)
-    # endregion
 
-    # region Override Functions
     def initialize_editor(self):
         editor_value = self.default_value
 
@@ -216,7 +217,6 @@ class Float2Editor(BaseEditor, object):
             self.value2_line.setEnabled(False)
             self.value1_line.setProperty('class', 'Connected')
             self.value2_line.setProperty('class', 'Connected')
-    # endregion
 
 
 class Float3Editor(BaseEditor, object):
@@ -235,14 +235,11 @@ class Float3Editor(BaseEditor, object):
         self.main_layout.addWidget(self.value2_line)
         self.main_layout.addWidget(self.value3_line)
 
-    # region Override Properties
     def get_value(self):
         return self.value1_line.value(), self.value2_line.value(), self.value3_line.value()
 
     value = property(get_value)
-    # endregion
 
-    # region Override Functions
     def initialize_editor(self):
         editor_value = self.default_value
 
@@ -277,7 +274,6 @@ class Float3Editor(BaseEditor, object):
             self.value1_line.setProperty('class', 'Connected')
             self.value2_line.setProperty('class', 'Connected')
             self.value3_line.setProperty('class', 'Connected')
-    # endregion
 
 
 class StringEditor(BaseEditor, object):
@@ -298,14 +294,11 @@ class StringEditor(BaseEditor, object):
         self.value_line.editingFinished.connect(self.OnValueUpdated)
         self.value_line.returnPressed.connect(self.OnValueUpdated)
 
-    # region Properties Functions
     def get_value(self):
         return str(self.value_line.text())
 
     value = property(get_value)
-    # endregion
 
-    # region Override Functions
     def initialize_editor(self):
         editor_value = self.default_value
 
@@ -327,9 +320,7 @@ class StringEditor(BaseEditor, object):
             self.value_line.setText(conn)
             self.value_line.setEnabled(False)
             self.value_line.setProperty('class', 'Connected')
-    # endregion
 
-    # region Private Functions
     def _validate_text(self, text):
         """
         Validates the given value and update the current text
@@ -344,7 +335,6 @@ class StringEditor(BaseEditor, object):
             self.value_line.setText(cleaned)
             self.value_line.blockSignals(False)
             self.value_line.setCursorPosition(cursor_pos)
-    # endregion
 
 
 class BoolEditor(BaseEditor, object):
@@ -361,7 +351,6 @@ class BoolEditor(BaseEditor, object):
 
         self.cbx.toggled.connect(self.OnValueUpdated)
 
-    # region Override Functions
     def get_value(self):
         return self.cbx.isChecked()
 
@@ -386,7 +375,6 @@ class BoolEditor(BaseEditor, object):
             self.value_line.setText(conn)
             self.cbx.setEnabled(False)
             self.value_line.setProperty('class', 'Connected')
-    # endregion
 
 
 class ColorPicker(BaseEditor, object):
@@ -440,9 +428,7 @@ class ColorPicker(BaseEditor, object):
     rgbF = property(get_rgbF)
     hsv = property(get_hsv)
     gsvF = property(get_hsvF)
-    # endregion
 
-    # region Events
     def OnSliderChanged(self):
         slider_value = float(self.slider.value())
         if not self._current_value:
@@ -474,9 +460,7 @@ class ColorPicker(BaseEditor, object):
             self.color_swatch.qcolor = dialog.currentColor()
             self.color_swatch._update()
             self.OnValueUpdated()
-    # endregion
 
-    # region Override Functions
     def get_value(self):
         return self.color_swatch.color
 
@@ -501,9 +485,7 @@ class ColorPicker(BaseEditor, object):
 
     def sizeHint(self):
         return QSize(350, 27)
-    # endregion
 
-    # region Public Functions
     def set_attr(self, value):
         self.attr = value
         return self.attr
@@ -534,12 +516,9 @@ class ColorPicker(BaseEditor, object):
 
     def set_color(self, value):
         return self.color_swatch.set_color(color=value)
-    # endregion
 
-    # region Private Functions
     def _update(self):
         return self.color_swatch._update()
-    # endregion
 
 
 class FileEditor(BaseEditor, object):
@@ -551,10 +530,10 @@ class FileEditor(BaseEditor, object):
 
         line_widget = directory.SelectFile()
         self.main_layout.addWidget(line_widget)
-# endregion
 
 
 # ===============================================================================
+
 WIDGET_MAPPER = dict(
     float=[FloatEditor, 0.0],
     float2=[Float2Editor, [0.0, 0.0]],
@@ -563,7 +542,7 @@ WIDGET_MAPPER = dict(
     str=[StringEditor, ""],
     string=[StringEditor, ""],
     file=[FileEditor, ""],
-    # dir=[FileEditor, ""],
+    dir=[FileEditor, ""],
     # int=[IntEditor, 0],
     # int2=[Int2Editor, [0,0]],
     # int3=[Int3Editor, [0,0,0]],
