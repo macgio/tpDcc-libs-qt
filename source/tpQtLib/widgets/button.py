@@ -77,6 +77,9 @@ class IconButton(BaseButton, object):
 
 
 class ColorButton(QPushButton, object):
+
+    colorChanged = Signal()
+
     def __init__(self, colorR=1.0, colorG=0.0, colorB=0.0, parent=None, **kwargs):
         super(ColorButton, self).__init__(parent=parent, **kwargs)
         self._color = QColor.fromRgbF(colorR, colorG, colorB)
@@ -101,6 +104,7 @@ class ColorButton(QPushButton, object):
                 return
             new_color = cmds.colorEditor(query=True, rgbValue=True)
             self.color = QColor.fromRgbF(new_color[0], new_color[1], new_color[2])
+            self.colorChanged.emit()
         else:
             raise RuntimeError('Code Editor is not available for DCC: {}'.format(tp.Dcc.get_name()))
 
