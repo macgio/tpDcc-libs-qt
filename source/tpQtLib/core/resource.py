@@ -75,7 +75,7 @@ class Resource(object):
         """
 
         if 'dirname' in kwargs:
-            return cls(dirname)._get(*args)
+            return cls(kwargs.pop('dirname'))._get(*args)
         else:
             return cls()._get(*args)
 

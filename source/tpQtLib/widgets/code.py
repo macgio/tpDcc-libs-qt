@@ -431,6 +431,7 @@ def syntax_styles(name):
         if not tp.is_maya():
             return get_syntax_format('brown')
 
+
 class PythonHighlighter(QSyntaxHighlighter):
     """
     Syntax highlighter for the Python language.
