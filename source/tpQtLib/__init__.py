@@ -94,6 +94,8 @@ def init(do_reload=False):
 
     tpqtlib_importer.import_modules(skip_modules=['tpQtLib.externals'])
     tpqtlib_importer.import_packages(only_packages=True, skip_modules=['tpQtLib.externals'])
+    if do_reload:
+        tpqtlib_importer.reload_all()
 
     init_dcc(do_reload=do_reload)
 
