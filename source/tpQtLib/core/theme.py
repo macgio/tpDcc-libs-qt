@@ -292,7 +292,7 @@ class Theme(QObject, object):
         else:
             darkness = 'black'
 
-        resource_dirname = tpQtLib.resource().dirname().replace('\\', '/')
+        resource_dirname = tpQtLib.resource().dirname.replace('\\', '/')
 
         options = {
             "DARKNESS": darkness,
