@@ -26,6 +26,15 @@ class Resource(object):
         self._dirname = dirname or self.RESOURCES_FOLDER
         self._path = None
 
+    @property
+    def dirname(self):
+        """
+        Returns path where resources are located
+        :return: str
+        """
+
+        return self._dirname
+
     @classmethod
     def generate_resources_file(cls, generate_qr_file=True, resources_folder=None):
         """
@@ -58,14 +67,17 @@ class Resource(object):
         qtutils.create_python_qrc_file(qrc_file, qrc_py_file)
 
     @classmethod
-    def get(cls, *args):
+    def get(cls, *args, **kwargs):
         """
         Returns path for the given resource name
         :param args: str, name of the source to retrieve path of
         :return: str
         """
 
-        return cls()._get(*args)
+        if 'dirname' in kwargs:
+            return cls(dirname)._get(*args)
+        else:
+            return cls()._get(*args)
 
     @classmethod
     def icon(cls, *args, **kwargs):
@@ -77,7 +89,10 @@ class Resource(object):
         :return: icon_resource.Icon
         """
 
-        return cls()._icon(*args, **kwargs)
+        if 'dirname' in kwargs:
+            return cls(kwargs.pop('dirname'))._icon(*args, **kwargs)
+        else:
+            return cls()._icon(*args, **kwargs)
 
     @classmethod
     def pixmap(cls, *args, **kwargs):
@@ -90,7 +105,10 @@ class Resource(object):
         :return: QPixmap
         """
 
-        return cls()._pixmap(*args, **kwargs)
+        if 'dirname' in kwargs:
+            return cls(kwargs.pop('dirname'))._pixmap(*args, **kwargs)
+        else:
+            return cls()._pixmap(*args, **kwargs)
 
     @classmethod
     def gui(cls, *args, **kwargs):
@@ -100,15 +118,10 @@ class Resource(object):
         :return:
         """
 
-        return cls()._ui(*args, **kwargs)
-
-    def dirname(self):
-        """
-        Returns absolute path to the resource
-        :return: str
-        """
-
-        return self._dirname
+        if 'dirname' in kwargs:
+            return cls(kwargs.pop('dirname'))._ui(*args, **kwargs)
+        else:
+            return cls()._ui(*args, **kwargs)
 
     def _get(self, *args):
         """
@@ -117,7 +130,7 @@ class Resource(object):
         :return: str
         """
 
-        self._path = path.clean_path(os.path.join(self.dirname(), *args))
+        self._path = path.clean_path(os.path.join(self.dirname, *args))
 
         return self._path
 
