@@ -16,6 +16,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
+import tpQtLib
 import tpDccLib as tp
 from tpQtLib.core import qtutils, color, animation, theme
 from tpQtLib.widgets import splitters, directory, dragger
@@ -940,3 +941,51 @@ class SelectFolderDialog(BaseFileFolderDialog, object):
     def exec_(self, *args, **kwargs):
         self.set_filters('')
         return super(SelectFolderDialog, self).exec_()
+
+
+class NativeDialog(object):
+    """
+    Dialog that opens DCC native dialogs
+    """
+
+    @staticmethod
+    def open_file(title='Open File', start_directory=None, filters=None):
+        """
+        Function that shows open file DCC native dialog
+        :param title: str
+        :param start_directory: str
+        :param filters: str
+        :return: str
+        """
+
+        raise NotImplementedError('open_file() function is not implemented')
+
+    @staticmethod
+    def save_file(title='Save File', start_directory=None, filters=None):
+        """
+        Function that shows save file DCC native dialog
+        :param title: str
+        :param start_directory: str
+        :param filters: str
+        :return: str
+        """
+
+        raise NotImplementedError('save_file() function is not implemented')
+
+    @staticmethod
+    def select_folder(title='Select Folder', start_directory=None):
+        """
+        Function that shows select folder DCC native dialog
+        :param title: str
+        :param start_directory: str
+        :return: str
+        """
+
+        raise NotImplementedError('select_folder() function is not implemented')
+
+
+tpQtLib.register_class('Dialog', Dialog)
+tpQtLib.register_class('OpenFileDialog', OpenFileDialog)
+tpQtLib.register_class('SaveFileDialog', SaveFileDialog)
+tpQtLib.register_class('SelectFolderDialog', SelectFolderDialog)
+tpQtLib.register_class('NativeDialog', NativeDialog)

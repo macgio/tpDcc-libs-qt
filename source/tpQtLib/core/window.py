@@ -1001,3 +1001,5 @@ class DirectoryWindow(MainWindow, object):
             folder.create_folder(name=None, directory=directory)
 
 
+tpQtLib.register_class('Window', MainWindow)
+
