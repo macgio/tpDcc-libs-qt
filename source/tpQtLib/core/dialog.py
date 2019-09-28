@@ -18,8 +18,8 @@ from Qt.QtGui import *
 
 import tpQtLib
 import tpDccLib as tp
-from tpQtLib.core import qtutils, color, animation, theme
-from tpQtLib.widgets import splitters, directory, dragger
+from tpQtLib.core import qtutils, color, animation, theme, dragger
+from tpQtLib.widgets import splitters, directory
 
 
 class Dialog(QDialog, object):
@@ -45,7 +45,6 @@ class Dialog(QDialog, object):
 
         self._dpi = kwargs.get('dpi', 1.0)
         self._theme = None
-        self._callbacks = list()
         self._show_dragger = kwargs.get('show_dragger', True)
         self._fixed_size = kwargs.get('fixed_size', False)
         self._has_title = kwargs.pop('has_title', False)
@@ -94,20 +93,6 @@ class Dialog(QDialog, object):
             "backgroundColor": def_theme_settings['backgroundColor']
         }
         self.set_theme_settings(theme_settings)
-
-    def add_callback(self, callback_wrapper):
-        if not isinstance(callback_wrapper, tp.Callback):
-            tp.logger.error('Impossible add callback of type: {}'.format(type(callback_wrapper)))
-            return
-
-    def remove_callbacks(self):
-        for c in self._callbacks:
-            try:
-                self._callbacks.remove(c)
-                del c
-            except Exception as e:
-                pass
-        self._callbacks = list()
 
     def set_width_height(self, width, height):
         """
@@ -308,17 +293,9 @@ class Dialog(QDialog, object):
         self.logo_view.centerOn(1000, 0)
         return super(Dialog, self).resizeEvent(event)
 
-    def cleanup(self):
-        self.remove_callbacks()
-        self.dialogClosed.emit()
-
     def closeEvent(self, event):
-        self.cleanup()
+        self.dialogClosed.emit()
         event.accept()
-
-    def deleteLater(self):
-        self.cleanup()
-        super(Dialog, self).deleteLater()
 
     def setWindowIcon(self, icon):
         if self._show_dragger:
@@ -336,6 +313,7 @@ class Dialog(QDialog, object):
         """
 
         return None
+
 
 class ColorDialog(Dialog, object):
 

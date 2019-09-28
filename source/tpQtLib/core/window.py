@@ -16,8 +16,7 @@ from Qt.QtWidgets import *
 import tpQtLib
 import tpDccLib as tp
 from tpPyUtils import path, folder
-from tpQtLib.core import qtutils, settings, animation, color, theme
-from tpQtLib.widgets import statusbar, dragger, formwidget, lightbox
+from tpQtLib.core import qtutils, settings, animation, color, theme, statusbar, dragger
 
 
 class MainWindow(QMainWindow, object):
@@ -606,6 +605,9 @@ class MainWindow(QMainWindow, object):
         self.settings().setw('theme/backgroundColor', background_color)
 
     def _on_show_settings_dialog(self):
+
+        from tpQtLib.widgets import formwidget, lightbox
+
         accent_color = self.theme().accent_color().to_string()
         background_color = self.theme().background_color().to_string()
 

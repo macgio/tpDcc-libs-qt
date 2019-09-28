@@ -7,10 +7,11 @@ Class with classes and function to work with GUI animations
 
 from __future__ import print_function, division, absolute_import
 
-import tpDccLib as tp
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
+
+import tpDccLib as tp
 
 
 class BaseAnimObject(object):

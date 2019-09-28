@@ -16,8 +16,8 @@ from Qt.QtWidgets import *
 from Qt.QtGui import *
 
 import tpQtLib
-from tpQtLib.core import animation, image, icon, qtutils, color, pixmap
-from tpQtLib.widgets import statusbar, progressbar, toolbar, action, button
+from tpQtLib.core import animation, image, icon, qtutils, color, pixmap, statusbar
+from tpQtLib.widgets import progressbar, toolbar, action, button
 
 
 class LibraryImageSequenceWidget(QToolButton, object):

@@ -88,7 +88,7 @@ def init(do_reload=False):
     resource = tpQtLibResource
 
     tpqtlib_importer.import_modules(skip_modules=['tpQtLib.externals'])
-    tpqtlib_importer.import_packages(only_packages=True, skip_modules=['tpQtLib.externals'])
+    tpqtlib_importer.import_packages(only_packages=True, skip_modules=['tpQtLib.externals'], order=['tpQtLib.core', 'tpQtLib.widgets'])
     if do_reload:
         tpqtlib_importer.reload_all()
 

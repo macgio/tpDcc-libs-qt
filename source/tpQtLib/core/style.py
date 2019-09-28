@@ -10,12 +10,6 @@ from __future__ import print_function, division, absolute_import
 import os
 import re
 
-from Qt.QtCore import *
-from Qt.QtGui import *
-
-import tpQtLib
-from tpQtLib.core import color
-
 
 class StyleSheet(object):
 
