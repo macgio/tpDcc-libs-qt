@@ -9,6 +9,7 @@ from __future__ import print_function, division, absolute_import
 
 import os
 
+import tpPyUtils
 from tpPyUtils import folder, path
 from tpQtLib.core import qtutils, pixmap as pixmap_resource, icon as icon_resource
 
@@ -78,6 +79,23 @@ class Resource(object):
             return cls(kwargs.pop('dirname'))._get(*args)
         else:
             return cls()._get(*args)
+
+    def image_path(self, name, category='images', extension='png', theme=None):
+        """
+        Returns path where pixmap or icon file is located
+        :param name:
+        :param category:
+        :param extension:
+        :param theme:
+        :return:
+        """
+
+        if theme:
+            path = self._get(category, theme, name+'.'+extension)
+        else:
+            path = self._get(category, name + '.' + extension)
+
+        return path
 
     @classmethod
     def icon(cls, *args, **kwargs):
@@ -156,10 +174,7 @@ class Resource(object):
         :return: QPixmap
         """
 
-        if theme:
-            path = self._get(category, theme, name+'.'+extension)
-        else:
-            path = self._get(category, name + '.' + extension)
+        path = self.image_path(name=name, category=category, extension=extension, theme=theme)
         p = pixmap_resource.Pixmap(path)
         if color:
             p.set_color(new_color=color)
