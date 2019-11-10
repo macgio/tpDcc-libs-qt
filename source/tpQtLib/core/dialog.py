@@ -19,7 +19,7 @@ from Qt.QtGui import *
 import tpQtLib
 import tpDccLib as tp
 from tpQtLib.core import qtutils, color, animation, theme, dragger
-from tpQtLib.widgets import splitters, directory
+from tpQtLib.widgets import splitters
 
 
 class Dialog(QDialog, object):
@@ -29,12 +29,15 @@ class Dialog(QDialog, object):
 
     dialogClosed = Signal()
 
-    def __init__(self, name, parent=None, **kwargs):
+    def __init__(self, parent=None, **kwargs):
+
+        title = kwargs.get('title', '')
+        name = title or self.__class__.__name__
 
         # Remove previous dialogs
         main_window = tp.Dcc.get_main_window()
         if main_window:
-            wins = tp.Dcc.get_main_window().findChildren(QWidget, name) or []
+            wins = tp.Dcc.get_main_window().findChildren(QWidget, name) or list()
             for w in wins:
                 w.close()
                 w.deleteLater()
@@ -43,34 +46,41 @@ class Dialog(QDialog, object):
             parent = main_window
         super(Dialog, self).__init__(parent=parent)
 
-        self._dpi = kwargs.get('dpi', 1.0)
         self._theme = None
+        self._dpi = kwargs.get('dpi', 1.0)
         self._show_dragger = kwargs.get('show_dragger', True)
         self._fixed_size = kwargs.get('fixed_size', False)
         self._has_title = kwargs.pop('has_title', False)
         self._size = kwargs.pop('size', (200, 125))
         self._title_pixmap = kwargs.pop('title_pixmap', None)
+        show_on_initialize = kwargs.get('show_on_initialize', False)
+        width = kwargs.pop('width', 600)
+        height = kwargs.pop('height', 800)
 
         self.setObjectName(name)
         self.setFocusPolicy(Qt.StrongFocus)
 
         if self._show_dragger:
-        #     self.setAttribute(Qt.WA_TranslucentBackground)
+            self.setAttribute(Qt.WA_TranslucentBackground)
             if qtutils.is_pyside2():
                 self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
             else:
                 self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
 
-        # self._title = kwargs.pop('title', 'tpRigToolkit')
-
         self.ui()
         self.setup_signals()
 
-        self.setWindowTitle(kwargs.pop('title', 'DCC Dialog'))
+        self.setWindowTitle(title)
 
         auto_load = kwargs.get('auto_load', True)
         if auto_load:
             self.load_theme()
+
+        if show_on_initialize:
+            self.center()
+            self.show()
+            
+        self.resize(width, height)
 
     def default_settings(self):
         """
@@ -153,9 +163,9 @@ class Dialog(QDialog, object):
         base_widget.setLayout(self._base_layout)
         dlg_layout.addWidget(base_widget)
 
-        self._main_title = dragger.DialogDragger(parent=self)
-        self._main_title.setVisible(self._show_dragger)
-        self._base_layout.addWidget(self._main_title)
+        self._dragger = dragger.DialogDragger(parent=self)
+        self._dragger.setVisible(self._show_dragger)
+        self._base_layout.addWidget(self._dragger)
 
         self.main_layout = self.get_main_layout()
         self._base_layout.addLayout(self.main_layout)
@@ -190,8 +200,18 @@ class Dialog(QDialog, object):
         if self._size:
             self.resize(self._size[0], self._size[1])
 
-        if not self._fixed_size:
-            dlg_layout.addWidget(QStatusBar(self))
+        self._status_bar = QStatusBar(self)
+        dlg_layout.addWidget(self._status_bar)
+        if self._fixed_size:
+            self._status_bar.hide()
+
+    def statusBar(self):
+        """
+        Returns status bar of the dialog
+        :return: QStatusBar
+        """
+
+        return self._status_bar
 
     def dpi(self):
         """
@@ -299,12 +319,12 @@ class Dialog(QDialog, object):
 
     def setWindowIcon(self, icon):
         if self._show_dragger:
-            self._main_title.set_icon(icon)
+            self._dragger.set_icon(icon)
         super(Dialog, self).setWindowIcon(icon)
 
     def setWindowTitle(self, title):
         if self._show_dragger:
-            self._main_title.set_title(title)
+            self._dragger.set_title(title)
         super(Dialog, self).setWindowTitle(title)
 
     def _get_title_pixmap(self):
@@ -475,6 +495,8 @@ class BaseFileFolderDialog(Dialog, object):
     # region Override Functions
     def ui(self):
         super(BaseFileFolderDialog, self).ui()
+
+        from tpQtLib.widgets import directory
 
         self.places = dict()
 

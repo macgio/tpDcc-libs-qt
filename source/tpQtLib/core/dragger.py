@@ -17,12 +17,15 @@ from Qt.QtWidgets import *
 from Qt.QtGui import *
 
 import tpQtLib
+from tpQtLib.core import qtutils
 
 
 class WindowDragger(QFrame, object):
     """
     Class to create custom window dragger for Solstice Tools
     """
+
+    DEFAULT_LOGO_ICON_SIZE = 22
 
     def __init__(self, parent=None, on_close=None):
         super(WindowDragger, self).__init__()
@@ -34,20 +37,16 @@ class WindowDragger(QFrame, object):
         self._on_close = on_close
 
         self.setObjectName('titleFrame')
-        # self.setStyleSheet("""
-        # QFrame#titleFrame
-        # {
-        #     background-color: rgb(35, 35, 35);
-        #     border-top-left-radius: 10px;
-        #     border-top-right-radius: 10px;
-        # }
-        # """)
+
+        self.ui()
+
+    def ui(self):
 
         palette = self.palette()
         palette.setColor(self.backgroundRole(), QColor(35, 35, 35))
         self.setPalette(palette)
-        self.setMinimumHeight(40)
-        self.setMaximumHeight(40)
+
+        self.setFixedHeight(qtutils.dpi_scale(40))
         self.setAutoFillBackground(True)
 
         main_layout = QHBoxLayout()
@@ -55,12 +54,11 @@ class WindowDragger(QFrame, object):
         main_layout.setSpacing(5)
         self.setLayout(main_layout)
 
-        self._lbl_icon = QLabel()
-        self._lbl_icon.setStyleSheet('background-color: transparent')
-        self._title_text = QLabel(parent.windowTitle())
+        self._logo_button = self._setup_logo_button()
+        self._title_text = QLabel(self._parent.windowTitle())
         self._title_text.setStyleSheet('background-color: transparent')
 
-        main_layout.addWidget(self._lbl_icon)
+        main_layout.addWidget(self._logo_button)
         main_layout.addWidget(self._title_text)
         main_layout.addItem(QSpacerItem(20, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
 
@@ -137,13 +135,27 @@ class WindowDragger(QFrame, object):
                 self._mouse_press_pos = None
         super(WindowDragger, self).mouseReleaseEvent(event)
 
-    def set_icon(self, icon):
+    def set_icon(self, icon, highlight_color=None):
         """
         Sets the icon of the window dragger
         :param icon: QIcon
         """
 
-        self._lbl_icon.setPixmap(icon.pixmap(icon.actualSize(QSize(24, 24))))
+        if not icon or icon.isNull():
+            return
+
+        size = self.DEFAULT_LOGO_ICON_SIZE
+
+        if highlight_color is not None:
+            self._logo_button.set_icons(
+                [icon], colors=[None], tint_composition=QPainter.CompositionMode_Plus, size=size,
+                icon_scaling=[1], color_offset=0, grayscale=True)
+        else:
+            self._logo_button.set_icons([icon], colors=[None, None], size=size, icon_scaling=[1], color_offset=0)
+
+        self._logo_button.set_icon_idle(icon)
+
+        # self._lbl_icon.setPixmap(icon.pixmap(icon.actualSize(QSize(24, 24))))
 
     def set_title(self, title):
         """
@@ -152,6 +164,18 @@ class WindowDragger(QFrame, object):
         """
 
         self._title_text.setText(title)
+
+    def _setup_logo_button(self):
+        from tpQtLib.widgets import buttons
+        logo_button = buttons.IconMenuButton(parent=self)
+        logo_button.setIconSize(QSize(24, 24))
+        logo_button.setFixedSize(QSize(30, 30))
+        # toggle_frameless = logo_button.addAction('Toggle Frameless Mode', connect=self._on_toggle_frameless_mode,  checkable=True)
+
+        return logo_button
+
+    def _on_toggle_frameless_mode(self, action):
+        pass
 
     def _on_maximize_window(self):
         self._button_restored.setVisible(True)

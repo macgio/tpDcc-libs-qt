@@ -273,7 +273,7 @@ QPushButton:pressed {
 }
 
 QPushButton:checked {
-    background-color: BACKGROUND_COLOR_DARKER;
+    background-color: ACCENT_COLOR;
     border-bottom: solid ACCENT_COLOR_DARKER;
     border-width: 0px 0px 2px 0px;
     padding-bottom: 0px;

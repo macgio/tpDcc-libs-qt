@@ -81,6 +81,7 @@ from tpQtLib.core import color
 
 UI_EXTENSION = '.ui'
 QWIDGET_SIZE_MAX = (1 << 24) - 1
+DEFAULT_DPI = 96
 
 # ==============================================================================
 
@@ -1318,3 +1319,84 @@ def create_flat_button(
         btn.customContextMenuRequested.connect(context)
 
     return btn
+
+
+def recursively_set_menu_actions_visibility(menu, state):
+    """
+    Recursively sets the visible state of all actions of the given menu
+    :param QMenu menu: menu to edit actions visibility of
+    :param bool state: new visibility status
+    """
+
+    for action in menu.actions():
+        sub_menu = action.menu()
+        if sub_menu:
+            recursively_set_menu_actions_visibility(sub_menu, state)
+        elif action.isSeparator():
+            continue
+        if action.isVisible() != state:
+            action.setVisible(state)
+
+    if any(action.isVisible() for action in menu.actions()) and menu.isVisible() != state:
+        menu.menuAction().setVisible(state)
+
+
+def dpi_scale(value):
+    """
+    Resizes by value based on current DPI
+    :param int value: value default 2k size in pixels
+    :return: size in pixels now DPI monitor is (4k 2k etc)
+    :rtype: int
+    """
+
+    mult = QApplication.desktop().logicalDpiY() / DEFAULT_DPI
+    return value * mult
+
+
+def dpi_scale_divide(value):
+    """
+    Invers resize by value based on current DPI, for values that may get resized twice
+    :param int value: size in pixels
+    :return: int divided size in pixels
+    """
+
+    mult = QApplication.desktop().logicalDpiY() / DEFAULT_DPI
+    if value != 0:
+        return value / mult
+
+    return value
+
+
+def margins_dpi_scale(left, top, right, bottom):
+    """
+    Returns proper margins with DPI taking into account
+    :param int left:
+    :param int top:
+    :param int right:
+    :param int bottom:
+    :return: tuple(int, int, int, int)
+    """
+
+    return dpi_scale(left), dpi_scale(top), dpi_scale(right), dpi_scale(bottom)
+
+
+def point_by_dpi(point):
+    """
+    Scales given QPoint by the current DPI scaling
+    :param QPoint point: point to scale by current DPI scaling
+    :return: Newly scaled QPoint
+    :rtype: QPoint
+    """
+
+    return QPoint(dpi_scale(point.x()), dpi_scale(point.y()))
+
+
+def size_by_dpi(size):
+    """
+    Scales given QSize by the current DPI scaling
+    :param QSize size: size to scale by current DPI scaling
+    :return: Newly scaled QSize
+    :rtype: QSize
+    """
+
+    return QSize(dpi_scale(size.width()), dpi_scale(size.height()))
