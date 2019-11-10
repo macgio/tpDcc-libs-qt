@@ -17,7 +17,7 @@ from Qt.QtGui import *
 
 import tpQtLib
 from tpQtLib.core import animation, image, icon, qtutils, color, pixmap, statusbar
-from tpQtLib.widgets import progressbar, toolbar, action, button
+from tpQtLib.widgets import progressbar, toolbar, action, buttons
 
 
 class LibraryImageSequenceWidget(QToolButton, object):
@@ -254,11 +254,11 @@ class LibrarySearchWidget(QLineEdit, object):
         self._library = None
         self._space_operator = 'and'
         search_icon = tpQtLib.resource.icon('search', theme='black')
-        self._icon_btn = button.IconButton(search_icon, icon_padding=2, parent=self)
+        self._icon_btn = buttons.IconButton(search_icon, icon_padding=2, parent=self)
         self._icon_btn.clicked.connect(self._on_icon_clicked)
         self.set_icon(search_icon)
         cross_icon = tpQtLib.resource.icon('delete', theme='black')
-        self._clear_btn = button.IconButton(cross_icon, icon_padding=2, parent=self)
+        self._clear_btn = buttons.IconButton(cross_icon, icon_padding=2, parent=self)
         self._clear_btn.setCursor(Qt.ArrowCursor)
         self._clear_btn.setToolTip('Clear all search text')
         self._clear_btn.clicked.connect(self._on_clear_clicked)

@@ -186,7 +186,7 @@ class MessageBox(tpQtLib.Dialog, object):
     def __init__(self, name='messageBox', width=None, height=None, enable_input_edit=False, enable_dont_show_checkbox=False, parent=None):
 
         super(MessageBox, self).__init__(
-            name=name, parent=parent
+            name=name, parent=parent, has_title=False, show_dragger=False, fixed_size=True
         )
 
         self._frame = None
@@ -198,7 +198,7 @@ class MessageBox(tpQtLib.Dialog, object):
         self.setMinimumWidth(width or self.MAX_WIDTH)
         self.setMinimumHeight(height or self.MAX_HEIGHT)
         self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
-        self.setAttribute(Qt.WA_TranslucentBackground)
+        # self.setAttribute(Qt.WA_TranslucentBackground)
         # self.setStyleSheet('background-color: rgb(68, 68, 68, 255);')
 
         parent = self.parent()
@@ -212,7 +212,6 @@ class MessageBox(tpQtLib.Dialog, object):
         self._header = QFrame(self)
         self._header.setFixedHeight(46)
         self._header.setObjectName('messageBoxHeaderFrame')
-        # self._header.setStyleSheet('background-color: rgb(0, 0, 0, 0);')
         self._header.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self._icon = QLabel(self._header)

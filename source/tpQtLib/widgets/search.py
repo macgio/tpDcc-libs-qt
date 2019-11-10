@@ -10,7 +10,7 @@ from __future__ import print_function, division, absolute_import
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
-from tpQtLib.widgets import button
+from tpQtLib.widgets import buttons
 from tpQtLib.core import resource
 
 
@@ -42,12 +42,12 @@ class SearchFindWidget(QWidget, object):
         delete_icon = resource.Resource.icon('delete', extension='png')
         search_icon = resource.Resource.icon('search', extension='png')
 
-        self._clear_btn = button.IconButton(delete_icon, icon_padding=2, parent=self)
+        self._clear_btn = buttons.IconButton(delete_icon, icon_padding=2, parent=self)
         self._clear_btn.setIconSize(QSize(icon_size, icon_size))
         self._clear_btn.setFixedSize(QSize(icon_size, icon_size))
         self._clear_btn.hide()
 
-        self._search_btn = button.IconButton(search_icon, icon_padding=2, parent=self)
+        self._search_btn = buttons.IconButton(search_icon, icon_padding=2, parent=self)
         self._search_btn.setIconSize(QSize(icon_size, icon_size))
         self._search_btn.setFixedSize(QSize(icon_size, icon_size))
         # self._search_btn.setStyleSheet('border: none;')

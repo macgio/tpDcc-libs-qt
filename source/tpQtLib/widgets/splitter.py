@@ -12,7 +12,7 @@ from Qt.QtWidgets import *
 from Qt.QtGui import *
 
 import tpQtLib
-from tpQtLib.widgets import button
+from tpQtLib.widgets import buttons
 
 
 class CollapsibleSplitter(QSplitter, object):
@@ -48,7 +48,7 @@ class CollapsibleSplitter(QSplitter, object):
         self.doCollapse.emit()
 
 
-class CollapsibleSplitterButton(button.HoverButton, object):
+class CollapsibleSplitterButton(buttons.HoverButton, object):
 
     clickedButton = Signal()
 
@@ -63,10 +63,10 @@ class CollapsibleSplitterButton(button.HoverButton, object):
         super(CollapsibleSplitterButton, self).mouseMoveEvent(event)
         self._can_emit_signal = False
         if self._mouse_pressed:
-            if self.pressed_icon:
-                self.setIcon(self.pressed_icon)
+            if self._pressed_icon:
+                self.setIcon(self._pressed_icon)
             else:
-                self.setIcon(self.normal_icon)
+                self.setIcon(self._idle_icon)
 
     def mouseReleaseEvent(self, event):
         if self.rect().contains(event.pos()) and self._can_emit_signal:

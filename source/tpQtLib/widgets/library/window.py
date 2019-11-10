@@ -50,7 +50,7 @@ class SidebarFrame(QFrame):
     pass
 
 
-class LibraryWindow(tpQtLib.MainWindow, object):
+class LibraryWindow(tpQtLib.Window, object):
 
     LIBRARY_CLASS = library.Library
     VIEWER_CLASS = viewer.LibraryViewer

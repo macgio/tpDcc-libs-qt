@@ -15,7 +15,7 @@ from Qt.QtWidgets import *
 import tpQtLib
 import tpDccLib as tp
 from tpPyUtils import path
-from tpQtLib.widgets import button
+from tpQtLib.widgets import buttons
 
 
 class FileListWidget(QListWidget, object):
@@ -175,7 +175,7 @@ class SelectFolderButton(QWidget, object):
         self.setLayout(main_layout)
 
         folder_icon = tpQtLib.resource.icon('folder')
-        self._folder_btn = button.IconButton(icon=folder_icon, icon_padding=2, button_style=button.ButtonStyles.FlatStyle)
+        self._folder_btn = buttons.IconButton(icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         main_layout.addWidget(self._folder_btn)
 
         self._folder_btn.clicked.connect(self._open_folder_browser_dialog)
@@ -256,9 +256,9 @@ class SelectFolder(QWidget, object):
 
         if self._use_icon:
             folder_icon = tpQtLib.resource.icon('folder')
-            self._folder_btn = button.IconButton(icon=folder_icon, icon_padding=2, button_style=button.ButtonStyles.FlatStyle)
+            self._folder_btn = buttons.IconButton(icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         else:
-            self._folder_btn = button.BaseButton('Browse...')
+            self._folder_btn = buttons.BaseButton('Browse...')
         self._folder_btn.setMaximumHeight(20)
 
         for widget in [self._folder_label, self._folder_line, self._folder_btn]:
@@ -380,9 +380,9 @@ class SelectFile(QWidget, object):
 
         if self._use_icon:
             folder_icon = tpQtLib.resource.icon('folder')
-            self._file_btn = button.IconButton(icon=folder_icon, icon_padding=2, button_style=button.ButtonStyles.FlatStyle)
+            self._file_btn = buttons.IconButton(icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         else:
-            self._file_btn = button.BaseButton('Browse ...')
+            self._file_btn = buttons.BaseButton('Browse ...')
 
         for widget in [self._file_label, self._file_line, self._file_btn]:
             main_layout.addWidget(widget)

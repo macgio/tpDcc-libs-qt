@@ -17,7 +17,7 @@ import tpQtLib
 import tpDccLib as tp
 from tpPyUtils import path, fileio, folder
 from tpQtLib.core import base
-from tpQtLib.widgets import button, search
+from tpQtLib.widgets import buttons, search
 
 
 class TreeWidget(QTreeWidget, object):
@@ -1133,7 +1133,7 @@ class EditFileTreeWidget(base.DirectoryWidget, object):
         self.filter_widget.set_tree_widget(self.tree_widget)
         self.filter_widget.set_directory(self.directory)
         drag_reorder_icon = tpQtLib.resource.icon('drag_reorder')
-        self.edit_mode_btn = button.IconButton(icon=drag_reorder_icon, icon_padding=2, button_style=button.ButtonStyles.FlatStyle)
+        self.edit_mode_btn = buttons.IconButton(icon=drag_reorder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         self.edit_mode_btn.setCheckable(True)
         self.edit_mode_btn.setMaximumHeight(20)
         self.edit_mode_btn.setMaximumWidth(40)
