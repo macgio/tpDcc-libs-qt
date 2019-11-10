@@ -12,7 +12,7 @@ import copy
 from Qt.QtCore import *
 from Qt.QtGui import *
 
-from tpQtLib.core import color, pixmap as px
+from tpQtLib.core import color, qtutils, pixmap as px
 
 
 class Icon(QIcon, object):
@@ -126,7 +126,7 @@ class Icon(QIcon, object):
             new_color = color.Color.from_string(new_color)
 
         icon = self
-        size = size or icon.actualSize(QSize(256, 256))
+        size = size or icon.availableSizes()[0]
         pixmap = icon.pixmap(size)
 
         if not self.isNull():
@@ -137,7 +137,7 @@ class Icon(QIcon, object):
             painter.drawRect(pixmap.rect())
             painter.end()
 
-        icon = QIcon(pixmap)
+        icon = Icon(pixmap)
         self.swap(icon)
 
     def set_badge(self, x, y, w, h, color=None):
@@ -161,5 +161,164 @@ class Icon(QIcon, object):
         painter.setRenderHint(QPainter.Antialiasing)
         painter.drawEllipse(x, y, w, h)
         painter.end()
-        icon = QIcon(pixmap)
+        icon = Icon(pixmap)
         self.swap(icon)
+
+    def resize(self, size):
+        """
+        Resize the icon. Defaults to smooth bilinear scaling and keep aspect ratio
+        :param QSize size: size to scale to
+        """
+
+        icon = resize_icon(self)
+        if not icon:
+            return
+
+        self.swap(icon)
+
+    def grayscale(self):
+        """
+        Converts this icon into grayscale
+        """
+
+        icon = grayscale_icon(self)
+        if not icon:
+            return
+
+        self.swap(icon)
+
+    def colorize(self, new_color, overlay_icon=None, overlay_color=(255, 255, 255)):
+        """
+        Colorizes current icon
+        :param new_color:
+        :param overlay_icon:
+        :param overlay_color:
+        :return:
+        """
+
+        icon = colorize_icon(icon=self, color=new_color, overlay_icon=overlay_icon, overlay_color=overlay_color)
+        if not icon:
+            return
+
+        self.swap(icon)
+
+
+def resize_icon(icon, size):
+    """
+    Resizes the icon. Defaults to smooth bilinear scaing and keep aspect ratio
+    :param QSize size: size to scale to
+    """
+
+    if len(icon.availableSizes() == 0):
+        return
+
+    orig_size = icon.availableSizes()[0]
+    pixmap = icon.pixmap(orig_size)
+    pixmap = pixmap.scaled(size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+    return Icon(pixmap)
+
+
+def colorize_icon(icon, size=None, color=(255, 255, 255), overlay_icon=None, overlay_color=(255, 255, 255)):
+    """
+    Colorizes the icon
+    :param icon: icon to colorize
+    :param size:
+    :param color:
+    :param overlay_icon:
+    :param overlay_color:
+    :return:
+    """
+
+    size = size or icon.availableSizes()[0]
+    size = qtutils.dpi_scale(size)
+
+    orig_size = icon.availableSizes()[0]
+    pixmap = px.colorize_pixmap(icon.pixmap(orig_size), color)
+    if overlay_icon is not None:
+        overlay_pixmap = overlay_icon.pixmap(orig_size)
+        px.overlay_pixmap(pixmap, overlay_pixmap, overlay_color)
+
+    pixmap = pixmap.scaled(QSize(size, size), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+    return Icon(pixmap)
+
+
+def colorize_layered_icon(icons, size, colors=None, icon_scaling=None, tint_color=None,
+                          tint_composition=QPainter.CompositionMode_Plus, grayscale=False):
+    """
+    Layers multiple icons with various colors into one icon
+    :param icons:
+    :param size:
+    :param colors:
+    :param icon_scaling:
+    :param tint_color:
+    :param tint_composition:
+    :param grayscale:
+    :return:
+    """
+
+    if not icons:
+        return
+
+    if not colors:
+        colors = list()
+    if not icon_scaling:
+        icon_scaling = list()
+
+    default_size = 1
+    size = qtutils.dpi_scale(size)
+
+    # Create copies of the lists
+    icons = list(icons)
+    icon_scaling = list(icon_scaling)
+    colors = list(colors)
+
+    if colors is None or (len(icons) > len(colors)):
+        colors = colors or list()
+        colors += [None] * (len(icons) - len(colors))
+
+    if icon_scaling is None or len(icons) > len(icon_scaling):
+        icon_scaling = icon_scaling or list()
+        icon_scaling += [default_size] * (len(icons) - len(icon_scaling))
+
+    icon_largest = icons.pop(0)
+
+    orig_size = icon_largest.availableSizes()[0]
+    col = colors.pop(0)
+    scale = icon_scaling.pop(0)
+    if col is not None:
+        pixmap = px.colorize_pixmap(icon_largest.pixmap(orig_size * scale), col)
+    else:
+        pixmap = icon_largest.pixmap(orig_size * scale)
+
+    for i in range(len(icons)):
+        overlay_pixmap = icons[i].pixmap(orig_size * icon_scaling[i])
+        px.overlay_pixmap(pixmap, overlay_pixmap, colors[i])
+
+    if tint_color is not None:
+        px.tint_pixmap(pixmap, tint_color, composition_mode=tint_composition)
+
+    pixmap = pixmap.scaled(QSize(size, size), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+    icon = Icon(pixmap)
+    if grayscale:
+        pixmap = px.grayscale_pixmap(pixmap)
+        icon = Icon(pixmap)
+        icon.addPixmap(icon.pixmap(size, QIcon.Disabled))   # TODO: Use tint instead
+
+    return icon
+
+
+def grayscale_icon(icon):
+    """
+    Returns a grayscale version of the given icon or the original one if it cannot be converted
+    :param icon:
+    :param size:
+    :return:
+    """
+
+    for size in icon.availableSizes():
+        icon.addPixmap(icon.pixmap(size, QIcon.Disabled))
+
+    return icon
