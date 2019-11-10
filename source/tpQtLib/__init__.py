@@ -135,15 +135,3 @@ def register_class(cls_name, cls, is_unique=False):
     else:
         # print('>>> Registering class {} with value {}'.format(cls_name, cls))
         sys.modules[__name__].__dict__[cls_name] = cls
-
-
-from tpQtLib.core import dialog, window
-
-MainWindow = window.MainWindow
-DockWindow = window.DockWindow
-SubWindow = window.SubWindow
-Dialog = dialog.Dialog
-OpenFileDialog = dialog.OpenFileDialog
-SaveFileDialog = dialog.SaveFileDialog
-NativeDialog = dialog.NativeDialog
-NativeDialog = dialog.NativeDialog
