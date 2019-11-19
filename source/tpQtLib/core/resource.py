@@ -96,6 +96,17 @@ class Resource(object):
 
         return path
 
+    def gui_path(self, name, category='uis', extension='ui'):
+        """
+        Returns path where ui file is located
+        :param name:
+        :param category:
+        :param extension:
+        :return:
+        """
+
+        return self._get(category, name + '.' + extension)
+
     @classmethod
     def icon(cls, *args, **kwargs):
         """
@@ -180,11 +191,18 @@ class Resource(object):
 
         return p
 
-    def _ui(self, name):
+    def _ui(self, name, category='uis', extension='ui', as_widget=True):
         """
         Returns a QWidget loaded from .ui file
         :param name: str, name of the ui file you want to load
-        :return: QWidget
+        :return: QWidget or (class, class)
         """
 
-        return qtutils.ui_loader(ui_file=self.get('uis', name + '.ui'))
+        path = self.gui_path(name=name, category=category, extension=extension)
+        if not os.path.isfile(path):
+            return None
+
+        if as_widget:
+            return qtutils.load_ui(ui_file=path)
+        else:
+            return qtutils.load_ui_type(ui_file=path)
