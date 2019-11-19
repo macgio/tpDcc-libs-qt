@@ -178,19 +178,19 @@ class Lightbox(QFrame, object):
         Internal function triggered when the animation has finished on accepted
         """
 
-        try:
+        if hasattr(self.widget().__class__, 'accept'):
             self.widget().__class__.accept(self.widget())
-        finally:
-            self.close()
-            self.closed.emit()
+
+        self.close()
+        self.closed.emit()
 
     def _on_reject_animation_finished(self):
         """
         Internal function triggered when the animation has finished on rejected
         """
 
-        try:
+        if hasattr(self.widget().__class__, 'reject'):
             self.widget().__class__.reject(self.widget())
-        finally:
-            self.close()
-            self.closed.emit()
+
+        self.close()
+        self.closed.emit()

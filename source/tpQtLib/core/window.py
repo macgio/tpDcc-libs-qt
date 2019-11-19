@@ -257,7 +257,7 @@ class MainWindow(QMainWindow, object):
 
         self.statusBar().showMessage('')
         self.statusBar().setSizeGripEnabled(not self._fixed_size)
-        self._status_bar = self.STATUS_BAR_WIDGET()
+        self._status_bar = self.STATUS_BAR_WIDGET(parent=self)
         self.statusBar().addWidget(self._status_bar)
         self.statusBar().setVisible(self._show_status_bar)
 
