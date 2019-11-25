@@ -57,7 +57,6 @@ class QtSettings(QSettings, object):
 
         return val
 
-
     def set(self, setting_name, setting_value):
         """
         Stores a new settings with the given name and the given value

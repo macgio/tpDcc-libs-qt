@@ -63,7 +63,6 @@ class WindowDragger(QFrame, object):
         main_layout.addItem(QSpacerItem(20, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
 
         buttons_widget = QWidget()
-        buttons_widget.setMaximumWidth(100)
         self.buttons_layout = QHBoxLayout()
         self.buttons_layout.setAlignment(Qt.AlignRight)
         self.buttons_layout.setContentsMargins(0, 0, 0, 0)
