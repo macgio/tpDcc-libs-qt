@@ -12,7 +12,7 @@ from collections import OrderedDict
 
 from tpPyUtils import fileio, folder, settings, osplatform, path as path_utils
 
-from tpDccLib.core import data as base_data, scripts
+from tpDccLib.core import scripts
 
 import tpQtLib
 from tpQtLib.widgets.library import items

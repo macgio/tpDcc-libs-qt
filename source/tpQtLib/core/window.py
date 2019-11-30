@@ -96,6 +96,7 @@ class MainWindow(QMainWindow, object):
         self._dpi = kwargs.get('dpi', 1.0)
         self._transparent = kwargs.get('transparent', False)
         self._frameless = kwargs.get('frameless', True)
+        self._show_dragger = kwargs.get('show_dragger', self._frameless)
         self._fixed_size = kwargs.get('fixed_size', False)
         self._show_status_bar = kwargs.pop('show_statusbar', True)
         self._init_menubar = kwargs.pop('init_menubar', False)
@@ -110,7 +111,7 @@ class MainWindow(QMainWindow, object):
 
         self.setObjectName(name)
 
-        if self._transparent or self._frameless:
+        if self._transparent or self._frameless and self._show_dragger:
             self.setAttribute(Qt.WA_TranslucentBackground)
 
         if self._frameless:
@@ -243,7 +244,10 @@ class MainWindow(QMainWindow, object):
         self.setCentralWidget(base_widget)
 
         self._dragger = self.DRAGGER_CLASS(parent=self)
-        self._dragger.setVisible(self._frameless)
+        if not self._show_dragger:
+            self._dragger.setVisible(False)
+        else:
+            self._dragger.setVisible(self._frameless)
         self._base_layout.addWidget(self._dragger)
 
         if self._settings:
@@ -257,7 +261,7 @@ class MainWindow(QMainWindow, object):
 
         self.statusBar().showMessage('')
         self.statusBar().setSizeGripEnabled(not self._fixed_size)
-        self._status_bar = self.STATUS_BAR_WIDGET(parent=self)
+        self._status_bar = self.STATUS_BAR_WIDGET(self)
         self.statusBar().addWidget(self._status_bar)
         self.statusBar().setVisible(self._show_status_bar)
 
@@ -628,7 +632,7 @@ class MainWindow(QMainWindow, object):
         :return: QDockWidget or None
         """
 
-        for dock in self.get_docks():
+        for dock in self._docks:
             if dock.objectName() == dock_name:
                 return dock
 
