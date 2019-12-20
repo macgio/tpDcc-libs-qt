@@ -14,7 +14,7 @@ from Qt.QtWidgets import *
 
 import tpDccLib as tp
 from tpPyUtils import path
-from tpDccLib.core import project
+from tpDccLib.core import project as core_project
 from tpDccLib.core import consts
 import tpQtLib
 from tpQtLib.widgets import grid, search, directory, splitters
@@ -23,8 +23,9 @@ from tpQtLib.widgets import grid, search, directory, splitters
 class ProjectViewer(grid.GridWidget, object):
     projectOpened = Signal(object)
 
-    def __init__(self, parent=None):
+    def __init__(self, project_class, parent=None):
         self._settings = None
+        self._project_class = project_class
         super(ProjectViewer, self).__init__(parent=parent)
 
         self.setShowGrid(False)
@@ -84,7 +85,7 @@ class ProjectViewer(grid.GridWidget, object):
                 return
             for root, dirs, files in os.walk(project_path):
                 if consts.PROJECTS_NAME in files:
-                    new_project = project.Project.create_project_from_data(path.join_path(root, consts.PROJECTS_NAME))
+                    new_project = self._project_class.create_project_from_data(path.join_path(root, consts.PROJECTS_NAME))
                     if new_project is not None:
                         self.add_project(new_project)
 
@@ -99,6 +100,9 @@ class ProjectViewer(grid.GridWidget, object):
 
 
 class ProjectWidget(QWidget, object):
+
+    PROJECT_CLASS = core_project.Project
+
     projectOpened = Signal(object)
 
     def __init__(self, parent=None):
@@ -113,8 +117,8 @@ class ProjectWidget(QWidget, object):
         self.setLayout(main_layout)
 
         self._tab_widget = QTabWidget()
-        self._open_project = OpenProjectWidget()
-        self._new_project = NewProjectWidget()
+        self._open_project = OpenProjectWidget(project_class=self.PROJECT_CLASS)
+        self._new_project = NewProjectWidget(project_class=self.PROJECT_CLASS)
         self._tab_widget.addTab(self._open_project, 'Projects')
         self._tab_widget.addTab(self._new_project, 'New Project')
         main_layout.addWidget(self._tab_widget)
@@ -182,7 +186,7 @@ class ProjectWidget(QWidget, object):
 class OpenProjectWidget(QWidget, object):
     projectOpened = Signal(object)
 
-    def __init__(self, parent=None):
+    def __init__(self, project_class, parent=None):
         super(OpenProjectWidget, self).__init__(parent=parent)
 
         self._settings = None
@@ -195,7 +199,7 @@ class OpenProjectWidget(QWidget, object):
         self.search_widget = search.SearchFindWidget()
         self.search_widget.set_placeholder_text('Filter Projects ...')
 
-        self._projects_list = ProjectViewer()
+        self._projects_list = ProjectViewer(project_class=project_class)
         self._projects_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         buttons_layout = QHBoxLayout()
@@ -293,13 +297,12 @@ class OpenProjectWidget(QWidget, object):
 
     def _on_project_opened(self, project):
         self.projectOpened.emit(project)
-    # endregion
 
 
 class NewProjectWidget(QWidget, object):
     projectCreated = Signal(object)
 
-    def __init__(self, parent=None):
+    def __init__(self, project_class, parent=None):
         super(NewProjectWidget, self).__init__(parent=parent)
 
         self._settings = None
@@ -313,7 +316,7 @@ class NewProjectWidget(QWidget, object):
         self.search_widget = search.SearchFindWidget()
         self.search_widget.set_placeholder_text('Filter Templates ...')
 
-        self.templates_list = TemplatesViewer()
+        self.templates_list = TemplatesViewer(project_class=project_class)
         self.templates_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         project_layout = QHBoxLayout()
@@ -404,6 +407,9 @@ class NewProjectWidget(QWidget, object):
 
 
 class TemplateData(object):
+
+    PROJECT_CLASS = None
+
     def __init__(self, name='New Template'):
         self._name = name
 
@@ -416,9 +422,13 @@ class TemplateData(object):
     # endregion
 
     # region To Override Functions
-    @staticmethod
-    def create_project(project_name, project_path):
-        new_project = project.Project(name=project_name, project_path=project_path)
+    @classmethod
+    def create_project(cls, project_name, project_path):
+        if not cls.PROJECT_CLASS:
+            tpQtLib.logger.warning('Impossible to create because project class is not defined!')
+            return None
+
+        new_project = cls.PROJECT_CLASS(name=project_name, project_path=project_path)
         new_project.create_project()
 
         return new_project
@@ -502,10 +512,12 @@ class BlankTemplate(Template, BlankTemplateData):
 
 
 class TemplatesViewer(grid.GridWidget, object):
+
     STANDARD_TEMPLATES = [BlankTemplate]
     selectedTemplate = Signal(object)
 
-    def __init__(self, parent=None):
+    def __init__(self, project_class, parent=None):
+        self._project_class = project_class
         super(TemplatesViewer, self).__init__(parent=parent)
 
         self.setShowGrid(False)
@@ -534,6 +546,7 @@ class TemplatesViewer(grid.GridWidget, object):
     def _init_standard_templates(self):
         for template in self.STANDARD_TEMPLATES:
             new_template = template()
+            new_template.PROJECT_CLASS = self._project_class
             new_template.templateChecked.connect(self._on_template_selected)
             self.add_template(new_template)
 
