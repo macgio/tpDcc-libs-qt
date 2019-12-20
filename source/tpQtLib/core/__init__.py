@@ -11,6 +11,5 @@ order = [
     'tpQtLib.core.dragger',
     'tpQtLib.core.theme',
     'tpQtLib.core.dialog',
-    'tpQtLib.core.window',
-
+    'tpQtLib.core.window'
 ]
