@@ -296,19 +296,19 @@ class ColorSwatch(QToolButton, object):
 
 # =================================================================================================================
 
-
 DEFAULT_DARK_COLOR = Color(50, 50, 50, 255)
 DEFAULT_LIGHT_COLOR = Color(180, 180, 180, 255)
-BLACK = QColor(0.0, 0.0, 0.0)
-GRAY = QColor(0.5, 0.5, 0.5)
-RED = QColor(1.0, 0.0, 0.0)
-GREEN = QColor(0.0, 1.0, 0.0)
-BLUE = QColor(0.0, 0.0, 1.0)
-YELLOW = QColor(1.0, 1.0, 0.0)
+BLACK = QColor(0, 0, 0, 255)
+GRAY = QColor(110, 110, 110, 255)
+RED = QColor(255, 0, 0, 255)
+GREEN = QColor(0, 255, 0, 255)
+BLUE = QColor(0, 0, 255, 255)
+YELLOW = QColor(255, 255, 0, 255)
+ORANGE = QColor(209, 84, 0, 255)
 MAGENTA = QColor(1.0, 0.0, 1.0)
 CYAN = QColor(0.0, 1.0, 1.0)
 WHITE = QColor(1.0, 1.0, 1.0)
-DARK_GRAY = QColor(0.25, 0.25, 0.25)
+DARK_GRAY = QColor(60, 60, 60, 255)
 DARK_RED = QColor(0.75, 0.0, 0.0)
 DARK_GREEN = QColor(0.0, 0.75, 0.0)
 DARK_BLUE = QColor(0.0, 0.0, 0.75)
