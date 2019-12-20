@@ -6,3 +6,4 @@ PySide2;python_version > '3.4'
 Qt.py
 tpPyUtils
 tpDccLib
+aenum
