@@ -12,7 +12,7 @@ from Qt.QtWidgets import *
 
 import tpQtLib
 import tpDccLib as tp
-from tpQtLib.core import animation, qtutils, theme
+from tpQtLib.core import base, animation, qtutils, theme
 
 
 def create_message_box(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None, header_color=None, enable_input_edit=False, enable_dont_show_checkbox=False, theme_to_apply=None):
@@ -92,7 +92,7 @@ def show_message_box(parent, title, text, width=None, height=None, buttons=None,
     return clicked_btn
 
 
-class MessageBox(tpQtLib.Dialog, object):
+class MessageBox(QDialog, object):
 
     MAX_WIDTH = 320
     MAX_HEIGHT = 220
@@ -186,7 +186,7 @@ class MessageBox(tpQtLib.Dialog, object):
     def __init__(self, name='messageBox', width=None, height=None, enable_input_edit=False, enable_dont_show_checkbox=False, parent=None):
 
         super(MessageBox, self).__init__(
-            name=name, parent=parent, has_title=False, show_dragger=False, fixed_size=True
+            parent=parent
         )
 
         self._frame = None
@@ -197,6 +197,7 @@ class MessageBox(tpQtLib.Dialog, object):
 
         self.setMinimumWidth(width or self.MAX_WIDTH)
         self.setMinimumHeight(height or self.MAX_HEIGHT)
+        self.setObjectName(name)
         self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
         # self.setAttribute(Qt.WA_TranslucentBackground)
         # self.setStyleSheet('background-color: rgb(68, 68, 68, 255);')
@@ -208,6 +209,11 @@ class MessageBox(tpQtLib.Dialog, object):
             self._frame.setObjectName('messageBoxFrame')
             self._frame.show()
             self.setParent(self._frame)
+
+        self.main_layout = QVBoxLayout()
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
+        self.setLayout(self.main_layout)
 
         self._header = QFrame(self)
         self._header.setFixedHeight(46)
@@ -503,3 +509,4 @@ class MessageBox(tpQtLib.Dialog, object):
         parent = self._frame or self
         parent.close()
         self.reject()
+

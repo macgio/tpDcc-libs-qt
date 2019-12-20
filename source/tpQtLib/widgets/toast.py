@@ -13,6 +13,7 @@ from Qt.QtGui import *
 
 from tpQtLib.core import animation
 
+
 class ToastWidget(QLabel, object):
     """
     Toast widget used to show quick messages to user
