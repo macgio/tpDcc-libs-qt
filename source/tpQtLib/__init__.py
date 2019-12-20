@@ -30,8 +30,8 @@ class tpQtLibResource(resource_utils.Resource, object):
 
 
 class tpQtLib(importer.Importer, object):
-    def __init__(self):
-        super(tpQtLib, self).__init__(module_name='tpQtLib')
+    def __init__(self, *args, **kwargs):
+        super(tpQtLib, self).__init__(module_name='tpQtLib', *args, **kwargs)
 
     def get_module_path(self):
         """
@@ -73,7 +73,7 @@ class tpQtLib(importer.Importer, object):
         return os.path.join(self.get_module_path(), 'externals')
 
 
-def init(do_reload=False):
+def init(do_reload=False, debug=False):
     """
     Initializes module
     :param do_reload: bool, Whether to reload modules or not
