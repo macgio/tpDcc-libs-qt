@@ -17,12 +17,13 @@ from tpPyUtils import settings
 
 
 class QtSettings(QSettings, object):
-    def __init__(self, filename, window, max_files=10,):
+    def __init__(self, filename, window=None, max_files=10,):
         super(QtSettings, self).__init__(filename, QSettings.IniFormat, window)
 
         self._max_files = max_files
         self._window = window
-        self._groups = [window.objectName(), 'RecentFiles']
+        if self._window:
+            self._groups = [window.objectName(), 'RecentFiles']
         self._initialize()
 
     # region Properties
@@ -51,9 +52,14 @@ class QtSettings(QSettings, object):
         :return:
         """
 
-        val = self.value(self._window.objectName().upper() + '/' + setting_name)
-        if not val:
-            return default_value
+        if self._window:
+            val = self.value(self._window.objectName().upper() + '/' + setting_name)
+            if not val:
+                return default_value
+        else:
+            val = self.value(setting_name)
+            if not val:
+                return default_value
 
         return val
 
@@ -74,7 +80,10 @@ class QtSettings(QSettings, object):
         :param setting_value: variant, setting value we want to store
         """
 
-        self.setValue(self._window.objectName().upper() + '/' + setting_name, setting_value)
+        if self._window:
+            self.setValue(self._window.objectName().upper() + '/' + setting_name, setting_value)
+        else:
+            self.setValue(setting_name, setting_value)
 
     def get_groups(self):
         """
@@ -294,20 +303,21 @@ class QtSettings(QSettings, object):
 
     # region Private Functions
     def _initialize(self):
-        window_name = self._window.objectName().upper()
-        if window_name not in self.childGroups():
-            if self._window is not None:
-                self.setValue(window_name+'/geometry/default', self._window.saveGeometry())
+        if self._window:
+            window_name = self._window.objectName().upper()
+            if window_name not in self.childGroups():
+                if self._window is not None:
+                    self.setValue(window_name+'/geometry/default', self._window.saveGeometry())
 
-                if isinstance(self._window, QMainWindow):
-                    self.setValue(window_name+'/windowState/default', self._window.saveState())
+                    if isinstance(self._window, QMainWindow):
+                        self.setValue(window_name+'/windowState/default', self._window.saveState())
 
-        if 'RecentFiles' not in self.childGroups():
-            self.beginWriteArray('RecentFiles', 0)
-            self.endArray()
+            if 'RecentFiles' not in self.childGroups():
+                self.beginWriteArray('RecentFiles', 0)
+                self.endArray()
 
-        while self.group():
-            self.endGroup()
+            while self.group():
+                self.endGroup()
 
 
 class QtIniSettings(settings.INISettings, object):
@@ -379,3 +389,31 @@ class QtIniSettings(settings.INISettings, object):
             widget.setY(v[1])
         else:
             assert False, "Unknown control type"
+
+
+class SettingsManager(object):
+
+    CONFIGS = dict()
+    CONFIGS_DIR = None
+
+    def get_settings(self, alias):
+
+        settings = None
+        if alias in self.CONFIGS:
+            settings = QtSettings(self.CONFIGS[alias])
+
+        return settings
+
+    def get_config_value(self, config_alias, value_key):
+        settings = self.get_settings(config_alias)
+        if not settings or not settings.contains(value_key):
+            return
+
+        return settings.value(value_key)
+
+    def register_config_file(self, alias, config_path):
+        if alias not in self.CONFIGS:
+            self.CONFIGS[alias] = config_path
+            return True
+
+        return False

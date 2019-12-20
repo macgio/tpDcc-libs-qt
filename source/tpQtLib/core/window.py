@@ -34,7 +34,7 @@ class MainWindow(QMainWindow, object):
 
     class DockWidget(QDockWidget, object):
         """
-        Baes docked widget
+        Base docked widget
         """
 
         def __init__(self, title, parent=None, floating=False):
@@ -87,6 +87,8 @@ class MainWindow(QMainWindow, object):
             self._bottom_resizer, self._bottom_left_resizer, self._left_resizer, self._top_left_resizer
         ]
 
+        self._preference_widgets_classes = list()
+
         super(MainWindow, self).__init__(parent=parent)
 
         self._theme = None
@@ -101,10 +103,11 @@ class MainWindow(QMainWindow, object):
         self._show_status_bar = kwargs.pop('show_statusbar', True)
         self._init_menubar = kwargs.pop('init_menubar', False)
         win_settings = kwargs.pop('settings', None)
+        prefs_settings = kwargs.pop('preferences_settings', None)
         auto_load = kwargs.get('auto_load', True)
         show_on_initialize = kwargs.get('show_on_initialize', False)
-        width = kwargs.get('width', 600)
-        height = kwargs.get('height', 800)
+        self._init_width = kwargs.get('width', 600)
+        self._init_height = kwargs.get('height', 800)
 
         for r in self._resizers:
             r.setParent(self)
@@ -120,11 +123,18 @@ class MainWindow(QMainWindow, object):
             else:
                 self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
 
+        self.resize(self._init_width, self._init_height)
+        self.center(self._init_width, self._init_height)
+
         if win_settings:
             self._settings = win_settings
         else:
             self._settings = settings.QtSettings(filename=self.get_settings_file(), window=self)
             self._settings.setFallbacksEnabled(False)
+        if prefs_settings:
+            self._prefs_settings = prefs_settings
+        else:
+            self._prefs_settings = self._settings
 
         if auto_load:
             self.load()
@@ -133,13 +143,11 @@ class MainWindow(QMainWindow, object):
         self.setup_signals()
 
         self.setWindowTitle(title)
-        self.resize(width, height)
 
         if auto_load:
             self.load_theme()
 
         if show_on_initialize:
-            self.center(width, height)
             self.show()
 
     # ============================================================================================================
@@ -250,14 +258,13 @@ class MainWindow(QMainWindow, object):
             self._dragger.setVisible(self._frameless)
         self._base_layout.addWidget(self._dragger)
 
-        if self._settings:
-            self._button_settings = QPushButton()
-            self._button_settings.setIconSize(QSize(25, 25))
-            self._button_settings.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
-            self._button_settings.setIcon(tpQtLib.resource.icon('winsettings', theme='window'))
-            self._button_settings.setStyleSheet('QWidget {background-color: rgba(255, 255, 255, 0); border:0px;}')
-            self._button_settings.clicked.connect(self._on_show_settings_dialog)
-            self._dragger.buttons_layout.insertWidget(3, self._button_settings)
+        self._button_settings = QPushButton()
+        self._button_settings.setIconSize(QSize(25, 25))
+        self._button_settings.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
+        self._button_settings.setIcon(tpQtLib.resource.icon('winsettings', theme='window'))
+        self._button_settings.setStyleSheet('QWidget {background-color: rgba(255, 255, 255, 0); border:0px;}')
+        self._button_settings.clicked.connect(self._on_show_preferences_dialog)
+        self._dragger.buttons_layout.insertWidget(3, self._button_settings)
 
         self.statusBar().showMessage('')
         self.statusBar().setSizeGripEnabled(not self._fixed_size)
@@ -362,6 +369,22 @@ class MainWindow(QMainWindow, object):
 
         return self._settings
 
+    def preferences_settings(self):
+        """
+        Returns window preferences settings
+        :return: QtSettings
+        """
+
+        return self._prefs_settings
+
+    def set_preferences_settings(self, prefs_settings):
+        """
+        Sets window preference settings
+        :param prefs_settings:
+        """
+
+        self._prefs_settings = prefs_settings
+
     def default_settings(self):
         """
         Returns default settings values
@@ -396,8 +419,8 @@ class MainWindow(QMainWindow, object):
             geometry = self.geometry()
             x = geometry.x()
             y = geometry.y()
-            width = geometry.width()
-            height = geometry.height()
+            width = self._init_width or geometry.width()
+            height = self._init_height or geometry.height()
             screen_geo = QApplication.desktop().screenGeometry()
             screen_width = screen_geo.width()
             screen_height = screen_geo.height()
@@ -448,6 +471,26 @@ class MainWindow(QMainWindow, object):
         """
 
         return os.path.expandvars(os.path.join(self.get_settings_path(), 'settings.cfg'))
+
+    def register_preference_widget_class(self, widget_class):
+        """
+        Function used to registere preference widgets
+        """
+
+        if not hasattr(widget_class, 'CATEGORY'):
+            tpQtLib.logger.warning(
+                'Impossible to register Category Wigdet Class "{}" because it does not '
+                'defines a CATEGORY attribute'.format(widget_class))
+            return
+
+        registered_prefs_categories = [pref.CATEGORY for pref in self._preference_widgets_classes]
+        if widget_class.CATEGORY in registered_prefs_categories:
+            tpQtLib.logger.warning(
+                'Impossible to register Category Widget Class "{}" because its CATEGORY "{}" its '
+                'already registered!'.format(widget_class, widget_class.CATEGORY))
+            return
+
+        self._preference_widgets_classes.append(widget_class)
 
     # ============================================================================================================
     # DPI
@@ -758,64 +801,97 @@ class MainWindow(QMainWindow, object):
         self.settings().setw('theme/accentColor', accent_color)
         self.settings().setw('theme/backgroundColor', background_color)
 
+    def _setup_theme_preferences(self):
+
+        from tpQtLib.core import preferences
+        from tpQtLib.widgets import formwidget
+
+        accent_color = self.theme().accent_color().to_string()
+        background_color = self.theme().background_color().to_string()
+        settings_validator = self._settings_validator
+        settings_accepted = self._settings_accepted
+
+        class ThemeCategoryWidget(preferences.CategoryWidgetBase, object):
+
+            CATEGORY = 'Theme'
+
+            def __init__(self, parent=None):
+                super(ThemeCategoryWidget, self).__init__(parent=parent)
+
+                self.main_layout = QVBoxLayout()
+                self.main_layout.setContentsMargins(2, 2, 2, 2)
+                self.main_layout.setSpacing(2)
+                self.setLayout(self.main_layout)
+
+                form = {
+                    "title": "Settings",
+                    "description": "Your local settings",
+                    "layout": "vertical",
+                    "schema": [
+                        {
+                            "name": "accentColor",
+                            "type": "color",
+                            "value": accent_color,
+                            "colors": [
+                                "rgb(230, 80, 80, 255)",
+                                "rgb(230, 125, 100, 255)",
+                                "rgb(230, 120, 40)",
+                                "rgb(240, 180, 0, 255)",
+                                "rgb(80, 200, 140, 255)",
+                                "rgb(50, 180, 240, 255)",
+                                "rgb(110, 110, 240, 255)",
+                            ]
+                        },
+                        {
+                            "name": "backgroundColor",
+                            "type": "color",
+                            "value": background_color,
+                            "colors": [
+                                "rgb(40, 40, 40)",
+                                "rgb(68, 68, 68)",
+                                "rgb(80, 60, 80)",
+                                "rgb(85, 60, 60)",
+                                "rgb(60, 75, 75)",
+                                "rgb(60, 64, 79)",
+                                "rgb(245, 245, 255)",
+                            ]
+                        },
+                    ],
+                    "validator": settings_validator,
+                    "accepted": settings_accepted
+                }
+
+                form_widget = formwidget.FormDialog(parent=parent, form=form)
+                form_widget.setMinimumWidth(300)
+                form_widget.setMinimumHeight(300)
+                form_widget.setMaximumWidth(400)
+                form_widget.setMaximumHeight(400)
+                form_widget.accept_button().setText('Save')
+                form_widget.show()
+                self.main_layout.addWidget(form_widget)
+
+        theme_prefs_widget = ThemeCategoryWidget(parent=self._preferences_window)
+
+        return theme_prefs_widget
+
     # ============================================================================================================
     # CALLBACKS
     # ============================================================================================================
 
-    def _on_show_settings_dialog(self):
+    def _on_show_preferences_dialog(self):
 
-        from tpQtLib.widgets import formwidget, lightbox
-
-        accent_color = self.theme().accent_color().to_string()
-        background_color = self.theme().background_color().to_string()
-
-        form = {
-            "title": "Settings",
-            "description": "Your local settings",
-            "layout": "vertical",
-            "schema": [
-                {
-                    "name": "accentColor",
-                    "type": "color",
-                    "value": accent_color,
-                    "colors": [
-                        "rgb(230, 80, 80, 255)",
-                        "rgb(230, 125, 100, 255)",
-                        "rgb(230, 120, 40)",
-                        "rgb(240, 180, 0, 255)",
-                        "rgb(80, 200, 140, 255)",
-                        "rgb(50, 180, 240, 255)",
-                        "rgb(110, 110, 240, 255)",
-                    ]
-                },
-                {
-                    "name": "backgroundColor",
-                    "type": "color",
-                    "value": background_color,
-                    "colors": [
-                        "rgb(40, 40, 40)",
-                        "rgb(68, 68, 68)",
-                        "rgb(80, 60, 80)",
-                        "rgb(85, 60, 60)",
-                        "rgb(60, 75, 75)",
-                        "rgb(60, 64, 79)",
-                        "rgb(245, 245, 255)",
-                    ]
-                },
-            ],
-            "validator": self._settings_validator,
-            "accepted": self._settings_accepted
-        }
-
-        widget = formwidget.FormDialog(form=form)
-        widget.setMinimumWidth(300)
-        widget.setMinimumHeight(300)
-        widget.setMaximumWidth(400)
-        widget.setMaximumHeight(400)
-        widget.accept_button().setText('Save')
-
+        from tpQtLib.widgets import lightbox
+        from tpQtLib.core import preferences
         self._lightbox = lightbox.Lightbox(self)
-        self._lightbox.set_widget(widget)
+        self._preferences_window = preferences.PreferencesWindow(settings=self.preferences_settings())
+        self._preferences_window.windowClosed.connect(self._lightbox.close)
+        self._lightbox.set_widget(self._preferences_window)
+        for pref_widget in self._preference_widgets_classes:
+            pref_widget = pref_widget()
+            self._preferences_window.add_category(pref_widget.CATEGORY, pref_widget)
+        theme_widget = self._setup_theme_preferences()
+        self._preferences_window.add_category(theme_widget.CATEGORY, theme_widget)
+        self._preferences_window.show()
         self._lightbox.show()
 
 
@@ -1193,7 +1269,6 @@ class WindowResizer(QFrame, object):
         """
 
         self.windowResizedFinished.emit()
-
 
     def setParent(self, parent):
         """
