@@ -76,12 +76,17 @@ if QT_AVAILABLE:
 
 import tpQtLib
 from tpQtLib.core import color
+from tpPyUtils import mathlib
 
 # ==============================================================================
 
 UI_EXTENSION = '.ui'
 QWIDGET_SIZE_MAX = (1 << 24) - 1
 DEFAULT_DPI = 96
+FLOAT_RANGE_MIN = 0.1 + (-mathlib.MAX_INT - 1.0)
+FLOAT_RANGE_MAX = mathlib.MAX_INT + 0.1
+INT_RANGE_MIN = -mathlib.MAX_INT
+INT_RANGE_MAX = mathlib.MAX_INT
 
 # ==============================================================================
 
@@ -1319,6 +1324,26 @@ def create_flat_button(
         btn.customContextMenuRequested.connect(context)
 
     return btn
+
+
+def get_or_create_menu(menu_bar, menu_title):
+    """
+    Creates a new menu in the given menubar with the given menubar or return Menu object if the a menu
+    with the given name already exists in the menu bar
+    :param menu_bar: QMenuBar or QMenu
+    :param menu_title: str
+    :return: QMenu
+    """
+
+    for child in menu_bar.findChildren(QMenu):
+        if child.title() == menu_title:
+            return child
+
+    menu = QMenu(menu_bar)
+    menu.setObjectName(menu_title)
+    menu.setTitle(menu_title)
+
+    return menu
 
 
 def recursively_set_menu_actions_visibility(menu, state):

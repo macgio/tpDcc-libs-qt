@@ -552,8 +552,8 @@ class BaseMenuButton(QPushButton, ButtonIcons):
         :param double_click_enabled:
         """
 
-        self.idleIcon = icon
-        self.hoverIcon = icon_hover
+        self.idleIcon = icon or QIcon()
+        self.hoverIcon = icon_hover or QIcon()
 
         super(BaseMenuButton, self).__init__(icon=self.idleIcon, text=text, parent=parent)
 

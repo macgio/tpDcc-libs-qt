@@ -14,4 +14,3 @@ order = [
     'tpQtLib.widgets.library.viewer',
     'tpQtLib.widgets.library.window'
 ]
-

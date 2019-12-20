@@ -27,7 +27,7 @@ class ConsoleInput(QLineEdit, object):
         self._completer.setCompletionMode(QCompleter.PopupCompletion)
         self._completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.setCompleter(self._completer)
-        self.setFont(QFont('Consolas', 9, QFont.Bold, False))
+        self.setFont(QFont('Arial', 9, QFont.Bold, False))
 
 
 class Console(QTextEdit, object):
@@ -111,6 +111,13 @@ class Console(QTextEdit, object):
         self._buffer.write(unicode(msg))
         if self._logger:
             self._logger.warning('{}\n'.format(msg))
+
+    def flush(self):
+        self.moveCursor(QTextCursor.End, QTextCursor.MoveAnchor)
+        self.moveCursor(QTextCursor.Up, QTextCursor.MoveAnchor)
+        self.moveCursor(QTextCursor.StartOfLine, QTextCursor.MoveAnchor)
+        self.moveCursor(QTextCursor.End, QTextCursor.KeepAnchor)
+        self.textCursor().removeSelectedText()
 
     def output_buffer_to_file(self, filepath):
         pass

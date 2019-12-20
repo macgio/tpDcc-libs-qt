@@ -7,7 +7,7 @@ Module that contains widgets for colors
 
 from __future__ import print_function, division, absolute_import
 
-from functools import  partial
+from functools import partial
 
 from Qt.QtCore import *
 from Qt.QtWidgets import *
