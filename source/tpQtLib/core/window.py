@@ -62,6 +62,7 @@ class MainWindow(QMainWindow, object):
         name = kwargs.get('name', '')
         title = kwargs.get('title', '')
         name = name or title or self.__class__.__name__
+        self._tools = set()
 
         # Remove previous windows
         main_window = tp.Dcc.get_main_window()
@@ -203,6 +204,9 @@ class MainWindow(QMainWindow, object):
             for current_dock in self._docks:
                 if self.dockWidgetArea(current_dock) == area:
                     self.tabifyDockWidget(current_dock, dock_widget)
+                    dock_widget.setVisible(True)
+                    dock_widget.setFocus()
+                    dock_widget.raise_()
                     return
 
         super(MainWindow, self).addDockWidget(area, dock_widget, orientation)
@@ -519,9 +523,16 @@ class MainWindow(QMainWindow, object):
     def load_theme(self):
         def_settings = self.default_settings()
         def_theme_settings = def_settings.get('theme')
+        accent_color = self.settings().getw('theme/accentColor') or def_theme_settings['accentColor']
+        background_color = self.settings().getw('theme/backgroundColor') or def_theme_settings['backgroundColor']
+        accent_color = 'rgb(%d, %d, %d, %d)' % accent_color.getRgb() if isinstance(
+            accent_color, QColor) else accent_color
+        background_color = 'rgb(%d, %d, %d, %d)' % background_color.getRgb() if isinstance(
+            background_color, QColor) else background_color
+
         theme_settings = {
-            "accentColor": self.settings().getw('theme/accentColor') or def_theme_settings['accentColor'],
-            "backgroundColor": self.settings().getw('theme/backgroundColor') or def_theme_settings['backgroundColor']
+            "accentColor": accent_color,
+            "backgroundColor": background_color
         }
         self.set_theme_settings(theme_settings)
 
@@ -748,6 +759,45 @@ class MainWindow(QMainWindow, object):
 
         self._status_bar.show_error_message(message=message, msecs=msecs)
 
+    # =================================================================================================================
+    # TOOLS
+    # =================================================================================================================
+
+    def register_tool_instance(self, instance):
+        """
+        Registers given tool instance
+        Used to prevent tool classes being garbage collected and to save tool widgets states
+        :param instance: Tool
+        """
+
+        self._tools.add(instance)
+
+    def unregister_tool_instance(self, instance):
+        """
+        Unregister tool instance
+        :param instance: Tool
+        """
+
+        if instance not in self._tools:
+            return False
+        self._tools.remove(instance)
+
+        return True
+
+    def get_registered_tools(self, class_name_filters=None):
+        if class_name_filters is None:
+            class_name_filters = list()
+
+        if len(class_name_filters) == 0:
+            return self._tools
+        else:
+            result = list()
+            for tool in self._tools:
+                if tool.__class__.__name__ in class_name_filters:
+                    result.append(tool)
+
+            return result
+
     # ============================================================================================================
     # PRIVATE
     # ============================================================================================================
@@ -794,12 +844,15 @@ class MainWindow(QMainWindow, object):
             return
 
         theme_name = self.theme().name()
-        accent_color = self.theme().accent_color().to_string()
-        background_color = self.theme().background_color().to_string()
+        accent_color = kwargs.get('accentColor', self.theme().accent_color().to_string())
+        background_color = kwargs.get('backgroundColor', self.theme().background_color().to_string())
         if theme_name:
             self.settings().setw('theme/name', theme_name)
         self.settings().setw('theme/accentColor', accent_color)
         self.settings().setw('theme/backgroundColor', background_color)
+        self.settings().sync()
+
+        self.load_theme()
 
     def _setup_theme_preferences(self):
 
@@ -824,8 +877,8 @@ class MainWindow(QMainWindow, object):
                 self.setLayout(self.main_layout)
 
                 form = {
-                    "title": "Settings",
-                    "description": "Your local settings",
+                    "title": "Theme",
+                    "description": "Theme Colors",
                     "layout": "vertical",
                     "schema": [
                         {
@@ -861,14 +914,16 @@ class MainWindow(QMainWindow, object):
                     "accepted": settings_accepted
                 }
 
-                form_widget = formwidget.FormDialog(parent=parent, form=form)
-                form_widget.setMinimumWidth(300)
-                form_widget.setMinimumHeight(300)
-                form_widget.setMaximumWidth(400)
-                form_widget.setMaximumHeight(400)
-                form_widget.accept_button().setText('Save')
-                form_widget.show()
-                self.main_layout.addWidget(form_widget)
+                self._dlg = formwidget.FormDialog(parent=parent, form=form)
+                self._dlg.setMinimumWidth(300)
+                self._dlg.setMinimumHeight(300)
+                self._dlg.setMaximumWidth(400)
+                self._dlg.setMaximumHeight(400)
+                self._dlg.accept_button().setText('Save')
+                self._dlg.accept_button().setVisible(False)
+                self._dlg.reject_button().setVisible(False)
+                self._dlg.show()
+                self.main_layout.addWidget(self._dlg)
 
         theme_prefs_widget = ThemeCategoryWidget(parent=self._preferences_window)
 
@@ -883,16 +938,29 @@ class MainWindow(QMainWindow, object):
         from tpQtLib.widgets import lightbox
         from tpQtLib.core import preferences
         self._lightbox = lightbox.Lightbox(self)
-        self._preferences_window = preferences.PreferencesWindow(settings=self.preferences_settings())
-        self._preferences_window.windowClosed.connect(self._lightbox.close)
+        self._lightbox.closed.connect(self._on_close_lightbox)
+        self._preferences_window = preferences.PreferencesWidget(settings=self.preferences_settings())
+        self._preferences_window.setFixedHeight(500)
+        self._preferences_window.closed.connect(self._on_close_preferences_window)
         self._lightbox.set_widget(self._preferences_window)
         for pref_widget in self._preference_widgets_classes:
             pref_widget = pref_widget()
             self._preferences_window.add_category(pref_widget.CATEGORY, pref_widget)
-        theme_widget = self._setup_theme_preferences()
-        self._preferences_window.add_category(theme_widget.CATEGORY, theme_widget)
-        self._preferences_window.show()
+        self._theme_widget = self._setup_theme_preferences()
+        self._preferences_window.add_category(self._theme_widget.CATEGORY, self._theme_widget)
         self._lightbox.show()
+
+    def _on_close_preferences_window(self, save_widget=False):
+        self._on_close_lightbox(save_widget)
+        self._lightbox.blockSignals(True)
+        self._lightbox.close()
+        self._lightbox.blockSignals(False)
+
+    def _on_close_lightbox(self, save_widgets=False):
+        if not save_widgets:
+            self._settings_accepted(**self._theme_widget._dlg._form_widget.default_values())
+        else:
+            self._settings_accepted(**self._theme_widget._dlg._form_widget.values())
 
 
 class DetachedWindow(QMainWindow):

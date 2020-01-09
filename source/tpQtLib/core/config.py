@@ -14,6 +14,7 @@ __email__ = "tpovedatd@gmail.com"
 
 import os
 import logging
+from collections import OrderedDict
 
 import metayaml
 
@@ -53,7 +54,7 @@ class YAMLConfigurationParser(object):
         super(YAMLConfigurationParser, self).__init__()
 
         self._config_data = config_data
-        self._parsed_data = dict()
+        self._parsed_data = OrderedDict()
 
     def parse(self):
         self._parsed_data = self._config_data
@@ -131,7 +132,7 @@ class YAMLConfiguration(object):
         """
 
         if self._config_dict is None:
-            self._config_dict = dict()
+            self._config_dict = OrderedDict()
 
         config_data = self._get_config_data(self._config_name, config_dict=self._config_dict)
         if not config_data:
@@ -163,10 +164,10 @@ class YAMLConfiguration(object):
                 'the configuration folders: {}'.format(config_name, ''.join(all_config_paths)))
 
         root_config_path = valid_config_paths[-1]
-        config_data = metayaml.read(valid_config_paths, config_dict)
-        if not config_data:
+        config_data = metayaml.read(valid_config_paths, config_dict) or OrderedDict()
+        if config_data is None:
             raise RuntimeError(
-                'Project Configuration File for {} Project is empty! {}'.format(self, root_config_path))
+                'Project Configuration File {} is empty! {}'.format(self, root_config_path))
 
         # We store path where configuration file is located in disk
         if 'config' in config_data and 'path' in config_data['config']:
