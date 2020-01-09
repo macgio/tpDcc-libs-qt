@@ -103,15 +103,17 @@ class SaveWidget(base.BaseWidget, object):
         self._options_frame.setLayout(self._options_layout)
 
         buttons_layout = QHBoxLayout()
-        buttons_layout.setContentsMargins(9, 9, 9, 9)
-        buttons_layout.setSpacing(0)
+        buttons_layout.setContentsMargins(4, 4, 4, 4)
+        buttons_layout.setSpacing(4)
         buttons_frame = QFrame()
         buttons_frame.setFrameShape(QFrame.NoFrame)
         buttons_frame.setFrameShadow(QFrame.Plain)
         buttons_frame.setLayout(buttons_layout)
         buttons_layout.addSpacerItem(QSpacerItem(10, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
         self.save_btn = QPushButton('Save')
+        self.cancel_btn = QPushButton('Cancel')
         buttons_layout.addWidget(self.save_btn)
+        buttons_layout.addWidget(self.cancel_btn)
         buttons_layout.addSpacerItem(QSpacerItem(10, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
 
         self.main_layout.addLayout(title_layout)
@@ -123,6 +125,7 @@ class SaveWidget(base.BaseWidget, object):
     def setup_signals(self):
         self._thumbnail_btn.clicked.connect(self._on_thumbnail_capture)
         self.save_btn.clicked.connect(self._on_save)
+        self.cancel_btn.clicked.connect(self._on_cancel)
 
     def resizeEvent(self, event):
         """
@@ -538,6 +541,10 @@ class SaveWidget(base.BaseWidget, object):
             tpQtLib.logger.error(traceback.format_exc())
             raise
 
+        self.library_window().stack.slide_in_index(0)
+
+    def _on_cancel(self):
+        self.close()
         self.library_window().stack.slide_in_index(0)
 
 

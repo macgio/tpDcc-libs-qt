@@ -1226,8 +1226,6 @@ class LibraryViewer(base.BaseWidget, object):
         :param item: LibraryItem
         """
 
-        print('hahahahaha')
-
         if isinstance(item, items.LibraryGroupItem):
             self.groupClicked.emit(item)
         else:

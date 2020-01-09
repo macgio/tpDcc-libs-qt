@@ -1141,7 +1141,7 @@ class LibraryItem(QTreeWidgetItem, object):
 
         version = fileio.FileVersion(os.path.join(path, self.name()))
         if not comment:
-            comment = qtutils.get_comment(parent=self)
+            comment = qtutils.get_comment()
             if not comment:
                 comment = '-'
         version.save(comment)
