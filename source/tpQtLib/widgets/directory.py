@@ -11,10 +11,12 @@ import os
 
 from Qt.QtCore import *
 from Qt.QtWidgets import *
+from Qt.QtGui import *
 
 import tpQtLib
 import tpDccLib as tp
 from tpPyUtils import path
+from tpQtLib.core import base, qtutils
 from tpQtLib.widgets import buttons
 
 
@@ -312,9 +314,9 @@ class SelectFolder(QWidget, object):
         :return: str, Path of the selected folder
         """
 
-        if tp.Dcc.get_name() == tp.Dccs.Maya:
-            import maya.cmds as cmds
-            result = cmds.fileDialog2(caption='Select Folder', fileMode=3, startingDirectory=self.folder_line.text())
+        if tp.is_maya():
+            import tpMayaLib as maya
+            result = maya.cmds.fileDialog2(caption='Select Folder', fileMode=3, startingDirectory=self.folder_line.text())
             if result:
                 result = result[0]
             if not result or not os.path.isdir(result):
@@ -448,23 +450,27 @@ class SelectFile(QWidget, object):
         :return: str, Path of the selected folder
         """
 
-        raise NotImplementedError('Not implemented yet to work in the proper way!')
+        if tp.is_maya():
+            import tpMayaLib as maya
 
-        # TODO: Remove Maya dependency
-        # result = cmds.fileDialog2(caption='Select File', fileMode=1, fileFilter=self._filters, startingDirectory=self._file_line.text())
-        #
-        # if result:
-        #     result = result[0]
-        # if not result or not os.path.isfile(result):
-        #     tpQtLib.logger.warning('Selected file {} is not a valid file!'.format(result))
-        #     return
-        # else:
-        #     filename = path.clean_path(result)
-        #     self._file_line.setText(filename)
-        #     self.directoryChanged.emit(filename)
-        #     self.update_settings(filename=filename)
-        #
-        #     return filename
+            file_line = self._file_line.text()
+            if os.path.isfile(file_line):
+                file_line = os.path.dirname(file_line)
+            result = maya.cmds.fileDialog2(caption='Select File', fileMode=1, fileFilter=self._filters or '', startingDirectory=file_line)
+            if result:
+                result = result[0]
+            if not result or not os.path.isfile(result):
+                tpQtLib.logger.warning('Selected file {} is not a valid file!'.format(result))
+                return
+            else:
+                filename = path.clean_path(result)
+                self._file_line.setText(filename)
+                self.directoryChanged.emit(filename)
+                self.update_settings(filename=filename)
+        else:
+            raise NotImplementedError('Select File Dialog is not implemented in your current DCC: {}'.format(tp.Dcc.get_name()))
+
+        return filename
 
     def _text_changed(self):
         """
@@ -475,3 +481,107 @@ class SelectFile(QWidget, object):
         f = self.get_directory()
         if path.is_file(f):
             self.directoryChanged.emit(f)
+
+
+class GetDirectoryWidget(base.DirectoryWidget, object):
+    directoryChanged = Signal(object)
+    textChanged = Signal(object)
+
+    def __init__(self, parent=None):
+
+        self._label = 'directory'
+        self._show_files = False
+
+        super(GetDirectoryWidget, self).__init__(parent=parent)
+
+    @property
+    def show_files(self):
+        return self._show_files
+
+    def ui(self):
+        super(GetDirectoryWidget, self).ui()
+
+        self._directory_widget = QWidget()
+        directory_layout = QHBoxLayout()
+        self._directory_widget.setLayout(directory_layout)
+        self.main_layout.addWidget(self._directory_widget)
+
+        self._directory_lbl = QLabel('directory')
+        self._directory_lbl.setMinimumWidth(60)
+        self._directory_lbl.setMaximumWidth(100)
+        self._directory_edit = QLineEdit()
+        self._directory_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self._directory_browse_btn = QPushButton('browse')
+
+        directory_layout.addWidget(self._directory_lbl)
+        directory_layout.addWidget(self._directory_edit)
+        directory_layout.addWidget(self._directory_browse_btn)
+
+    def setup_signals(self):
+        self._directory_edit.textChanged.connect(self._on_text_changed)
+        self._directory_browse_btn.clicked.connect(self._on_browse)
+
+    def set_directory(self, directory):
+        super(GetDirectoryWidget, self).set_directory(directory)
+        self.set_directory_text(directory)
+
+    def get_directory(self):
+        return self._directory_edit.text()
+
+    def set_label(self, label):
+        length = len(label) * 8
+        self._directory_lbl.setMinimumWidth(length)
+        self._directory_lbl.setText(label)
+
+    def set_directory_text(self, text):
+        self._directory_edit.setText(text)
+
+    def set_placeholder_text(self, text):
+        self._directory_edit.setPlaceholderText(text)
+
+    def set_example(self, text):
+        self.set_placeholder_text('example: {}'.format(text))
+
+    def set_error(self, flag):
+
+        if tp.is_maya():
+            yes_color = QColor(0, 255, 0, 50)
+            no_color = QColor(255, 0, 0, 50)
+        else:
+            yes_color = QColor(200, 255, 200, 100)
+            no_color = QColor(25, 200, 200, 100)
+
+        palette = QPalette()
+        if flag:
+            palette.setColor(QPalette().Base, no_color)
+        else:
+            palette.setColor(QPalette().Base, yes_color)
+
+        self._directory_edit.setPalette(palette)
+
+    def _on_text_changed(self, text):
+        directory = self.get_directory()
+        if os.path.exists(directory):
+            self.set_error(False)
+        else:
+            self.set_error(True)
+
+        if not text:
+            self._directory_edit.setPalette(QLineEdit().palette())
+
+        self.directoryChanged.emit(directory)
+
+    def _on_browse(self):
+        directory = self.get_directory()
+        if not directory:
+            placeholder = self._directory_edit.placeholderText()
+            if placeholder and placeholder.startswith('example: '):
+                example_path = placeholder[0]
+                if os.path.exists(example_path):
+                    directory = example_path
+
+        filename = qtutils.get_folder(directory, show_files=self._show_files, parent=self)
+        filename = path.clean_path(filename)
+        if filename and path.is_dir(filename):
+            self._directory_edit.setText(filename)
+            self.directoryChanged.emit(filename)
