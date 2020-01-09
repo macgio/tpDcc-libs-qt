@@ -912,25 +912,22 @@ def close_and_cleanup(widget):
         widget.deleteLater()
 
 
-def get_string_input(message, title='Rename', parent=None, old_name=None):
+def get_string_input(message, title='Rename', old_name=None):
     """
     Shows a Input dialog to allow the user to input a new string
     :param message: str, mesage to show in the dialog
     :param title: str, title of the input dialog
-    :param parent: QWidget (optional), parent widget for the input
     :param old_name: str (optional): old name where are trying to rename
     :return: str, new name
     """
-
-    parent = None
 
     dialog = QInputDialog()
     flags = dialog.windowFlags() ^ Qt.WindowContextHelpButtonHint | Qt.WindowStaysOnTopHint
 
     if not old_name:
-        comment, ok = dialog.getText(parent, title, message, flags=flags)
+        comment, ok = dialog.getText(None, title, message, flags=flags)
     else:
-        comment, ok = dialog.getText(parent, title, message, text=old_name, flags=flags)
+        comment, ok = dialog.getText(None, title, message, text=old_name, flags=flags)
 
     comment = comment.replace('\\', '_')
 
@@ -975,7 +972,7 @@ def get_file(directory, parent=None):
         return directory
 
 
-def get_folder(directory=None, title='Select Folder', parent=None):
+def get_folder(directory=None, title='Select Folder', show_files=False, parent=None):
     """
     Shows a open folder dialog
     :param directory: str, root directory
@@ -985,6 +982,9 @@ def get_folder(directory=None, title='Select Folder', parent=None):
     """
 
     file_dialog = QFileDialog(parent)
+    if show_files:
+        file_dialog.setFileMode(QFileDialog.DirectoryOnly)
+        file_dialog.setOption(QFileDialog.ShowDirsOnly, False)
     if directory:
         file_dialog.setDirectory(directory)
     directory = file_dialog.getExistingDirectory(parent, title)
