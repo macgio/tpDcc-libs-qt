@@ -93,7 +93,7 @@ class FlowLayout(QLayout, object):
         :return: int
         """
 
-        height = self._generate_layout(QRect(0, 0, width, 0))
+        height = self._generate_layout(QRect(0, 0, width, 0), True)
         return height
 
     def setGeometry(self, rect):
@@ -171,7 +171,7 @@ class FlowLayout(QLayout, object):
             if next_x - space_x > rect.right() and line_height > 0:
                 x = rect.x()
                 y = y + line_height + space_y
-                next_x = x + widget.sizeHint().width() + space_x
+                next_x = x + item.sizeHint().width() + space_x
                 line_height = 0
 
             if item == self._item_list[-1] and self._expand_last:

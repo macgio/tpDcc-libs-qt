@@ -68,7 +68,8 @@ class Lightbox(QFrame, object):
         :param event: QEvent
         """
 
-        if not self.widget().underMouse():
+        widget = self.widget()
+        if not widget or not widget.underMouse():
             self.reject()
 
     def eventFilter(self, object, event):
