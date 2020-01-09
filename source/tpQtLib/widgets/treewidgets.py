@@ -60,7 +60,6 @@ class TreeWidget(QTreeWidget, object):
         self.itemClicked.connect(self._on_item_clicked)
         self.itemExpanded.connect(self._on_item_expanded)
 
-    # region Properties
     @property
     def current_item(self):
         return self._current_item
@@ -68,9 +67,15 @@ class TreeWidget(QTreeWidget, object):
     @property
     def current_name(self):
         return self._current_name
-    # endregion
 
-    # region Override Functions
+    @property
+    def edit_state(self):
+        return self._edit_state
+
+    @edit_state.setter
+    def edit_state(self, flag):
+        self._edit_state = flag
+
     def paintEvent(self, event):
         painter = QPainter(self.viewport())
         self.drawTree(painter, event.region())
@@ -132,9 +137,7 @@ class TreeWidget(QTreeWidget, object):
                 self.setItemWidget(item, item.column, item.widget)
             else:
                 self.setItemWidget(item, 0, item.widget)
-    # endregion
 
-    # region Public Functions
     def position(self, pos, rect, index):
         """
         Function that returns whether the cursor is over, below or on an item
@@ -316,9 +319,7 @@ class TreeWidget(QTreeWidget, object):
         children = tree_item.takeChildren()
         for child in children:
             del child
-    # endregion
 
-    # region Private Functions
     def _paint_drop_indicator(self, painter):
         """
         Internal function used to paint the drop indicator manually
@@ -523,11 +524,9 @@ class TreeWidget(QTreeWidget, object):
 
         if self._edit_state:
             self._edit_finish(self._edit_state)
-            return
         else:
             if self._text_edit:
                 self._edit_start(item)
-            return
 
     def _on_item_changed(self, current_item, previous_item):
         """
@@ -572,7 +571,6 @@ class TreeWidget(QTreeWidget, object):
         if not item or column != self._title_text_index:
             if self._last_item:
                 self._clear_selection()
-    # endregion
 
 
 class ManageTreeWidget(base.BaseWidget, object):
@@ -598,7 +596,6 @@ class FilterTreeWidget(base.DirectoryWidget, object):
         self.update_tree = True
         super(FilterTreeWidget, self).__init__(parent=parent)
 
-    # region Override Functions
     def get_main_layout(self):
         main_layout = QHBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -614,9 +611,7 @@ class FilterTreeWidget(base.DirectoryWidget, object):
 
     def setup_signals(self):
         self.filter_names.textChanged.connect(self._on_filter_names)
-    # endregion
 
-    # region Public Functions
     def get_name_filter(self):
         """
         Returns the name filter current text
@@ -655,9 +650,7 @@ class FilterTreeWidget(base.DirectoryWidget, object):
         """
 
         self.tree_widget = tree_widget
-    # endregion
 
-    # region Private Functions
     def _on_filter_names(self, text):
         """
         Internal function that is used to call the filter function of the TreeWidget
@@ -666,7 +659,6 @@ class FilterTreeWidget(base.DirectoryWidget, object):
 
         if self.update_tree:
             self.tree_widget.filter_names(text)
-    # endregion
 
 
 class FilterTreeDirectoryWidget(base.DirectoryWidget, object):
@@ -679,7 +671,6 @@ class FilterTreeDirectoryWidget(base.DirectoryWidget, object):
         self.update_tree = True
         super(FilterTreeDirectoryWidget, self).__init__(parent=parent)
 
-    # region Override Functions
     def get_main_layout(self):
         main_layout = QHBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -705,9 +696,7 @@ class FilterTreeDirectoryWidget(base.DirectoryWidget, object):
         self.sub_path_filter.textChanged.connect(self._on_sub_path_filter_changed)
         self.sub_path_filter.textEdited.connect(self._on_sub_path_filter_edited)
         self.filter_names.textChanged.connect(self._on_filter_names)
-    # endregion
 
-    # region Public Functions
     def get_name_filter(self):
         """
         Returns the name filter current text
@@ -783,9 +772,7 @@ class FilterTreeDirectoryWidget(base.DirectoryWidget, object):
                 self.sub_path_filter.setStyleSheet('background-color: rgb(255, 100, 100);')
         else:
             self.sub_path_filter.setStyleSheet('')
-    # endregion
 
-    # region Private Functions
     def _on_filter_names(self, text):
         """
         Internal function that is used to call the filter function of the TreeWidget
@@ -834,7 +821,6 @@ class FilterTreeDirectoryWidget(base.DirectoryWidget, object):
 
         if self.emit_changes:
             self.SubPathChanged.emit(current_text)
-    # endregion
 
 # ======================================================================================================
 
@@ -844,7 +830,7 @@ class FileTreeWidget(TreeWidget, object):
     refreshed = Signal()
 
     HEADER_LABELS = ['Name', 'Size MB', 'Time']
-    NEW_ITEM_NAME = 'new_rig'
+    NEW_ITEM_NAME = 'new_file'
     NEW_ITEM_WIDGET = QTreeWidgetItem
     EXCLUDE_EXTENSIONS = list()
 
@@ -854,7 +840,6 @@ class FileTreeWidget(TreeWidget, object):
 
         self.setHeaderLabels(self.HEADER_LABELS)
 
-    # region Override Functions
     def _add_sub_items(self, tree_item):
         """
         Implements _add_sub_items() functionality
@@ -870,9 +855,7 @@ class FileTreeWidget(TreeWidget, object):
         files = self._get_files(full_path_str)
 
         self._add_items(files, tree_item)
-    # endregion
 
-    # region Public Functions
     def get_item_directory(self, tree_item):
         """
         Returns the full path of the given tree item
@@ -959,9 +942,7 @@ class FileTreeWidget(TreeWidget, object):
 
         self._load_files(files)
         self.refreshed.emit()
-    # endregion
 
-    # region Private Functions
     def _get_files(self, directory=None):
         """
         Internal function taht returns  all files located in the given directory. If not directory is given, stored

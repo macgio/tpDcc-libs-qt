@@ -413,26 +413,20 @@ class TemplateData(object):
     def __init__(self, name='New Template'):
         self._name = name
 
-    # region Properties
     def get_name(self):
         return self._name
 
     name = property(get_name)
 
-    # endregion
-
-    # region To Override Functions
-    @classmethod
-    def create_project(cls, project_name, project_path):
-        if not cls.PROJECT_CLASS:
+    def create_project(self, project_name, project_path):
+        if not self.PROJECT_CLASS:
             tpQtLib.logger.warning('Impossible to create because project class is not defined!')
             return None
 
-        new_project = cls.PROJECT_CLASS(name=project_name, project_path=project_path)
+        new_project = self.PROJECT_CLASS(name=project_name, project_path=project_path)
         new_project.create_project()
 
         return new_project
-    # endregion
 
 
 class Template(QWidget):
@@ -488,20 +482,15 @@ class BlankTemplateData(TemplateData, object):
     def __init__(self, name='Blank'):
         super(BlankTemplateData, self).__init__(name=name)
 
-    # region Properties
     def get_name(self):
         return self._name
 
     name = property(get_name)
 
-    # endregion
-
-    # region Override Functions
-    @staticmethod
-    def create_project(project_name, project_path):
-        new_project = TemplateData.create_project(project_name=project_name, project_path=project_path)
-        # new_project.create_folder(consts.DATA_FOLDER)
-        # new_project.create_folder(consts.CODE_FOLDER)
+    def create_project(self, project_name, project_path):
+        new_project = super(BlankTemplateData, self).create_project(project_name=project_name, project_path=project_path)
+        new_project.create_folder(consts.DATA_FOLDER)
+        new_project.create_folder(consts.CODE_FOLDER)
         return new_project
 
 
@@ -531,18 +520,16 @@ class TemplatesViewer(grid.GridWidget, object):
 
         self._init_standard_templates()
 
-    # region Public Functions
     def add_template(self, template_widget):
         if template_widget is None:
             return
+
+        template_widget.PROJECT_CLASS = self._project_class
 
         row, col = self.first_empty_cell()
         self.addWidget(row, col, template_widget)
         self.resizeRowsToContents()
 
-    # endregion
-
-    # region Private Functions
     def _init_standard_templates(self):
         for template in self.STANDARD_TEMPLATES:
             new_template = template()
@@ -552,4 +539,3 @@ class TemplatesViewer(grid.GridWidget, object):
 
     def _on_template_selected(self, template):
         self.selectedTemplate.emit(template)
-    # endregion
