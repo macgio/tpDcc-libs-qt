@@ -82,7 +82,7 @@ def init(do_reload=False, dev=False):
 
             return os.path.join(self.get_module_path(), 'externals')
 
-    def init_dcc(self, do_reload=False):
+    def init_dcc(do_reload=False):
         """
         Checks DCC we are working on an initializes proper variables
         """
