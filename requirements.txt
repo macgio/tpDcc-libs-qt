@@ -3,8 +3,8 @@
 # ===================================================================
 PySide;python_version <= '3.4'
 PySide2;python_version > '3.4'
-Qt.py
 tpPyUtils
+Qt.py
 tpDccLib
 aenum
 scandir
