@@ -1,5 +1,6 @@
 language: python
 install:
+- pip install tpPyUtils
 - pip install -r requirements.txt
 - python setup.py install
 script:
