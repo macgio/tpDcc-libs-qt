@@ -7,8 +7,7 @@ Module that contains consts exception used by libraries
 
 from __future__ import print_function, division, absolute_import
 
-from tpPyUtils.externals import six
-
+import six
 
 class PathError(IOError, object):
     """

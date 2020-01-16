@@ -16,8 +16,9 @@ import locale
 import getpass
 from collections import OrderedDict, Mapping
 
+import six
+
 import tpPyUtils
-from tpPyUtils.externals import six
 from tpPyUtils import python, decorators, fileio, path as path_utils
 
 import tpQtLib

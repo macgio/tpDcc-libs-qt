@@ -28,6 +28,7 @@ QT_ERROR_MESSAGE = 'Qt.py is not available and Qt related functionality will not
 
 QT_AVAILABLE = True
 UILOADER_AVAILABLE = True
+PYSIDEUIC_AVAILABLE = True
 try:
     from Qt.QtCore import *
     from Qt.QtWidgets import *
@@ -45,8 +46,10 @@ if QT_AVAILABLE:
             import shiboken2 as shiboken
         except ImportError:
             from PySide2 import shiboken2 as shiboken
-
-        import pyside2uic as pysideuic
+        try:
+            import pyside2uic as pysideuic
+        except ImportError:
+            PYSIDEUIC_AVAILABLE = False
         from PySide2.QtCore import QMetaObject
         from PySide2.QtUiTools import QUiLoader
     else:
@@ -63,8 +66,8 @@ if QT_AVAILABLE:
 
         try:
             import pysideuic
-        except Exception:
-            from tpQtLib.externals import pysideuic
+        except ImportError:
+            PYSIDEUIC_AVAILABLE = False
         from PySide.QtCore import QMetaObject
         try:
             from PySide.QtUiTools import QUiLoader
@@ -435,6 +438,10 @@ def load_ui_type(ui_file):
         tpQtLib.logger.warning(QT_ERROR_MESSAGE)
         return None, None
 
+    if not PYSIDEUIC_AVAILABLE:
+        tpQtLib.logger.warning('pysideuic is not available. UI compilation functionality is not available!')
+        return None, None
+
     parsed = ElementTree.parse(ui_file)
     widget_class = parsed.find('widget').get('class')
     form_class = parsed.find('class').text
@@ -461,6 +468,10 @@ def compile_ui(ui_file, py_file):
 
     if not QT_AVAILABLE:
         tpQtLib.logger.warning(QT_ERROR_MESSAGE)
+        return
+
+    if not PYSIDEUIC_AVAILABLE:
+        tpQtLib.logger.warning('pysideuic is not available. UI compilation functionality is not available!')
         return
 
     if not os.path.isfile(ui_file):
