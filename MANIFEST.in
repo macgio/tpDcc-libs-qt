@@ -1,3 +1,4 @@
+include tpQtLib/__logging__.ini
 include tpQtLib/resources/*.*
 include tpQtLib/resources/icons/*.*
 include tpQtLib/resources/icons/black/*.*
