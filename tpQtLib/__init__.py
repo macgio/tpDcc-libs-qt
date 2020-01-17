@@ -88,14 +88,14 @@ def init(do_reload=False, dev=False):
         """
 
         if 'cmds' in main.__dict__:
-            import tpMayaLib
-            tpMayaLib.init_ui(do_reload=do_reload)
+            from tpMayaLib import loader
+            loader.init_ui(do_reload=do_reload)
         elif 'MaxPlus' in main.__dict__:
-            import tpMaxLib
-            tpMaxLib.init_ui(do_reload=do_reload)
+            from tpMaxLib import loader
+            loader.init_ui(do_reload=do_reload)
         elif 'hou' in main.__dict__:
-            import tpHoudiniLib
-            tpHoudiniLib.init_ui(do_reload=do_reload)
+            from tpHoudiniLib import loader
+            loader.init_ui(do_reload=do_reload)
         elif 'nuke' in main.__dict__:
             raise NotImplementedError('Nuke is not a supported DCC yet!')
         else:
