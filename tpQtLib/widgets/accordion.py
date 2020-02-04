@@ -429,7 +429,7 @@ class AccordionWidget(QScrollArea, object):
             layout.setStretchFactor(item, 0)
             if collapsed:
                 item.set_collapsed(state=collapsed)
-            self.updatesEnabled(True)
+            self.setUpdatesEnabled(True)
             return item
         except Exception:
             self.setUpdatesEnabled(True)

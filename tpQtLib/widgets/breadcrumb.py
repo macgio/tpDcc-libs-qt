@@ -95,6 +95,7 @@ class BreadcrumbWidget(QWidget, object):
 
         return [crumb.label for crumb in self._widgets]
 
+
 class BreadcrumbButtonWidget(base.BaseWidget, object):
     def __init__(self, parent=None):
         super(BreadcrumbButtonWidget, self).__init__(parent=parent)
