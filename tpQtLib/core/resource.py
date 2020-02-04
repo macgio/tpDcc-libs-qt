@@ -162,7 +162,7 @@ class Resource(object):
 
         return self._path
 
-    def _icon(self, name, extension='png', color=None, theme='color'):
+    def _icon(self, name, category='icons', extension='png', color=None, theme='color'):
         """
         Returns a icon_resource.Icon object from the given resource name
         :param name: str, name of the icon
@@ -171,7 +171,7 @@ class Resource(object):
         :return: icon_resource.Icon
         """
 
-        p = self._pixmap(name=name, category='icons', extension=extension, color=color, theme=theme)
+        p = self._pixmap(name=name, category=category, extension=extension, color=color, theme=theme)
         return icon_resource.Icon(p)
 
     def _pixmap(self, name, category='images', extension='png', color=None, theme=None):

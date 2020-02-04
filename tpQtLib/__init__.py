@@ -129,7 +129,7 @@ def create_logger_directory():
     Creates artellapipe logger directory
     """
 
-    tppyutils_logger_dir = os.path.normpath(os.path.join(os.path.expanduser('~'), 'tpPyUtils', 'logs'))
+    tppyutils_logger_dir = os.path.normpath(os.path.join(os.path.expanduser('~'), 'tpQtLib', 'logs'))
     if not os.path.isdir(tppyutils_logger_dir):
         os.makedirs(tppyutils_logger_dir)
 
