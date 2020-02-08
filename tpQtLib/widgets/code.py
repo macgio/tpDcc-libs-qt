@@ -17,6 +17,7 @@ from Qt.QtGui import *
 
 import tpDccLib as tp
 
+import tpPyUtils
 from tpPyUtils import python, fileio, code, folder as folder_utils, path as path_utils
 
 
@@ -578,3 +579,310 @@ class PythonHighlighter(QSyntaxHighlighter):
             return True
         else:
             return False
+
+
+class CodeLineNumber(QWidget, object):
+    def __init__(self, code_editor):
+        super(CodeLineNumber, self).__init__()
+
+        self.setParent(code_editor)
+        self._code_editor = code_editor
+
+    def sizeHint(self):
+        return QSize(self._code_editor._line_number_width(), 0)
+
+    def paintEvent(self, event):
+        self._code_editor._line_number_paint(event)
+
+
+class CodeCompleter(PythonCompleter, object):
+    def __init__(self):
+        super(CodeCompleter, self).__init__()
+
+    def keyPressEvent(self):
+        return
+
+    def _on_insert_completion(self, completion_string):
+        super(CodeCompleter, self)._on_insert_completion(completion_string)
+
+        # This stops Maya from entering edit mode in the outliner, if something is selected
+        if tp.is_maya():
+            tp.Dcc.focus('modelPanel1')
+
+    def _format_live_function(self, function_instance):
+        function_name = None
+        if hasattr(function_instance, 'im_func'):
+            args = function_instance.im_func.func_code.co_varnames
+            count = function_instance.im_func.func_code.co_argcount
+            args_name = ''
+            if args:
+                args = args[:count]
+                if args[0] == 'self':
+                    args = args[1:]
+                args_name = string.join(args, ',')
+            function_name = '{}({})'.format(function_instance.im_func.func.name, args_name)
+
+        return function_name
+
+    def custom_import_load(self, assign_map, module_name):
+
+        found = list()
+
+        if module_name == 'cmds':
+            if assign_map:
+                if module_name in assign_map:
+                    return []
+            if tp.is_maya():
+                import maya.cmds as cmds
+                functions = dir(cmds)
+                return functions
+
+        return found
+
+
+class CodeTextEdit(QPlainTextEdit, object):
+
+    save = Signal(object)
+    saveDone = Signal(object)
+    fileSet = Signal()
+    findOpened = Signal(object)
+    codeTextSizeChanged = Signal(object)
+    mousePressed = Signal(object)
+
+    def __init__(self, settings=None, parent=None):
+
+        self._settings = settings
+        self._text_edit_globals = dict()
+        self._file_path = None
+        self._last_modified = None
+        self._find_widget = None
+        self._completer = None
+        self._skip_focus = False
+
+        self._rig_inst = None
+
+        super(CodeTextEdit, self).__init__(parent=parent)
+
+        self.setFont(QFont('Courier', 9))
+        self.setWordWrapMode(QTextOption.NoWrap)
+
+        save_shortcut = QShortcut(QKeySequence(self.tr('Ctlr+s')), self)
+        find_shortcut = QShortcut(QKeySequence(self.tr('Ctrl+f')), self)
+        goto_line_shortcut = QShortcut(QKeySequence(self.tr('Ctrl+l')), self)
+        duplicate_line_shortcut = QShortcut(QKeySequence(self.tr('Ctrl+d')), self)
+        zoom_in_shortcut = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_Plus), self)
+        zoom_in_other_shortcut = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_Equal), self)
+        zoom_out_shortcut = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_Minus), self)
+
+        save_shortcut.activated.connect(self._on_save)
+        find_shortcut.activated.connect(self._on_find)
+        goto_line_shortcut.activated.connect(self._on_goto_line)
+        duplicate_line_shortcut.activated.connect(self._on_duplicate_line)
+        zoom_in_shortcut.activated.connect(self._zoom_in_text)
+        zoom_in_other_shortcut.activated.connect(self._zoom_in_text)
+        zoom_out_shortcut.activated.connect(self._zoom_out_text)
+
+        self._line_numbers = CodeLineNumber(self)
+
+        self._setup_highlighter()
+        self._update_number_width(0)
+        self._line_number_highlight()
+
+    def resizeEvent(self, event):
+        super(CodeTextEdit, self).resizeEvent(event)
+        rect = self.contentsRect()
+        new_rect = QRect(rect.left(), rect.top(), self._line_number_width(), rect.height())
+        self._line_numbers.setGeometry(new_rect)
+
+    def mousePressEvent(self, event):
+        self.mousePressed.emit(event)
+        return super(CodeTextEdit, self).mousePressEvent(event)
+
+    def keyPressEvent(self, event):
+        if self._completer:
+            self._completer.activated.connect(self._on_activate)
+
+            if self._completer.popup().isVisible():
+                if event.key() == Qt.Key_Enter:
+                    event.ignore()
+                    return
+                elif event.key() == Qt.Key_Return:
+                    event.ignore()
+                    return
+                elif event.key() == Qt.Key_Escape:
+                    event.ignore()
+                    return
+                elif event.key() == Qt.Key_Tab:
+                    event.ignore()
+                    return
+                elif event.key() == Qt.Key_Backtab:
+                    event.ignore()
+                    return
+
+        pass_on = True
+        if event.modifiers() and Qt.ControlModifier:
+            if event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return:
+                self._run()
+                return
+        if event.key() == Qt.Key_Backtab or event.key() == Qt.Key_Tab:
+            self._handle_tab(event)
+            pass_on = False
+        if event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return:
+            self._handle_enter(event)
+            pass_on = False
+
+        if pass_on:
+            super(CodeTextEdit, self).keyPressEvent(event)
+
+        if self._completer:
+            text = self._completer.text_under_cursor()
+            if text:
+                result = self._completer.handle_text(text)
+                if result:
+                    rect = self.cursorRect()
+                    width = self._completer.popup().sizeHintForColumn(0) + self._completer.popup().verticalScrollBar().sizeHint().width()
+                    if width > 350:
+                        width = 350
+                    rect.setWidth(width)
+                    self._completer.complete(rect)
+                else:
+                    self._completer.poppu().hide()
+                    self._completer.clear_completer_list()
+                    self._completer.refresh_completer = True
+
+    def wheelEvent(self, event):
+        delta = event.delta()
+        keys = event.modifiers()
+        if keys == Qt.CTRL:
+            if delta > 0:
+                self._zoom_in_text()
+            elif delta < 0:
+                self._zoom_out_text()
+
+        return super(CodeTextEdit, self).wheelEvent(event)
+
+    def focusInEvent(self, event):
+        if self._completer:
+            self._completer.setWidget(self)
+        super(CodeTextEdit, self).focusInEvent(event)
+        if not self._skip_focus:
+            self._update_request()
+
+    def get_settings(self):
+        return self._settings
+
+    def set_settigns(self, settings):
+        self._settings = settings
+
+    def set_rig(self, rig_inst):
+        self._rig_inst = rig_inst
+
+    def set_completer(self, completer):
+        self._completer = completer()
+        self._completer.setWidget(self)
+        self._completer.set_filepath(self._file_path)
+
+    def _set_text_size(self, value):
+        font = self.font()
+        font.setPixelSize(value)
+        self.setFont(font)
+
+    def _code_text_size_change(self, value):
+        self._set_text_size(value)
+
+    def _setup_highlighter(self):
+        self._higlighter = code.PythonHighlighter(document=self.document())
+
+    def _line_number_paint(self, event):
+        paint = QPainter(self._line_numbers)
+        if not tp.is_maya():
+            paint.fillRect(event.rect(), Qt.lightGray)
+        else:
+            paint.fillRect(event.rect(), Qt.black)
+
+        block = self.firstVisibleBlock()
+        block_number = block.blockNumber()
+        top = int(self.blockBoundingGeometry(block).translated(self.contentOffset()).top())
+        bottom = int(top + self.blockBoundingGeometry(block).height())
+        while block.isVisible() and top <= event.rect().bottom():
+            if block.isVisible() and bottom >= event.rect().top():
+                number = block_number + 1
+                if tp.is_maya():
+                    paint.setPen(Qt.lightGray)
+                else:
+                    paint.setPen(Qt.black)
+                paint.drawText(0, top, self._line_numbers.width(), self.fontMetrics().height(), Qt.AlignRight, str(number))
+            block = block.next()
+            top = bottom
+            bottom = top + self.blockBoundingRect(block).height()
+            block_number += 1
+
+    def _line_number_width(self):
+        digits = 1
+        max_value = max(1, self.blockCount())
+        while max_value >= 10:
+            max_value /= 10
+            digits += 1
+        space = 1 + self.fontMetrics().width('1') * digits
+
+        return space
+
+    def _line_number_highlight(self):
+        extra_selection = QTextEdit.ExtraSelection()
+        selections = [extra_selection]
+        if not self.isReadOnly():
+            selection = QTextEdit.ExtraSelection()
+            if tp.is_maya():
+                line_color = QColor(Qt.black)
+            else:
+                line_color = QColor(Qt.lightGray)
+            selection.format.setBackground(line_color)
+            selection.format.setProperty(QTextFormat.FullWidthSelection, True)
+            selection.cursor = self.textCursor()
+            selection.cursor.clearSelection()
+            selections.append(selection)
+
+        self.setExtraSelections(selections)
+
+    def _update_number_width(self, value=0):
+        self.setViewportMargins(self._line_number_width(), 0, 0, 0)
+
+    def _update_number_area(self, rect, y_value):
+        if y_value:
+            self._line_numbers.scroll(0, y_value)
+        else:
+            self._line_numbers.update(0, rect.y(), self._line_number_width(), rect.height())
+        if rect.contains(self.viewport().rect()):
+            self._update_number_width()
+
+    def _save(self):
+        if not self.document().isModified():
+            tpPyUtils.logger.warning('No changes to save in {}'.format(self._file_path))
+            return
+
+        old_last_modified = self._last_modified
+        try:
+            self.save.emit(self)
+        except Exception:
+            pass
+
+    def _on_save(self):
+        pass
+
+    def _on_find(self):
+        pass
+
+    def _on_goto_line(self):
+        pass
+
+    def _on_duplicate_line(self):
+        pass
+
+    def _zoom_in_text(self):
+        pass
+
+    def _zoom_out_text(self):
+        pass
+
+    def _on_activate(self):
+        pass
