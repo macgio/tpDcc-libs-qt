@@ -95,7 +95,7 @@ class OptionsWidget(base.BaseWidget, object):
         self._scroll.setFocusPolicy(Qt.NoFocus)
         self._scroll.setWidgetResizable(True)
         self.setFocusPolicy(Qt.NoFocus)
-        self._options_list = OptionListGroup(parent=self)
+        self._options_list = OptionList(parent=self)
         self._scroll.setWidget(self._options_list)
 
         self.main_layout.addWidget(self._scroll)
@@ -235,6 +235,9 @@ class OptionsWidget(base.BaseWidget, object):
         """
 
         widgets = self._current_widgets
+        if not widgets:
+            return
+
         widgets = self._options_list.sort_widgets(widgets, widgets[0].get_parent())
         if not widgets:
             return
@@ -248,6 +251,9 @@ class OptionsWidget(base.BaseWidget, object):
         """
 
         widgets = self._current_widgets
+        if not widgets:
+            return
+
         widgets = self._options_list.sort_widgets(widgets, widgets[0].get_parent())
         if not widgets:
             return
@@ -261,6 +267,9 @@ class OptionsWidget(base.BaseWidget, object):
         """
 
         widgets = self._current_widgets
+        if not widgets:
+            return
+
         widgets = self._options_list.sort_widgets(widgets, widgets[0].get_parent())
         if not widgets:
             return
