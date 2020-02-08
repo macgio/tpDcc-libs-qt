@@ -469,7 +469,7 @@ class Template(QWidget):
         self.project_btn.toggled.connect(self._on_selected_template)
 
     def get_icon(self):
-        return tpQtLib.resource.icon(name='rignode_icon', extension='png')
+        return tpQtLib.resource.icon(name='project', extension='png')
     # endregion
 
     # region Private Functions

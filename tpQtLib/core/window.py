@@ -1009,8 +1009,8 @@ class DetachedWindow(QMainWindow):
 
         @staticmethod
         def load_basic_window_settings(window, window_settings):
-            window.restoreGeometry(window_settings.value('geometry', ''))
-            window.restoreState(window_settings.value('windowstate', ''))
+            window.restoreGeometry(window_settings.value('geometry', QByteArray()))
+            window.restoreState(window_settings.value('windowstate', QByteArray()))
             try:
                 window.split_state = window_settings.value('splitstate', '')
             except TypeError:
