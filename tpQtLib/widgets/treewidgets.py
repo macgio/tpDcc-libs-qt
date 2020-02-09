@@ -935,6 +935,10 @@ class FileTreeWidget(TreeWidget, object):
         Refreshes all QTreeWidget items
         """
 
+        if not self._directory:
+            self.clear()
+            return
+
         files = self._get_files()
         if not files:
             self.clear()
@@ -1201,6 +1205,56 @@ class EditFileTreeWidget(base.DirectoryWidget, object):
         self.tree_widget.setDragEnabled(False)
         self.tree_widget.setAcceptDrops(False)
         self.tree_widget.setDropIndicatorShown(False)
+
+    def get_checked_children(self, tree_item):
+        """
+        Function that returns checked item children of the given tree item
+        :param tree_item:
+        :return:
+        """
+
+        if not tree_item:
+            return
+
+        expand_state = tree_item.isExpanded()
+        tree_item.setExpanded(True)
+        children = self.tree_widget.get_tree_item_children(tree_item)
+
+        checked_children = list()
+        for child in children:
+            check_state = child.checkState(0)
+            if check_state == Qt.Checked:
+                checked_children.append(child)
+        levels = list()
+        if checked_children:
+            levels.append(checked_children)
+
+        while children:
+            new_children = list()
+            checked_children = list()
+            for child in children:
+                current_check_state = child.checkState(0)
+                if current_check_state != Qt.Checked:
+                    continue
+                child.setExpanded(True)
+                sub_children = self.tree_widget.get_tree_item_children(child)
+                checked = list()
+                for sub_child in sub_children:
+                    check_state = sub_child.checkState(0)
+                    if check_state == Qt.Checked:
+                        checked.append(sub_child)
+                if sub_children:
+                    new_children += sub_children
+                if checked:
+                    checked_children += checked
+            if not checked_children:
+                children = list()
+                continue
+
+        tree_item.setExpanded(expand_state)
+        levels.reverse()
+
+        return levels
 
     def refresh(self):
         """
