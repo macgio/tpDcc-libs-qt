@@ -192,6 +192,15 @@ class OptionsWidget(base.BaseWidget, object):
 
         self._options_list.update_options()
 
+    def clear_options(self):
+        """
+        Clears all the options
+        """
+
+        self._options_list.clear_widgets()
+        if self._option_object:
+            self._option_object = None
+
     def has_options(self):
         """
         Checks if the current task has options or not
