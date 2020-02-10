@@ -107,7 +107,7 @@ class MessageBox(QDialog, object):
         :param input_text: str
         :param width: int
         :param height: int
-        :param buttons: list(QMessageBox.StandardButton)
+        :param buttons: list(QDialogButtonBox.StandardButton)
         :param header_pixmap: QPixmap
         :param header_color: str
         :param theme_to_apply: Theme
@@ -131,12 +131,12 @@ class MessageBox(QDialog, object):
         :param text: str
         :param width: int
         :param height: int
-        :param buttons: list(QMessageBox.StandardButton)
+        :param buttons: list(QDialogButtonBox.StandardButton)
         :param header_pixmap: QPixmap
         :param header_color: str
         :param enable_dont_show_checkbox: bool
         :param theme_to_apply: Theme
-        :return: QMessageBox.StandardButton
+        :return: QDialogButtonBox.StandardButton
         """
 
         buttons = buttons or QDialogButtonBox.Yes | QDialogButtonBox.No | QDialogButtonBox.Cancel
@@ -152,12 +152,12 @@ class MessageBox(QDialog, object):
         :param text: str
         :param width: int
         :param height: int
-        :param buttons: list(QMessageBox.StandardButton)
+        :param buttons: list(QDialogButtonBox.StandardButton)
         :param header_pixmap: QPixmap
         :param header_color: str
         :param enable_dont_show_checkbox: bool
         :param force: bool
-        :return: QMessageBox.StandardButton
+        :return: QDialogButtonBox.StandardButton
         """
 
         buttons = buttons or QDialogButtonBox.Yes | QDialogButtonBox.No
@@ -173,10 +173,10 @@ class MessageBox(QDialog, object):
         :param text: str
         :param width: int
         :param height: int
-        :param buttons: list(QMessageBox.StandardButton)
+        :param buttons: list(QDialogButtonBox.StandardButton)
         :param header_pixmap: QPixmap
         :param header_color: str
-        :return: QMessageBox.StandardButton
+        :return: QDialogButtonBox.StandardButton
         """
 
         buttons = buttons or QDialogButtonBox.Ok

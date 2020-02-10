@@ -1535,7 +1535,7 @@ class LibraryWindow(tpQtLib.Window, object):
             title = 'Move to Trash?'
             text = 'Are you sure you want to move the selected item/s to the trash?'
             result = self.show_question_dialog(title, text)
-            if result == QMessageBox.Yes:
+            if result == QDialogButtonBox.Yes:
                 self.move_items_to_trash(items)
 
     """
@@ -1742,10 +1742,10 @@ class LibraryWindow(tpQtLib.Window, object):
         Function that shows an information dialog to the user
         :param title: str
         :param text: str
-        :return: QMessageBox.StandardButton
+        :return: QDialogButtonBox.StandardButton
         """
 
-        buttons = QMessageBox.Ok
+        buttons = QDialogButtonBox.Ok
         return messagebox.MessageBox.question(self, title, text, buttons=buttons)
 
     def show_question_dialog(self, title, text, buttons=None):
@@ -1753,11 +1753,11 @@ class LibraryWindow(tpQtLib.Window, object):
         Function that shows a question dialog to the user
         :param title: str
         :param text: str
-        :param buttons: list(QMessageBox.StandardButton)
-        :return: QMessageBox.StandardButton
+        :param buttons: list(QDialogButtonBox.StandardButton)
+        :return: QDialogButtonBox.StandardButton
         """
 
-        buttons = buttons or QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel
+        buttons = buttons or QDialogButtonBox.Yes | QDialogButtonBox.No | QDialogButtonBox.Cancel
         return messagebox.MessageBox.question(self, title, text, buttons=buttons)
 
     def show_error_dialog(self, title, text):
@@ -1765,7 +1765,7 @@ class LibraryWindow(tpQtLib.Window, object):
         Function that shows an error dialog to the user
         :param title: str
         :param text: str
-        :return: QMessageBox.StandardButton
+        :return: QDialogButtonBox.StandardButton
         """
 
         self.show_error_message(text)
@@ -1776,7 +1776,7 @@ class LibraryWindow(tpQtLib.Window, object):
         Function that shows an exception dialog to the user
         :param title: str
         :param text: str
-        :return: QMessageBox.StandardButton
+        :return: QDialogButtonBox.StandardButton
         """
 
         tpQtLib.logger.exception(text)

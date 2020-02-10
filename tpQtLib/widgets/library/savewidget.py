@@ -397,11 +397,11 @@ class SaveWidget(base.BaseWidget, object):
         if start_frame is not None and end_frame is not None:
             duration = end_frame - start_frame
         if duration > 100 and by_frame == 1:
-            buttons = QMessageBox.Ok | QMessageBox.Cancel
+            buttons = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
             result = messagebox.MessageBox.question(
                 self.library_window(), title='Tip', text=help_text, buttons=buttons, enable_dont_show_checkbox=True
             )
-            if result != QMessageBox.Ok:
+            if result != QDialogButtonBox.Ok:
                 raise Exception('Cancelled by user')
 
     def show_thumbnail_capture_dialog(self):
@@ -410,10 +410,10 @@ class SaveWidget(base.BaseWidget, object):
         :return: int
         """
 
-        buttons = QMessageBox.Yes | QMessageBox.Ignore | QMessageBox.Cancel
+        buttons = QDialogButtonBox.Yes | QDialogButtonBox.Ignore | QDialogButtonBox.Cancel
         parent = self.item().library_window()
         btn = messagebox.MessageBox.question(parent, 'Create a thumbnail', 'Would you like to capture a thumbnail?', buttons=buttons)
-        if btn == QMessageBox.Yes:
+        if btn == QDialogButtonBox.Yes:
             self.thumbnail_capture()
 
         return btn
@@ -528,7 +528,7 @@ class SaveWidget(base.BaseWidget, object):
 
             if not os.path.exists(self.icon_path()):
                 btn = self.show_thumbnail_capture_dialog()
-                if btn == QMessageBox.Cancel:
+                if btn == QDialogButtonBox.Cancel:
                     return
 
             path += '/{}'.format(name)
