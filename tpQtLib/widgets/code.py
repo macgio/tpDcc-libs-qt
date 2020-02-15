@@ -17,8 +17,10 @@ from Qt.QtGui import *
 
 import tpDccLib as tp
 
-import tpPyUtils
 from tpPyUtils import python, fileio, code, folder as folder_utils, path as path_utils
+
+import tpQtLib
+from tpQtLib.core import qtutils
 
 
 class PythonCompleter(QCompleter, object):
@@ -43,6 +45,7 @@ class PythonCompleter(QCompleter, object):
 
         self.setCompletionMode(self.PopupCompletion)
         self.setCaseSensitivity(Qt.CaseInsensitive)
+        self.setModel(self._string_model)
         self.setWrapAround(False)
 
         self.activated.connect(self._on_insert_completion)
@@ -78,7 +81,7 @@ class PythonCompleter(QCompleter, object):
 
         return defined
 
-    def clean_completer_list(self):
+    def clear_completer_list(self):
         self._string_model.setStringList([])
 
     def text_under_cursor(self):
@@ -119,7 +122,7 @@ class PythonCompleter(QCompleter, object):
         passed = self.handle_sub_import(text, column)
         if passed:
             return True
-        passed = self.handle_import_load(text, column)
+        passed = self.handle_import_load(text, cursor)
         if passed:
             return True
 
@@ -149,9 +152,9 @@ class PythonCompleter(QCompleter, object):
         return False
 
     def handle_import_load(self, text, cursor):
-        m = re.search('\s*([a-zA-Z0-9._]+)\.([a-zA-Z0-9_]*)$', text)
-
         column = cursor.columnNumber() - 1
+        text = text[:cursor.columnNumber()]
+        m = re.search('\s*([a-zA-Z0-9._]+)\.([a-zA-Z0-9_]*)$', text)
         block_number = cursor.blockNumber()
         line_number = block_number + 1
         all_text = self.widget().toPlainText()
@@ -159,132 +162,139 @@ class PythonCompleter(QCompleter, object):
 
         if m and m.group(2):
             scope_text = all_text[:(cursor.position() - len(m.group(2)) + 1)]
-        if m:
-            assignment = m.group(1)
-            if column < m.end(1):
-                return False
+        if not m:
+            return False
 
-            sub_m = re.search('(from|import)\s+(%s)' % assignment, text)
-            if sub_m:
-                return False
+        assignment = m.group(1)
+        if column < m.end(1):
+            return False
 
-            path = None
-            sub_part = None
-            target = None
+        sub_m = re.search('(from|import)\s+(%s)' % assignment, text)
+        if sub_m:
+            return False
 
-            text = self.widget().toPlainText()
-            lines = fileio.get_text_lines(text)
+        path = None
+        sub_part = None
+        target = None
 
-            # Search for assignments
-            assign_map = code.get_ast_assignment(scope_text, line_number - 1, assignment)
-            if assign_map:
-                if assignment in assign_map:
-                    target = assign_map[assignment]
-                else:
-                    split_assignment = assignment.split('.')
-                    inc = 1
+        text = self.widget().toPlainText()
+        lines = fileio.get_text_lines(text)
 
-                    while assignment not in assign_map:
-                        sub_assignment = string.join(split_assignment[:(inc * -1)], '.')
-                        if sub_assignment in assign_map:
-                            target = assign_map[sub_assignment]
-                            break
-                        inc += 1
-                        if inc > (len(split_assignment) - 1):
-                            break
-                    sub_part = string.join(split_assignment[inc:], '.')
+        # Search for assignments
+        assign_map = code.get_ast_assignment(scope_text, line_number - 1, assignment)
+        if assign_map:
+            if assignment in assign_map:
+                target = assign_map[assignment]
+            else:
+                split_assignment = assignment.split('.')
+                inc = 1
 
-            module_name = m.group(1)
-            if target and len(target) == 2:
-                if target[0] == 'import':
-                    module_name = target[1]
-                if not target[0] == 'import':
-                    module_name = target[0]
-                    sub_part = target[1]
+                while assignment not in assign_map:
+                    sub_assignment = string.join(split_assignment[:(inc * -1)], '.')
+                    if sub_assignment in assign_map:
+                        target = assign_map[sub_assignment]
+                        break
+                    inc += 1
+                    if inc > (len(split_assignment) - 1):
+                        break
+                sub_part = string.join(split_assignment[inc:], '.')
 
-            # import from module
-            if module_name:
-                imports = None
-                if lines == self.last_lines:
-                    imports = self.last_imports
-                if not imports:
-                    imports = code.get_line_imports(lines)
+        module_name = m.group(1)
+        if target and len(target) == 2:
+            if target[0] == 'import':
+                module_name = target[1]
+            if not target[0] == 'import':
+                module_name = target[0]
+                sub_part = target[1]
 
-                self._last_imports = imports
-                self._last_lines = lines
+        # import from module
+        if module_name:
+            imports = None
+            if lines == self.last_lines:
+                imports = self.last_imports
+            if not imports:
+                imports = code.get_line_imports(lines)
 
-                if module_name in imports:
-                    path = imports[module_name]
-                if not module_name in imports:
-                    split_assignment = module_name.split('.')
-                    last_part = split_assignment[-1]
-                    if last_part in imports:
-                        path = imports[last_part]
+            self._last_imports = imports
+            self._last_lines = lines
 
-                if path and not sub_part:
-                    test_text = ''
-                    defined = None
-                    if path == self.last_path:
-                        defined = self.current_defined_imports
-                    if len(m.groups()) > 0:
-                        test_text = m.group(2)
-                    if not defined:
-                        if path_utils.is_dir(path):
-                            defined = self.get_imports(path)
-                            self._current_defined_imports = defined
+            if module_name in imports:
+                path = imports[module_name]
+            if module_name not in imports:
+                split_assignment = module_name.split('.')
+                last_part = split_assignment[-1]
+                if last_part in imports:
+                    path = imports[last_part]
 
-                        if path_utils.is_file(path):
-                            defined = self.get_sub_imports(path)
+            if path and not sub_part:
+                test_text = ''
+                defined = None
+                if path == self.last_path:
+                    defined = self.current_defined_imports
+                if len(m.groups()) > 0:
+                    test_text = m.group(2)
+                if not defined:
+                    defined = self.get_imports(path)
+                    if defined:
+                        self._current_defined_imports = defined
+                    else:
+                        defined = self.get_sub_imports(path)
 
-                    custom_defined = self.custom_import_load(assign_map, module_name)
-                    if custom_defined:
-                        defined = custom_defined
-                    if not defined:
-                        return False
-
+                custom_defined = self.custom_import_load(assign_map, module_name)
+                if custom_defined:
+                    defined = custom_defined
+                if defined:
+                    if test_text and test_text[0].islower():
+                        defined.sort(key=str.swapcase)
                     self._string_model.setStringList(defined)
                     self.setCompletionPrefix(test_text)
                     self.setCaseSensitivity(Qt.CaseInsensitive)
                     self.popup().setCurrentIndex(self.completionModel().index(0, 0))
                     return True
 
-                # import from a class of a module
-                if path and sub_part:
+            # import from a class of a module
+            if path and sub_part:
 
-                    sub_functions = None
-                    if self.last_path_and_part:
-                        if path == self.last_path_and_part[0] and sub_part == self.last_path_and_part[1]:
-                            sub_functions = self.current_sub_functions
+                sub_functions = None
+                if self.last_path_and_part:
+                    if path == self.last_path_and_part[0] and sub_part == self.last_path_and_part[1]:
+                        sub_functions = self.current_sub_functions
 
-                    if not sub_functions:
-                        sub_functions = code.get_ast_class_sub_functions(path, sub_part)
-                        if sub_functions:
-                            self._current_sub_functions = sub_functions
+                if not sub_functions:
+                    sub_functions = code.get_ast_class_sub_functions(path, sub_part)
+                    if sub_functions:
+                        self._current_sub_functions = sub_functions
 
-                    self._last_path_and_part = [path, sub_part]
-                    if not sub_functions:
-                        return False
-
-                    test_text = ''
-                    if len(m.groups()) > 0:
-                        test_text = m.group(2)
-                    self._string_model.setStringList(sub_functions)
-                    self.setCompletionPrefix(test_text)
-                    self.popup().setCurrentIndex(self.completionModel().index(0, 0))
-                    return True
-
-            module_name = m.group(1)
-            if module_name:
-                custom_defined = self.custom_import_load(assign_map, module_name)
+                self._last_path_and_part = [path, sub_part]
+                if not sub_functions:
+                    return False
 
                 test_text = ''
                 if len(m.groups()) > 0:
                     test_text = m.group(2)
-
-                self._string_model.setStringList(custom_defined)
+                if test_text and test_text[0].islower():
+                    sub_functions.sort(key=str.swapcase)
+                self._string_model.setStringList(sub_functions)
                 self.setCompletionPrefix(test_text)
+                self.setCaseSensitivity(Qt.CaseInsensitive)
                 self.popup().setCurrentIndex(self.completionModel().index(0, 0))
                 return True
+
+        module_name = m.group(1)
+        if module_name:
+            custom_defined = self.custom_import_load(assign_map, module_name)
+
+            test_text = ''
+            if len(m.groups()) > 0:
+                test_text = m.group(2)
+
+            if test_text and test_text[0].islower():
+                custom_defined.sort(key=str.swapcase)
+            self._string_model.setStringList(custom_defined)
+            self.setCompletionPrefix(test_text)
+            self.setCaseSensitivity(Qt.CaseInsensitive)
+            self.popup().setCurrentIndex(self.completionModel().index(0, 0))
+            return True
 
         return False
 
@@ -301,7 +311,6 @@ class PythonCompleter(QCompleter, object):
                 last_part = ''
             if module_path:
                 defined = self.get_imports(module_path)
-
                 self._string_model.setStringList(defined)
                 self.setCompletionPrefix(last_part)
                 self.popup().setCurrentIndex(self.completionModel().index(0, 0))
@@ -322,14 +331,12 @@ class PythonCompleter(QCompleter, object):
 
         for path in paths:
             fix_path = path_utils.normalize_path(path)
-            if not path.is_dir(fix_path):
-                continue
-            folders = folder_utils.get_folders(fix_path)
-            for folder in folders:
-                folder_path = path_utils.join_path(fix_path, folder)
+            stuff_in_folder = folder_utils.get_files_and_folders(fix_path)
+            for file_or_folder in stuff_in_folder:
+                folder_path = path_utils.join_path(fix_path, file_or_folder)
                 files = folder_utils.get_files_with_extension('py', folder_path, full_path=False)
                 if '__init__.py' in files:
-                    imports.append(str(folder))
+                    imports.append(str(file_or_folder))
 
             python_files = folder_utils.get_files_with_extension('py', fix_path, full_path=False)
             for python_file in python_files:
@@ -353,7 +360,6 @@ class PythonCompleter(QCompleter, object):
         cursor.removeSelectedText()
         cursor.insertText(completion_string)
         widget.setTextCursor(cursor)
-
 
 def get_syntax_format(color=None, style=''):
     """
@@ -659,7 +665,7 @@ class CodeTextEdit(QPlainTextEdit, object):
         self._completer = None
         self._skip_focus = False
 
-        self._rig_inst = None
+        self._option_object = None
 
         super(CodeTextEdit, self).__init__(parent=parent)
 
@@ -668,7 +674,7 @@ class CodeTextEdit(QPlainTextEdit, object):
 
         save_shortcut = QShortcut(QKeySequence(self.tr('Ctlr+s')), self)
         find_shortcut = QShortcut(QKeySequence(self.tr('Ctrl+f')), self)
-        goto_line_shortcut = QShortcut(QKeySequence(self.tr('Ctrl+l')), self)
+        goto_line_shortcut = QShortcut(QKeySequence(self.tr('Ctrl+g')), self)
         duplicate_line_shortcut = QShortcut(QKeySequence(self.tr('Ctrl+d')), self)
         zoom_in_shortcut = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_Plus), self)
         zoom_in_other_shortcut = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_Equal), self)
@@ -688,6 +694,11 @@ class CodeTextEdit(QPlainTextEdit, object):
         self._update_number_width(0)
         self._line_number_highlight()
 
+        self.blockCountChanged.connect(self._on_update_number_width)
+        self.updateRequest.connect(self._on_update_number_area)
+        self.cursorPositionChanged.connect(self._on_cursor_position_changed)
+        self.codeTextSizeChanged.connect(self._on_code_text_size_changed)
+
     def resizeEvent(self, event):
         super(CodeTextEdit, self).resizeEvent(event)
         rect = self.contentsRect()
@@ -699,6 +710,16 @@ class CodeTextEdit(QPlainTextEdit, object):
         return super(CodeTextEdit, self).mousePressEvent(event)
 
     def keyPressEvent(self, event):
+
+        pass_on = True
+        quit_right_away = False
+
+        if event.key() in (Qt.Key_Right, Qt.Key_Left, Qt.Key_Up, Qt.Key_Down):
+            quit_right_away = True
+        if quit_right_away:
+            super(CodeTextEdit, self).keyPressEvent(event)
+            return
+
         if self._completer:
             self._completer.activated.connect(self._on_activate)
 
@@ -718,8 +739,16 @@ class CodeTextEdit(QPlainTextEdit, object):
                 elif event.key() == Qt.Key_Backtab:
                     event.ignore()
                     return
+            else:
+                if event.key() == Qt.Key_Control or event.key() == Qt.Key_Shift:
+                    event.ignore()
+                    self._completer.popup().hide()
+                    return
+            if event.key() == Qt.Key_Control:
+                event.ignore()
+                self._completer.popup().hide()
+                return
 
-        pass_on = True
         if event.modifiers() and Qt.ControlModifier:
             if event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return:
                 self._run()
@@ -745,8 +774,8 @@ class CodeTextEdit(QPlainTextEdit, object):
                         width = 350
                     rect.setWidth(width)
                     self._completer.complete(rect)
-                else:
-                    self._completer.poppu().hide()
+                if not result:
+                    self._completer.popup().hide()
                     self._completer.clear_completer_list()
                     self._completer.refresh_completer = True
 
@@ -774,13 +803,157 @@ class CodeTextEdit(QPlainTextEdit, object):
     def set_settigns(self, settings):
         self._settings = settings
 
-    def set_rig(self, rig_inst):
-        self._rig_inst = rig_inst
+    def set_option_object(self, option_object):
+        self._option_object = option_object
 
     def set_completer(self, completer):
         self._completer = completer()
         self._completer.setWidget(self)
         self._completer.set_filepath(self._file_path)
+
+    def set_file(self, file_path):
+        in_file = QFile(file_path)
+        if in_file.open(QFile.ReadOnly | QFile.Text):
+            text = in_file.readAll()
+            self.setPlainText(text)
+        self._file_path = file_path
+        self._last_modified = fileio.get_last_modified_date(self._file_path)
+        if self._completer:
+            self._completer.set_filepath(file_path)
+        self.fileSet.emit()
+
+    def set_find_widget(self, widget):
+        self._find_widget.set_widget(widget)
+
+    def load_modification_date(self):
+        self._last_modified = fileio.get_last_modified_date(self._file_path)
+
+    def is_modified(self):
+        return self.document().isModified()
+
+    def _handle_enter(self, event):
+        cursor = self.textCursor()
+        current_block = cursor.block()
+        cursor_position = cursor.positionInBlock()
+        current_block_text = str(current_block.text())
+
+        current_found = ''
+        if not current_found:
+            current_found = re.search('^ +', current_block_text)
+            if current_found:
+                current_found = current_found.group(0)
+
+        indent = 0
+        if current_found:
+            indent = len(current_found)
+
+        colon_position = current_block_text.find(':')
+        comment_position = current_block_text.find('#')
+        if colon_position > -1:
+            sub_indent = 4
+            if -1 < comment_position < colon_position:
+                sub_indent = 0
+            indent += sub_indent
+        if cursor_position < indent:
+            indent = (cursor_position - indent) + indent
+
+        cursor.insertText(('\n' + ' ' * indent))
+
+    def _handle_tab(self, event):
+        cursor = self.textCursor()
+        document = self.document()
+
+        start_position = cursor.anchor()
+        select_position = cursor.selectionStart()
+        select_start_block = document.findBlock(select_position)
+        start = select_position - select_start_block.position()
+        end_position = cursor.position()
+        if start_position > end_position:
+            temp_position = end_position
+            end_position = start_position
+            start_position = temp_position
+
+        if event.key() == Qt.Key_Tab:
+            if not cursor.hasSelection():
+                self.insertPlainText('    ')
+                start_position += 4
+                end_position = start_position
+            else:
+                cursor.setPosition(start_position)
+                cursor.movePosition(QTextCursor.StartOfLine)
+                cursor.setPosition(end_position, QTextCursor.KeepAnchor)
+                text = cursor.selection().toPlainText()
+                split_text = text.split('\n')
+                edited = list()
+                index = 0
+                for text_split in split_text:
+                    edited.append(self._add_tab(text_split))
+                    if index == 0:
+                        start_position += 4
+                    end_position += 4
+                    index += 1
+
+                edited_text = string.join(edited, '\n')
+                cursor.insertText(edited_text)
+                self.setTextCursor(cursor)
+
+        elif event.key() == Qt.Key_Backtab:
+            if not cursor.hasSelection():
+                cursor = self.textCursor()
+                cursor.movePosition(QTextCursor.StartOfLine)
+                cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor, 4)
+                text = str(cursor.selection().toPlainText())
+                if text and text == '    ':
+                    cursor.insertText('')
+                    self.setTextCursor(cursor)
+                    start_position -= 4
+                    end_position = start_position
+            else:
+                cursor.setPosition(start_position)
+                cursor.movePosition(QTextCursor.StartOfLine)
+                cursor.setPosition(end_position, QTextCursor.KeepAnchor)
+                cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+                self.setTextCursor(cursor)
+                text = str(cursor.selection().toPlainText())
+                split_text = text.split('\n')
+                edited = list()
+                index = 0
+                skip_indent = False
+                for text_split in split_text:
+                    new_string_value = text_split
+                    if not skip_indent:
+                        new_string_value = self._remove_tab(text_split)
+                    if index == 0 and new_string_value == text_split:
+                        skip_indent = True
+                    if not skip_indent:
+                        if new_string_value != text_split:
+                            if index == 0:
+                                offset = (start - 4) + 4
+                                if offset > 4:
+                                    offset = 4
+                                start_position -= offset
+                            end_position -= 4
+                    edited.append(new_string_value)
+                    index += 1
+
+                edited_text = string.join(edited, '\n')
+                cursor.insertText(edited_text)
+                self.setTextCursor(cursor)
+
+        cursor = self.textCursor()
+        cursor.setPosition(start_position)
+        cursor.setPosition(end_position, QTextCursor.KeepAnchor)
+        self.setTextCursor(cursor)
+
+    def _add_tab(self, string_value):
+        return '    {}'.format(string_value)
+
+    def _remove_tab(self, string_value):
+        string_section = string_value[0:4]
+        if string_section == '    ':
+            return string_value[4:]
+
+        return string_value
 
     def _set_text_size(self, value):
         font = self.font()
@@ -791,7 +964,7 @@ class CodeTextEdit(QPlainTextEdit, object):
         self._set_text_size(value)
 
     def _setup_highlighter(self):
-        self._higlighter = code.PythonHighlighter(document=self.document())
+        self._higlighter = PythonHighlighter(document=self.document())
 
     def _line_number_paint(self, event):
         paint = QPainter(self._line_numbers)
@@ -804,7 +977,7 @@ class CodeTextEdit(QPlainTextEdit, object):
         block_number = block.blockNumber()
         top = int(self.blockBoundingGeometry(block).translated(self.contentOffset()).top())
         bottom = int(top + self.blockBoundingGeometry(block).height())
-        while block.isVisible() and top <= event.rect().bottom():
+        while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
                 number = block_number + 1
                 if tp.is_maya():
@@ -855,9 +1028,49 @@ class CodeTextEdit(QPlainTextEdit, object):
         if rect.contains(self.viewport().rect()):
             self._update_number_width()
 
-    def _save(self):
+    def _has_changed(self):
+        if self._file_path:
+            if path_utils.is_file(self._file_path):
+                last_modified = fileio.get_last_modified_date(self._file_path)
+                if last_modified != self._last_modified:
+                    return True
+
+        return False
+
+    def _update_request(self):
+        if not self._has_changed():
+            return
+
+        last_modified = fileio.get_last_modified_date(self._file_path)
+        self._skip_focus = True
+        permission = qtutils.get_permission('File:\n{}\nhas changed, do you want to relaod it?'.format(path_utils.get_basename(self._file_path)), self)
+        if permission:
+            self.set_file(self._file_path)
+        else:
+            self._last_modified = last_modified
+
+        self._skip_focus = False
+
+    def _zoom_in_text(self):
+        font = self.font()
+        size = font.pointSize()
+        size += 1
+        font.setPointSize(size)
+        self.setFont(QFont('Courier', size))
+
+    def _zoom_out_text(self):
+        font = self.font()
+        size = font.pointSize()
+        size -= 1
+        font.setPointSize(size)
+        self.setFont(QFont('Courier', size))
+
+    def _run(self):
+        raise NotImplementedError('run functionality is not implemented!')
+
+    def _on_save(self):
         if not self.document().isModified():
-            tpPyUtils.logger.warning('No changes to save in {}'.format(self._file_path))
+            tpQtLib.logger.warning('No changes to save in {}'.format(self._file_path))
             return
 
         old_last_modified = self._last_modified
@@ -866,23 +1079,83 @@ class CodeTextEdit(QPlainTextEdit, object):
         except Exception:
             pass
 
-    def _on_save(self):
-        pass
+        new_last_modified = fileio.get_last_modified_date(self._file_path)
+        if old_last_modified == new_last_modified:
+            self.saveDone.emit(False)
+
+        if old_last_modified != new_last_modified:
+            self.saveDone.emit(True)
+            self.document().setModified(False)
+            self._last_modified = new_last_modified
 
     def _on_find(self):
-        pass
+        self.findOpened.emit(self)
 
     def _on_goto_line(self):
-        pass
+        line = qtutils.get_comment(parent=self, text_message='', title='Goto Line')
+        if not line:
+            return
+
+        line_number = int(line)
+        text_cursor = self.textCursor()
+        block_number = text_cursor.blockNumber()
+
+        number = line_number - block_number
+        if number > 0:
+            move_type = text_cursor.NextBlock
+            number -= 2
+        if number < 0:
+            move_type = text_cursor.PreviousBlock
+            number = abs(number)
+
+        text_cursor.movePosition(move_type, text_cursor.MoveAnchor, (number + 1))
+        self.setTextCursor(text_cursor)
 
     def _on_duplicate_line(self):
-        pass
+        text_cursor = self.textCursor()
 
-    def _zoom_in_text(self):
-        pass
+        selected_text = text_cursor.selectedText()
+        if not selected_text:
+            text_cursor.beginEditBlock()
+            text_cursor.movePosition(QTextCursor.StartOfLine, QTextCursor.MoveAnchor)
+            text_cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+            selected_text = text_cursor.selectedText()
+            text_cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.MoveAnchor)
+            text_cursor.insertBlock()
+            text_cursor.insertText(selected_text)
+            text_cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.MoveAnchor)
+            self.setTextCursor(text_cursor)
+            text_cursor.endEditBlock()
+        else:
+            text_cursor.beginEditBlock()
+            text_cursor.setPosition(text_cursor.selectionEnd(), QTextCursor.MoveAnchor)
+            self.setTextCursor(text_cursor)
+            text_cursor.insertBlock()
+            position = text_cursor.position()
+            text_cursor.insertText(selected_text)
+            end_position = text_cursor.position()
+            text_cursor.setPosition(position, QTextCursor.MoveAnchor)
+            text_cursor.setPosition(end_position, QTextCursor.KeepAnchor)
+            self.setTextCursor(text_cursor)
+            text_cursor.endEditBlock()
 
-    def _zoom_out_text(self):
-        pass
+    def _on_update_number_width(self, value=0):
+        self.setViewportMargins(self._line_number_width(), 0, 0, 0)
+
+    def _on_update_number_area(self, rect, y_value):
+        if y_value:
+            self._line_numbers.scroll(0, y_value)
+        else:
+            self._line_numbers.update(0, rect.y(), self._line_number_width(), rect.height())
+
+        if rect.contains(self.viewport().rect()):
+            self._update_number_width()
+
+    def _on_cursor_position_changed(self):
+        self._line_number_highlight()
+
+    def _on_code_text_size_changed(self, value):
+        self._set_text_size(value)
 
     def _on_activate(self):
         pass
