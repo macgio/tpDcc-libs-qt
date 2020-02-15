@@ -863,7 +863,7 @@ class FileTreeWidget(TreeWidget, object):
         :return: str
         """
 
-        path_str = self.get_item_path_string(tree_item)
+        path_str = self.get_tree_item_path_string(tree_item)
         return path.join_path(self._directory, path_str)
 
     def set_directory(self, directory, refresh=True):
@@ -990,7 +990,11 @@ class FileTreeWidget(TreeWidget, object):
         :return: QTreeWidet, new item added
         """
 
-        self.clearSelection()
+        try:
+            self.blockSignals(True)
+            self.clearSelection()
+        finally:
+            self.blockSignals(False)
 
         path_name = file_name
         found = False
@@ -1062,7 +1066,11 @@ class FileTreeWidget(TreeWidget, object):
         else:
             self.addTopLevelItem(item)
 
-        self.setCurrentItem(item)
+        try:
+            self.blockSignals(True)
+            self.setCurrentItem(item)
+        finally:
+            self.blockSignals(False)
 
         return item
 
