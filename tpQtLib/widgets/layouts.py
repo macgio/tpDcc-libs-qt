@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Module that contains custom layout implementations
+Module that contains custom extra layout implementations
 """
 
 from __future__ import print_function, division, absolute_import

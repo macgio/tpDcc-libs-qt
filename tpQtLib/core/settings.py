@@ -391,29 +391,29 @@ class QtIniSettings(settings.INISettings, object):
             assert False, "Unknown control type"
 
 
-class SettingsManager(object):
-
-    CONFIGS = dict()
-    CONFIGS_DIR = None
-
-    def get_settings(self, alias):
-
-        settings = None
-        if alias in self.CONFIGS:
-            settings = QtSettings(self.CONFIGS[alias])
-
-        return settings
-
-    def get_config_value(self, config_alias, value_key):
-        settings = self.get_settings(config_alias)
-        if not settings or not settings.contains(value_key):
-            return
-
-        return settings.value(value_key)
-
-    def register_config_file(self, alias, config_path):
-        if alias not in self.CONFIGS:
-            self.CONFIGS[alias] = config_path
-            return True
-
-        return False
+# class SettingsManager(object):
+#
+#     CONFIGS = dict()
+#     CONFIGS_DIR = None
+#
+#     def get_settings(self, alias):
+#
+#         settings = None
+#         if alias in self.CONFIGS:
+#             settings = QtSettings(self.CONFIGS[alias])
+#
+#         return settings
+#
+#     def get_config_value(self, config_alias, value_key):
+#         settings = self.get_settings(config_alias)
+#         if not settings or not settings.contains(value_key):
+#             return
+#
+#         return settings.value(value_key)
+#
+#     def register_config_file(self, alias, config_path):
+#         if alias not in self.CONFIGS:
+#             self.CONFIGS[alias] = config_path
+#             return True
+#
+#         return False

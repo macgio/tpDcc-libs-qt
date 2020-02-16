@@ -8,3 +8,4 @@ Qt.py
 tpDccLib
 aenum
 scandir
+pathlib2

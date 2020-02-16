@@ -11,15 +11,23 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-from tpPyUtils import enum
+from tpDcc.libs.python import python
 
 from tpQtLib.core import base
 from tpQtLib.widgets import splitters
 
+if python.is_python2():
+    from aenum import Enum
+else:
+    from enum import Enum
+
+
+class PanelState(Enum):
+    CLOSED = 0
+    OPEN = 1
+
 
 class ExpandablePanel(base.BaseWidget, object):
-
-    PanelState = enum.enum('CLOSED', 'OPEN')
 
     def __init__(self, header_text, min_height=30, max_height=1000, show_header_text=True, is_opened=False, parent=None):
 

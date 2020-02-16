@@ -1,16 +1,16 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-# """ ==================================================================
-# Script Name: qtutils.py
-# by Tomas Poveda
-# Utility module that contains useful utilities functions for PySide
-# ______________________________________________________________________
-# ==================================================================="""
+
+"""
+Utility module that contains useful utilities functions for PySide
+"""
+
+from __future__ import print_function, division, absolute_import
 
 import os
 import re
 import sys
+import logging
 import inspect
 import subprocess
 import contextlib
@@ -21,8 +21,7 @@ try:
 except ImportError:
     from io import StringIO
 
-import tpPyUtils
-from tpPyUtils import python, fileio, strings, path
+from tpDcc.libs.python import python, fileio, strings, path
 
 QT_ERROR_MESSAGE = 'Qt.py is not available and Qt related functionality will not be available!'
 
@@ -79,7 +78,7 @@ if QT_AVAILABLE:
 
 import tpQtLib
 from tpQtLib.core import color
-from tpPyUtils import mathlib
+from tpDcc.libs.python import mathlib
 
 # ==============================================================================
 
@@ -92,6 +91,8 @@ INT_RANGE_MIN = -mathlib.MAX_INT
 INT_RANGE_MAX = mathlib.MAX_INT
 
 # ==============================================================================
+
+LOGGER = logging.getLogger()
 
 
 def is_pyqt():
@@ -320,25 +321,25 @@ def app():
         sys.exit(app_.exec_())
 
 
-def install_fonts(path):
+def install_fonts(fonts_path):
     """
     Install all the fonts in the given directory path
-    :param path: str
+    :param fonts_path: str
     """
 
-    if not os.path.isdir(path):
+    if not os.path.isdir(fonts_path):
         return
 
-    path = os.path.abspath(path)
+    font_path = os.path.abspath(fonts_path)
     font_data_base = QFontDatabase()
-    for filename in os.listdir(path):
+    for filename in os.listdir(font_path):
         if filename.endswith('.ttf'):
-            filename = os.path.join(path, filename)
+            filename = os.path.join(font_path, filename)
             result = font_data_base.addApplicationFont(filename)
             if result > 0:
-                tpPyUtils.logger.debug('Added font {}'.format(filename))
+                LOGGER.debug('Added font {}'.format(filename))
             else:
-                tpPyUtils.logger.debug('Impossible to add font {}'.format(filename))
+                LOGGER.debug('Impossible to add font {}'.format(filename))
 
 
 def ui_path(cls):

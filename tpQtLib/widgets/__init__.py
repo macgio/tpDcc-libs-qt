@@ -1,4 +1,5 @@
 order = [
+    'tpQtLib.widgets.layouts'
     'tpQtLib.widgets.buttons'
     'tpQtLib.widgets.splitters',
     'tpQtLib.widgets.gif',
@@ -8,5 +9,6 @@ order = [
     'tpQtLib.widgets.treewidgets',
     'tpQtLib.widgets.history',
     'tpQtLib.widgets.tabbars',
-    'tpQtLib.widgets.tabs'
+    'tpQtLib.widgets.tabs',
+    'tpQtLib.widgets.overlay'
 ]

@@ -18,7 +18,7 @@ import tpQtLib
 import tpDccLib as tp
 from tpPyUtils import name as name_utils
 from tpQtLib.core import base, qtutils
-from tpQtLib.widgets import buttons, splitters, spinbox, code
+from tpQtLib.widgets import buttons, splitters, spinbox, code, directory
 
 
 class GroupStyles(object):
@@ -46,16 +46,24 @@ class OptionObject(object):
 
 
 class OptionsWidget(base.BaseWidget, object):
+
     editModeChanged = Signal(bool)
 
     def __init__(self, option_object=None, settings=None, parent=None):
-        super(OptionsWidget, self).__init__(parent)
 
         self._option_object = option_object
         self._settings = settings
         self._edit_mode = False
         self._current_widgets = list()
         self._widget_to_copy = None
+
+        super(OptionsWidget, self).__init__(parent)
+
+        policy = self.sizePolicy()
+        policy.setHorizontalPolicy(policy.Expanding)
+        policy.setVerticalPolicy(policy.Expanding)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.setSizePolicy(policy)
 
     def ui(self):
         super(OptionsWidget, self).ui()
@@ -65,10 +73,12 @@ class OptionsWidget(base.BaseWidget, object):
         move_down_icon = tpQtLib.resource.icon('sort_down')
         remove_icon = tpQtLib.resource.icon('delete')
 
+        self._edit_widget = QWidget()
         top_layout = QHBoxLayout()
         top_layout.setContentsMargins(0, 0, 0, 0)
         top_layout.setSpacing(2)
-        self.main_layout.addLayout(top_layout)
+        self._edit_widget.setLayout(top_layout)
+        self.main_layout.addWidget(self._edit_widget)
         self._edit_mode_btn = buttons.IconButton(icon=edit_mode_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         self._edit_mode_btn.setCheckable(True)
         self._edit_mode_btn.setMaximumWidth(45)
@@ -89,7 +99,10 @@ class OptionsWidget(base.BaseWidget, object):
         top_layout.addWidget(self._move_up_btn)
         top_layout.addWidget(self.move_down_btn)
         top_layout.addWidget(self.remove_btn)
-        self.main_layout.addLayout(splitters.SplitterLayout())
+        self._edit_splitter = QWidget()
+        edit_splitter_layout = splitters.SplitterLayout()
+        self._edit_splitter.setLayout(edit_splitter_layout)
+        self.main_layout.addWidget(self._edit_splitter)
 
         self._scroll = QScrollArea()
         self._scroll.setFocusPolicy(Qt.NoFocus)
@@ -161,7 +174,7 @@ class OptionsWidget(base.BaseWidget, object):
         :param flag: bool
         """
 
-        self._edit_mode = flag
+        self._on_edit_mode(flag)
 
     def is_widget_to_copy(self):
         """
@@ -178,6 +191,14 @@ class OptionsWidget(base.BaseWidget, object):
         """
 
         self._widget_to_copy = widget_to_copy
+
+    def show_edit_widget(self):
+        self._edit_widget.setVisible(True)
+        self._edit_splitter.setVisible(True)
+
+    def hide_edit_widget(self):
+        self._edit_widget.setVisible(False)
+        self._edit_splitter.setVisible(False)
 
     def update_options(self):
         """
@@ -219,14 +240,13 @@ class OptionsWidget(base.BaseWidget, object):
         :param edit_value: bool
         """
 
-        # self.options_list.set_edit(edit_value)
-        # TaskOption.set_edit_mode(edit_value)
         self._edit_mode = edit_value
         self.move_down_btn.setEnabled(edit_value)
         self._move_up_btn.setEnabled(edit_value)
         self.remove_btn.setEnabled(edit_value)
         if not edit_value:
             self._options_list.clear_selection()
+        self._options_list.set_edit(edit_value)
 
     def _on_edit_mode(self, edit_value):
         """
@@ -364,8 +384,6 @@ class OptionList(QGroupBox, object):
 
         self._load_widgets(options)
 
-        self._load_widgets(options)
-
     def get_parent(self):
         """
         Returns parent Option
@@ -490,6 +508,37 @@ class OptionList(QGroupBox, object):
         self._handle_parenting(string_option, parent)
         self._write_options(clear=False)
 
+    def add_directory(self, name='file', value='', parent=None):
+        """
+        Adds new directory property to the group box
+        :param name: str
+        :param value: str, default value of the property
+        :param parent: QWidget
+        """
+
+        if type(name) == bool:
+            name = 'file'
+
+        name = self._get_unique_name(name, parent)
+        directory_option = DirectoryOption(name=name, parent=parent, main_widget=self._parent)
+        directory_option.set_value(value)
+        self._handle_parenting(directory_option, parent)
+        self._write_options(clear=False)
+
+    def add_non_editable_text(self, name='string', value='', parent=None):
+        """
+        Adds new non editable string property to the group box
+        :param name: str
+        :param value: str, default value of the property
+        :param parent: QWidget
+        """
+
+        ame = self._get_unique_name(name, parent)
+        string_option = NonEditTextOption(name=name, parent=parent, main_widget=self._parent)
+        string_option.set_value(value)
+        self._handle_parenting(string_option, parent)
+        self._write_options(clear=False)
+
     def add_script(self, name='script', value='', parent=None):
         """
         Adds new script property to the group box
@@ -502,7 +551,8 @@ class OptionList(QGroupBox, object):
             name = 'script'
 
         name = self._get_unique_name(name, parent)
-        button = ScriptOption(name=name)
+        button = ScriptOption(name=name, parent=parent, main_widget=self._parent)
+        button.set_option_object(self._option_object)
         button.set_value(value)
         self._handle_parenting(button, parent)
         self._write_options(False)
@@ -639,15 +689,13 @@ class OptionList(QGroupBox, object):
 
         self.editModeChanged.emit(flag)
 
-    # endregion
-
-    # region Private Functions
     def _create_context_menu(self):
         self._context_menu = QMenu()
         self._context_menu.setTearOffEnabled(True)
 
         plus_icon = tpQtLib.resource.icon('plus')
         string_icon = tpQtLib.resource.icon('rename')
+        directory_icon = tpQtLib.resource.icon('folder')
         integer_icon = tpQtLib.resource.icon('number_1')
         float_icon = tpQtLib.resource.icon('float_1')
         bool_icon = tpQtLib.resource.icon('true_false')
@@ -661,6 +709,8 @@ class OptionList(QGroupBox, object):
         create_menu = self._context_menu.addMenu(plus_icon, 'Add Options')
         add_string_action = QAction(string_icon, 'Add String', create_menu)
         create_menu.addAction(add_string_action)
+        add_directory_action = QAction(directory_icon, 'Add Directory', create_menu)
+        create_menu.addAction(add_directory_action)
         add_integer_action = QAction(integer_icon, 'Add Integer', create_menu)
         create_menu.addAction(add_integer_action)
         add_float_action = QAction(float_icon, 'Add Float', create_menu)
@@ -685,6 +735,7 @@ class OptionList(QGroupBox, object):
         self._context_menu.addAction(clear_action)
 
         add_string_action.triggered.connect(self.add_string)
+        add_directory_action.triggered.connect(self.add_directory)
         add_integer_action.triggered.connect(self.add_integer)
         add_float_action.triggered.connect(self.add_float)
         add_bool_action.triggered.connect(self.add_boolean)
@@ -855,6 +906,11 @@ class OptionList(QGroupBox, object):
                     self.add_script(name, value, widget)
                 if option_type == 'dictionary':
                     self.add_dictonary(name, value, widget)
+                if option_type == 'nonedittext':
+                    self.add_non_editable_text(name, value, widget)
+                if option_type == 'directory':
+                    self.add_directory(name, value, widget)
+
         except Exception:
             tpQtLib.logger.error(traceback.format_exc())
 
@@ -1520,7 +1576,6 @@ class Option(base.BaseWidget, object):
     def __init__(self, name, parent=None, main_widget=None):
 
         self._option_object = None
-        self._edit_mode_state = False
 
         super(Option, self).__init__(parent=parent)
 
@@ -1646,12 +1701,6 @@ class Option(base.BaseWidget, object):
     def set_option_object(self, option_object):
         self._option_object = option_object
 
-    def is_edit_mode(self):
-        return self._edit_mode_state
-
-    def set_edit_mode(self, flag):
-        self._edit_mode_state = flag
-
     def _setup_option_widget_value_change(self):
         pass
 
@@ -1659,11 +1708,10 @@ class Option(base.BaseWidget, object):
         self._parent.set_widget_to_copy(self)
 
     def _get_widget_names(self):
-        parent = self.parent()
-        item_count = parent.child_layout.count()
+        item_count = self.parent().child_layout.count()
         found = list()
         for i in range(item_count):
-            item = parent.child_layout.itemAt(i)
+            item = self.parent().child_layout.itemAt(i)
             widget = item.widget()
             widget_label = widget.get_name()
             found.append(widget_label)
@@ -1695,14 +1743,13 @@ class Option(base.BaseWidget, object):
         remove_action.triggered.connect(self.remove)
 
     def _on_item_menu(self, pos):
-        if not self._parent.is_edit_mode():
+        if not self._parent or not self._parent.is_edit_mode():
             return
 
         self._context_menu.exec_(self.mapToGlobal(pos))
 
     def _on_value_change(self):
         self.updateValues.emit(False)
-    # endregion
 
 
 class TitleOption(Option, object):
@@ -1749,6 +1796,45 @@ class TextOption(Option, object):
 
     def _setup_option_widget_value_change(self):
         self._option_widget.textChanged.connect(self._on_value_change)
+
+
+class NonEditTextOption(TextOption, object):
+    def __init__(self, name, parent, main_widget):
+        super(NonEditTextOption, self).__init__(name=name, parent=parent, main_widget=main_widget)
+
+    def get_option_type(self):
+        return 'nonedittext'
+
+    def get_option_widget(self):
+        text_widget = super(NonEditTextOption, self).get_option_widget()
+        text_widget.text_widget.setReadOnly(True)
+        text_widget.insert_button.setVisible(False)
+        return text_widget
+
+
+class DirectoryOption(Option, object):
+    def __init__(self, name, parent, main_widget):
+        super(DirectoryOption, self).__init__(name=name, parent=parent, main_widget=main_widget)
+
+    def get_option_type(self):
+        return 'directory'
+
+    def get_option_widget(self):
+        return DirectoryWidget(self._name)
+
+    def get_value(self):
+        value = self._option_widget.get_directory()
+        if not value:
+            value = ''
+
+        return value
+
+    def set_value(self, value):
+        value = str(value)
+        self._option_widget.set_directory(value)
+
+    def _setup_option_widget_value_change(self):
+        self._option_widget.directoryChanged.connect(self._on_value_change)
 
 
 class FloatOption(Option, object):
@@ -1799,8 +1885,8 @@ class BooleanOption(FloatOption, object):
 
 
 class ScriptOption(Option, object):
-    def __init__(self, name):
-        super(ScriptOption, self).__init__(name)
+    def __init__(self, name, parent, main_widget):
+        super(ScriptOption, self).__init__(name=name, parent=parent, main_widget=main_widget)
 
         self.main_layout.setContentsMargins(0, 2, 0, 2)
         self.setSizePolicy(QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
@@ -1809,44 +1895,51 @@ class ScriptOption(Option, object):
     def get_option_type(self):
         return 'script'
 
+    def _setup_option_widget_value_change(self):
+        self._option_widget.textChanged.connect(self._on_value_change)
+
     def get_name(self):
-        name = self.get_option_widget().insert_button.text()
+        name = self._option_widget.insert_button.text()
         return name
 
     def set_name(self, name):
-        name = str(name)
-        self.get_option_widget().set_option_object(self._option_object)
-        self.get_option_widget().set_text(name)
+        self._option_widget.set_option_object(self._option_object)
+        self._option_widget.set_button_text(name)
 
     def get_value(self):
-        value = self.get_option_widget().get_text()
+        value = self._option_widget.get_text()
         if not value:
             value = ''
 
         return value
 
+    def set_value(self, value):
+        self._option_widget.set_option_object(self._option_object)
+        self._option_widget.set_text(str(value))
+
     def set_option_object(self, option_object):
         super(ScriptOption, self).set_option_object(option_object)
-        self.get_option_widget().set_option_object(option_object)
+        self._option_widget.set_option_object(option_object)
 
     def set_edit_mode(self, flag):
         super(ScriptOption, self).set_edit_mode(flag)
 
         if flag:
-            self.get_option_widget().text_widget.show()
+            self._option_widget.text_widget.show()
             self.main_layout.setContentsMargins(0, 2, 0, 15)
-            self.get_option_widget().set_minimum()
+            self._option_widget.set_minimum()
         else:
-            self.get_option_widget().text_widget.hide()
+            self._option_widget.text_widget.hide()
             self.main_layout.setContentsMargins(0, 2, 0, 2)
 
-        self.get_option_widget().set_option_object(self._option_object)
+        self._option_widget.set_option_object(self._option_object)
 
     def run_script(self):
         value = self.get_value()
         self._option_object.run_code_snippet(value)
         parent = self.get_parent()
-        parent.refresh()
+        if hasattr(parent, 'refresh'):
+            parent.refresh()
 
     def get_option_widget(self):
         btn = ScriptWidget(name='option script')
@@ -1857,8 +1950,8 @@ class ScriptOption(Option, object):
         btn.text_label.hide()
         btn.set_supress_button_command(True)
         btn.insert_button.clicked.connect(self.run_script)
-        if not self.is_edit_mode():
-            btn.text_widget.hide()
+        # if not self.edit_mode:
+        #     btn.text_widget.hide()
         btn.set_completer(code.CodeCompleter)
         if self._option_object:
             btn.set_option_object(self._option_object)
@@ -1906,7 +1999,6 @@ class TextWidget(base.BaseWidget, object):
         self.insert_button.setMaximumWidth(20)
         # self.insert_button.hide()
         self.main_layout.addWidget(self.insert_button)
-
 
     def setup_signals(self):
         self.insert_button.clicked.connect(self._on_button_command)
@@ -2014,6 +2106,33 @@ class BoolWidget(base.BaseNumberWidget, object):
         self.valueChanged.emit(self.get_value())
 
 
+class DirectoryWidget(base.BaseWidget, object):
+
+    directoryChanged = Signal(object)
+
+    def __init__(self, name, parent=None):
+        self._name = name
+        super(DirectoryWidget, self).__init__(parent=parent)
+
+    def ui(self):
+        super(DirectoryWidget, self).ui()
+
+        self.directory_widget = directory.GetDirectoryWidget()
+        self.main_layout.addWidget(self.directory_widget)
+
+    def setup_signals(self):
+        self.directory_widget.directoryChanged.connect(self.directoryChanged.emit)
+
+    def get_directory(self):
+        return self.directory_widget.get_directory()
+
+    def set_directory(self, value):
+        self.directory_widget.set_directory(value)
+
+    def get_label_text(self):
+        return self._name
+
+
 class ScriptWidget(TextWidget, object):
     def __init__(self, name, parent=None):
         super(ScriptWidget, self).__init__(name, parent)
@@ -2027,7 +2146,7 @@ class ScriptWidget(TextWidget, object):
         code_text.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum))
         code_text.mousePressed.connect(self._on_resize_on_press)
 
-        return code
+        return code_text
 
     def get_text(self):
         return self.text_widget.toPlainText()

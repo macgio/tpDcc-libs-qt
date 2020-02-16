@@ -14,12 +14,12 @@ import time
 import shutil
 import locale
 import getpass
+import logging
 from collections import OrderedDict, Mapping
 
 import six
 
-import tpPyUtils
-from tpPyUtils import python, decorators, fileio, path as path_utils
+from tpDcc.libs.python import python, decorators, fileio, path as path_utils
 
 import tpQtLib
 import tpDccLib as tp
@@ -30,6 +30,8 @@ if tp.is_maya():
     show_wait_cursor_decorator = maya_decorators.show_wait_cursor
 else:
     show_wait_cursor_decorator = decorators.empty_decorator
+
+LOGGER = logging.getLogger()
 
 
 class Node(object):
@@ -665,7 +667,7 @@ def rename_path(source, target, extension=None, force=False):
 
     source = path_utils.normalize_path(source)
     target = path_utils.normalize_path(target)
-    tpPyUtils.logger.debug('Renaming: {} > {}'.format(source, target))
+    LOGGER.debug('Renaming: {} > {}'.format(source, target))
 
     if source == target and not force:
         raise exceptions.RenamePathError('The source path and destination path are the same: {}'.format(source))
@@ -679,7 +681,7 @@ def rename_path(source, target, extension=None, force=False):
         raise exceptions.RenamePathError('The system cannot find the specified path: "{}"'.format(source))
 
     os.rename(source, target)
-    tpPyUtils.logger.debug('Renamed: {} > {}'.format(source, target))
+    LOGGER.debug('Renamed: {} > {}'.format(source, target))
 
     return target
 
@@ -747,7 +749,7 @@ def move_paths(source_paths, target):
             continue
         basename = os.path.basename(source)
         target_ = path_utils.normalize_path(os.path.join(target, basename))
-        tpPyUtils.logger.debug('Moving Content: {} > {}'.format(source, target_))
+        LOGGER.debug('Moving Content: {} > {}'.format(source, target_))
         shutil.move(source, target_)
 
 

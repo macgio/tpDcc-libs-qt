@@ -1,5 +1,6 @@
 order = [
     'tpQtLib.core.color',
+    'tpQtLib.core.consts',
     'tpQtLib.core.qtutils',
     'tpQtLib.core.base',
     'tpQtLib.core.animation',
@@ -11,5 +12,6 @@ order = [
     'tpQtLib.core.dragger',
     'tpQtLib.core.theme',
     'tpQtLib.core.dialog',
-    'tpQtLib.core.window'
+    'tpQtLib.core.window',
+    'tpQtLib.core.framelesswindow'
 ]
