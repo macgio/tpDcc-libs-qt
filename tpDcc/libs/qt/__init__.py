@@ -16,8 +16,8 @@ main = __import__('__main__')
 
 # =================================================================================
 
-logger = None
 resource = None
+logger = None
 
 # =================================================================================
 
@@ -32,16 +32,16 @@ def init(do_reload=False, dev=False):
     # Load logger configuration
     logging.config.fileConfig(get_logging_config(), disable_existing_loggers=False)
 
-    from tpPyUtils import importer
-    from tpQtLib.core import resource as resource_utils
-    from tpQtLib.resources import res
+    from tpDcc.libs.python import importer
+    from tpDcc.libs.qt.core import resource as resource_utils
+    from tpDcc.libs.qt.resources import res
 
     class tpQtLibResource(resource_utils.Resource, object):
         RESOURCES_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources')
 
     class tpQtLib(importer.Importer, object):
         def __init__(self, *args, **kwargs):
-            super(tpQtLib, self).__init__(module_name='tpQtLib', *args, **kwargs)
+            super(tpQtLib, self).__init__(module_name='tpDcc-libs-qt', *args, **kwargs)
 
         def get_module_path(self):
             """
@@ -88,19 +88,19 @@ def init(do_reload=False, dev=False):
         """
 
         if 'cmds' in main.__dict__:
-            from tpMayaLib import loader
+            from tpDcc.dcc.maya import loader
             loader.init_ui(do_reload=do_reload)
         elif 'MaxPlus' in main.__dict__:
-            from tpMaxLib import loader
+            from tpDcc.dcc.max import loader
             loader.init_ui(do_reload=do_reload)
         elif 'hou' in main.__dict__:
-            from tpHoudiniLib import loader
+            from tpDcc.dcc.houdini import loader
             loader.init_ui(do_reload=do_reload)
         elif 'nuke' in main.__dict__:
-            raise NotImplementedError('Nuke is not a supported DCC yet!')
+            from tpDcc.dcc.nuke import loader
         else:
             global Dcc
-            from tpDccLib.core import dcc
+            from tpDcc.core import dcc
             Dcc = dcc.UnknownDCC
             logger.warning('No DCC found, using abstract one!')
 

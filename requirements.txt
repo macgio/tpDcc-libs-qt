@@ -1,11 +1,13 @@
 # ===================================================================
-# tpQtLib requirements file
+# tpDcc-libs-qt requirements file
 # ===================================================================
+
 PySide;python_version <= '3.4'
 PySide2;python_version > '3.4'
-tpPyUtils
+tpDcc-libs-python
+tpDcc-libs-core
 Qt.py
-tpDccLib
 aenum
 scandir
 pathlib2
+pysvg

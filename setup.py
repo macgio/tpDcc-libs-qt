@@ -1,5 +1,5 @@
 from setuptools import setup
 
-from tpQtLib.__version__ import __version__
+from tpDcc.libs.qt.__version__ import __version__
 
 setup()

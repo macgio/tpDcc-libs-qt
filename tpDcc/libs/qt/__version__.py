@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-Module that defines package version for tpQtLib
+Module that defines package version for tpDcc-libs-qt
 """
 
 from __future__ import print_function, division, absolute_import
 
-__version__ = "0.0.25"
+__version__ = "0.0.1"

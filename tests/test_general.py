@@ -7,7 +7,7 @@ Module that contains tests for tpPyUtils
 
 import pytest
 
-from tpQtLib import __version__
+from tpDcc.libs.qt import __version__
 
 
 def test_version():

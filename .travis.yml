@@ -1,15 +1,30 @@
 language: python
+before_install:
+- pip install pycodestyle
 install:
 - pip install -r requirements.txt
 - python setup.py install
 script:
-- pytest
+- find . -name \*.py -exec pycodestyle --max-line-length=120 --ignore=E402 {} +
+- pytest --cov=tpDcc
+- sphinx-apidoc -f -e -o docs/sphinx tpDcc
+- sphinx-build -M html ./docs/sphinx ./
+after_success:
+- coveralls
+- cd html && touch .nojekyll && cd ../
 deploy:
-  skip_cleanup: true
-  provider: pypi
-  user: tpoveda
-  password:
-    secure: g58dIBTpbmvHOOUv/FooheLOHVeNDUbDRRvU8I4WF5OwDtnuZAsqaJ94YHX3a43Bh/8XUCGjhsJYtNlDcPY8YIf+Dhgg+phq5lHPP0GvJihBc//PxydJ2BijbU/sEQACthvH9hjZ60WXxo3NvaRc7oVNxROHSxGmN9ZSpsBmke79KOgSqOHfAFZ0Wyq2Umyz9DvgJPohMhXJrO8HxjLnDAuAo7B1tQXCT3bDxEu0csY3GMgTLf+epIjglAAdNgDy0AlsKaDU1krRzg+fAYRSWsSpQZunMDzRUQvxENRBg4GuQ/fsGNFHruRCkgK/GojLUwinlWLkFuyftAPBQ7JjTtbWjJ0QiD8J4TQnw7IjirTaJf/EpuhLUjergTv/jaIBK+hxlVQFbYssBfGcnx2y3PI0nmFfl49lq0XVLvCUhbx+ZlE9HqfN0UjzqM6be5dCcC7Ea7rQezHTFSVxq89U1CO4gzgEkHmGcLin2zo9zCh/eVIr0Ei70hQra8qigQN2XydHY1aTS/kOwNZLfQ74H3gYRVwTrkwi9sSH9fk8wgLk5O1/pgtAlPSUQWDVl9WW0/93VPefXplICbn12Sw+mZc9ZMa5Kerr6pGcsoQNBX97SXT49epC0V1EPqPORkU6RzfnP/INWr6JySbE9H8pRB/yj2SjOGYvR5LpbSB/eNo=
-  on:
-    branch: master
-    tags: true
+  - provider: pages
+    skip_cleanup: true
+    github_token: "$GITHUB_TOKEN"
+    keep_history: true
+    local_dir: html
+    on:
+      branch: master
+  - provider: pypi
+    skip_cleanup: true
+    user: tpoveda
+    password:
+      secure: g58dIBTpbmvHOOUv/FooheLOHVeNDUbDRRvU8I4WF5OwDtnuZAsqaJ94YHX3a43Bh/8XUCGjhsJYtNlDcPY8YIf+Dhgg+phq5lHPP0GvJihBc//PxydJ2BijbU/sEQACthvH9hjZ60WXxo3NvaRc7oVNxROHSxGmN9ZSpsBmke79KOgSqOHfAFZ0Wyq2Umyz9DvgJPohMhXJrO8HxjLnDAuAo7B1tQXCT3bDxEu0csY3GMgTLf+epIjglAAdNgDy0AlsKaDU1krRzg+fAYRSWsSpQZunMDzRUQvxENRBg4GuQ/fsGNFHruRCkgK/GojLUwinlWLkFuyftAPBQ7JjTtbWjJ0QiD8J4TQnw7IjirTaJf/EpuhLUjergTv/jaIBK+hxlVQFbYssBfGcnx2y3PI0nmFfl49lq0XVLvCUhbx+ZlE9HqfN0UjzqM6be5dCcC7Ea7rQezHTFSVxq89U1CO4gzgEkHmGcLin2zo9zCh/eVIr0Ei70hQra8qigQN2XydHY1aTS/kOwNZLfQ74H3gYRVwTrkwi9sSH9fk8wgLk5O1/pgtAlPSUQWDVl9WW0/93VPefXplICbn12Sw+mZc9ZMa5Kerr6pGcsoQNBX97SXT49epC0V1EPqPORkU6RzfnP/INWr6JySbE9H8pRB/yj2SjOGYvR5LpbSB/eNo=
+    on:
+      branch: master
+      tags: true
