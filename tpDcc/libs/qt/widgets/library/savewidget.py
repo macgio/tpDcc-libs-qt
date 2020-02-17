@@ -15,14 +15,14 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpQtLib
-import tpDccLib as tp
-from tpQtLib.core import base, qtutils
-from tpQtLib.widgets import directory, formwidget, messagebox
-from tpQtLib.widgets.library import widgets
+import tpDcc as tp
+from tpDcc.libs import qt
+from tpDcc.libs.qt.core import base, qtutils
+from tpDcc.libs.qt.widgets import directory, formwidget, messagebox
+from tpDcc.libs.qt.widgets.library import widgets
 
 if tp.is_maya():
-    from tpMayaLib.core import thumbnail
+    from tpDcc.dccs.maya.core import thumbnail
 
 
 class SaveWidget(base.BaseWidget, object):
@@ -84,7 +84,7 @@ class SaveWidget(base.BaseWidget, object):
         self._thumbnail_btn.setMaximumSize(QSize(150, 150))
         self._thumbnail_btn.setToolTip('Take snapshot')
         self._thumbnail_btn.setStyleSheet('color: rgb(40, 40, 40);border: 0px solid rgb(0, 0, 0, 150);background-color: rgb(254, 255, 230, 200);')
-        self._thumbnail_btn.setIcon(tpQtLib.resource.icon('thumbnail'))
+        self._thumbnail_btn.setIcon(qt.resource.icon('thumbnail'))
         self._thumbnail_btn.setToolTip("""
         Click to capture a thumbnail from the current viewport.\n
         CTRL + Click to show the capture window for better framing
@@ -294,15 +294,15 @@ class SaveWidget(base.BaseWidget, object):
         sequence_widget.setStyleSheet(self._thumbnail_btn.styleSheet())
         sequence_widget.setToolTip(self._thumbnail_btn.toolTip())
 
-        camera_icon = tpQtLib.resource.get('icons', 'camera.svg')
-        expand_icon = tpQtLib.resource.get('icons', 'expand.svg')
-        folder_icon = tpQtLib.resource.get('icons', 'folder.svg')
+        camera_icon = qt.resource.get('icons', 'camera.svg')
+        expand_icon = qt.resource.get('icons', 'expand.svg')
+        folder_icon = qt.resource.get('icons', 'folder.svg')
 
         sequence_widget.addAction(camera_icon, 'Capture new image', 'Capture new image', self._on_thumbnail_capture)
         sequence_widget.addAction(expand_icon, 'Show Capture window', 'Show Capture window', self._on_show_capture_window)
         sequence_widget.addAction(folder_icon, 'Load image from disk', 'Load image from disk', self._on_show_browse_image_dialog)
 
-        sequence_widget.setIcon(tpQtLib.resource.icon('thumbnail2'))
+        sequence_widget.setIcon(qt.resource.icon('thumbnail2'))
         self._thumbnail_frame.layout().insertWidget(0, sequence_widget)
         self._thumbnail_btn.hide()
         self._thumbnail_btn = sequence_widget

@@ -20,18 +20,18 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpDccLib as tp
-from tpDccLib.core import consts as dcc_consts
+import tpDcc as tp
+from tpDcc.core import consts as dcc_consts
 
-from tpPyUtils import decorators, timedate, fileio, path as path_utils, folder as folder_utils
+from tpDcc.libs.python import decorators, timedate, fileio, path as path_utils, folder as folder_utils
 
-import tpQtLib
-from tpQtLib.core import image, qtutils
-from tpQtLib.widgets import messagebox
-from tpQtLib.widgets.library import consts, savewidget, loadwidget, exceptions, utils
+from tpDcc.libs import qt
+from tpDcc.libs.qt.core import image, qtutils
+from tpDcc.libs.qt.widgets import messagebox
+from tpDcc.libs.qt.widgets.library import consts, savewidget, loadwidget, exceptions, utils
 
 if tp.is_maya():
-    from tpMayaLib.core import decorators as maya_decorators
+    from tpDcc.dccs.maya.core import decorators as maya_decorators
     show_wait_cursor_decorator = maya_decorators.show_wait_cursor
 else:
     show_wait_cursor_decorator = decorators.empty_decorator
@@ -50,7 +50,7 @@ class LibraryItem(QTreeWidgetItem, object):
     DataRole = consts.ITEM_DEFAULT_DATA_ROLE
 
     ThreadPool = QThreadPool()
-    DefaultThumbnailPath = tpQtLib.resource.get('icons', 'thumbnail.png')
+    DefaultThumbnailPath = qt.resource.get('icons', 'thumbnail.png')
 
     MAX_ICON_SIZE = consts.ITEM_DEFAULT_MAX_ICON_SIZE
     DEFAULT_FONT_SIZE = consts.ITEM_DEFAULT_FONT_SIZE
@@ -303,7 +303,7 @@ class LibraryItem(QTreeWidgetItem, object):
         if isinstance(icon, (str, unicode)):
             if not os.path.exists(icon):
                 color = color or QColor(255, 255, 255, 20)
-                icon = tpQtLib.resource.icon('image', color=color)
+                icon = qt.resource.icon('image', color=color)
             else:
                 icon = QIcon(icon)
         if isinstance(column, (str, unicode)):
@@ -448,7 +448,7 @@ class LibraryItem(QTreeWidgetItem, object):
 
         library = self.library()
         if not library:
-            tpQtLib.logger.error('Impossible to rename item because library is not defined!')
+            qt.logger.error('Impossible to rename item because library is not defined!')
             return
 
         source = self.path()
@@ -1084,8 +1084,8 @@ class LibraryItem(QTreeWidgetItem, object):
         :param kwargs: dict
         """
 
-        tpQtLib.logger.debug('Loading "{}"'.format(self.name()))
-        tpQtLib.logger.debug('Loading kwargs {}'.format(kwargs))
+        qt.logger.debug('Loading "{}"'.format(self.name()))
+        qt.logger.debug('Loading kwargs {}'.format(kwargs))
         self.loaded.emit(self)
 
     @show_wait_cursor_decorator
@@ -1103,7 +1103,7 @@ class LibraryItem(QTreeWidgetItem, object):
 
         self.set_path(path)
 
-        tpQtLib.logger.debug('Item Saving: {}'.format(path))
+        qt.logger.debug('Item Saving: {}'.format(path))
         self.saving.emit(self)
 
         if os.path.exists(path):
@@ -1114,7 +1114,7 @@ class LibraryItem(QTreeWidgetItem, object):
             os.mkdir(temp_path)
         valid_save = self.write(temp_path, *args, **kwargs)
         if not valid_save:
-            tpQtLib.logger.warning('Item {} not saved!'.format(path))
+            qt.logger.warning('Item {} not saved!'.format(path))
             if self.library_window():
                 self.library_window().show_warning_message('Item {} not saved!'.format(path))
             return
@@ -1130,7 +1130,7 @@ class LibraryItem(QTreeWidgetItem, object):
         self.save_version(new_path, comment)
 
         self.saved.emit(self)
-        tpQtLib.logger.debug('Item Saved: {}'.format(self.path()))
+        qt.logger.debug('Item Saved: {}'.format(self.path()))
 
     def save_version(self, path, comment):
         """
@@ -1190,7 +1190,7 @@ class LibraryItem(QTreeWidgetItem, object):
         :param exception: str
         """
 
-        tpQtLib.logger.exception(exception)
+        qt.logger.exception(exception)
         return self.show_error_dialog(title, error)
 
     def show_question_dialog(self, title, text):
@@ -2262,9 +2262,9 @@ class LibraryFolderItem(LibraryItem, object):
 
     MenuName = 'Folder'
     MenuOrder = 1
-    MenuIconPath = tpQtLib.resource.get('icons', 'color', 'folder.png')
-    DefaultThumbnailPath = tpQtLib.resource.get('icons', 'folder.png')
-    TrashIconPath = tpQtLib.resource.get('icons', 'trash.png')
+    MenuIconPath = qt.resource.get('icons', 'color', 'folder.png')
+    DefaultThumbnailPath = qt.resource.get('icons', 'folder.png')
+    TrashIconPath = qt.resource.get('icons', 'trash.png')
 
     @classmethod
     def match(cls, path):
@@ -2416,9 +2416,9 @@ class BaseItem(LibraryItem, object):
         :param kwargs: dict
         """
 
-        tpQtLib.logger.debug('Loading: {}'.format(self.transfer_path()))
+        qt.logger.debug('Loading: {}'.format(self.transfer_path()))
         self.transfer_object().load(objects=objects, namespaces=namespaces, **kwargs)
-        tpQtLib.logger.debug('Loaded: {}'.format(self.transfer_path()))
+        qt.logger.debug('Loaded: {}'.format(self.transfer_path()))
 
     def write(self, path, objects, icon_path='', **options):
         """

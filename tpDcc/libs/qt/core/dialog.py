@@ -17,7 +17,7 @@ from Qt.QtWidgets import *
 from Qt.QtGui import *
 
 import tpDcc as tp
-from tpDcc.libs.qt import register
+from tpDcc import register
 from tpDcc.libs.qt.core import qtutils, color, animation, theme, dragger
 from tpDcc.libs.qt.widgets import splitters
 
@@ -516,7 +516,7 @@ class BaseFileFolderDialog(Dialog, object):
     def ui(self):
         super(BaseFileFolderDialog, self).ui()
 
-        from tpQtLib.widgets import directory
+        from tpDcc.libs.qt.widgets import directory
 
         self.places = dict()
 

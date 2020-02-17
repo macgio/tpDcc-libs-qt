@@ -72,7 +72,7 @@ if QT_AVAILABLE:
             from PySide.QtUiTools import QUiLoader
         except ImportError:
             try:
-                from tpQtLib.externals.pysideutils.QtUiTools import QUiLoader
+                from tpDcc.libs.qt.externals.pysideutils.QtUiTools import QUiLoader
             except ImportError:
                 UILOADER_AVAILABLE = False
 

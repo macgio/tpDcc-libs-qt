@@ -13,8 +13,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpQtLib
-from tpQtLib.widgets.library import consts, mixin
+from tpDcc.libs.qt.widgets.library import consts, mixin
 
 
 class LibraryListView(mixin.LibraryViewWidgetMixin, QListView):

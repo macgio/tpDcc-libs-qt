@@ -10,12 +10,11 @@ from __future__ import print_function, division, absolute_import
 import os
 from collections import OrderedDict
 
-from tpPyUtils import fileio, folder, settings, osplatform, path as path_utils
+from tpDcc.libs.python import fileio, folder, settings, osplatform, path as path_utils
 
-from tpDccLib.core import scripts
+from tpDcc.core import scripts
 
-import tpQtLib
-from tpQtLib.widgets.library import items
+from tpDcc.libs.qt.widgets.library import items
 
 try:
     from tpPyUtils.externals.scandir import walk

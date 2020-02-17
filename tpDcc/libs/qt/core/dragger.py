@@ -15,6 +15,7 @@ __email__ = "tpoveda@cgart3d.com"
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
+from tpDcc.libs import qt
 from tpDcc.libs.qt.core import qtutils, base
 
 
@@ -68,22 +69,22 @@ class WindowDragger(QFrame, object):
         self._button_minimized = QPushButton()
         self._button_minimized.setIconSize(QSize(25, 25))
         # self._button_minimized.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
-        self._button_minimized.setIcon(tpQtLib.resource.icon('minimize', theme='window'))
+        self._button_minimized.setIcon(qt.resource.icon('minimize', theme='window'))
         self._button_minimized.setStyleSheet('QWidget {background-color: rgba(255, 255, 255, 0); border:0px;}')
         self._button_maximized = QPushButton()
-        self._button_maximized.setIcon(tpQtLib.resource.icon('maximize', theme='window'))
+        self._button_maximized.setIcon(qt.resource.icon('maximize', theme='window'))
         # self._button_maximized.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
         self._button_maximized.setStyleSheet('QWidget {background-color: rgba(255, 255, 255, 0); border:0px;}')
         self._button_maximized.setIconSize(QSize(25, 25))
         self._button_restored = QPushButton()
         # self._button_restored.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
         self._button_restored.setVisible(False)
-        self._button_restored.setIcon(tpQtLib.resource.icon('restore', theme='window'))
+        self._button_restored.setIcon(qt.resource.icon('restore', theme='window'))
         self._button_restored.setStyleSheet('QWidget {background-color: rgba(255, 255, 255, 0); border:0px;}')
         self._button_restored.setIconSize(QSize(25, 25))
         self._button_closed = QPushButton()
         # button_closed.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
-        self._button_closed.setIcon(tpQtLib.resource.icon('close', theme='window'))
+        self._button_closed.setIcon(qt.resource.icon('close', theme='window'))
         self._button_closed.setStyleSheet('QWidget {background-color: rgba(255, 255, 255, 0); border:0px;}')
         self._button_closed.setIconSize(QSize(25, 25))
 
@@ -112,7 +113,7 @@ class WindowDragger(QFrame, object):
     # ============================================================================================================
 
     def _setup_logo_button(self):
-        from tpQtLib.widgets import buttons
+        from tpDcc.libs.qt.widgets import buttons
         logo_button = buttons.IconMenuButton(parent=self)
         logo_button.setIconSize(QSize(24, 24))
         logo_button.setFixedSize(QSize(30, 30))

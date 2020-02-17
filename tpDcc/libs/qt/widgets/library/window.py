@@ -16,17 +16,15 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-from tpPyUtils import decorators, path as path_utils
-
-import tpDccLib as tp
-
-import tpQtLib
-from tpQtLib.core import base, icon, menu, qtutils, animation
-from tpQtLib.widgets import stack, messagebox, action
-from tpQtLib.widgets.library import consts, utils, library, viewer, widgets
+import tpDcc as tp
+from tpDcc.libs.python import decorators, path as path_utils
+from tpDcc.libs import qt
+from tpDcc.libs.qt.core import base, icon, menu, qtutils, animation
+from tpDcc.libs.qt.widgets import stack, messagebox, action
+from tpDcc.libs.qt.widgets.library import consts, utils, library, viewer, widgets
 
 if tp.is_maya():
-    from tpMayaLib.core import decorators as maya_decorators
+    from tpDcc.dccs.maya.core import decorators as maya_decorators
     show_wait_cursor_decorator = maya_decorators.show_wait_cursor
     show_arrow_cursor_decorator = maya_decorators.show_arrow_cursor
 else:
@@ -50,7 +48,7 @@ class SidebarFrame(QFrame):
     pass
 
 
-class LibraryWindow(tpQtLib.Window, object):
+class LibraryWindow(tp.Window, object):
 
     LIBRARY_CLASS = library.Library
     VIEWER_CLASS = viewer.LibraryViewer
@@ -234,7 +232,7 @@ class LibraryWindow(tpQtLib.Window, object):
     def _setup_menubar(self):
         icon_color = self.icon_color()
         name = 'New Item'
-        icon = tpQtLib.resource.icon('plus', theme='black')
+        icon = qt.resource.icon('plus', theme='black')
         icon.set_color(icon_color)
         tip = 'Add a new item to the selected folder'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_new_menu)
@@ -242,43 +240,43 @@ class LibraryWindow(tpQtLib.Window, object):
         self._menubar_widget.addWidget(self._search_widget)
 
         name = 'Filters'
-        icon = tpQtLib.resource.icon('filter', theme='black')
+        icon = qt.resource.icon('filter', theme='black')
         icon.set_color(icon_color)
         tip = 'Filter the current results by type.\nCtrl + Click will hide the ohters and show the selected one.'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_filter_by_menu)
 
         name = 'Item View'
-        icon = tpQtLib.resource.icon('slider', theme='black')
+        icon = qt.resource.icon('slider', theme='black')
         icon.set_color(icon_color)
         tip = 'Change the style of the item view'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_item_view_menu)
 
         name = 'Group By'
-        icon = tpQtLib.resource.icon('grid_view', theme='black')
+        icon = qt.resource.icon('grid_view', theme='black')
         icon.set_color(icon_color)
         tip = 'Group the current items in the view by column'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_group_by_menu)
 
         name = 'Sort By'
-        icon = tpQtLib.resource.icon('descending_sorting', theme='black')
+        icon = qt.resource.icon('descending_sorting', theme='black')
         icon.set_color(icon_color)
         tip = 'Sort the current items in the view by column'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_sort_by_menu)
 
         name = 'View'
-        icon = tpQtLib.resource.icon('add')
+        icon = qt.resource.icon('add')
         # icon.set_color(icon_color)
         tip = 'Choose to show/hide both the preview and navigation pane\nCtrl + click will hide the menu bar as well.'
         self.add_menubar_action(name, icon, tip, callback=self._on_toggle_view)
 
         name = 'Sync Items'
-        icon = tpQtLib.resource.icon('sync', theme='black')
+        icon = qt.resource.icon('sync', theme='black')
         icon.set_color(icon_color)
         tip = 'Sync with the filesystem'
         self.add_menubar_action(name, icon, tip, callback=self._on_sync)
 
         name = 'Settings'
-        icon = tpQtLib.resource.icon('settings', theme='black')
+        icon = qt.resource.icon('settings', theme='black')
         icon.set_color(icon_color)
         tip = 'Settings menu'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_settings_menu)
@@ -1089,7 +1087,7 @@ class LibraryWindow(tpQtLib.Window, object):
         queries = [{'filters': [('type', 'is', 'Folder')]}]
 
         items = self.library().find_items(queries)
-        trash_icon_path = tpQtLib.resource.get('icons', 'black', 'trash')
+        trash_icon_path = qt.resource.get('icons', 'black', 'trash')
 
         for item in items:
             path = item.path()
@@ -1833,9 +1831,9 @@ class LibraryWindow(tpQtLib.Window, object):
         compact = self.is_compact_view()
         action = self.menubar_widget().find_action('View')
         if not compact:
-            icon = tpQtLib.resource.icon('view_all', theme='black')
+            icon = qt.resource.icon('view_all', theme='black')
         else:
-            icon = tpQtLib.resource.icon('view_compact', theme='black')
+            icon = qt.resource.icon('view_compact', theme='black')
         icon.set_color(self.icon_color())
         action.setIcon(icon)
 
@@ -1845,7 +1843,7 @@ class LibraryWindow(tpQtLib.Window, object):
         """
 
         action = self.menubar_widget().find_action('Filters')
-        icon = tpQtLib.resource.icon('filter', theme='black')
+        icon = qt.resource.icon('filter', theme='black')
         icon.set_color(self.icon_color())
         if self._filter_by_menu.is_active():
             icon.set_badge(18, 1, 9, 9, color=consts.ICON_BADGE_COLOR)
@@ -1880,8 +1878,7 @@ class LibraryWindow(tpQtLib.Window, object):
         :return: QIcon
         """
 
-        # return tpQtLib.resource.icon('add', color=color)
-        return tpQtLib.resource.icon('add')
+        return qt.resource.icon('add')
 
     def _create_new_item_menu(self):
         """
@@ -1926,7 +1923,7 @@ class LibraryWindow(tpQtLib.Window, object):
         if not self.is_locked():
             context_menu.addMenu(self._create_new_item_menu())
             if item:
-                edit_icon = tpQtLib.resource.icon('edit')
+                edit_icon = qt.resource.icon('edit')
                 edit_menu = menu.Menu(context_menu)
                 edit_menu.setTitle('Edit')
                 edit_menu.setIcon(edit_icon)
@@ -1951,7 +1948,7 @@ class LibraryWindow(tpQtLib.Window, object):
         :return: QMenu
         """
 
-        settings_icon = tpQtLib.resource.icon('settings')
+        settings_icon = qt.resource.icon('settings')
         context_menu = menu.Menu('', self)
         context_menu.setTitle('Settings')
         context_menu.setIcon(settings_icon)

@@ -14,8 +14,8 @@ from Qt.QtWidgets import *
 from Qt.QtGui import *
 
 import tpDcc as tp
+from tpDcc import register
 from tpDcc.libs.python import path, folder
-from tpDcc.libs.qt import register
 from tpDcc.libs.qt.core import qtutils, settings, animation, color, theme, statusbar, dragger
 
 

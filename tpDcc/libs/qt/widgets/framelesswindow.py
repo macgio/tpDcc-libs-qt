@@ -11,6 +11,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
+from tpDcc import register
 from tpDcc.libs.qt.core import qtutils, base, window, dragger
 from tpDcc.libs.qt.widgets import overlay
 
@@ -53,8 +54,7 @@ class FramelessWindow(window.MainWindow, object):
         else:
             self.set_frameless(True)
 
-        self.setrProperty('framelessWindow', True)
-
+        self.setProperty('framelessWindow', True)
 
     # ============================================================================================================
     # OVERRIDES
@@ -462,4 +462,4 @@ class HorizontalResizer(WindowResizer, object):
         self.setFixedHeight(qtutils.dpi_scale(8))
 
 
-tpQtLib.register_class('FramelessWindow', FramelessWindow)
+register.register_class('FramelessWindow', FramelessWindow)

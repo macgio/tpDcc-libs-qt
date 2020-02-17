@@ -11,10 +11,9 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpQtLib
-from tpQtLib.core import base
-from tpQtLib.widgets import toast, action
-from tpQtLib.widgets.library import consts, treewidget, listview, items
+from tpDcc.libs.qt.core import base
+from tpDcc.libs.qt.widgets import toast, action
+from tpDcc.libs.qt.widgets.library import consts, treewidget, listview, items
 
 
 class LibraryViewerDelegate(QStyledItemDelegate, object):

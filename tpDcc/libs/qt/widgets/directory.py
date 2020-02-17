@@ -14,6 +14,7 @@ from Qt.QtWidgets import *
 from Qt.QtGui import *
 
 import tpDcc as tp
+from tpDcc.libs import qt
 from tpDcc.libs.python import path
 from tpDcc.libs.qt.core import base, qtutils
 from tpDcc.libs.qt.widgets import buttons
@@ -175,7 +176,7 @@ class SelectFolderButton(QWidget, object):
         main_layout.setSpacing(2)
         self.setLayout(main_layout)
 
-        folder_icon = tpQtLib.resource.icon('folder')
+        folder_icon = qt.resource.icon('folder')
         self._folder_btn = buttons.IconButton(icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         main_layout.addWidget(self._folder_btn)
 
@@ -256,7 +257,7 @@ class SelectFolder(QWidget, object):
             self._folder_line.setText(self._directory)
 
         if self._use_icon:
-            folder_icon = tpQtLib.resource.icon('folder')
+            folder_icon = qt.resource.icon('folder')
             self._folder_btn = buttons.IconButton(icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         else:
             self._folder_btn = buttons.BaseButton('Browse...')
@@ -314,7 +315,7 @@ class SelectFolder(QWidget, object):
         """
 
         if tp.is_maya():
-            import tpMayaLib as maya
+            import tpDcc.dccs.maya as maya
             result = maya.cmds.fileDialog2(caption='Select Folder', fileMode=3, startingDirectory=self.folder_line.text())
             if result:
                 result = result[0]
@@ -380,7 +381,7 @@ class SelectFile(QWidget, object):
             self._file_line.setText(self._directory)
 
         if self._use_icon:
-            folder_icon = tpQtLib.resource.icon('folder')
+            folder_icon = qt.resource.icon('folder')
             self._file_btn = buttons.IconButton(icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         else:
             self._file_btn = buttons.BaseButton('Browse ...')
@@ -450,7 +451,7 @@ class SelectFile(QWidget, object):
         """
 
         if tp.is_maya():
-            import tpMayaLib as maya
+            import tpDcc.dccs.maya as maya
 
             file_line = self._file_line.text()
             if os.path.isfile(file_line):

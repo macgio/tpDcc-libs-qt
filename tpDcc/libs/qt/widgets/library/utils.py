@@ -21,12 +21,11 @@ import six
 
 from tpDcc.libs.python import python, decorators, fileio, path as path_utils
 
-import tpQtLib
-import tpDccLib as tp
-from tpQtLib.widgets.library import exceptions
+import tpDcc as tp
+from tpDcc.libs.qt.widgets.library import exceptions
 
 if tp.is_maya():
-    from tpMayaLib.core import decorators as maya_decorators
+    from tpDcc.dccs.maya.core import decorators as maya_decorators
     show_wait_cursor_decorator = maya_decorators.show_wait_cursor
 else:
     show_wait_cursor_decorator = decorators.empty_decorator

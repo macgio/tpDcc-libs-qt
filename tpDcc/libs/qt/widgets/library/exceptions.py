@@ -9,6 +9,7 @@ from __future__ import print_function, division, absolute_import
 
 import six
 
+
 class PathError(IOError, object):
     """
     Exception that supports unicode escape characters

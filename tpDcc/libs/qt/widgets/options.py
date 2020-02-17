@@ -15,6 +15,7 @@ from Qt.QtWidgets import *
 from Qt.QtGui import *
 
 import tpDcc as tp
+from tpDcc.libs import qt
 from tpDcc.libs.python import name as name_utils
 from tpDcc.libs.qt.core import base, qtutils
 from tpDcc.libs.qt.widgets import buttons, splitters, spinbox, code, directory
@@ -67,10 +68,10 @@ class OptionsWidget(base.BaseWidget, object):
     def ui(self):
         super(OptionsWidget, self).ui()
 
-        edit_mode_icon = tpQtLib.resource.icon('edit')
-        move_up_icon = tpQtLib.resource.icon('sort_up')
-        move_down_icon = tpQtLib.resource.icon('sort_down')
-        remove_icon = tpQtLib.resource.icon('delete')
+        edit_mode_icon = qt.resource.icon('edit')
+        move_up_icon = qt.resource.icon('sort_up')
+        move_down_icon = qt.resource.icon('sort_down')
+        remove_icon = qt.resource.icon('delete')
 
         self._edit_widget = QWidget()
         top_layout = QHBoxLayout()
@@ -692,18 +693,18 @@ class OptionList(QGroupBox, object):
         self._context_menu = QMenu()
         self._context_menu.setTearOffEnabled(True)
 
-        plus_icon = tpQtLib.resource.icon('plus')
-        string_icon = tpQtLib.resource.icon('rename')
-        directory_icon = tpQtLib.resource.icon('folder')
-        integer_icon = tpQtLib.resource.icon('number_1')
-        float_icon = tpQtLib.resource.icon('float_1')
-        bool_icon = tpQtLib.resource.icon('true_false')
-        group_icon = tpQtLib.resource.icon('group_objects')
-        script_icon = tpQtLib.resource.icon('source_code')
-        title_icon = tpQtLib.resource.icon('label')
-        clear_icon = tpQtLib.resource.icon('clean')
-        copy_icon = tpQtLib.resource.icon('copy')
-        paste_icon = tpQtLib.resource.icon('paste')
+        plus_icon = qt.resource.icon('plus')
+        string_icon = qt.resource.icon('rename')
+        directory_icon = qt.resource.icon('folder')
+        integer_icon = qt.resource.icon('number_1')
+        float_icon = qt.resource.icon('float_1')
+        bool_icon = qt.resource.icon('true_false')
+        group_icon = qt.resource.icon('group_objects')
+        script_icon = qt.resource.icon('source_code')
+        title_icon = qt.resource.icon('label')
+        clear_icon = qt.resource.icon('clean')
+        copy_icon = qt.resource.icon('copy')
+        paste_icon = qt.resource.icon('paste')
 
         create_menu = self._context_menu.addMenu(plus_icon, 'Add Options')
         add_string_action = QAction(string_icon, 'Add String', create_menu)
@@ -1176,8 +1177,8 @@ class OptionListGroup(OptionList, object):
 
         super(OptionListGroup, self)._create_context_menu()
 
-        string_icon = tpQtLib.resource.icon('rename')
-        remove_icon = tpQtLib.resource.icon('trash')
+        string_icon = qt.resource.icon('rename')
+        remove_icon = qt.resource.icon('trash')
 
         rename_action = QAction(string_icon, 'Rename', self._context_menu)
         self._context_menu.addAction(rename_action)
@@ -1720,11 +1721,11 @@ class Option(base.BaseWidget, object):
     def _create_context_menu(self):
         self._context_menu = QMenu()
 
-        move_up_icon = tpQtLib.resource.icon('sort_up')
-        move_down_icon = tpQtLib.resource.icon('sort_down')
-        rename_icon = tpQtLib.resource.icon('rename')
-        remove_icon = tpQtLib.resource.icon('delete')
-        copy_icon = tpQtLib.resource.icon('copy')
+        move_up_icon = qt.resource.icon('sort_up')
+        move_down_icon = qt.resource.icon('sort_down')
+        rename_icon = qt.resource.icon('rename')
+        remove_icon = qt.resource.icon('delete')
+        copy_icon = qt.resource.icon('copy')
 
         move_up_action = QAction(move_up_icon, 'Move Up', self._context_menu)
         self._context_menu.addAction(move_up_action)

@@ -13,7 +13,7 @@ from Qt.QtGui import *
 
 import tpDcc as tp
 from tpDcc.libs.qt.core import qtutils
-from tpDcc.libs.qt.libs.qt.core import window
+from tpDcc.libs.qt.core import window
 from tpDcc.libs.qt.widgets import tabbars
 
 

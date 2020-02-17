@@ -11,6 +11,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
+from tpDcc.libs import qt
 from tpDcc.libs.qt.core import color, style
 
 
@@ -291,7 +292,7 @@ class Theme(QObject, object):
         else:
             darkness = 'black'
 
-        resource_dirname = tpQtLib.resource().dirname.replace('\\', '/')
+        resource_dirname = qt.resource().dirname.replace('\\', '/')
 
         options = {
             "DARKNESS": darkness,
@@ -336,7 +337,7 @@ class Theme(QObject, object):
         """
 
         options = self.options()
-        path = tpQtLib.resource.get('styles', 'default.css')
+        path = qt.resource.get('styles', 'default.css')
         stylesheet = style.StyleSheet.from_path(path, options=options, dpi=self.dpi())
 
         return stylesheet.data()

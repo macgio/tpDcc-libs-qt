@@ -15,9 +15,9 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpQtLib
-from tpQtLib.core import animation, image, icon, qtutils, color, pixmap, statusbar
-from tpQtLib.widgets import progressbar, toolbar, action, buttons
+from tpDcc.libs import qt
+from tpDcc.libs.qt.core import animation, image, icon, qtutils, color, pixmap, statusbar
+from tpDcc.libs.qt.widgets import progressbar, toolbar, action, buttons
 
 
 class LibraryImageSequenceWidget(QToolButton, object):
@@ -253,11 +253,11 @@ class LibrarySearchWidget(QLineEdit, object):
 
         self._library = None
         self._space_operator = 'and'
-        search_icon = tpQtLib.resource.icon('search', theme='black')
+        search_icon = qt.resource.icon('search', theme='black')
         self._icon_btn = buttons.IconButton(search_icon, icon_padding=2, parent=self)
         self._icon_btn.clicked.connect(self._on_icon_clicked)
         self.set_icon(search_icon)
-        cross_icon = tpQtLib.resource.icon('delete', theme='black')
+        cross_icon = qt.resource.icon('delete', theme='black')
         self._clear_btn = buttons.IconButton(cross_icon, icon_padding=2, parent=self)
         self._clear_btn.setCursor(Qt.ArrowCursor)
         self._clear_btn.setToolTip('Clear all search text')
@@ -626,7 +626,7 @@ class LibrarySideBarWidgetItem(QTreeWidgetItem, object):
         :return: str
         """
 
-        return self._expanded_icon_path or tpQtLib.resource.get('icons', 'black', 'open_folder')
+        return self._expanded_icon_path or qt.resource.get('icons', 'black', 'open_folder')
 
     def collapsed_icon_path(self):
         """
@@ -634,7 +634,7 @@ class LibrarySideBarWidgetItem(QTreeWidgetItem, object):
         :return: str
         """
 
-        return self._collapsed_icon_path or tpQtLib.resource.get('icons', 'black', 'folder')
+        return self._collapsed_icon_path or qt.resource.get('icons', 'black', 'folder')
 
     def icon_path(self):
         """

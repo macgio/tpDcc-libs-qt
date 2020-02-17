@@ -12,6 +12,8 @@ import uuid
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
+from tpDcc.libs import qt
+
 
 class BaseTool(object):
     """
@@ -119,7 +121,7 @@ class ShelfTool(BaseTool, object):
 
     @staticmethod
     def icon():
-        return tpQtLib.resource.icon('home')
+        return qt.resource.icon('home')
 
     def context_menu_builder(self):
         return None
@@ -197,11 +199,11 @@ class DockTitleBar(QWidget, object):
         self._button_size = QSize(14, 14)
 
         self._dock_btn = QToolButton(self)
-        self._dock_btn.setIcon(tpQtLib.resource.icon('restore_window', theme='color'))
+        self._dock_btn.setIcon(qt.resource.icon('restore_window', theme='color'))
         self._dock_btn.setMaximumSize(self._button_size)
         self._dock_btn.setAutoRaise(True)
         self._close_btn = QToolButton(self)
-        self._close_btn.setIcon(tpQtLib.resource.icon('close_window', theme='color'))
+        self._close_btn.setIcon(qt.resource.icon('close_window', theme='color'))
         self._close_btn.setMaximumSize(self._button_size)
         self._close_btn.setAutoRaise(True)
 

@@ -281,7 +281,7 @@ class ColorSwatch(QToolButton, object):
     def _on_open_color_picker(self):
 
         # THIS ONLY WORKS ON MAYA
-        from tpQtLib.core import dialog
+        from tpDcc.libs.qt.core import dialog
 
         color_picker = dialog.ColorDialog()
         color_picker.exec_()

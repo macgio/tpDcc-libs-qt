@@ -14,10 +14,9 @@ from collections import OrderedDict
 
 from Qt.QtCore import *
 
-from tpPyUtils import decorators, path as path_utils
+from tpDcc.libs.python import decorators, path as path_utils
 
-import tpQtLib
-from tpQtLib.widgets.library import consts, utils
+from tpDcc.libs.qt.widgets.library import consts, utils
 
 
 class Library(QObject, object):

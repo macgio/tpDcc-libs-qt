@@ -11,6 +11,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
+from tpDcc.libs import qt
 from tpDcc.libs.qt.widgets import buttons
 
 
@@ -83,9 +84,9 @@ class CollapsibleSplitterHandle(QSplitterHandle, object):
 
         self._is_expanded = True
 
-        expand_icon = tpQtLib.resource.icon('expand')
-        expand_hover_icon = tpQtLib.resource.icon('expand_hover')
-        expand_pressed_icon = tpQtLib.resource.icon('expand_pressed')
+        expand_icon = qt.resource.icon('expand')
+        expand_hover_icon = qt.resource.icon('expand_hover')
+        expand_pressed_icon = qt.resource.icon('expand_pressed')
         self.expand_btn = CollapsibleSplitterButton(
             icon=expand_icon, hover_icon=expand_hover_icon, pressed_icon=expand_pressed_icon, parent=self
         )
@@ -96,9 +97,9 @@ class CollapsibleSplitterHandle(QSplitterHandle, object):
         self.expand_btn.setFocusPolicy(Qt.NoFocus)
         self.expand_btn.setVisible(False)
 
-        collapse_icon = tpQtLib.resource.icon('collapse')
-        collapse_hover_icon = tpQtLib.resource.icon('collapse_hover')
-        collapse_pressed_icon = tpQtLib.resource.icon('collapse_pressed')
+        collapse_icon = qt.resource.icon('collapse')
+        collapse_hover_icon = qt.resource.icon('collapse_hover')
+        collapse_pressed_icon = qt.resource.icon('collapse_pressed')
         self.collapse_btn = CollapsibleSplitterButton(
             icon=collapse_icon, hover_icon=collapse_hover_icon, pressed_icon=collapse_pressed_icon, parent=self
         )

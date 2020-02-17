@@ -13,8 +13,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpQtLib
-from tpQtLib.widgets.library import consts, mixin, items
+from tpDcc.libs.qt.widgets.library import consts, mixin, items
 
 
 class LibraryTreeWidget(mixin.LibraryViewWidgetMixin, QTreeWidget):

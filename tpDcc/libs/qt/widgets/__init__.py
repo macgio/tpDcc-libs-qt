@@ -1,14 +1,14 @@
 order = [
-    'tpQtLib.widgets.layouts'
-    'tpQtLib.widgets.buttons'
-    'tpQtLib.widgets.splitters',
-    'tpQtLib.widgets.gif',
-    'tpQtLib.widgets.directory',
-    'tpQtLib.widgets.grid',
-    'tpQtLib.widgets.search',
-    'tpQtLib.widgets.treewidgets',
-    'tpQtLib.widgets.history',
-    'tpQtLib.widgets.tabbars',
-    'tpQtLib.widgets.tabs',
-    'tpQtLib.widgets.overlay'
+    'tpDcc.libs.qt.widgets.layouts'
+    'tpDcc.libs.qt.widgets.buttons'
+    'tpDcc.libs.qt.widgets.splitters',
+    'tpDcc.libs.qt.widgets.gif',
+    'tpDcc.libs.qt.widgets.directory',
+    'tpDcc.libs.qt.widgets.grid',
+    'tpDcc.libs.qt.widgets.search',
+    'tpDcc.libs.qt.widgets.treewidgets',
+    'tpDcc.libs.qt.widgets.history',
+    'tpDcc.libs.qt.widgets.tabbars',
+    'tpDcc.libs.qt.widgets.tabs',
+    'tpDcc.libs.qt.widgets.overlay'
 ]
