@@ -359,7 +359,13 @@ class ColorDialog(Dialog, object):
 
     def_title = 'Select Color'
 
-    maya_colors = [(.467, .467, .467),(.000, .000, .000),(.247, .247, .247),(.498, .498, .498),(0.608, 0, 0.157),(0, 0.016, 0.373),(0, 0, 1),(0, 0.275, 0.094),(0.145, 0, 0.263),(0.78, 0, 0.78),(0.537, 0.278, 0.2),(0.243, 0.133, 0.122),(0.6, 0.145, 0),(1, 0, 0),(0, 1, 0),(0, 0.255, 0.6),(1, 1, 1),(1, 1, 0),(0.388, 0.863, 1),(0.263, 1, 0.635),(1, 0.686, 0.686),(0.89, 0.675, 0.475),(1, 1, 0.384),(0, 0.6, 0.325),(0.627, 0.412, 0.188),(0.62, 0.627, 0.188),(0.408, 0.627, 0.188),(0.188, 0.627, 0.365),(0.188, 0.627, 0.627),(0.188, 0.404, 0.627),(0.435, 0.188, 0.627),(0.627, 0.188, 0.404)]
+    maya_colors = [
+        (.467, .467, .467), (.000, .000, .000), (.247, .247, .247), (.498, .498, .498), (0.608, 0, 0.157),
+        (0, 0.016, 0.373), (0, 0, 1), (0, 0.275, 0.094), (0.145, 0, 0.263), (0.78, 0, 0.78), (0.537, 0.278, 0.2),
+        (0.243, 0.133, 0.122), (0.6, 0.145, 0), (1, 0, 0), (0, 1, 0), (0, 0.255, 0.6), (1, 1, 1), (1, 1, 0),
+        (0.388, 0.863, 1), (0.263, 1, 0.635), (1, 0.686, 0.686), (0.89, 0.675, 0.475), (1, 1, 0.384), (0, 0.6, 0.325),
+        (0.627, 0.412, 0.188), (0.62, 0.627, 0.188), (0.408, 0.627, 0.188), (0.188, 0.627, 0.365),
+        (0.188, 0.627, 0.627), (0.188, 0.404, 0.627), (0.435, 0.188, 0.627), (0.627, 0.188, 0.404)]
 
     def __init__(self, name='MayaColorDialog', parent=None, **kwargs):
         if parent is None:
@@ -412,7 +418,13 @@ class ColorDialog(Dialog, object):
             self.color_slider.setMinimum(0)
             self.color_slider.setMaximum(31)
             self.color_slider.setValue(2)
-            self.color_slider.setStyleSheet("QSlider::groove:horizontal {border: 1px solid #999999;height: 25px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #B1B1B1, stop:1 #c4c4c4);margin: 2px 0;}QSlider::handle:horizontal {background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #b4b4b4, stop:1 #8f8f8f);border: 1px solid #5c5c5c;width: 10px;margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */border-radius: 1px;}")
+            self.color_slider.setStyleSheet(
+                "QSlider::groove:horizontal {border: 1px solid #999999;height: 25px; /* the groove expands "
+                "to the size of the slider by default. by giving it a height, it has a fixed size */background: "
+                "qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #B1B1B1, stop:1 #c4c4c4);margin: 2px 0;}"
+                "QSlider::handle:horizontal {background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #b4b4b4,"
+                " stop:1 #8f8f8f);border: 1px solid #5c5c5c;width: 10px;margin: -2px 0; /* handle is placed by "
+                "default on the contents rect of the groove. Expand outside the groove */border-radius: 1px;}")
             selected_color_layout.addWidget(self.color_slider)
 
             color_label_layout = QHBoxLayout()
@@ -592,10 +604,8 @@ class BaseFileFolderDialog(Dialog, object):
             accepted = super(BaseFileFolderDialog, self).exec_()
             self.filter_box.currentIndexChanged.disconnect(self.update_view)
             return self.get_result() if accepted == 1 else None
-    # endregion
 
-    # region Public Functions
-    def set_filters(self, filters, selected = 0):
+    def set_filters(self, filters, selected=0):
         self.filter_box.clear()
         filter_types = filters.split(';;')
         for ft in filter_types:
@@ -665,6 +675,7 @@ class BaseFileFolderDialog(Dialog, object):
 
         sname = file_name.split(os.pathsep)[0]
         return os.path.realpath(os.path.join(os.path.abspath(self.directory), sname))
+
 #     def accept(self):
 #         self._overlay.close()
 #         super(BaseFileFolderDialog, self).accept()
@@ -792,7 +803,8 @@ class OpenFileDialog(BaseFileFolderDialog, object):
             parent = tp.Dcc.get_main_window()
 
         super(OpenFileDialog, self).__init__(
-            name=name, title=title, size=size, fixed_size=fixed_size, frame_less=frame_less, hide_title=hide_title, use_app_browser=use_app_browser, parent=parent
+            name=name, title=title, size=size, fixed_size=fixed_size, frame_less=frame_less,
+            hide_title=hide_title, use_app_browser=use_app_browser, parent=parent
         )
 
         self._multi = multi
@@ -850,7 +862,8 @@ class SaveFileDialog(BaseFileFolderDialog, object):
             parent = tp.Dcc.get_main_window()
 
         super(SaveFileDialog, self).__init__(
-            name=name, title=title, size=size, fixed_size=fixed_size, frame_less=frame_less, hide_title=hide_title, use_app_browser=use_app_browser, parent=parent)
+            name=name, title=title, size=size, fixed_size=fixed_size, frame_less=frame_less, hide_title=hide_title,
+            use_app_browser=use_app_browser, parent=parent)
 
         self._open_button.setText('Save')
         size = QSize(42, 24)
@@ -887,7 +900,8 @@ class SaveFileDialog(BaseFileFolderDialog, object):
                 dialogStyle=2
             )
         else:
-            raise NotImplementedError('Open App Browser is not implemented for your current DCC: {}'.format(tp.Dcc.get_name()))
+            raise NotImplementedError(
+                'Open App Browser is not implemented for your current DCC: {}'.format(tp.Dcc.get_name()))
             
         if sel_file:
             sel_file = sel_file[0]
@@ -930,7 +944,8 @@ class SelectFolderDialog(BaseFileFolderDialog, object):
             parent = tp.Dcc.get_main_window()
 
         super(SelectFolderDialog, self).__init__(
-            name=name, title=title, size=size, fixed_size=fixed_size, frame_less=frame_less, hide_title=hide_title, use_app_browser=use_app_browser, parent=parent, **kwargs
+            name=name, title=title, size=size, fixed_size=fixed_size, frame_less=frame_less, hide_title=hide_title,
+            use_app_browser=use_app_browser, parent=parent, **kwargs
         )
 
     def accept(self, *args, **kwargs):
@@ -948,7 +963,8 @@ class SelectFolderDialog(BaseFileFolderDialog, object):
                 dialogStyle=2
             )
         else:
-            raise NotImplementedError('Open App Browser is not implemented for your current DCC: {}'.format(tp.Dcc.get_name()))
+            raise NotImplementedError(
+                'Open App Browser is not implemented for your current DCC: {}'.format(tp.Dcc.get_name()))
 
         if sel_folder:
             sel_folder = sel_folder[0]

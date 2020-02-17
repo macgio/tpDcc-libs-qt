@@ -90,7 +90,7 @@ class Resource(object):
         """
 
         if theme:
-            path = self._get(category, theme, name+'.'+extension)
+            path = self._get(category, theme, name + '.' + extension)
         else:
             path = self._get(category, name + '.' + extension)
 

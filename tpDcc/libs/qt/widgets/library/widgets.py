@@ -25,16 +25,16 @@ class LibraryImageSequenceWidget(QToolButton, object):
     DEFAULT_PLAYHEAD_COLOR = QColor(255, 255, 255, 220)
     DEFAULT_PLAYHEAD_HEIGHT = 4
 
-    DEFAULT_STYLE = """
-    QToolBar{
-    border: 0px solid black; 
-    border-radius:2px;
-    background-color: rgb(0,0,0,100);
-    }
-    QToolButton{
-    background-color: transparent;
-    }
-    """
+    DEFAULT_STYLE = ("\n"
+                     "    QToolBar{\n"
+                     "    border: 0px solid black; \n"
+                     "    border-radius:2px;\n"
+                     "    background-color: rgb(0,0,0,100);\n"
+                     "    }\n"
+                     "    QToolButton{\n"
+                     "    background-color: transparent;\n"
+                     "    }\n"
+                     "    ")
 
     def __init__(self, *args):
         super(LibraryImageSequenceWidget, self).__init__(*args)

@@ -353,7 +353,8 @@ class MainWindow(QMainWindow, object):
 #             callback_type = callback_type[0]
 #
 #         if callback_type not in tp.callbacks():
-#             tp.logger.warning('Callback Type: "{}" is not valid! Aborting callback creation ...'.format(callback_type))
+#             tp.logger.warning(
+    #             'Callback Type: "{}" is not valid! Aborting callback creation ...'.format(callback_type))
 #             return
 #
 #         from tpDccLib.core import callbackmanager
@@ -769,9 +770,9 @@ class MainWindow(QMainWindow, object):
 #
 #         self._status_bar.show_error_message(message=message, msecs=msecs)
 #
-#     # =================================================================================================================
+#     # ===============================================================================================================
 #     # TOOLS
-#     # =================================================================================================================
+#     # ===============================================================================================================
 #
 #     def register_tool_instance(self, instance):
 #         """

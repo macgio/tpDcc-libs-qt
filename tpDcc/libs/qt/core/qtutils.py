@@ -283,7 +283,7 @@ def wrapinstance(ptr, base=None):
         except Exception:
             from PySide.shiboken import wrapInstance
             return wrapInstance(long(ptr), base)
-    elif globals().has_key('sip'):
+    elif 'sip' in globals():
         base = QObject
         return shiboken.wrapinstance(long(ptr), base)
     else:
@@ -569,7 +569,8 @@ def create_python_qrc_file(qrc_file, py_file):
         return
 
     pyside_rcc_exe_path = 'C:\\Python27\\Lib\\site-packages\\PySide\\pyside-rcc.exe'
-    # pyside_rcc_exe_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'externals', 'pyside-rcc', 'pyside-rcc.exe')
+    # pyside_rcc_exe_path = os.path.join(os.path.dirname(
+    # os.path.dirname(os.path.abspath(__file__))), 'externals', 'pyside-rcc', 'pyside-rcc.exe')
     if not os.path.isfile(pyside_rcc_exe_path):
         print('RCC_EXE_PATH_DOES_NOT_EXISTS!!!!!!!!!!!!!')
     #     pyside_rcc_exe_path = filedialogs.OpenFileDialog(
@@ -841,7 +842,7 @@ def get_rounded_mask(width, height, radius_tl=10, radius_tr=10, radius_bl=10, ra
 
     # bottom right
     round = QtGui.QRegion(
-        width - 2 * radius_br, height-2 * radius_br, 2 * radius_br, 2 * radius_br, QtGui.QRegion.Ellipse)
+        width - 2 * radius_br, height - 2 * radius_br, 2 * radius_br, 2 * radius_br, QtGui.QRegion.Ellipse)
     corner = QtGui.QRegion(width - radius_br, height-radius_br, radius_br, radius_br, QtGui.QRegion.Rectangle)
     region = region.subtracted(corner.subtracted(round))
 
@@ -863,7 +864,7 @@ def distance_point_to_line(p, v0, v1):
     return QtGui.QVector2D(p - pb).length()
 
 
-def qhash (inputstr):
+def qhash(inputstr):
     instr = ""
     if isinstance(inputstr, str):
         instr = inputstr
@@ -1272,30 +1273,29 @@ def change_button_color(
             button.setStyleSheet(
                 'QPushButton{'
                 'background-color: ' + bg_hex + '; color:  ' + text_hex + '; border-style:solid; border-width: ' + str(
-                    ds_width) + 'px; border-color:' + ds_hex + '; border-radius: 0px;}' +
-                'QPushButton:hover{'
+                    ds_width) + 'px; border-color:' + ds_hex + '; border-radius: 0px;}' + 'QPushButton:hover{'
                 'background-color: ' + hv_hex + '; color:  ' + text_hex + '; border-style:solid; border-width: ' + str(
-                    ds_width) + 'px; border-color:' + ds_hex + '; border-radius: 0px;}' +
-                'QPushButton:pressed{'
+                    ds_width) + 'px; border-color:' + ds_hex + '; border-radius: 0px;}' + 'QPushButton:pressed{'
                 'background-color: ' + hi_hex + '; color: ' + text_hex + '; border-style:solid; border-width: ' + str(
                     ds_width) + 'px; border-color:' + ds_hex + '; border-radius: 0px;}')
         else:
-            button.setStyleSheet(
-                'QPushButton{background-color: ' + bg_hex + '; color:  ' + text_hex + ' ; border: black 0px}' +
-                'QPushButton:hover{background-color: ' + hv_hex + '; color:  ' + text_hex + ' ; border: black 0px}' +
-                'QPushButton:pressed{background-color: ' + hi_hex + '; color: ' + text_hex + '; border: black 2px}')
+            button_style = 'QPushButton{background-color: ' + bg_hex + '; color:  ' + text_hex + ' ; border: black 0px}'
+            button_style += 'QPushButton:hover{background-color: ' + hv_hex + '; color:  ' + text_hex
+            button_style += ' ; border: black 0px}' + 'QPushButton:pressed{background-color: ' + hi_hex + '; color: '
+            button_style += text_hex + '; border: black 2px}'
+            button.setStyleSheet(button_style)
     elif mode == 'window':
-        button.setStyleSheet('color: ' + text_hex + ';' + \
-                             'background-color: ' + bg_hex + ';' + \
-                             'selection-color: ' + ht_hex + ';' + \
-                             'selection-background-color: ' + hb_hex + ';')
+        button_style = 'color: ' + text_hex + ';' + 'background-color: ' + bg_hex + ';' + 'selection-color: '
+        button_style += ht_hex + ';' + 'selection-background-color: ' + hb_hex + ';'
+        button.setStyleSheet(button_style)
 
 
 def change_border_style(btn):
-    btn.setStyleSheet(
-        'QPushButton{border-style:solid; border-width: 2px; border-color: red ; border-radius: 1px;}' +
-        'QPushButton:hover{border-style:solid; border-width: 2px; border-color: red ; border-radius: 1px;}' +
-        'QPushButton:pressed{border-style:solid; border-width: 2px; border-color: red ; border-radius: 1px;}')
+    button_style = 'QPushButton{border-style:solid; border-width: 2px; border-color: red ; border-radius: 1px;}'
+    button_style += 'QPushButton:hover{border-style:solid; border-width: 2px; border-color: red ; border-radius: 1px;}'
+    button_style += 'QPushButton:pressed' \
+                    '{border-style:solid; border-width: 2px; border-color: red ; border-radius: 1px;}'
+    btn.setStyleSheet(button_style)
 
 
 def create_flat_button(

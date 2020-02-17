@@ -156,7 +156,8 @@ class YAMLConfiguration(object):
         if not module_config_name.endswith('.yml'):
             module_config_name = config_name + '.yml'
 
-        all_config_paths = self._manager.get_config_paths(module_config_name=module_config_name, skip_non_existent=False)
+        all_config_paths = self._manager.get_config_paths(
+            module_config_name=module_config_name, skip_non_existent=False)
         valid_config_paths = self._manager.get_config_paths(module_config_name=module_config_name)
         if not valid_config_paths:
             raise RuntimeError(
@@ -219,7 +220,8 @@ class ConfigurationManager(object):
         for config_path in self._config_paths:
             root_path = os.path.join(config_path, module_config_name)
             dcc_config_path = os.path.join(config_path, tp.Dcc.get_name(), module_config_name)
-            dcc_version_config_path = os.path.join(config_path, tp.Dcc.get_name(), tp.Dcc.get_version_name(), module_config_name)
+            dcc_version_config_path = os.path.join(
+                config_path, tp.Dcc.get_name(), tp.Dcc.get_version_name(), module_config_name)
             for p in [root_path, dcc_config_path, dcc_version_config_path]:
                 if skip_non_existent:
                     if p and os.path.isfile(p) and p not in found_paths:

@@ -13,7 +13,7 @@ from Qt.QtWidgets import *
 from Qt.QtGui import *
 
 _NUMERALS = '0123456789abcdefABCDEF'
-_HEXDEC = {v: int(v, 16) for v in (x+y for x in _NUMERALS for y in _NUMERALS)}
+_HEXDEC = {v: int(v, 16) for v in (x + y for x in _NUMERALS for y in _NUMERALS)}
 
 # TODO: Change by enum
 _LOWERCASE, _UPPERCASE = 'x', 'X'
@@ -93,11 +93,13 @@ class Color(QColor, object):
         :return: str
         """
 
-        r = lambda: random.randint(0, 255)
+        def _random_int():
+            return random.randint(0, 255)
+
         if return_sign:
-            return '#%02X%02X%02X' % (r(), r(), r())
+            return '#%02X%02X%02X' % (_random_int(), _random_int(), _random_int())
         else:
-            return '%02X%02X%02X' % (r(), r(), r())
+            return '%02X%02X%02X' % (_random_int(), _random_int(), _random_int())
 
     @classmethod
     def get_random_rgb(cls):
@@ -251,9 +253,11 @@ class ColorSwatch(QToolButton, object):
             """
             QToolButton
             {
-                background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgb(%d, %d, %d), stop:1 rgb(%d, %d, %d))
+                background-color: qlineargradient(
+                spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgb(%d, %d, %d), stop:1 rgb(%d, %d, %d))
             };
-            """ % (self.color[0]*.45, self.color[1]*.45, self.color[2]*.45, self.color[0], self.color[1], self.color[2])
+            """ % (self.color[0] * .45, self.color[1] * .45,
+                   self.color[2] * .45, self.color[0], self.color[1], self.color[2])
         )
 
     def _get_hsvF(self):
@@ -286,7 +290,7 @@ class ColorSwatch(QToolButton, object):
         color_picker = dialog.ColorDialog()
         color_picker.exec_()
         if color_picker.color is None:
-          return
+            return
 
         if type(color_picker.color) == int:
             clr = dialog.ColorDialog.maya_colors[color_picker.color]

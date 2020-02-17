@@ -83,9 +83,9 @@ def get_all_svg_tags(doc):
                         listData.append(node)
                     check_tag_name(node, listData)
     root = doc.documentElement
-    l = list()
-    check_tag_name(root, l)
-    return l
+    svg_list = list()
+    check_tag_name(root, svg_list)
+    return svg_list
 
 
 def decode_svg_path_string_replace(pathString):
@@ -121,7 +121,7 @@ def decode_svg_path_string(pathString):
                     num = token.next()
                 path_order.append((d, numeric_buffer))
                 d = num
-        except:
+        except Exception:
             path_order.append((d, numeric_buffer))
             break
     return path_order
@@ -198,7 +198,7 @@ def get_path_order_from_svg_file(svgFile):
     return result
 
 
-def create_svg_path(orders, verbose = False):
+def create_svg_path(orders, verbose=False):
     path = QPainterPath()
     for k, order in enumerate(orders):
         if order[0] == 'M' or order[0] == 'm':
@@ -340,13 +340,17 @@ def calculate_start_angle(x1, y1, rx, ry, coordAngle, largeArcFlag, sweep_flag, 
     def angle(v1, v2):
         return math.acos(dotproduct(v1, v2) / (length(v1) * length(v2)))
 
-    rotated_x1 = math.cos(math.radians(coordAngle)) * ((x1 - x2) / 2) + math.sin(math.radians(coordAngle)) * ((y1 - y2) / 2)
-    rotated_y1 = -math.sin(math.radians(coordAngle)) * ((x1 - x2) / 2) + math.cos(math.radians(coordAngle)) * ((y1 - y2) / 2)
+    rotated_x1 = math.cos(
+        math.radians(coordAngle)) * ((x1 - x2) / 2) + math.sin(math.radians(coordAngle)) * ((y1 - y2) / 2)
+    rotated_y1 = -math.sin(
+        math.radians(coordAngle)) * ((x1 - x2) / 2) + math.cos(math.radians(coordAngle)) * ((y1 - y2) / 2)
     delta = rotated_x1 ** 2 / rx ** 2 + rotated_y1 ** 2 / ry ** 2
     if delta > 1:
         rx *= math.sqrt(delta)
         ry *= math.sqrt(delta)
-    var = math.sqrt((rx ** 2 * ry ** 2 - rx ** 2 * rotated_y1 ** 2 - ry ** 2 * rotated_x1 ** 2) / (rx ** 2 * rotated_y1 ** 2 + ry ** 2 * rotated_x1 ** 2))
+    var = math.sqrt(
+        (rx ** 2 * ry ** 2 - rx ** 2 * rotated_y1 ** 2 - ry ** 2 * rotated_x1 ** 2) / (
+                rx ** 2 * rotated_y1 ** 2 + ry ** 2 * rotated_x1 ** 2))
     if largeArcFlag == sweep_flag:
         var *= -1
     ccx = var * (rx * rotated_y1 / ry)
@@ -360,11 +364,14 @@ def calculate_start_angle(x1, y1, rx, ry, coordAngle, largeArcFlag, sweep_flag, 
     start_angle_sign /= abs(start_angle_sign)
     start_angle *= start_angle_sign
     try:
-        sweep_angle = math.degrees(angle([(rotated_x1 - ccx) / rx, (rotated_y1 - ccy) / ry], [(-rotated_x1 - ccx) / rx, (-rotated_y1 - ccy) / ry]))
+        sweep_angle = math.degrees(
+            angle([(rotated_x1 - ccx) / rx, (rotated_y1 - ccy) / ry],
+                  [(-rotated_x1 - ccx) / rx, (-rotated_y1 - ccy) / ry]))
     except ValueError:
         sweep_angle = 180.0
 
-    sweep_angle_sign = (rotated_x1 - ccx) / rx * (-rotated_y1 - ccy) / ry - (rotated_y1 - ccy) / ry * (-rotated_x1 - ccx) / rx
+    sweep_angle_sign = (rotated_x1 - ccx) / rx * (-rotated_y1 - ccy) / ry - (
+            rotated_y1 - ccy) / ry * (-rotated_x1 - ccx) / rx
     if sweep_angle_sign == 0:
         sweep_angle_sign = 1.0
     sweep_angle_sign /= abs(sweep_angle_sign)
@@ -516,7 +523,8 @@ class SvgParser(object):
         """
 
         if not os.path.isfile(svg_path):
-            LOGGER.warning('Impossible to retrieve SVG width from file. SVG file "{}" does not exist!'.format(svg_path))
+            LOGGER.warning(
+                'Impossible to retrieve SVG width from file. SVG file "{}" does not exist!'.format(svg_path))
             return 0
 
         svg_obj = SvgParser.parse_svg(svg_path)
@@ -533,7 +541,8 @@ class SvgParser(object):
         """
 
         if not os.path.isfile(svg_path):
-            LOGGER.warning('Impossible to retrieve SVG height from file. SVG file "{}" does not exist!'.format(svg_path))
+            LOGGER.warning(
+                'Impossible to retrieve SVG height from file. SVG file "{}" does not exist!'.format(svg_path))
             return 0
 
         svg_obj = SvgParser.parse_svg(svg_path)

@@ -110,4 +110,3 @@ class StyleSheet(object):
         """
 
         self._data = data
-

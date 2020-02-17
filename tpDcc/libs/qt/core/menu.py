@@ -238,6 +238,3 @@ class SearchableMenu(Menu, object):
         """
 
         self.update_search(search_string)
-
-
-

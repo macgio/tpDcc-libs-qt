@@ -117,10 +117,10 @@ class WindowDragger(QFrame, object):
         logo_button = buttons.IconMenuButton(parent=self)
         logo_button.setIconSize(QSize(24, 24))
         logo_button.setFixedSize(QSize(30, 30))
-        # toggle_frameless = logo_button.addAction('Toggle Frameless Mode', connect=self._on_toggle_frameless_mode,  checkable=True)
+        # toggle_frameless = logo_button.addAction(
+        # 'Toggle Frameless Mode', connect=self._on_toggle_frameless_mode,  checkable=True)
 
         return logo_button
-
 
 
 # class WindowDragger(QFrame, object):
