@@ -93,7 +93,7 @@ class ColorPicker(QFrame, object):
         last = False
 
         for i, color in enumerate(colors):
-            if i == len(colors)-1:
+            if i == len(colors) - 1:
                 last = True
             if not isinstance(color, str):
                 color = core_color.Color(color)

@@ -31,7 +31,6 @@ class LibraryImageSequenceWidget(QToolButton, object):
         border-radius:2px;
         background-color: rgb(0,0,0,100);
     }
-
     QToolButton {
         background-color: transparent;
     }
@@ -227,7 +226,7 @@ class LibraryImageSequenceWidget(QToolButton, object):
         count = len(self.actions()) - 3
         width = 26 * count
         self._toolbar.setGeometry(0, 0, width, 25)
-        x = self.rect().center().x() - (self._toolbar.width()*0.5)
+        x = self.rect().center().x() - (self._toolbar.width() * 0.5)
         y = self.height() - self._toolbar.height() - 12
         self._toolbar.setGeometry(x, y, self._toolbar.width(), self._toolbar.height())
 
@@ -1465,6 +1464,7 @@ class SortByMenu(QMenu, object):
         value = sort_name + ':' + sort_order
         self.library().set_sort_by([value])
         self.library().search()
+
 
 class GroupByMenu(QMenu, object):
     def __init__(self, *args, **kwargs):

@@ -145,8 +145,7 @@ class ElidedLabel(QLabel, object):
         Set the current elide mode.
         """
 
-        if (value != Qt.ElideLeft
-                and value != Qt.ElideRight):
+        if value != Qt.ElideLeft and value != Qt.ElideRight:
             raise ValueError("elide_mode must be set to either QtCore.Qt.ElideLeft or QtCore.Qt.ElideRight")
         self._elide_mode = value
         self._update_elided_text()
@@ -284,7 +283,7 @@ class ThumbnailLabel(QLabel, object):
         super(ThumbnailLabel, self).__init__(parent=parent)
 
     def setPixmap(self, pixmap):
-        if pixmap.height() > 55 or pixmap.width( )> 80:
+        if pixmap.height() > 55 or pixmap.width() > 80:
             pixmap = pixmap.scaled(QSize(80, 55), Qt.KeepAspectRatio, Qt.SmoothTransformation)
         super(ThumbnailLabel, self).setPixmap(pixmap)
 
@@ -325,7 +324,8 @@ class AnimatedLabel(QLabel, object):
             # TODO: Add option to set aligment of the text inside its parent
             self.move(10, parent.size().height() - self.fontMetrics().height() - 10)
             # if isinstance(parent, QAbstractScrollArea) and parent.verticalScrollBar().isVisible():
-            #     self.move(parent.size().width() - self.fontMetrics().width(text) - 10 - parent.verticalScrollBar().width(), 0)
+            #     self.move(
+            #     parent.size().width() - self.fontMetrics().width(text) - 10 - parent.verticalScrollBar().width(), 0)
             # else:
             #     self.move(parent.size().width() - self.fontMetrics().width(text) - 10, 0)
         self.opacity_effect.fade_in_out()
@@ -379,7 +379,7 @@ class IconLabel(QLabel, object):
     def paintEvent(self, event):
         p = QPainter(self)
         if self._icon:
-            self._icon.paint(p, QRect(0, self.height() * 0.5 - 5, 12 ,12))
+            self._icon.paint(p, QRect(0, self.height() * 0.5 - 5, 12, 12))
         super(IconLabel, self).paintEvent(event)
 
     def setText(self, text, update=True):

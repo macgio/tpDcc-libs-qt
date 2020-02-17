@@ -30,7 +30,8 @@ class Project(QWidget, core_project.ProjectData):
     projectImageChanged = Signal(str)
 
     def __init__(self, name, project_path, settings=None, options=None, parent=None):
-        core_project.ProjectData.__init__(self, name=name, project_path=project_path, settings=settings, options=options)
+        core_project.ProjectData.__init__(self, name=name, project_path=project_path,
+                                          settings=settings, options=options)
         QWidget.__init__(self, parent=parent)
 
         self.setMaximumWidth(160)
@@ -276,7 +277,8 @@ class ProjectViewer(grid.GridWidget, object):
                 return
             for root, dirs, files in os.walk(project_path):
                 if consts.PROJECTS_NAME in files:
-                    new_project = self._project_class.create_project_from_data(path.join_path(root, consts.PROJECTS_NAME))
+                    new_project = self._project_class.create_project_from_data(
+                        path.join_path(root, consts.PROJECTS_NAME))
                     if new_project is not None:
                         self.add_project(new_project)
 
@@ -589,7 +591,8 @@ class NewProjectWidget(QWidget, object):
 
         new_project = self._selected_template.create_project(project_name=project_name, project_path=project_path)
         if new_project is not None:
-            tp.logger.debug('Project {} created successfully on path {}'.format(new_project.name, new_project.project_path))
+            tp.logger.debug(
+                'Project {} created successfully on path {}'.format(new_project.name, new_project.project_path))
             self.name_line.setText('')
             self.projectCreated.emit(new_project)
             return new_project

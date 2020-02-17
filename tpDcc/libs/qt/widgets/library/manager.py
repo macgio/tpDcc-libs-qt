@@ -134,7 +134,8 @@ class LibraryManager(object):
                 valid_items.append(cls)
 
         if len(valid_items) > 1:
-            tpQtLib.logger.warning('Multiple data file supports data type {}:\n{}'.format(data_type, '\n'.join(valid_items)))
+            tpQtLib.logger.warning(
+                'Multiple data file supports data type {}:\n{}'.format(data_type, '\n'.join(valid_items)))
         valid_item = valid_items[0]
 
         return self.item_from_path(path, valid_item.Extension)
@@ -412,7 +413,8 @@ class LibraryDataFolder(fileio.FileManager, object):
                 data_type = scripts.ScriptTypes.Python
                 self.settings.set('data_type', data_type)
         if not data_type:
-            tpQtLib.logger.warning('Impossible to instantiate Data Folder because given Data Type: {} is not valid!'.format(data_type))
+            tpQtLib.logger.warning(
+                'Impossible to instantiate Data Folder because given Data Type: {} is not valid!'.format(data_type))
             return
 
         data_manager = self.get_manager()

@@ -382,7 +382,7 @@ class GridScene(BaseScene, object):
         """
 
         scene_rect = self.sceneRect()
-        gradient = QColor(65,65,65)
+        gradient = QColor(65, 65, 65)
         painter.fillRect(rect.intersected(scene_rect), QBrush(gradient))
         painter.setPen(QPen())
         painter.drawRect(scene_rect)

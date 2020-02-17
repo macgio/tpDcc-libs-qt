@@ -32,7 +32,7 @@ class Changelog(dialog.Dialog, object):
         self.set_logo('changelog_logo')
 
         self.main_layout.setAlignment(Qt.AlignTop)
-        self.main_layout.setContentsMargins(0,0,0,0)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
 
         self.setFixedWidth(600)
         self.setMaximumHeight(800)

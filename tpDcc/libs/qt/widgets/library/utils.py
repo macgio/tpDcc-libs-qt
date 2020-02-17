@@ -140,7 +140,7 @@ class Node(object):
 
 class TransferObject(object):
 
-    DEFAULT_DATA ={'metadata': {}, 'objects': {}}
+    DEFAULT_DATA = {'metadata': {}, 'objects': {}}
 
     @classmethod
     def from_path(cls, path, force_cration=False):
@@ -228,7 +228,8 @@ class TransferObject(object):
             scene_namespaces = tp.Dcc.scene_namespaces()
             for namespace in namespaces:
                 if namespace and namespace not in scene_namespaces:
-                    msg = 'The namespace "{}" does not exists in the scene! Please choose a namespace which exists.'.format(namespace)
+                    msg = 'The namespace "{}" does not exists in the scene! ' \
+                          'Please choose a namespace which exists.'.format(namespace)
                     raise ValueError(msg)
 
     def mtime(self):
@@ -410,7 +411,6 @@ class TransferObject(object):
 
         return data
 
-
     @show_wait_cursor_decorator
     def save(self, path=None):
         """
@@ -430,6 +430,7 @@ class TransferObject(object):
             f.write(str(data))
 
         tpQtLib.logger.debug('Saved object: {}'.format(path))
+
 
 def absolute_path(data, start):
     """
@@ -794,6 +795,7 @@ def get_reference_paths(objects, without_copy_number=False):
             paths.append(tp.Dcc.node_reference_path(obj, without_copy_number=without_copy_number))
 
     return list(set(paths))
+
 
 def get_reference_data(objects):
     """

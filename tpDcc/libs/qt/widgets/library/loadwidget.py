@@ -100,7 +100,8 @@ class LoadWidget(base.BaseWidget, object):
         self._thumbnail_btn.setObjectName('thumbnailButton')
         self._thumbnail_btn.setMinimumSize(QSize(0, 0))
         self._thumbnail_btn.setMaximumSize(QSize(150, 150))
-        self._thumbnail_btn.setStyleSheet('color: rgb(40, 40, 40);\nborder: 1px solid rgb(0, 0, 0, 0);\nbackground-color: rgb(254, 255, 230, 0);')
+        self._thumbnail_btn.setStyleSheet(
+            'color: rgb(40, 40, 40);\nborder: 1px solid rgb(0, 0, 0, 0);\nbackground-color: rgb(254, 255, 230, 0);')
         self._thumbnail_btn.setLayoutDirection(Qt.LeftToRight)
         self._thumbnail_btn.setText('Snapshot')
         self._thumbnail_btn.setIcon(qt.resource.icon('thumbnail'))
@@ -396,4 +397,3 @@ class LoadWidget(base.BaseWidget, object):
             return
 
         self.item().load_from_current_options()
-

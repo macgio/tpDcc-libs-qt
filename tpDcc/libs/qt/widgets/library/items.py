@@ -1214,7 +1214,8 @@ class LibraryItem(QTreeWidgetItem, object):
             parent = parent or self.library_window()
             select = self.library_window().selected_folder_path() == self.path()
 
-        name, btn = messagebox.MessageBox.input(parent, 'Rename item', 'Rename the current item to:', input_text=self.name())
+        name, btn = messagebox.MessageBox.input(
+            parent, 'Rename item', 'Rename the current item to:', input_text=self.name())
         if btn == QDialogButtonBox.Ok:
             try:
                 self.rename(name)
@@ -1499,11 +1500,9 @@ class LibraryItem(QTreeWidgetItem, object):
                     self.image_sequence().jumpToFrame(frame)
                     self.update_frame()
 
-    """ 
-    ##########################################################################################
-    THUMBNAIL 
-    ##########################################################################################
-    """
+    # ============================================================================================================
+    # THUMBNAIL
+    # ============================================================================================================
 
     def default_thumbnail_path(self):
         """
@@ -1552,11 +1551,9 @@ class LibraryItem(QTreeWidgetItem, object):
         if self.viewer():
             self.viewer().update()
 
-    """ 
-    ##########################################################################################
-    PAINT
-    ##########################################################################################
-    """
+    # ============================================================================================================
+    # PAINT
+    # ============================================================================================================
 
     def font_size(self):
         """
@@ -1749,7 +1746,8 @@ class LibraryItem(QTreeWidgetItem, object):
             rect_changed = width_changed or height_changed
 
         if not self._pixmap_scaled or rect_changed:
-            self._pixmap_scaled = pixmap.scaled(rect.width(), rect.height(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self._pixmap_scaled = pixmap.scaled(
+                rect.width(), rect.height(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self._pixmap_rect = rect
 
         return self._pixmap_scaled
@@ -1776,10 +1774,16 @@ class LibraryItem(QTreeWidgetItem, object):
 
         x, y = 0, 0
         align = Qt.AlignHCenter | Qt.AlignVCenter
+        align_bottom = Qt.AlignBottom | Qt.AlignLeft or align == Qt.AlignBottom \
+                       | Qt.AlignHCenter or align == Qt.AlignBottom | Qt.AlignRight
+        align_h_center = Qt.AlignHCenter or align == Qt.AlignCenter or align == Qt.AlignHCenter \
+                         | Qt.AlignBottom or align == Qt.AlignHCenter | Qt.AlignTop
+        align_v_center = Qt.AlignVCenter or align == Qt.AlignCenter or align == Qt.AlignVCenter \
+                         | Qt.AlignLeft or align == Qt.AlignVCenter | Qt.AlignRight
 
-        is_align_bottom = align == Qt.AlignBottom | Qt.AlignLeft or align == Qt.AlignBottom | Qt.AlignHCenter or align == Qt.AlignBottom | Qt.AlignRight
-        is_align_h_center = align == Qt.AlignHCenter or align == Qt.AlignCenter or align == Qt.AlignHCenter | Qt.AlignBottom or align == Qt.AlignHCenter | Qt.AlignTop
-        is_align_v_center = align == Qt.AlignVCenter or align == Qt.AlignCenter or align == Qt.AlignVCenter | Qt.AlignLeft or align == Qt.AlignVCenter | Qt.AlignRight
+        is_align_bottom = align ==  align_bottom
+        is_align_h_center = align == align_h_center
+        is_align_v_center = align == align_v_center
         if is_align_h_center:
             x += float(rect.width() - pixmap.width()) / 2
         elif is_align_v_center:
@@ -1870,11 +1874,9 @@ class LibraryItem(QTreeWidgetItem, object):
         painter.setFont(font)
         painter.drawText(visual_rect, align, text)
 
-    """ 
-    ##########################################################################################
-    BLENDING 
-    ##########################################################################################
-    """
+    # ============================================================================================================
+    # BLENDING
+    # ============================================================================================================
 
     def is_blending_enabled(self):
         """
@@ -1974,12 +1976,9 @@ class LibraryItem(QTreeWidgetItem, object):
         self._blend_value = 0.0
         self._blend_prev_value = 0.09
 
-
-    """ 
-    ##########################################################################################
-    CONTEXTUAL MENUS
-    ##########################################################################################
-    """
+    # ============================================================================================================
+    # CONTEXTUAL MENUS
+    # ============================================================================================================
 
     def context_edit_menu(self, menu, items=None):
         """
@@ -2016,11 +2015,9 @@ class LibraryItem(QTreeWidgetItem, object):
             select_folder_action.triggered.connect(self._on_select_folder)
             menu.addAction(select_folder_action)
 
-    """
-    ##########################################################################################
-    CALLBACKS
-    ##########################################################################################
-    """
+    # ============================================================================================================
+    # CALLBACKS
+    # ============================================================================================================
 
     def _on_thumbnail_from_image(self, image):
         """
@@ -2402,11 +2399,9 @@ class BaseItem(LibraryItem, object):
         self.set_transfer_class(utils.TransferObject)
         self.set_transfer_basename(dcc_consts.DATA_FILE)
 
-    """
-    ##########################################################################################
-    OVERRIDES
-    ##########################################################################################
-    """
+    # ============================================================================================================
+    # OVERRIDES
+    # ============================================================================================================
 
     def load(self, objects=None, namespaces=None, **kwargs):
         """
@@ -2524,11 +2519,9 @@ class BaseItem(LibraryItem, object):
             },
         ]
 
-    """
-    ##########################################################################################
-    LOAD/SAVE
-    ##########################################################################################
-    """
+    # ============================================================================================================
+    # LOAD/SAVE
+    # ============================================================================================================
 
     def load_from_current_options(self):
         """
@@ -2545,11 +2538,9 @@ class BaseItem(LibraryItem, object):
             self.show_error_dialog('Item Error', str(e))
             raise
 
-    """
-    ##########################################################################################
-    SCHEMA
-    ##########################################################################################
-    """
+    # ============================================================================================================
+    # SCHEMA
+    # ============================================================================================================
 
     def settings(self):
         """
@@ -2608,11 +2599,9 @@ class BaseItem(LibraryItem, object):
 
         return self._current_load_schema or self.options_from_settings()
 
-    """
-    ##########################################################################################
-    ITEM PROPERTIES
-    ##########################################################################################
-    """
+    # ============================================================================================================
+    # ITEM PROPERTIES
+    # ============================================================================================================
 
     def transfer_class(self):
         """
@@ -2695,11 +2684,9 @@ class BaseItem(LibraryItem, object):
 
         return self.transfer_object().count()
 
-    """
-    ##########################################################################################
-    SCENE
-    ##########################################################################################
-    """
+    # ============================================================================================================
+    # SCENE
+    # ============================================================================================================
 
     def namespaces(self):
         """

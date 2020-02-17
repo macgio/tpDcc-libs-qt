@@ -44,10 +44,10 @@ class DropOverlay(QFrame, object):
         self.setWindowOpacity(0.2)
         self.setWindowTitle('DropOverlay')
 
-        l = QBoxLayout(QBoxLayout.TopToBottom)
-        l.setContentsMargins(0, 0, 0, 0)
-        l.setSpacing(0)
-        self.setLayout(l)
+        top_bottom_layout = QBoxLayout(QBoxLayout.TopToBottom)
+        top_bottom_layout.setContentsMargins(0, 0, 0, 0)
+        top_bottom_layout.setSpacing(0)
+        self.setLayout(top_bottom_layout)
 
         area_widgets = dict()
         area_widgets[DropArea.TopDropArea] = self.create_drop_indicator_widget(DropArea.TopDropArea)
@@ -135,7 +135,8 @@ class DropOverlay(QFrame, object):
         layout.setObjectName('DropAreaLabel')
         metric = (layout.fontMetrics().height()) * 2.0
         size = QSizeF(metric, metric)
-        layout.setPixmap(DropOverlay.create_drop_indicator_pixmap(palette=layout.palette(), size=size, drop_area=drop_area))
+        layout.setPixmap(
+            DropOverlay.create_drop_indicator_pixmap(palette=layout.palette(), size=size, drop_area=drop_area))
 
         return layout
     # endregion
@@ -272,7 +273,7 @@ class DropOverlayCross(QWidget, object):
         self._overlay = overlay
         self._widgets = None
 
-        self.setWindowFlags(Qt.Tool |Qt.FramelessWindowHint)
+        self.setWindowFlags(Qt.Tool | Qt.FramelessWindowHint)
         self.setWindowTitle('DropOverlayCross')
         self.setAttribute(Qt.WA_TranslucentBackground)
 
@@ -345,7 +346,8 @@ class DropOverlayCross(QWidget, object):
         return DropArea.InvalidDropArea
 
     def reset(self):
-        all_areas = [DropArea.TopDropArea, DropArea.RightDropArea, DropArea.BottomDropArea, DropArea.LeftDropArea, DropArea.CenterDropArea]
+        all_areas = [DropArea.TopDropArea, DropArea.RightDropArea, DropArea.BottomDropArea,
+                     DropArea.LeftDropArea, DropArea.CenterDropArea]
         allowed_areas = self._overlay.allowed_areas()
 
         for i in range(len(all_areas)):

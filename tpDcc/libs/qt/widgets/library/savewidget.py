@@ -83,7 +83,8 @@ class SaveWidget(base.BaseWidget, object):
         self._thumbnail_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._thumbnail_btn.setMaximumSize(QSize(150, 150))
         self._thumbnail_btn.setToolTip('Take snapshot')
-        self._thumbnail_btn.setStyleSheet('color: rgb(40, 40, 40);border: 0px solid rgb(0, 0, 0, 150);background-color: rgb(254, 255, 230, 200);')
+        self._thumbnail_btn.setStyleSheet(
+            'color: rgb(40, 40, 40);border: 0px solid rgb(0, 0, 0, 150);background-color: rgb(254, 255, 230, 200);')
         self._thumbnail_btn.setIcon(qt.resource.icon('thumbnail'))
         self._thumbnail_btn.setToolTip("""
         Click to capture a thumbnail from the current viewport.\n
@@ -299,8 +300,10 @@ class SaveWidget(base.BaseWidget, object):
         folder_icon = qt.resource.get('icons', 'folder.svg')
 
         sequence_widget.addAction(camera_icon, 'Capture new image', 'Capture new image', self._on_thumbnail_capture)
-        sequence_widget.addAction(expand_icon, 'Show Capture window', 'Show Capture window', self._on_show_capture_window)
-        sequence_widget.addAction(folder_icon, 'Load image from disk', 'Load image from disk', self._on_show_browse_image_dialog)
+        sequence_widget.addAction(
+            expand_icon, 'Show Capture window', 'Show Capture window', self._on_show_capture_window)
+        sequence_widget.addAction(
+            folder_icon, 'Load image from disk', 'Load image from disk', self._on_show_browse_image_dialog)
 
         sequence_widget.setIcon(qt.resource.icon('thumbnail2'))
         self._thumbnail_frame.layout().insertWidget(0, sequence_widget)
@@ -322,7 +325,6 @@ class SaveWidget(base.BaseWidget, object):
         :param source: str
         :param sequence: bool
         """
-
 
         source = os.path.normpath(source)
 
@@ -412,7 +414,8 @@ class SaveWidget(base.BaseWidget, object):
 
         buttons = QDialogButtonBox.Yes | QDialogButtonBox.Ignore | QDialogButtonBox.Cancel
         parent = self.item().library_window()
-        btn = messagebox.MessageBox.question(parent, 'Create a thumbnail', 'Would you like to capture a thumbnail?', buttons=buttons)
+        btn = messagebox.MessageBox.question(
+            parent, 'Create a thumbnail', 'Would you like to capture a thumbnail?', buttons=buttons)
         if btn == QDialogButtonBox.Yes:
             self.thumbnail_capture()
 
@@ -546,5 +549,3 @@ class SaveWidget(base.BaseWidget, object):
     def _on_cancel(self):
         self.close()
         self.library_window().stack.slide_in_index(0)
-
-

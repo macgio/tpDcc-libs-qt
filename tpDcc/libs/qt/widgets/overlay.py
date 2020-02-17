@@ -64,7 +64,7 @@ class OverlayWidget(dialog.Dialog, object):
         if not self._PRESSED:
             self.hide()
 
-        event.ignore>()
+        event.ignore()
 
     def mouseMoveEvent(self, event):
         """

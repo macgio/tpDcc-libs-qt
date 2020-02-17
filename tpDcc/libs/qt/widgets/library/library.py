@@ -200,7 +200,7 @@ class Library(QObject, object):
         tpQtLib.logger.debug('Group Items Took {}'.format(time.time() - t))
 
         return results
-    
+
     def manager(self):
         """
         Returns data manager used by this library
@@ -738,7 +738,7 @@ class Library(QObject, object):
         items = list(self._library_window.manager().find_items(self.path(), depth=depth))
         count = len(items)
         for i, item in enumerate(items):
-            percent = (float(i+1)/float(count))
+            percent = (float(i + 1) / float(count))
             percent_callback('', percent)
             path = item.path()
             item_data = data.get(path, {})

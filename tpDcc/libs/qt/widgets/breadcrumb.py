@@ -113,7 +113,7 @@ class BreadcrumbButtonWidget(base.BaseWidget, object):
         for name in names_lists:
             new_btn = QPushButton(name)
             btn_width = new_btn.fontMetrics().boundingRect(new_btn.text()).width()
-            new_btn.setMaximumWidth(btn_width+10)
+            new_btn.setMaximumWidth(btn_width + 10)
             self._bread_layout.addWidget(new_btn)
 
     def add_separator(self):

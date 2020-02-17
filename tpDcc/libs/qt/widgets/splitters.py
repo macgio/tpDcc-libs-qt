@@ -80,6 +80,7 @@ class Splitter(QWidget, object):
         width = self._text_width.width(text) + 6
         self._label.setMaximumWidth(width)
 
+
 class SplitterLayout(QHBoxLayout, object):
     """
     Basic splitter to separate layouts
