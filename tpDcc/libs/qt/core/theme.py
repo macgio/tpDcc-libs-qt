@@ -233,7 +233,7 @@ class Theme(QObject, object):
         if self.is_dark():
             return color.Color(255, 255, 255, 20)
         else:
-            return color.Color(255 ,255, 255, 120)
+            return color.Color(255, 255, 255, 120)
 
     def item_background_hover_color(self):
         """

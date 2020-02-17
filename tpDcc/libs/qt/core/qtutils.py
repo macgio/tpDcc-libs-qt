@@ -843,7 +843,7 @@ def get_rounded_mask(width, height, radius_tl=10, radius_tr=10, radius_bl=10, ra
     # bottom right
     round = QtGui.QRegion(
         width - 2 * radius_br, height - 2 * radius_br, 2 * radius_br, 2 * radius_br, QtGui.QRegion.Ellipse)
-    corner = QtGui.QRegion(width - radius_br, height-radius_br, radius_br, radius_br, QtGui.QRegion.Rectangle)
+    corner = QtGui.QRegion(width - radius_br, height - radius_br, radius_br, radius_br, QtGui.QRegion.Rectangle)
     region = region.subtracted(corner.subtracted(round))
 
     # bottom left

@@ -705,8 +705,8 @@ class BaseFileFolderDialog(Dialog, object):
         for info in entries:
             icon = QFileIconProvider().icon(info)
             suf = info.completeSuffix()
-            name, tp = (info.fileName(), 0) if info.isDir() else (
-            '%s%s' % (info.baseName(), '.%s' % suf if suf else ''), 1)
+            name, tp = (
+                info.fileName(), 0) if info.isDir() else ('%s%s' % (info.baseName(), '.%s' % suf if suf else ''), 1)
             QListWidgetItem(icon, name, self.view, tp)
         self.view.setFocus()
 
@@ -832,7 +832,8 @@ class OpenFileDialog(BaseFileFolderDialog, object):
                 dialogStyle=2
             )
         else:
-            raise NotImplementedError('Open App Browser is not implemented for your current DCC: {}'.format(tp.Dcc.get_name()))
+            raise NotImplementedError(
+                'Open App Browser is not implemented for your current DCC: {}'.format(tp.Dcc.get_name()))
 
         if sel_file:
             sel_file = sel_file[0]
@@ -902,7 +903,7 @@ class SaveFileDialog(BaseFileFolderDialog, object):
         else:
             raise NotImplementedError(
                 'Open App Browser is not implemented for your current DCC: {}'.format(tp.Dcc.get_name()))
-            
+
         if sel_file:
             sel_file = sel_file[0]
 

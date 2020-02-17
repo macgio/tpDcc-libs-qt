@@ -175,8 +175,8 @@ class QtSettings(QSettings, object):
         """
 
         sys.utils.logger.info('Saving Layout: "{}"'.format(layout))
-        self.setValue(self._window.objectName()+'/geometry/%s' % layout, self._window.saveGeoemtry())
-        self.setValue(self._window.objectName()+'/windowState/%s' % layout, self._window.saveState())
+        self.setValue(self._window.objectName() + '/geometry/%s' % layout, self._window.saveGeoemtry())
+        self.setValue(self._window.objectName() + '/windowState/%s' % layout, self._window.saveState())
 
         for dock in self._window.findChildren(QDockWidget):
             dock_name = dock.objectName()
@@ -237,7 +237,7 @@ class QtSettings(QSettings, object):
         if self.group():
             try:
                 self.endGroup()
-            except:
+            except Exception:
                 pass
 
         result = None
@@ -307,10 +307,10 @@ class QtSettings(QSettings, object):
             window_name = self._window.objectName().upper()
             if window_name not in self.childGroups():
                 if self._window is not None:
-                    self.setValue(window_name+'/geometry/default', self._window.saveGeometry())
+                    self.setValue(window_name + '/geometry/default', self._window.saveGeometry())
 
                     if isinstance(self._window, QMainWindow):
-                        self.setValue(window_name+'/windowState/default', self._window.saveState())
+                        self.setValue(window_name + '/windowState/default', self._window.saveState())
 
             if 'RecentFiles' not in self.childGroups():
                 self.beginWriteArray('RecentFiles', 0)
@@ -326,10 +326,11 @@ class QtIniSettings(settings.INISettings, object):
 
     def export_widget(self, option, widget):
         """
-        Serializes a widget's state to an option, value pair Sets the value with an associated key in the section at the top of the section stack.
+        Serializes a widget's state to an option, value pair Sets the value with an associated key in
+        the section at the top of the section stack.
 
         :param str option:   The key to use in storing the value.
-        :param str widget:   The QWidget to extractvalue to store.
+        :param str widget:   The QWidget to extract value to store.
         """
 
         if isinstance(widget, QComboBox):
@@ -350,10 +351,11 @@ class QtIniSettings(settings.INISettings, object):
 
     def import_widget(self, option, widget):
         """
-        Serializes a widget's state to an option, value pair Sets the value with an associated key in the section at the top of the section stack.
+        Serializes a widget's state to an option, value pair Sets the value with an associated key in the
+        section at the top of the section stack.
 
         :param str option:   The key to use in storing the value.
-        :param str widget:   The QWidget to extractvalue to store.
+        :param str widget:   The QWidget to extract value to store.
         """
 
         if isinstance(widget, QComboBox):

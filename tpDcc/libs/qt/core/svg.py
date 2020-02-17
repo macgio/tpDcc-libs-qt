@@ -349,8 +349,8 @@ def calculate_start_angle(x1, y1, rx, ry, coordAngle, largeArcFlag, sweep_flag, 
         rx *= math.sqrt(delta)
         ry *= math.sqrt(delta)
     var = math.sqrt(
-        (rx ** 2 * ry ** 2 - rx ** 2 * rotated_y1 ** 2 - ry ** 2 * rotated_x1 ** 2) / (
-                rx ** 2 * rotated_y1 ** 2 + ry ** 2 * rotated_x1 ** 2))
+        (rx ** 2 * ry ** 2 - rx ** 2 * rotated_y1 ** 2 - ry ** 2 * rotated_x1 ** 2) /
+        (rx ** 2 * rotated_y1 ** 2 + ry ** 2 * rotated_x1 ** 2))
     if largeArcFlag == sweep_flag:
         var *= -1
     ccx = var * (rx * rotated_y1 / ry)
@@ -370,8 +370,8 @@ def calculate_start_angle(x1, y1, rx, ry, coordAngle, largeArcFlag, sweep_flag, 
     except ValueError:
         sweep_angle = 180.0
 
-    sweep_angle_sign = (rotated_x1 - ccx) / rx * (-rotated_y1 - ccy) / ry - (
-            rotated_y1 - ccy) / ry * (-rotated_x1 - ccx) / rx
+    sweep_angle_sign = (rotated_x1 - ccx) / rx * (-rotated_y1 - ccy) / ry - \
+                       (rotated_y1 - ccy) / ry * (-rotated_x1 - ccx) / rx
     if sweep_angle_sign == 0:
         sweep_angle_sign = 1.0
     sweep_angle_sign /= abs(sweep_angle_sign)
