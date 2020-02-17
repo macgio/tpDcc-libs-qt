@@ -15,12 +15,9 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpDccLib as tp
-
-from tpPyUtils import python, fileio, code, folder as folder_utils, path as path_utils
-
-import tpQtLib
-from tpQtLib.core import qtutils
+import tpDcc as tp
+from tpDcc.libs.python import python, fileio, code, folder as folder_utils, path as path_utils
+from tpDcc.libs.qt.core import qtutils
 
 
 class PythonCompleter(QCompleter, object):

@@ -12,11 +12,9 @@ import os
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
-import tpQtLib as tp
-from tpPyUtils import path, python
-from tpQtLib.core import base, qtutils
-from tpQtLib.widgets import label
-from tpQtLib.core import resource
+from tpDcc.libs.python import path, python
+from tpDcc.libs.qt.core import resource, base, qtutils
+from tpDcc.libs.qt.widgets import label
 
 
 class Breadcrumb(object):

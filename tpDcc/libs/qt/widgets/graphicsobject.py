@@ -11,7 +11,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-from tpPyUtils.decorators import accepts, returns
+from tpDcc.libs.python.decorators import accepts, returns
 
 
 class BaseObjectItem(QGraphicsObject, object):

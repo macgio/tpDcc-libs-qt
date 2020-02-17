@@ -15,9 +15,9 @@ from Qt.QtGui import *
 
 EXPANDED_TOOLTIP_INJECTOR_ATTRIBUTE = '_expandedTooltips_'
 
-import tpDccLib as tp
-from tpQtLib.core import icon, dialog
-from tpQtLib.widgets import parsers
+import tpDcc as tp
+from tpDcc.libs.qt.core import icon, dialog
+from tpDcc.libs.qt.widgets import parsers
 
 
 class ExpandedTooltipPopup(dialog.Dialog, object):

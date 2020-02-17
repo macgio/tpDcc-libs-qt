@@ -14,8 +14,8 @@ from collections import OrderedDict
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
-from tpQtLib.core import dialog
-from tpQtLib.widgets import accordion
+from tpDcc.libs.qt.core import dialog
+from tpDcc.libs.qt.widgets import accordion
 
 
 class Changelog(dialog.Dialog, object):

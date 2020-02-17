@@ -14,8 +14,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpQtLib as tp
-from tpPyUtils import mathlib
+from tpDcc.libs.python import mathlib
 
 try:
     from Qt import QtOpenGL

@@ -11,7 +11,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-from tpQtLib.core import qtutils
+from tpDcc.libs.qt.core import qtutils
 
 
 class DropArea(object):

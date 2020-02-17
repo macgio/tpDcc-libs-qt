@@ -10,8 +10,8 @@ from __future__ import print_function, division, absolute_import
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
-from tpQtLib.core import base
-from tpQtLib.widgets import stack
+from tpDcc.libs.qt.core import base
+from tpDcc.libs.qt.widgets import stack
 
 
 class PreferencesWidget(base.BaseWidget, object):

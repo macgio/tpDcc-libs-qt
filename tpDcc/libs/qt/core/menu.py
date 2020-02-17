@@ -10,7 +10,7 @@ from __future__ import print_function, division, absolute_import
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
-from tpQtLib.core import qtutils
+from tpDcc.libs.qt.core import qtutils
 
 
 class Menu(QMenu, object):

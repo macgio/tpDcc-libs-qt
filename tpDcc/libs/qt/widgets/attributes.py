@@ -11,11 +11,9 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpQtLib as tp
-from tpPyUtils import strings as string_utils
-from tpQtLib.core import qtutils
-from tpQtLib.widgets import lineedit, directory
-from tpQtLib.core import base, color
+from tpDcc.libs.python import strings as string_utils
+from tpDcc.libs.qt.widgets import lineedit, directory
+from tpDcc.libs.qt.core import qtutils, base, color
 
 
 class AttributeEditor(base.BaseWidget, object):

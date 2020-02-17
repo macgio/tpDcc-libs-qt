@@ -11,8 +11,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpQtLib
-from tpQtLib.widgets import buttons
+from tpDcc.libs.qt.widgets import buttons
 
 
 class CollapsibleSplitter(QSplitter, object):

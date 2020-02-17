@@ -11,8 +11,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpQtLib as tp
-from tpQtLib.widgets import drop
+from tpDcc.libs.qt.widgets import drop
 
 USE_ANIMATIONS = True
 

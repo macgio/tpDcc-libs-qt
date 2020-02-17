@@ -11,9 +11,8 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpQtLib
-from tpQtLib.core import qtutils, base, window, dragger
-from tpQtLib.widgets import overlay
+from tpDcc.libs.qt.core import qtutils, base, window, dragger
+from tpDcc.libs.qt.widgets import overlay
 
 
 class FramelessWindow(window.MainWindow, object):

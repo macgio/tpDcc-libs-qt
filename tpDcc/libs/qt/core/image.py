@@ -21,8 +21,7 @@ except ImportError:
 from Qt.QtCore import *
 from Qt.QtGui import *
 
-import tpQtLib
-from tpPyUtils import python, path as path_utils
+from tpDcc.libs.python import python, path as path_utils
 
 LOGGER = logging.getLogger()
 

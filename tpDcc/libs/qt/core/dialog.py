@@ -16,10 +16,10 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpQtLib
-import tpDccLib as tp
-from tpQtLib.core import qtutils, color, animation, theme, dragger
-from tpQtLib.widgets import splitters
+import tpDcc as tp
+from tpDcc.libs.qt import register
+from tpDcc.libs.qt.core import qtutils, color, animation, theme, dragger
+from tpDcc.libs.qt.widgets import splitters
 
 
 class Dialog(QDialog, object):
@@ -1004,8 +1004,8 @@ class NativeDialog(object):
         raise NotImplementedError('select_folder() function is not implemented')
 
 
-tpQtLib.register_class('Dialog', Dialog)
-tpQtLib.register_class('OpenFileDialog', OpenFileDialog)
-tpQtLib.register_class('SaveFileDialog', SaveFileDialog)
-tpQtLib.register_class('SelectFolderDialog', SelectFolderDialog)
-tpQtLib.register_class('NativeDialog', NativeDialog)
+register.register_class('Dialog', Dialog)
+register.register_class('OpenFileDialog', OpenFileDialog)
+register.register_class('SaveFileDialog', SaveFileDialog)
+register.register_class('SelectFolderDialog', SelectFolderDialog)
+register.register_class('NativeDialog', NativeDialog)

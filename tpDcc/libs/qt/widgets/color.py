@@ -13,7 +13,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-from tpQtLib.core import color as core_color
+from tpDcc.libs.qt.core import color as core_color
 
 
 class ColorButton(QPushButton, object):

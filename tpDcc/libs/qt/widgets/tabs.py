@@ -11,10 +11,10 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpDccLib as tp
-from tpQtLib.core import qtutils
-from tpQtLib.core import window
-from tpQtLib.widgets import tabbars
+import tpDcc as tp
+from tpDcc.libs.qt.core import qtutils
+from tpDcc.libs.qt.libs.qt.core import window
+from tpDcc.libs.qt.widgets import tabbars
 
 
 class BaseTabWidget(QTabWidget, object):

@@ -13,9 +13,9 @@ from Qt.QtCore import *
 from Qt.QtGui import *
 from Qt.QtWidgets import *
 
-import tpDccLib as tp
-from tpPyUtils import mathlib
-from tpQtLib.core import qtutils, color
+import tpDcc as tp
+from tpDcc.libs.python import mathlib
+from tpDcc.libs.qt.core import qtutils, color
 
 FLOAT_SLIDER_DRAG_STEPS = [100.0, 10.0, 1.0, 0.1, 0.01, 0.001]
 INT_SLIDER_DRAG_STEPS = [100.0, 10.0, 1.0]

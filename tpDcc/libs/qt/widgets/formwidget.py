@@ -16,10 +16,9 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-from tpPyUtils import decorators
+from tpDcc.libs.python import decorators
 
-import tpQtLib
-from tpQtLib.widgets import label, color
+from tpDcc.libs.qt.widgets import label, color
 
 
 class FormDialog(QFrame, object):

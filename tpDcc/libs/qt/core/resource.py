@@ -9,8 +9,8 @@ from __future__ import print_function, division, absolute_import
 
 import os
 
-from tpPyUtils import folder, path
-from tpQtLib.core import qtutils, pixmap as pixmap_resource, icon as icon_resource
+from tpDcc.libs.python import folder, path
+from tpDcc.libs.qt.core import qtutils, pixmap as pixmap_resource, icon as icon_resource
 
 
 class Resource(object):

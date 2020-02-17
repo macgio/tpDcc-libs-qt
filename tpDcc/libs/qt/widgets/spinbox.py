@@ -11,7 +11,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-from tpQtLib.core import base
+from tpDcc.libs.qt.core import base
 
 
 class BaseSpinBox(base.BaseNumberWidget):

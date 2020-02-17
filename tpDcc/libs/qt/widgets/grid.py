@@ -9,7 +9,7 @@ from __future__ import print_function, division, absolute_import
 
 from Qt.QtWidgets import *
 
-from tpQtLib.core import base
+from tpDcc.libs.qt.core import base
 
 
 class GridWidget(QTableWidget, object):

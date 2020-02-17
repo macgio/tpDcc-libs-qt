@@ -7,8 +7,9 @@ Module that contains classes to show different kind of message boxes
 
 from __future__ import print_function, division, absolute_import
 
-import tpDccLib as tp
 from Qt.QtWidgets import *
+
+import tpDcc as tp
 
 
 class MessageHandler(object):

@@ -10,7 +10,7 @@ from __future__ import print_function, division, absolute_import
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
-from tpPyUtils import decorators
+from tpDcc.libs.python import decorators
 
 
 class OpacityEffect(QGraphicsEffect, object):

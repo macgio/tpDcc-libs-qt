@@ -12,8 +12,6 @@ import uuid
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
-import tpQtLib
-
 
 class BaseTool(object):
     """
@@ -341,7 +339,7 @@ def create_tool_instance(tool_class, already_registered_tools=None):
     :return:
     """
 
-    import tpDccLib as tp
+    import tpDcc as tp
 
     if already_registered_tools is None:
         already_registered_tools = list()

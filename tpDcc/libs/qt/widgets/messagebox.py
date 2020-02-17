@@ -10,9 +10,8 @@ from __future__ import print_function, division, absolute_import
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
-import tpQtLib
-import tpDccLib as tp
-from tpQtLib.core import base, animation, qtutils, theme
+import tpDcc as tp
+from tpDcc.libs.qt.core import animation, qtutils, theme
 
 
 def create_message_box(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None, header_color=None, enable_input_edit=False, enable_dont_show_checkbox=False, theme_to_apply=None):

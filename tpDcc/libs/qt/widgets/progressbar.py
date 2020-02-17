@@ -7,8 +7,6 @@ Module that contains implementations for different types of progress bars
 
 from __future__ import print_function, division, absolute_import
 
-import os
-
 from Qt.QtWidgets import *
 
 

@@ -11,8 +11,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpQtLib as tp
-from tpPyUtils import decorators
+from tpDcc.libs.python import decorators
 
 
 class BaseScene(QGraphicsScene, object):

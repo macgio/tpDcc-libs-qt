@@ -13,7 +13,7 @@ import sys
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
-from tpPyUtils import settings
+from tpDcc.libs.python import settings
 
 
 class QtSettings(QSettings, object):

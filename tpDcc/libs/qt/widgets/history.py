@@ -10,9 +10,9 @@ from __future__ import print_function, division, absolute_import
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
-from tpPyUtils import version
-from tpQtLib.core import base, qtutils
-from tpQtLib.widgets import treewidgets
+from tpDcc.libs.python import version
+from tpDcc.libs.qt.core import base, qtutils
+from tpDcc.libs.qt.widgets import treewidgets
 
 
 class HistoryTreeWidget(treewidgets.FileTreeWidget, object):

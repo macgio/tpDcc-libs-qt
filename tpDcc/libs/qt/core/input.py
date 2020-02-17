@@ -9,12 +9,11 @@ from __future__ import print_function, division, absolute_import
 
 import logging
 import traceback
-from collections import defaultdict
 
 from Qt.QtCore import *
 from Qt.QtGui import *
 
-from tpPyUtils import python
+from tpDcc.libs.python import python
 if python.is_python2():
     from aenum import Enum
 else:

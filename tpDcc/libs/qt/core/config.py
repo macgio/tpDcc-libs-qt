@@ -18,8 +18,8 @@ from collections import OrderedDict
 
 import metayaml
 
-import tpDccLib as tp
-from tpPyUtils import decorators, python
+import tpDcc as tp
+from tpDcc.libs.python import decorators, python
 
 LOGGER = logging.getLogger()
 

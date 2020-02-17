@@ -8,16 +8,205 @@ Module that contains generic functionality when dealing with projects
 from __future__ import print_function, division, absolute_import
 
 import os
+import logging
 
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
-import tpDccLib as tp
-from tpPyUtils import path
-from tpDccLib.core import project as core_project
-from tpDccLib.core import consts
-import tpQtLib
-from tpQtLib.widgets import grid, search, directory, splitters
+import tpDcc as tp
+from tpDcc.libs.python import path
+from tpDcc.core import project as core_project
+from tpDcc.core import consts
+from tpDcc.libs.qt.widgets import grid, search, directory, splitters
+
+LOGGER = logging.getLogger()
+
+
+class Project(QWidget, ProjectData):
+    projectOpened = Signal(object)
+    projectRemoved = Signal()
+    projectImageChanged = Signal(str)
+
+    def __init__(self, name, project_path, settings=None, options=None, parent=None):
+        ProjectData.__init__(self, name=name, project_path=project_path, settings=settings, options=options)
+        QWidget.__init__(self, parent=parent)
+
+        self.setMaximumWidth(160)
+        self.setMaximumHeight(200)
+
+        self.main_layout = QVBoxLayout()
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
+        self.setLayout(self.main_layout)
+
+        widget_layout = QVBoxLayout()
+        widget_layout.setContentsMargins(0, 0, 0, 0)
+        widget_layout.setSpacing(0)
+        main_frame = QFrame()
+        main_frame.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
+        main_frame.setLineWidth(1)
+        main_frame.setLayout(widget_layout)
+        self.main_layout.addWidget(main_frame)
+
+        self.project_btn = QPushButton('', self)
+        self.project_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.project_btn.setIconSize(QSize(120, 120))
+        project_lbl = QLabel(self.name)
+        project_lbl.setStyleSheet('background-color:rgba(0, 0, 0, 150);')
+        project_lbl.setAlignment(Qt.AlignCenter)
+        widget_layout.addWidget(self.project_btn)
+        widget_layout.addWidget(project_lbl)
+
+        self.setup_signals()
+
+    def contextMenuEvent(self, event):
+        menu = QMenu(self)
+        remove_icon = tpQtLib.resource.icon(name='delete', extension='png')
+        remove_action = QAction(remove_icon, 'Remove', menu)
+        remove_action.setStatusTip(consts.DELETE_PROJECT_TOOLTIP)
+        remove_action.setToolTip(consts.DELETE_PROJECT_TOOLTIP)
+        remove_action.triggered.connect(self._on_remove_project)
+
+        folder_icon = tpQtLib.resource.icon(name='open_folder', extension='png')
+        folder_action = QAction(folder_icon, 'Open in Browser', menu)
+        folder_action.setStatusTip(consts.OPEN_PROJECT_IN_EXPLORER_TOOLTIP)
+        folder_action.setToolTip(consts.OPEN_PROJECT_IN_EXPLORER_TOOLTIP)
+        folder_action.triggered.connect(self._on_open_in_browser)
+
+        image_icon = tpQtLib.resource.icon(name='picture', extension='png')
+        set_image_action = QAction(image_icon, 'Set Project Image', menu)
+        set_image_action.setToolTip(consts.SET_PROJECT_IMAGE_TOOLTIP)
+        set_image_action.setStatusTip(consts.SET_PROJECT_IMAGE_TOOLTIP)
+        set_image_action.triggered.connect(self._on_set_project_image)
+
+        for action in [remove_action, None, folder_action, None, set_image_action]:
+            if action is None:
+                menu.addSeparator()
+            else:
+                menu.addAction(action)
+
+        menu.exec_(self.mapToGlobal(event.pos()))
+
+    def setup_signals(self):
+        self.project_btn.clicked.connect(self._on_open_project)
+
+    @classmethod
+    def create_project_from_data(cls, project_data_path):
+        """
+        Creates a new project using a project data JSON file
+        :param project_data_path: str, path where project JSON data file is located
+        :return: Project
+        """
+
+        if project_data_path is None or not path.is_file(project_data_path):
+            tp.logger.warning('Project Data Path {} is not valid!'.format(project_data_path))
+            return None
+
+        project_data = settings.JSONSettings()
+        project_options = settings.JSONSettings()
+        project_dir = path.get_dirname(project_data_path)
+        project_name = path.get_basename(project_data_path)
+        project_data.set_directory(project_dir, project_name)
+        project_options.set_directory(project_dir, 'options.json')
+        if not project_data or not project_data.has_settings():
+            LOGGER.warning('No valid project data found on Project Data File: {}'.format(project_data_path))
+
+        project_name = project_data.get('name')
+        project_path = path.get_dirname(path.get_dirname(project_data_path))
+        project_image = project_data.get('image')
+
+        LOGGER.debug('New Project found [{}]: {}'.format(project_name, project_path))
+        new_project = cls(name=project_name, project_path=project_path, settings=project_data, options=project_options)
+        if project_image:
+            new_project.set_image(project_image)
+
+        return new_project
+
+    def open(self):
+        """
+        Opens project
+        """
+
+        self._on_open_project()
+
+    def set_image(self, encoded_image):
+
+        from tpDcc.libs.qt.core import image
+
+        if not encoded_image:
+            return
+
+        encoded_image = encoded_image.encode('utf-8')
+        self.project_btn.setIcon(QIcon(QPixmap.fromImage(image.base64_to_image(encoded_image))))
+
+    def remove(self):
+
+        from tpDcc.libs.qt.core import qtutils
+
+        if not path.is_dir(self.full_path):
+            LOGGER.warning('Impossible to remove Project Path: {}'.format(self.full_path))
+            return False
+
+        project_name = self.name
+        project_path = self.project_path
+
+        result = qtutils.get_permission(message='Are you sure you want to delete project: {}'.format(self.name),
+                                        title='Deleting Project', cancel=False)
+        if not result:
+            return
+
+        valid_delete = folder.delete_folder(folder_name=project_name, directory=project_path)
+        if valid_delete is None:
+            return False
+
+        return True
+
+    def load_project_data(self):
+        """
+        Return dictionary data contained in the project
+        :return: dict
+        """
+
+        if not self.settings:
+            return
+
+        return self.settings.data()
+
+    def get_project_nodes(self):
+        """
+        Returns path where nodes should be stored
+        :return: str
+        """
+
+        return [os.path.join(self.full_path, 'nodes'), os.path.join(self.full_path, 'components')]
+    # endregion
+
+    # region Private Functions
+    def _on_open_project(self):
+        LOGGER.debug('Loading project "{}" ...'.format(self.full_path))
+        self.projectOpened.emit(self)
+
+    def _on_remove_project(self):
+        valid_remove = self.remove()
+        if valid_remove:
+            self.projectRemoved.emit()
+
+    def _on_open_in_browser(self):
+        fileio.open_browser(self.full_path)
+
+    def _on_set_project_image(self):
+        image_file = tp.Dcc.select_file_dialog(
+            title='Select Project Image File',
+            pattern="PNG Files (*.png)")
+
+        if image_file is None or not path.is_file(image_file):
+            LOGGER.warning('Selected Image "{}" is not valid!'.format(image_file))
+            return
+
+        valid_change = self.set_project_image(image_file)
+
+        if valid_change:
+            self.projectImageChanged.emit(image_file)
 
 
 class ProjectViewer(grid.GridWidget, object):

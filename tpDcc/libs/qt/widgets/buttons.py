@@ -13,9 +13,9 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpDccLib as tp
-from tpQtLib.core import animation, icon, qtutils, menu
-from tpQtLib.widgets import tooltips
+import tpDcc as tp
+from tpDcc.libs.qt.core import animation, icon, qtutils, menu
+from tpDcc.libs.qt.widgets import tooltips
 
 # ===================================================================
 

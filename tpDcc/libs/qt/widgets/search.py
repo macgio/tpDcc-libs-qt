@@ -10,8 +10,8 @@ from __future__ import print_function, division, absolute_import
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
-from tpQtLib.widgets import buttons
-from tpQtLib.core import resource
+from tpDcc.libs.qt.widgets import buttons
+from tpDcc.libs.qt.core import resource
 
 
 class SearchFindWidget(QWidget, object):

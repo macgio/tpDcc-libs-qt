@@ -11,8 +11,8 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-from tpQtLib.core import qtutils
-from tpQtLib.widgets import graphicseffects
+from tpDcc.libs.qt.core import qtutils
+from tpDcc.libs.qt.widgets import graphicseffects
 
 
 class DragDropLine(QLineEdit, object):

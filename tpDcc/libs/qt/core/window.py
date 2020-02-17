@@ -13,10 +13,10 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpQtLib
-import tpDccLib as tp
-from tpPyUtils import path, folder
-from tpQtLib.core import qtutils, settings, animation, color, theme, statusbar, dragger
+import tpDcc as tp
+from tpDcc.libs.python import path, folder
+from tpDcc.libs.qt import register
+from tpDcc.libs.qt.core import qtutils, settings, animation, color, theme, statusbar, dragger
 
 
 class MainWindow(QMainWindow, object):
@@ -1279,4 +1279,4 @@ class MainWindow(QMainWindow, object):
 #             folder.create_folder(name=None, directory=directory)
 
 
-tpQtLib.register_class('Window', MainWindow)
+register.register_class('Window', MainWindow)

@@ -11,8 +11,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpQtLib as tp
-from tpPyUtils import name as naming
+from tpDcc.libs.python import name as naming
 
 # ======================================================================
 

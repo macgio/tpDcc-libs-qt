@@ -14,10 +14,8 @@ __email__ = "tpoveda@cgart3d.com"
 
 from Qt.QtCore import *
 from Qt.QtWidgets import *
-from Qt.QtGui import *
 
-import tpQtLib
-from tpQtLib.core import qtutils, base
+from tpDcc.libs.qt.core import qtutils, base
 
 
 class WindowDragger(QFrame, object):

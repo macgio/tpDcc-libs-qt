@@ -13,11 +13,10 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpQtLib
-import tpDccLib as tp
-from tpPyUtils import path, fileio, folder
-from tpQtLib.core import base
-from tpQtLib.widgets import buttons, search
+import tpDcc as tp
+from tpDcc.libs.python import path, fileio, folder
+from tpDcc.libs.qt.core import base
+from tpDcc.libs.qt.widgets import buttons, search
 
 
 class TreeWidget(QTreeWidget, object):

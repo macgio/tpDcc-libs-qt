@@ -11,8 +11,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpQtLib
-from tpQtLib.core import color, style
+from tpDcc.libs.qt.core import color, style
 
 
 THEME_PRESETS = [

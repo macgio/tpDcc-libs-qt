@@ -13,8 +13,8 @@ from Qt.QtGui import *
 
 from tpDcc.libs.python import python
 
-from tpQtLib.core import base
-from tpQtLib.widgets import splitters
+from tpDcc.libs.qt.core import base
+from tpDcc.libs.qt.widgets import splitters
 
 if python.is_python2():
     from aenum import Enum

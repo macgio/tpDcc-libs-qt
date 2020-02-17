@@ -10,7 +10,7 @@ from HTMLParser import HTMLParser
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-from tpQtLib.widgets import gif
+from tpDcc.libs.qt.widgets import gif
 
 
 class WidgetsFromTextParser(HTMLParser, object):

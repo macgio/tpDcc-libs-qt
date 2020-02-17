@@ -76,8 +76,7 @@ if QT_AVAILABLE:
             except ImportError:
                 UILOADER_AVAILABLE = False
 
-import tpQtLib
-from tpQtLib.core import color
+from tpDcc.libs.qt.core import color
 from tpDcc.libs.python import mathlib
 
 # ==============================================================================

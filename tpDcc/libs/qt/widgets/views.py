@@ -14,8 +14,8 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-from tpPyUtils import python
-from tpQtLib.widgets import models
+from tpDcc.libs.python import python
+from tpDcc.libs.qt.widgets import models
 
 
 class BaseListView(QListView, object):

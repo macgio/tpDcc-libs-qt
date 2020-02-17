@@ -12,7 +12,7 @@ import copy
 from Qt.QtCore import *
 from Qt.QtGui import *
 
-from tpQtLib.core import color, qtutils, pixmap as px
+from tpDcc.libs.qt.core import color, qtutils, pixmap as px
 
 
 class Icon(QIcon, object):

@@ -13,11 +13,10 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpQtLib
-import tpDccLib as tp
-from tpPyUtils import path
-from tpQtLib.core import base, qtutils
-from tpQtLib.widgets import buttons
+import tpDcc as tp
+from tpDcc.libs.python import path
+from tpDcc.libs.qt.core import base, qtutils
+from tpDcc.libs.qt.widgets import buttons
 
 
 class FileListWidget(QListWidget, object):

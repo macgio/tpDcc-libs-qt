@@ -14,11 +14,10 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import tpQtLib
-import tpDccLib as tp
-from tpPyUtils import name as name_utils
-from tpQtLib.core import base, qtutils
-from tpQtLib.widgets import buttons, splitters, spinbox, code, directory
+import tpDcc as tp
+from tpDcc.libs.python import name as name_utils
+from tpDcc.libs.qt.core import base, qtutils
+from tpDcc.libs.qt.widgets import buttons, splitters, spinbox, code, directory
 
 
 class GroupStyles(object):
