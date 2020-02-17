@@ -407,7 +407,8 @@ class DockSectionTitleWidget(QFrame, object):
             tp.logger.debug('Creating new floating dock data ...')
             data = section_widget.take_content(self._content.uid())
             if data is None:
-                tp.logger.error('This should not happen! {} - {}'.format(self._content.uid(), self._content.unique_name()))
+                tp.logger.error(
+                    'This should not happen! {} - {}'.format(self._content.uid(), self._content.unique_name()))
                 return
 
             # Create floating widget and add it to the list of Container floatters
@@ -561,7 +562,7 @@ class DockSectionWidget(QFrame, object):
 
         # Central area with contents
         self._contents_layout = QStackedLayout()
-        self._contents_layout.setContentsMargins(0 ,0, 0, 0)
+        self._contents_layout.setContentsMargins(0, 0, 0, 0)
         self._contents_layout.setSpacing(0)
         self.main_layout.addLayout(self._contents_layout, 1)
 
@@ -624,7 +625,7 @@ class DockSectionWidget(QFrame, object):
         return self._contents_layout.currentIndex()
 
     def set_current_index(self, index):
-        if index < 0 or index > len(self._contents) -1:
+        if index < 0 or index > len(self._contents) - 1:
             tp.logger.warning('Invalid index: {}'.format(index))
             return
 

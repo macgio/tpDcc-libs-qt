@@ -79,7 +79,8 @@ class OptionsWidget(base.BaseWidget, object):
         top_layout.setSpacing(2)
         self._edit_widget.setLayout(top_layout)
         self.main_layout.addWidget(self._edit_widget)
-        self._edit_mode_btn = buttons.IconButton(icon=edit_mode_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
+        self._edit_mode_btn = buttons.IconButton(
+            icon=edit_mode_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         self._edit_mode_btn.setCheckable(True)
         self._edit_mode_btn.setMaximumWidth(45)
         self._edit_mode_btn.setMinimumHeight(15)
@@ -90,9 +91,12 @@ class OptionsWidget(base.BaseWidget, object):
         horizontal_separator.setFrameShadow(QFrame.Sunken)
         top_layout.addWidget(horizontal_separator)
 
-        self._move_up_btn = buttons.IconButton(icon=move_up_icon, icon_padding=0, button_style=buttons.ButtonStyles.FlatStyle)
-        self.move_down_btn = buttons.IconButton(icon=move_down_icon, icon_padding=0, button_style=buttons.ButtonStyles.FlatStyle)
-        self.remove_btn = buttons.IconButton(icon=remove_icon, icon_padding=0, button_style=buttons.ButtonStyles.FlatStyle)
+        self._move_up_btn = buttons.IconButton(
+            icon=move_up_icon, icon_padding=0, button_style=buttons.ButtonStyles.FlatStyle)
+        self.move_down_btn = buttons.IconButton(
+            icon=move_down_icon, icon_padding=0, button_style=buttons.ButtonStyles.FlatStyle)
+        self.remove_btn = buttons.IconButton(
+            icon=remove_icon, icon_padding=0, button_style=buttons.ButtonStyles.FlatStyle)
         self._move_up_btn.setEnabled(False)
         self.move_down_btn.setEnabled(False)
         self.remove_btn.setEnabled(False)

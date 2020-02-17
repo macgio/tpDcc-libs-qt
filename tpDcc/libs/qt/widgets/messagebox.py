@@ -14,7 +14,9 @@ import tpDcc as tp
 from tpDcc.libs.qt.core import animation, qtutils, theme
 
 
-def create_message_box(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None, header_color=None, enable_input_edit=False, enable_dont_show_checkbox=False, theme_to_apply=None):
+def create_message_box(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None,
+                       header_color=None, enable_input_edit=False, enable_dont_show_checkbox=False,
+                       theme_to_apply=None):
     """
     Opens a question message box with the given options
     :param parent: QWidget
@@ -31,7 +33,8 @@ def create_message_box(parent, title, text, width=None, height=None, buttons=Non
     :return: MessageBox
     """
 
-    mb = MessageBox(parent=parent, width=width, height=height, enable_input_edit=enable_input_edit, enable_dont_show_checkbox=enable_dont_show_checkbox)
+    mb = MessageBox(parent=parent, width=width, height=height, enable_input_edit=enable_input_edit,
+                    enable_dont_show_checkbox=enable_dont_show_checkbox)
     mb.set_text(text)
     buttons = buttons or QDialogButtonBox.Ok
     mb.set_buttons(buttons)
@@ -55,7 +58,8 @@ def create_message_box(parent, title, text, width=None, height=None, buttons=Non
     return mb
 
 
-def show_message_box(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None, header_color=None, enable_dont_show_checkbox=False, force=False, theme_to_apply=None):
+def show_message_box(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None,
+                     header_color=None, enable_dont_show_checkbox=False, force=False, theme_to_apply=None):
     """
     Opens a question message box with the given options
     :param parent: QWidget
@@ -81,7 +85,9 @@ def show_message_box(parent, title, text, width=None, height=None, buttons=None,
         force = True
 
     if force or not enable_dont_show_checkbox or not enable_dont_show_checkbox:
-        mb = create_message_box(parent=parent, title=title, text=text, width=width, height=height, buttons=buttons, header_pixmap=header_pixmap, header_color=header_color, enable_dont_show_checkbox=enable_dont_show_checkbox, theme_to_apply=theme_to_apply)
+        mb = create_message_box(parent=parent, title=title, text=text, width=width, height=height,
+                                buttons=buttons, header_pixmap=header_pixmap, header_color=header_color,
+                                enable_dont_show_checkbox=enable_dont_show_checkbox, theme_to_apply=theme_to_apply)
         mb.exec_()
         mb.close()
 
@@ -97,7 +103,8 @@ class MessageBox(QDialog, object):
     MAX_HEIGHT = 220
 
     @staticmethod
-    def input(parent, title, text, input_text='', width=None, height=None, buttons=None, header_pixmap=None, header_color=None, theme_to_apply=None):
+    def input(parent, title, text, input_text='', width=None, height=None, buttons=None,
+              header_pixmap=None, header_color=None, theme_to_apply=None):
         """
         Helper dialog function to get a single text value from the user
         :param parent: QWidget
@@ -114,7 +121,9 @@ class MessageBox(QDialog, object):
         """
 
         buttons = buttons or QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-        dialog = create_message_box(parent=parent, title=title, text=text, width=width, height=height, buttons=buttons, header_pixmap=header_pixmap, header_color=header_color, enable_input_edit=True, theme_to_apply=theme_to_apply)
+        dialog = create_message_box(parent=parent, title=title, text=text, width=width, height=height,
+                                    buttons=buttons, header_pixmap=header_pixmap, header_color=header_color,
+                                    enable_input_edit=True, theme_to_apply=theme_to_apply)
         dialog.set_input_text(input_text)
         dialog.exec_()
         clicked_btn = dialog.clicked_standard_button()
@@ -122,7 +131,8 @@ class MessageBox(QDialog, object):
         return dialog.input_text(), clicked_btn
 
     @staticmethod
-    def question(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None, header_color=None, enable_dont_show_checkbox=False, theme_to_apply=None):
+    def question(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None,
+                 header_color=None, enable_dont_show_checkbox=False, theme_to_apply=None):
         """
         Helper dialog function to get a single text value from the user
         :param parent: QWidget
@@ -139,11 +149,15 @@ class MessageBox(QDialog, object):
         """
 
         buttons = buttons or QDialogButtonBox.Yes | QDialogButtonBox.No | QDialogButtonBox.Cancel
-        clicked_btn = show_message_box(parent=parent, title=title, text=text, width=width, height=height, buttons=buttons, header_pixmap=header_pixmap, header_color=header_color, enable_dont_show_checkbox=enable_dont_show_checkbox, theme_to_apply=theme_to_apply)
+        clicked_btn = show_message_box(parent=parent, title=title, text=text, width=width, height=height,
+                                       buttons=buttons, header_pixmap=header_pixmap, header_color=header_color,
+                                       enable_dont_show_checkbox=enable_dont_show_checkbox,
+                                       theme_to_apply=theme_to_apply)
         return clicked_btn
 
     @staticmethod
-    def warning(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None, header_color='rgb(250, 160, 0)', enable_dont_show_checkbox=False, force=False):
+    def warning(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None,
+                header_color='rgb(250, 160, 0)', enable_dont_show_checkbox=False, force=False):
         """
         Helper dialog function to open a warning message box with the given options
         :param parent: QWidget
@@ -160,11 +174,14 @@ class MessageBox(QDialog, object):
         """
 
         buttons = buttons or QDialogButtonBox.Yes | QDialogButtonBox.No
-        clicked_btn = show_message_box(parent=parent, title=title, text=text, width=width, height=height, buttons=buttons, header_pixmap=header_pixmap, header_color=header_color, enable_dont_show_checkbox=enable_dont_show_checkbox, force=force)
+        clicked_btn = show_message_box(parent=parent, title=title, text=text, width=width, height=height,
+                                       buttons=buttons, header_pixmap=header_pixmap, header_color=header_color,
+                                       enable_dont_show_checkbox=enable_dont_show_checkbox, force=force)
         return clicked_btn
 
     @staticmethod
-    def critical(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None, header_color='rgb(230, 80, 80)'):
+    def critical(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None,
+                 header_color='rgb(230, 80, 80)'):
         """
         Helper dialog function to open a critical/error message box with the given options
         :param parent: QWidget
@@ -179,10 +196,12 @@ class MessageBox(QDialog, object):
         """
 
         buttons = buttons or QDialogButtonBox.Ok
-        clicked_btn = show_message_box(parent=parent, title=title, text=text, width=width, height=height, buttons=buttons, header_pixmap=header_pixmap, header_color=header_color)
+        clicked_btn = show_message_box(parent=parent, title=title, text=text, width=width, height=height,
+                                       buttons=buttons, header_pixmap=header_pixmap, header_color=header_color)
         return clicked_btn
 
-    def __init__(self, name='messageBox', width=None, height=None, enable_input_edit=False, enable_dont_show_checkbox=False, parent=None):
+    def __init__(self, name='messageBox', width=None, height=None, enable_input_edit=False,
+                 enable_dont_show_checkbox=False, parent=None):
 
         super(MessageBox, self).__init__(
             parent=parent
@@ -508,4 +527,3 @@ class MessageBox(QDialog, object):
         parent = self._frame or self
         parent.close()
         self.reject()
-

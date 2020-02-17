@@ -430,7 +430,9 @@ class ColorPicker(BaseEditor, object):
     def OnSliderChanged(self):
         slider_value = float(self.slider.value())
         if not self._current_value:
-            tp.logger.debug('Caching color: (%d, %d, %d)' %(self.color_swatch.color[0], self.color_swatch.color[1], self.color_swatch.color[2]))
+            tp.logger.debug(
+                'Caching color: (%d, %d, %d)' % (
+                    self.color_swatch.color[0], self.color_swatch.color[1], self.color_swatch.color[2]))
             self._current_value = self.color_swatch.color
         current_color = QColor(*self._current_value)
         darker = 200 - slider_value

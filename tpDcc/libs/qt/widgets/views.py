@@ -55,7 +55,8 @@ class ListView(BaseListView, object):
         Override selectionChanged behavior
         :param selected: list<variant>, new selection
         :param deselected: list<variant>, previous selection
-        :warning: This method is override to avoid a Qt 4.7.0 QModelIndexList destructor crash.  See ItemSelection for more information.
+        :warning: This method is override to avoid a Qt 4.7.0 QModelIndexList destructor crash.
+            See ItemSelection for more information.
         """
 
         self.current_selection_changed.emit(models.ItemSelection(selected), models.ItemSelection(deselected))
@@ -64,7 +65,8 @@ class ListView(BaseListView, object):
     def selectedIndexes(self):
         """
         Override selectedIndexes behavior
-        :warning: This method is override to avoid  a Qt 4.7.0 QModelIndexList destructor crash.  See ItemSelection for more information.
+        :warning: This method is override to avoid  a Qt 4.7.0 QModelIndexList destructor crash.
+            See ItemSelection for more information.
         """
 
         item_selection = models.ItemSelection(self.selectionModel().selection())
@@ -134,7 +136,8 @@ class DraggableListView(ListView, object):
         mime_data = event.mimeData()
         if mime_data.hasUrls():
             for path in map(lambda x: x.toLocalFile(), mime_data.urls()):
-                if os.path.isdir(path) or os.path.isfile(path) and os.path.splitext(path)[-1].lower() in self._accepted_files:
+                if os.path.isdir(path) or os.path.isfile(path) and \
+                        os.path.splitext(path)[-1].lower() in self._accepted_files:
                     self.setDragDropMode(QListView.InternalMove)
                     event.accept()
                     break
@@ -150,7 +153,8 @@ class DraggableListView(ListView, object):
             send_data = list()
             for path in map(lambda x: x.toLocalFile(), mime_data.urls()):
                 for file in self._accepted_files:
-                    if os.path.isdir(path) and glob.glob(os.path.join(path, '*' + file)) or os.path.isfile(path) and os.path.splitext(path)[-1].lower() == file:
+                    if os.path.isdir(path) and glob.glob(os.path.join(path, '*' + file))\
+                            or os.path.isfile(path) and os.path.splitext(path)[-1].lower() == file:
                         send_data.append(path)
             if send_data:
                 self.addedItemDir.emit(send_data)

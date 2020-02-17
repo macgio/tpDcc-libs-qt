@@ -12,6 +12,7 @@ from Qt.QtWidgets import *
 
 from tpDcc.libs.qt.core import animation
 
+
 class Lightbox(QFrame, object):
 
     closed = Signal()

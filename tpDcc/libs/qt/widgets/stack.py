@@ -21,8 +21,9 @@ class SlidingStackedWidget(QStackedWidget, object):
     def __init__(self, parent=None, **kwargs):
         super(SlidingStackedWidget, self).__init__(parent)
 
-        self._current_widget = None     # This variable holds the current widget without taking into account if the animation has finished or not
+        # This variable holds the current widget without taking into account if the animation has finished or not
         self._speed = kwargs.pop('speed', 500)
+        self._current_widget = None
         self._animation_type = kwargs.pop('animation_type', QEasingCurve.OutCubic)
         self._wrap = kwargs.pop('wrap', True)
         self._vertical = kwargs.pop('vertical', False)
@@ -73,8 +74,8 @@ class SlidingStackedWidget(QStackedWidget, object):
         """
 
         now = self.currentIndex()
-        if self._wrap or now < self.count()-1:
-            self.slide_in_index(now+1)
+        if self._wrap or now < self.count() - 1:
+            self.slide_in_index(now + 1)
 
     def slide_in_prev(self):
         """
@@ -83,7 +84,7 @@ class SlidingStackedWidget(QStackedWidget, object):
 
         now = self.currentIndex()
         if self._wrap or now > 0:
-            self.slide_in_index(now-1)
+            self.slide_in_index(now - 1)
 
     def slide_in_index(self, next, force=False):
         """
@@ -96,7 +97,7 @@ class SlidingStackedWidget(QStackedWidget, object):
             return
 
         self._active_state = True
-        width, height = self.frameRect().width() , self.frameRect().height()
+        width, height = self.frameRect().width(), self.frameRect().height()
         next %= self.count()
         if next > now:
             if self._vertical:
@@ -108,8 +109,8 @@ class SlidingStackedWidget(QStackedWidget, object):
                 offset_x, offset_y = 0, -height
             else:
                 offset_x, offset_y = -width, 0
-        self.widget(next).setGeometry(0,  0, width, height)
-        pnow , pnext = self.widget(now).pos(), self.widget(next).pos()
+        self.widget(next).setGeometry(0, 0, width, height)
+        pnow, pnext = self.widget(now).pos(), self.widget(next).pos()
         self._point_now = pnow
 
         self.widget(next).move(pnext.x() + offset_x, pnext.y() + offset_y)

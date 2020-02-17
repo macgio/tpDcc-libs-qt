@@ -23,7 +23,6 @@ class EditableList(QTreeWidget):
         def __init__(self, *args):
             super(EditableList.EditLine, self).__init__(*args)
 
-        # region Override Functions
         def keyPressEvent(self, event):
             if event.key() == Qt.Key_Escape:
                 self.deleteLater()
@@ -31,14 +30,12 @@ class EditableList(QTreeWidget):
                 self.parent().parent().update_item()
             else:
                 super(EditableList.EditLine, self).keyPressEvent(event)
-        # endrdegion
 
     def __init__(self, parent=None):
         super(EditableList, self).__init__(parent=parent)
         self.itemClicked.connect(self._on_click)
         self.itemDoubleClicked.connect(self._on_double_click)
 
-    # region Public Functions
     def update_item(self):
         """
         If an item has been edited we update the list
@@ -54,9 +51,7 @@ class EditableList(QTreeWidget):
             self.editing = False
         if i:
             self.removeItemWidget(i, 0)
-    # endregion
 
-    # region Private Functions
     def _on_click(self, item, col):
         if self.editing and item is not self.editing:
             self.update_item()
@@ -66,7 +61,6 @@ class EditableList(QTreeWidget):
         self.setItemWidget(item, 0, edit)
         edit.selectAll()
         self.editing = item
-    # endregion
 
 
 class WidgetItem(QFrame, object):
@@ -113,7 +107,7 @@ class WidgetItem(QFrame, object):
 
         # This layout is used to add custom widgets before the title of the node
         self.buttons_layout = QVBoxLayout()
-        self.buttons_layout.setContentsMargins(2,2,2,2)
+        self.buttons_layout.setContentsMargins(2, 2, 2, 2)
         self.buttons_layout.setSpacing(2)
 
         title_layout = QHBoxLayout()
@@ -135,7 +129,6 @@ class WidgetItem(QFrame, object):
 
         self.main_layout.addLayout(title_layout)
 
-    # region Public Functions
     def hide_close_button(self, value=True):
         self._close_btn.setVisible(not(value))
 
@@ -145,10 +138,7 @@ class WidgetItem(QFrame, object):
 
     def delete_widget(self):
         self.deleted.emit(self)
-    # endregion
 
-
-    # region Private Functions
     def _animate_expand(self, value):
 
         size_anim = QPropertyAnimation(self, 'geometry')
@@ -180,7 +170,6 @@ class WidgetItem(QFrame, object):
 
         # Force widget item parent to reevaluate its size
         self.setFixedHeight(new_height.height())
-    # endregion
 
 
 class ItemWidgetsList(QListWidget, object):
@@ -249,4 +238,3 @@ class WidgetsList(QWidget, object):
         self.widgets_layout.removeWidget(widget)
         widget._animation = None
         widget.deleteLater()
-

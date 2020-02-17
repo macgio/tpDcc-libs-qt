@@ -143,10 +143,10 @@ class BaseButtonStyle(object):
 
         painter.setPen(base_button._pens_clear)
         painter.setBrush(gradient[OUTER])
-        painter.drawRoundedRect(QRect(x+2, y+2, width-3, height-3), radius, radius)
+        painter.drawRoundedRect(QRect(x + 2, y + 2, width - 3, height - 3), radius, radius)
 
         painter.setBrush(gradient[INNER])
-        painter.drawRoundedRect(QRect(x+3, y+3, width-5, height-5), radius-1, radius-1)
+        painter.drawRoundedRect(QRect(x + 3, y + 3, width - 5, height - 5), radius - 1, radius - 1)
         painter.setBrush(base_button._brush_clear)
 
         text = base_button.text()
@@ -194,7 +194,7 @@ class FlatButtonStyle(BaseButtonStyle, object):
         radius = base_button._radius
         gradient = BaseButtonStyle._gradient[NORMAL]
         offset = 0
-        icon_offset = 3 # todo: maybe we want set this as a property of the base button
+        icon_offset = 3     # TODO: maybe we want set this as a property of the base button
 
         if base_button.isCheckable():
             if base_button.isChecked():
@@ -230,15 +230,21 @@ class FlatButtonStyle(BaseButtonStyle, object):
         if has_icon:
             if base_button.text() == '' or base_button.text() is None:
                 icon_size = max(min(height, width) - 2 * base_button._pad, base_button._min_size)
-                painter.drawPixmap((width - icon_size) / 2, (height - icon_size) / 2, base_button.icon().pixmap(icon_size))
+                painter.drawPixmap(
+                    (width - icon_size) / 2, (height - icon_size) / 2, base_button.icon().pixmap(icon_size))
             else:
                 icon_size = max(min(height, width) - 2 * base_button._pad, base_button._min_size)
-                painter.drawPixmap((width - icon_size - text_width) / 2, (height - icon_size) / 2, base_button.icon().pixmap(icon_size))
+                painter.drawPixmap(
+                    (width - icon_size - text_width) / 2, (height - icon_size) / 2,
+                    base_button.icon().pixmap(icon_size))
 
         if has_icon:
-            text_path.addText((width - text_width + icon_size + icon_offset) / 2, height - ((height - text_height) / 2) - 1 + offset, font, text)
+            text_path.addText(
+                (width - text_width + icon_size + icon_offset) / 2,
+                height - ((height - text_height) / 2) - 1 + offset, font, text)
         else:
-            text_path.addText((width - text_width) / 2, height - ((height - text_height) / 2) - 1 + offset, font, text)
+            text_path.addText(
+                (width - text_width) / 2, height - ((height - text_height) / 2) - 1 + offset, font, text)
 
         glow_index = base_button._glow_index
         glow_pens = base_button._glow_pens
@@ -249,7 +255,7 @@ class FlatButtonStyle(BaseButtonStyle, object):
             painter.setPen(base_button._pens_text)
 
             if has_icon:
-                painter.drawText(x + ((icon_size+icon_offset)*0.5), y + offset, width, height, alignment, text)
+                painter.drawText(x + ((icon_size + icon_offset) * 0.5), y + offset, width, height, alignment, text)
             else:
                 painter.drawText(x, y + offset, width, height, alignment, text)
 
@@ -261,7 +267,7 @@ class FlatButtonStyle(BaseButtonStyle, object):
                 painter.setPen(glow_pens[glow_index][3])
 
                 if has_icon:
-                    painter.drawText(x + ((icon_size+icon_offset)*0.5), y + offset, width, height, alignment, text)
+                    painter.drawText(x + ((icon_size + icon_offset) * 0.5), y + offset, width, height, alignment, text)
                 else:
                     painter.drawText(x, y + offset, width, height, alignment, text)
         else:
@@ -270,7 +276,7 @@ class FlatButtonStyle(BaseButtonStyle, object):
             painter.setPen(base_button._pens_text_disabled)
 
             if has_icon:
-                painter.drawText(x + ((icon_size+icon_offset)*0.5), y + offset, width, height, alignment, text)
+                painter.drawText(x + ((icon_size + icon_offset) * 0.5), y + offset, width, height, alignment, text)
             else:
                 painter.drawText(x, y + offset, width, height, alignment, text)
 
@@ -454,7 +460,7 @@ class ButtonIcons(QAbstractButton):
         self.highlightOffset = highlight
 
     def set_icons(self, icons, colors=None, size=None, color_offset=None, icon_scaling=None,
-                  tint_composition=QPainter.CompositionMode_Plus,  grayscale=False):
+                  tint_composition=QPainter.CompositionMode_Plus, grayscale=False):
 
         if size is not None:
             self.setIconSize(QSize(size, size))
@@ -718,7 +724,7 @@ class BaseMenuButton(QPushButton, ButtonIcons):
 
         return res
 
-    def _menu_pos(self, widget=None,  align=Qt.AlignLeft):
+    def _menu_pos(self, widget=None, align=Qt.AlignLeft):
 
         pos = 0
 
@@ -854,7 +860,6 @@ class ColorButton(QPushButton, object):
         self._update_color()
 
     def show_color_editor(self):
-
         if tp.Dcc.get_name() == tp.Dccs.Maya:
             import maya.cmds as cmds
             cmds.colorEditor(rgbValue=(self._color.redF(), self._color.greenF(), self._color.blueF()))
@@ -867,6 +872,8 @@ class ColorButton(QPushButton, object):
             raise RuntimeError('Code Editor is not available for DCC: {}'.format(tp.Dcc.get_name()))
 
     def _update_color(self):
-        self.setStyleSheet('background-color:rgb({0},{1},{2});'.format(self._color.redF()*255, self._color.greenF()*255, self._color.blueF()*255))
+        self.setStyleSheet(
+            'background-color:rgb({0},{1},{2});'.format(
+                self._color.redF() * 255, self._color.greenF() * 255, self._color.blueF() * 255))
 
     color = property(get_color, set_color)
