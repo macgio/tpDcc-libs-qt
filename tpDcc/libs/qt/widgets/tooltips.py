@@ -25,7 +25,7 @@ class ExpandedTooltipPopup(dialog.Dialog, object):
     popupKey = Qt.Key_Control
 
     ETT_ICON_COLOR = (82, 133, 166)
-    ETT_LINK_COLOR = (255 , 255, 255)
+    ETT_LINK_COLOR = (255, 255, 255)
     ETT_THEME_COLOR = (82, 133, 166)
 
     def __init__(self, widget, width=450, height=50, icon_size=40, parent=None, show_on_initialize=False,
@@ -59,7 +59,7 @@ class ExpandedTooltipPopup(dialog.Dialog, object):
 
     def get_main_layout(self):
         main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(6, 4, 6 , 8)
+        main_layout.setContentsMargins(6, 4, 6, 8)
         return main_layout
 
     def ui(self):

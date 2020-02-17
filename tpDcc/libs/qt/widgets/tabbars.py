@@ -126,7 +126,7 @@ class EditableTabBar(QTabBar, object):
         """
 
         size_hint = super(EditableTabBar, self).sizeHint()
-        return QSize(size_hint.width()+25, size_hint.height())
+        return QSize(size_hint.width() + 25, size_hint.height())
 
     def resizeEvent(self, event):
         """
@@ -252,7 +252,8 @@ class TearOffTabBar(QTabBar, object):
         if not event.buttons() == Qt.LeftButton:
             return
 
-        if not self._drag_start_pos.isNull() and (event.pos() - self._drag_start_pos).manhattanLength() < QApplication.startDragDistance():
+        if not self._drag_start_pos.isNull() and (
+                event.pos() - self._drag_start_pos).manhattanLength() < QApplication.startDragDistance():
             self._drag_initiated = True
 
         if (event.buttons() == Qt.LeftButton) and self._drag_initiated and not self.geometry().contains(event.pos()):

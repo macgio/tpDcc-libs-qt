@@ -34,7 +34,8 @@ class BaseListViewDelegate(QStyledItemDelegate, object):
             painter.drawRoundedRect(option.rect.adjusted(1, 1, -1, -1), self._ICON_MARGIN, self._ICON_MARGIN)
 
         pixmap = model.data(index, Qt.DecorationRole).pixmap(view.iconSize())
-        pm_rect = QRect(option.rect.topLeft() + QPoint(self._ICON_MARGIN + 1, self._ICON_MARGIN + 1), view.iconSize() - QSize(self._ICON_MARGIN * 2, self._ICON_MARGIN * 2))
+        pm_rect = QRect(option.rect.topLeft() + QPoint(self._ICON_MARGIN + 1, self._ICON_MARGIN + 1),
+                        view.iconSize() - QSize(self._ICON_MARGIN * 2, self._ICON_MARGIN * 2))
         painter.drawPixmap(pm_rect, pixmap)
         if option.state & QStyle.State_Selected:
             painter.setPen(QPen(Qt.red, 1.0, Qt.SolidLine, Qt.SquareCap, Qt.RoundJoin))
@@ -47,7 +48,8 @@ class BaseListViewDelegate(QStyledItemDelegate, object):
         text = fm.elidedText(text, Qt.ElideRight, view.iconSize().width() - 4)
         text_opt = QTextOption()
         text_opt.setAlignment(Qt.AlignHCenter)
-        txt_rect = QRectF(QPointF(pm_rect.bottomLeft() + QPoint(0, 1)), QPointF(option.rect.bottomRight() - QPoint(4, 3)))
+        txt_rect = QRectF(
+            QPointF(pm_rect.bottomLeft() + QPoint(0, 1)), QPointF(option.rect.bottomRight() - QPoint(4, 3)))
 
         painter.save()
         painter.setPen(Qt.NoPen)

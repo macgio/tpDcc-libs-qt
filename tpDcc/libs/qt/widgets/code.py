@@ -126,13 +126,13 @@ class PythonCompleter(QCompleter, object):
         return False
 
     def handle_import(self, text):
-        m = re.search('(from|import)(?:\s+?)(\w*)', text)
+        m = re.search(r'(from|import)(?:\s+?)(\w*)', text)
         if m:
             # TODO: Find available modules in Python path
             pass
 
     def handle_sub_import(self, text, column):
-        m = re.search('(from|import)(?:\s+?)(\w*.?\w*)\.(\w*)$', text)
+        m = re.search(r'(from|import)(?:\s+?)(\w*.?\w*)\.(\w*)$', text)
         if m:
             if column < m.end(2):
                 return False
@@ -151,7 +151,7 @@ class PythonCompleter(QCompleter, object):
     def handle_import_load(self, text, cursor):
         column = cursor.columnNumber() - 1
         text = text[:cursor.columnNumber()]
-        m = re.search('\s*([a-zA-Z0-9._]+)\.([a-zA-Z0-9_]*)$', text)
+        m = re.search(r'\s*([a-zA-Z0-9._]+)\.([a-zA-Z0-9_]*)$', text)
         block_number = cursor.blockNumber()
         line_number = block_number + 1
         all_text = self.widget().toPlainText()
@@ -166,7 +166,7 @@ class PythonCompleter(QCompleter, object):
         if column < m.end(1):
             return False
 
-        sub_m = re.search('(from|import)\s+(%s)' % assignment, text)
+        sub_m = re.search(r'(from|import)\s+(%s)' % assignment, text)
         if sub_m:
             return False
 
@@ -296,7 +296,7 @@ class PythonCompleter(QCompleter, object):
         return False
 
     def handle_from_import(self, text, column):
-        m = re.search('(from)(?:\s+?)(\w*.?\w*)(?:\s+?)(import)(?:\s+?)(\w+)?$', text)
+        m = re.search(r'(from)(?:\s+?)(\w*.?\w*)(?:\s+?)(import)(?:\s+?)(\w+)?$', text)
         if m:
             if column < m.end(3):
                 return False
@@ -357,6 +357,7 @@ class PythonCompleter(QCompleter, object):
         cursor.removeSelectedText()
         cursor.insertText(completion_string)
         widget.setTextCursor(cursor)
+
 
 def get_syntax_format(color=None, style=''):
     """
@@ -460,16 +461,16 @@ class PythonHighlighter(QSyntaxHighlighter):
         # Comparison
         '==', '!=', '<', '<=', '>', '>=',
         # Arithmetic
-        '\+', '-', '\*', '/', '//', '\%', '\*\*',
+        r'\+', '-', r'\*', '/', '//', r'\%', r'\*\*',
         # In-place
-        '\+=', '-=', '\*=', '/=', '\%=',
+        r'\+=', '-=', r'\*=', '/=', r'\%=',
         # Bitwise
-        '\^', '\|', '\&', '\~', '>>', '<<',
+        r'\^', r'\|', r'\&', r'\~', '>>', '<<',
     ]
 
     # Python braces
     braces = [
-        '\{', '\}', '\(', '\)', '\[', '\]',
+        r'\{', r'\}', r'\(', r'\)', r'\[', r'\]',
     ]
 
     def __init__(self, document):
@@ -766,7 +767,8 @@ class CodeTextEdit(QPlainTextEdit, object):
                 result = self._completer.handle_text(text)
                 if result:
                     rect = self.cursorRect()
-                    width = self._completer.popup().sizeHintForColumn(0) + self._completer.popup().verticalScrollBar().sizeHint().width()
+                    scroll_width = self._completer.popup().verticalScrollBar().sizeHint().width()
+                    width = self._completer.popup().sizeHintForColumn(0) + scroll_width
                     if width > 350:
                         width = 350
                     rect.setWidth(width)
@@ -1040,7 +1042,8 @@ class CodeTextEdit(QPlainTextEdit, object):
 
         last_modified = fileio.get_last_modified_date(self._file_path)
         self._skip_focus = True
-        permission = qtutils.get_permission('File:\n{}\nhas changed, do you want to relaod it?'.format(path_utils.get_basename(self._file_path)), self)
+        permission = qtutils.get_permission(
+            'File:\n{}\nhas changed, do you want to relaod it?'.format(path_utils.get_basename(self._file_path)), self)
         if permission:
             self.set_file(self._file_path)
         else:

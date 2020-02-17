@@ -107,7 +107,7 @@ def init(do_reload=False, dev=False):
 
     qt_importer.import_modules(skip_modules=['tpDcc.libs.qt.externals'])
     qt_importer.import_packages(only_packages=True, skip_modules=['tpDcc.libs.qt.externals'],
-                                     order=['tpDcc.libs.qt.core', 'tpDcc.libs.qt.widgets'])
+                                order=['tpDcc.libs.qt.core', 'tpDcc.libs.qt.widgets'])
     if do_reload:
         qt_importer.reload_all()
 

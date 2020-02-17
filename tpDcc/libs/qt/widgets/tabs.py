@@ -43,7 +43,9 @@ class BaseTabWidget(QTabWidget, object):
         """
 
         if self._show_close_message:
-            can_close = qtutils.get_permission(message='Save graph before closing it?', cancel=self._show_can_cancel,  title='Closing Graph', parent=self)
+            can_close = qtutils.get_permission(
+                message='Save graph before closing it?',
+                cancel=self._show_can_cancel,  title='Closing Graph', parent=self)
             if can_close is None:
                 return
             elif can_close:
@@ -161,7 +163,8 @@ class TearOffTabWidget(BaseTabWidget, object):
             self.detached = detached
 
         def __repr__(self):
-            return 'index %d, widget %r, title %s, visible %r, detached %r' % (self.index, self.widget, self.title, self.visible,self.detached)
+            return 'index %d, widget %r, title %s, visible %r, detached %r' % (
+                self.index, self.widget, self.title, self.visible,self.detached)
 
     tabAdded = Signal()
     tabDetached = Signal(int, QPoint)
@@ -479,13 +482,14 @@ class EditableTearOffTabWidget(TearOffTabWidget, object):
         :param index: index of the tab to delete
         """
 
-        if index < 0: return
+        if index < 0:
+            return
         widget = self.widget(index)
-        tabText = self.tabText(index)
+        tab_text = self.tabText(index)
         super(EditableTearOffTabWidget, self).removeTab(index)
         widget.deleteLater()
         self.window_modified.emit()
-        self.tab_removed_text.emit(tabText)
+        self.tab_removed_text.emit(tab_text)
 
     def button_rect(self):
         r = self.tabBar().tabRect(self.count() - 1)

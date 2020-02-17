@@ -32,7 +32,8 @@ class MessageHandler(object):
             level = 3
 
         # import maya.OpenMaya as OpenMaya
-        # output = {0: OpenMaya.MGlobal.displayInfo, 1: OpenMaya.MGlobal.displayWarning, 2: OpenMaya.MGlobal.displayError}
+        # output = {0: OpenMaya.MGlobal.displayInfo, 1:
+        # OpenMaya.MGlobal.displayWarning, 2: OpenMaya.MGlobal.displayError}
         # output[level](msg)
 
     def show_confirm_dialog(self, msg, title='Title'):
