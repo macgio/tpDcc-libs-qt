@@ -130,7 +130,7 @@ def get_image_height(image_path):
     if not image or image.isNull():
         return 0
 
-    return image.height ()
+    return image.height()
 
 
 def paint_background(image, background_color=None):
@@ -199,7 +199,7 @@ def download_image(image_url, target_image_path):
     :param image_url: str
     :param target_image_path: str
     """
-    
+
     if not os.path.isfile(target_image_path):
         with open(target_image_path, 'wb') as temp_out_image:
             try:
@@ -299,9 +299,13 @@ class ImageSequence(QObject, object):
             :param items: list(str)
             """
 
-            convert = lambda text: int(text) if text.isdigit() else text
-            alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
-            items.sort(key=alphanum_key)
+            def _convert(text):
+                return int(text) if text.isdigit() else text
+
+            def _alphanum_key(key):
+                return [_convert(c) for c in re.split('([0-9]+)', key)]
+
+            items.sort(key=_alphanum_key)
 
         self._dirname = dirname
         if os.path.isdir(dirname):
@@ -493,7 +497,7 @@ def base64_to_icon(base64_string, icon_format='PNG'):
     """
 
     if isinstance(base64_string, basestring):
-        bitmap = base64_to_bitmap (base64_string, icon_format)
+        bitmap = base64_to_bitmap(base64_string, icon_format)
         if bitmap is not None:
             icon = QIcon(bitmap)
             return icon

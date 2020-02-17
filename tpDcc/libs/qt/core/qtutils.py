@@ -102,6 +102,7 @@ def is_pyqt():
 
     return 'PyQt' in __binding__
 
+
 def is_pyqt4():
     """
     Retunrs True if the currente Qt binding is PyQt4
@@ -265,7 +266,7 @@ def wrapinstance(ptr, base=None):
         return None
 
     ptr = long(ptr)
-    if globals().has_key('shiboken'):
+    if 'shiboken' in globals():
         if base is None:
             qObj = shiboken.wrapInstance(long(ptr), QObject)
             meta_obj = qObj.metaObject()
@@ -279,7 +280,7 @@ def wrapinstance(ptr, base=None):
                 base = QWidget
         try:
             return shiboken.wrapInstance(long(ptr), base)
-        except:
+        except Exception:
             from PySide.shiboken import wrapInstance
             return wrapInstance(long(ptr), base)
     elif globals().has_key('sip'):
@@ -408,7 +409,8 @@ def load_ui(ui_file, parent_widget=None):
     Loads GUI from .ui file
     :param ui_file: str, path to the UI file
     :param parent_widget: QWidget, base instance widget
-    :param force_pyside: bool, True to force using PySide1 load UI. Sometimes PySide2 gives error when working with custom widgets
+    :param force_pyside: bool, True to force using PySide1 load UI.
+        Sometimes PySide2 gives error when working with custom widgets
     """
 
     if not QT_AVAILABLE:
@@ -524,9 +526,12 @@ def compile_uis(root_path, recursive=True, use_qt=True):
                         lines = open(py_file, 'r').readlines()
                         for line in lines:
                             if 'from PySide' in line or 'from PySide2' in line:
-                                line = 'try:\n\tfrom PySide.QtCore import *\n\tfrom PySide.QtGui import *\nexcept:\n\tfrom PySide2.QtCore import *\n\tfrom PySide2.QtWidgets import *\n\tfrom PySide2.QtGui import *\nfrom Qt import __binding__\n\n'
+                                line = 'try:\n\tfrom PySide.QtCore import *\n\tfrom PySide.QtGui import ' \
+                                       '*\nexcept:\n\tfrom PySide2.QtCore import *\n\tfrom PySide2.QtWidgets import ' \
+                                       '*\n\tfrom PySide2.QtGui import *\nfrom Qt import __binding__\n\n'
                             if 'QApplication.UnicodeUTF8' in line:
-                                line = line.replace('QApplication.UnicodeUTF8', 'QApplication.UnicodeUTF8 if __binding__ == "PySide" else -1')
+                                line = line.replace('QApplication.UnicodeUTF8',
+                                                    'QApplication.UnicodeUTF8 if __binding__ == "PySide" else -1')
                             elif '-1' in line:
                                 line = line.replace('-1', 'QApplication.UnicodeUTF8 if __binding__ == "PySide" else -1')
 
@@ -589,6 +594,9 @@ def create_python_qrc_file(qrc_file, py_file):
 
 def create_qrc_file(src_paths, dst_file):
 
+    def _default_filter(x):
+        return not x.startswith(".")
+
     def tree(top='.',
              filters=None,
              output_prefix=None,
@@ -611,7 +619,6 @@ def create_qrc_file(src_paths, dst_file):
             lines = ""
 
         if filters is None:
-            _default_filter = lambda x: not x.startswith(".")
             filters = [_default_filter]
 
         for root, dirs, files in os.walk(top=top_fullpath, topdown=topdown, followlinks=followlinks):
@@ -673,7 +680,8 @@ def create_qrc_file(src_paths, dst_file):
         lines = [os.path.relpath(f, root_res_path) for f in res_folder_files]
 
         if use_alias:
-            buf = ['\t\t<file alias="{0}">{1}</file>\n'.format(os.path.splitext(os.path.basename(i))[0].lower().replace('-', '_'), i).replace('\\', '/') for i in lines]
+            buf = ['\t\t<file alias="{0}">{1}</file>\n'.format(os.path.splitext(
+                os.path.basename(i))[0].lower().replace('-', '_'), i).replace('\\', '/') for i in lines]
         else:
             buf = ["\t\t<file>{0}</file>\n".format(i).replace('\\', '/') for i in lines]
         buf = "".join(buf)
@@ -761,6 +769,7 @@ def show_warning(parent, title, warning):
 
     return QMessageBox.warning(parent, title, warning)
 
+
 def show_error(parent, title, error):
     """
     Show a error QMessageBox with the given error
@@ -821,7 +830,7 @@ def get_rounded_mask(width, height, radius_tl=10, radius_tr=10, radius_bl=10, ra
     region = QtGui.QRegion(0, 0, width, height, QtGui.QRegion.Rectangle)
 
     # top left
-    round = QtGui.QRegion(0, 0, 2*radius_tl, 2 * radius_tl, QtGui.QRegion.Ellipse)
+    round = QtGui.QRegion(0, 0, 2 * radius_tl, 2 * radius_tl, QtGui.QRegion.Ellipse)
     corner = QtGui.QRegion(0, 0, radius_tl, radius_tl, QtGui.QRegion.Rectangle)
     region = region.subtracted(corner.subtracted(round))
 
@@ -831,7 +840,8 @@ def get_rounded_mask(width, height, radius_tl=10, radius_tr=10, radius_bl=10, ra
     region = region.subtracted(corner.subtracted(round))
 
     # bottom right
-    round = QtGui.QRegion(width - 2 * radius_br, height-2*radius_br, 2 * radius_br, 2 * radius_br, QtGui.QRegion.Ellipse)
+    round = QtGui.QRegion(
+        width - 2 * radius_br, height-2 * radius_br, 2 * radius_br, 2 * radius_br, QtGui.QRegion.Ellipse)
     corner = QtGui.QRegion(width - radius_br, height-radius_br, radius_br, radius_br, QtGui.QRegion.Rectangle)
     region = region.subtracted(corner.subtracted(round))
 
@@ -855,15 +865,15 @@ def distance_point_to_line(p, v0, v1):
 
 def qhash (inputstr):
     instr = ""
-    if isinstance (inputstr, str):
+    if isinstance(inputstr, str):
         instr = inputstr
-    elif isinstance (inputstr, unicode):
-        instr = inputstr.encode ("utf8")
+    elif isinstance(inputstr, unicode):
+        instr = inputstr.encode("utf8")
     else:
         return -1
 
     h = 0x00000000
-    for i in range (0, len (instr)):
+    for i in range(0, len(instr)):
         h = (h << 4) + ord(instr[i])
         h ^= (h & 0xf0000000) >> 23
         h &= 0x0fffffff
@@ -905,7 +915,7 @@ def is_valid_widget(widget):
     try:
         if not shiboken.isValid(widget):
             return False
-    except:
+    except Exception:
         return True
 
     return True
@@ -1243,7 +1253,7 @@ def change_button_color(
     if toggle and button.isChecked():
         bg_color = hi_color
     if hover:
-        hv_color = map(lambda a: a+20, bg_color)
+        hv_color = map(lambda a: a + 20, bg_color)
     else:
         hv_color = bg_color
 
@@ -1260,16 +1270,19 @@ def change_button_color(
     elif mode == 'button':
         if not destroy:
             button.setStyleSheet(
-                'QPushButton{background-color: ' + bg_hex + '; color:  ' + text_hex + '; border-style:solid; border-width: ' + str(
-                    ds_width) + 'px; border-color:' + ds_hex + '; border-radius: 0px;}' + \
-                'QPushButton:hover{background-color: ' + hv_hex + '; color:  ' + text_hex + '; border-style:solid; border-width: ' + str(
-                    ds_width) + 'px; border-color:' + ds_hex + '; border-radius: 0px;}' + \
-                'QPushButton:pressed{background-color: ' + hi_hex + '; color: ' + text_hex + '; border-style:solid; border-width: ' + str(
+                'QPushButton{'
+                'background-color: ' + bg_hex + '; color:  ' + text_hex + '; border-style:solid; border-width: ' + str(
+                    ds_width) + 'px; border-color:' + ds_hex + '; border-radius: 0px;}' +
+                'QPushButton:hover{'
+                'background-color: ' + hv_hex + '; color:  ' + text_hex + '; border-style:solid; border-width: ' + str(
+                    ds_width) + 'px; border-color:' + ds_hex + '; border-radius: 0px;}' +
+                'QPushButton:pressed{'
+                'background-color: ' + hi_hex + '; color: ' + text_hex + '; border-style:solid; border-width: ' + str(
                     ds_width) + 'px; border-color:' + ds_hex + '; border-radius: 0px;}')
         else:
             button.setStyleSheet(
-                'QPushButton{background-color: ' + bg_hex + '; color:  ' + text_hex + ' ; border: black 0px}' + \
-                'QPushButton:hover{background-color: ' + hv_hex + '; color:  ' + text_hex + ' ; border: black 0px}' + \
+                'QPushButton{background-color: ' + bg_hex + '; color:  ' + text_hex + ' ; border: black 0px}' +
+                'QPushButton:hover{background-color: ' + hv_hex + '; color:  ' + text_hex + ' ; border: black 0px}' +
                 'QPushButton:pressed{background-color: ' + hi_hex + '; color: ' + text_hex + '; border: black 2px}')
     elif mode == 'window':
         button.setStyleSheet('color: ' + text_hex + ';' + \
@@ -1279,9 +1292,10 @@ def change_button_color(
 
 
 def change_border_style(btn):
-    btn.setStyleSheet('QPushButton{border-style:solid; border-width: 2px; border-color: red ; border-radius: 1px;}' + \
-                         'QPushButton:hover{border-style:solid; border-width: 2px; border-color: red ; border-radius: 1px;}' + \
-                         'QPushButton:pressed{border-style:solid; border-width: 2px; border-color: red ; border-radius: 1px;}')
+    btn.setStyleSheet(
+        'QPushButton{border-style:solid; border-width: 2px; border-color: red ; border-radius: 1px;}' +
+        'QPushButton:hover{border-style:solid; border-width: 2px; border-color: red ; border-radius: 1px;}' +
+        'QPushButton:pressed{border-style:solid; border-width: 2px; border-color: red ; border-radius: 1px;}')
 
 
 def create_flat_button(
@@ -1311,10 +1325,14 @@ def create_flat_button(
             btn.setIcon(QIcon(icon))
     btn.setFlat(flat)
     if flat:
-        change_button_color(button=btn, text_color=text, bg_color=ui_color, hi_color=background_color, mode='button', hover=hover, destroy=destroy_flag, ds_color=border_color)
-        btn.toggled.connect(lambda: change_button_color(button=btn, text_color=text, bg_color=ui_color, hi_color=background_color, mode='button', toggle=True, hover=hover, destroy=destroy_flag, ds_color=border_color))
+        change_button_color(button=btn, text_color=text, bg_color=ui_color, hi_color=background_color,
+                            mode='button', hover=hover, destroy=destroy_flag, ds_color=border_color)
+        btn.toggled.connect(lambda: change_button_color(button=btn, text_color=text, bg_color=ui_color,
+                                                        hi_color=background_color, mode='button', toggle=True,
+                                                        hover=hover, destroy=destroy_flag, ds_color=border_color))
     else:
-        change_button_color(button=btn, text_color=text, bg_color=background_color, hi_color=push_col, mode='button', hover=hover, destroy=destroy_flag, ds_color=border_color)
+        change_button_color(button=btn, text_color=text, bg_color=background_color,
+                            hi_color=push_col, mode='button', hover=hover, destroy=destroy_flag, ds_color=border_color)
 
     if w_max:
         btn.setMaximumWidth(w_max)

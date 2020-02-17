@@ -17,21 +17,21 @@ import tpDcc as tp
 class BaseAnimObject(object):
     _glow_pens = {}
     for index in range(1, 11):
-        _glow_pens[index] = [QPen(QColor(0, 255, 0, 12   * index), 1, Qt.SolidLine),
-                             QPen(QColor(0, 255, 0,  5   * index), 3, Qt.SolidLine),
-                             QPen(QColor(0, 255, 0,  2   * index), 5, Qt.SolidLine),
+        _glow_pens[index] = [QPen(QColor(0, 255, 0, 12 * index), 1, Qt.SolidLine),
+                             QPen(QColor(0, 255, 0, 5 * index), 3, Qt.SolidLine),
+                             QPen(QColor(0, 255, 0, 2 * index), 5, Qt.SolidLine),
                              QPen(QColor(0, 255, 0, 25.5 * index), 1, Qt.SolidLine)]
 
-    _pens_text   = QPen(QColor(202, 207, 210), 1, Qt.SolidLine)
-    _pens_shadow = QPen(QColor(  9,  10,  12), 1, Qt.SolidLine)
-    _pens_border = QPen(QColor(  9,  10,  12), 2, Qt.SolidLine)
-    _pens_clear  = QPen(QColor(  0,  0, 0, 0), 1, Qt.SolidLine)
+    _pens_text = QPen(QColor(202, 207, 210), 1, Qt.SolidLine)
+    _pens_shadow = QPen(QColor(9, 10, 12), 1, Qt.SolidLine)
+    _pens_border = QPen(QColor(9, 10, 12), 2, Qt.SolidLine)
+    _pens_clear = QPen(QColor(0, 0, 0, 0), 1, Qt.SolidLine)
 
-    _pens_text_disabled   = QPen(QColor(102, 107, 110), 1, Qt.SolidLine)
-    _pens_shadow_disabled = QPen(QColor(  0,   0,   0), 1, Qt.SolidLine)
+    _pens_text_disabled = QPen(QColor(102, 107, 110), 1, Qt.SolidLine)
+    _pens_shadow_disabled = QPen(QColor(0, 0, 0), 1, Qt.SolidLine)
 
-    _brush_clear  = QBrush(QColor(0, 0, 0, 0))
-    _brush_border = QBrush(QColor( 9, 10, 12))
+    _brush_clear = QBrush(QColor(0, 0, 0, 0))
+    _brush_border = QBrush(QColor(9, 10, 12))
 
     def __init__(self):
         font = QFont()
