@@ -22,7 +22,6 @@ class BaseSpinBox(base.BaseNumberWidget):
 
         self._setup_spin_widget()
 
-    # region Override Functions
     def keyPressEvent(self, event):
         if event.key() in [Qt.Key_Return, Qt.Key_Enter]:
             self.enterPressed.emit()
@@ -32,7 +31,6 @@ class BaseSpinBox(base.BaseNumberWidget):
         spin_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         return spin_box
 
-    # region Private Functions
     def _setup_spin_widget(self):
         if hasattr(self._number_widget, 'CorrectToNearestValue'):
             self._number_widget.setCorrectionMode(self._number_widget.CorrectToNearestValue)
@@ -46,31 +44,26 @@ class BaseSpinBox(base.BaseNumberWidget):
         # self._number_widget.setButtonSymbols(self._number_widget.NoButtons)
 
         self._number_widget.valueChanged.connect(self._on_value_changed)
-    # endregion
 
 
 class BaseDoubleSpinBox(BaseSpinBox, object):
     def __init__(self, name='', parent=None):
         super(BaseDoubleSpinBox, self).__init__(name=name, parent=parent)
 
-    # region Override Functions
     def get_number_widget(self):
         spin_box = QDoubleSpinBox()
         spin_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         return spin_box
-    # endregion
 
 
 class DragDoubleSpinBox(base.BaseNumberWidget, object):
     def __init__(self, name='', parent=None):
         super(DragDoubleSpinBox, self).__init__(name=name, parent=parent)
 
-    # region Override Functions
     def get_number_widget(self):
         spin_box = DragDoubleSpinBoxLine()
         spin_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         return spin_box
-    # endregion
 
 
 class DragDoubleSpinBoxLine(QLineEdit, object):
@@ -94,7 +87,6 @@ class DragDoubleSpinBoxLine(QLineEdit, object):
 
         self._setup_validator()
 
-    # region Override Functions
     def mousePressEvent(self, event):
         if event.button() == Qt.MiddleButton:
             self._click = True
@@ -133,11 +125,11 @@ class DragDoubleSpinBoxLine(QLineEdit, object):
         if self._sup:
             p.fillRect(QRect(0, self.height() - 2, v * self.width(), 2), QColor(0, 255, 0))
         else:
-            p.fillRect(QRect(self.width() * 0.5, self.height() - 2, v * self.width() * 0.5, 2), QColor(0, 255, 0) if v > 0 else QColor(255, 0, 0))
+            p.fillRect(
+                QRect(self.width() * 0.5, self.height() - 2, v * self.width() * 0.5, 2),
+                QColor(0, 255, 0) if v > 0 else QColor(255, 0, 0))
         p.end()
-    # endregion
 
-    # region Public Functions
     def get_validator(self):
         return QDoubleValidator()
 
@@ -150,9 +142,7 @@ class DragDoubleSpinBoxLine(QLineEdit, object):
     # NOTE: Here I'm breaking naming nomenclature on purpose. Doing this we follow nomenclature of Qt SpinBoxes
     def setValue(self, new_value):
         self.setText(str(new_value))
-    # endregion
 
     # region Private Functions
     def _setup_validator(self):
         self.setValidator(self.get_validator())
-    # endregion

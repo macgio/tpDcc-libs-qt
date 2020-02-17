@@ -162,7 +162,7 @@ class SelectFolderButton(QWidget, object):
     """
 
     beforeNewDirectory = Signal()
-    directoryChanged = Signal(object) # Signal that is called when a new folder is selected
+    directoryChanged = Signal(object)   # Signal that is called when a new folder is selected
 
     def __init__(self, text='Browse', directory='', use_app_browser=False, parent=None):
         super(SelectFolderButton, self).__init__(parent)
@@ -177,7 +177,8 @@ class SelectFolderButton(QWidget, object):
         self.setLayout(main_layout)
 
         folder_icon = qt.resource.icon('folder')
-        self._folder_btn = buttons.IconButton(icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
+        self._folder_btn = buttons.IconButton(
+            icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         main_layout.addWidget(self._folder_btn)
 
         self._folder_btn.clicked.connect(self._open_folder_browser_dialog)
@@ -218,7 +219,8 @@ class SelectFolderButton(QWidget, object):
             else:
                 return
         else:
-            raise NotImplementedError('Open Folder Browser Dialog is not impelented in your current DCC: {}'.format(tp.Dcc.get_name()))
+            raise NotImplementedError(
+                'Open Folder Browser Dialog is not impelented in your current DCC: {}'.format(tp.Dcc.get_name()))
 
         self.directoryChanged.emit(result)
         # if not result or not os.path.isdir(result[0]):
@@ -250,7 +252,8 @@ class SelectFolder(QWidget, object):
         main_layout.setSpacing(2)
         self.setLayout(main_layout)
 
-        self._folder_label = QLabel('{0}'.format(self._label_text)) if self._label_text == '' else QLabel('{0}:'.format(self._label_text))
+        self._folder_label = QLabel(
+            '{0}'.format(self._label_text)) if self._label_text == '' else QLabel('{0}:'.format(self._label_text))
         self._folder_line = FolderEditLine()
         self._folder_line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         if os.path.exists(self._directory):
@@ -258,7 +261,8 @@ class SelectFolder(QWidget, object):
 
         if self._use_icon:
             folder_icon = qt.resource.icon('folder')
-            self._folder_btn = buttons.IconButton(icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
+            self._folder_btn = buttons.IconButton(
+                icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         else:
             self._folder_btn = buttons.BaseButton('Browse...')
         self._folder_btn.setMaximumHeight(20)
@@ -316,7 +320,8 @@ class SelectFolder(QWidget, object):
 
         if tp.is_maya():
             import tpDcc.dccs.maya as maya
-            result = maya.cmds.fileDialog2(caption='Select Folder', fileMode=3, startingDirectory=self.folder_line.text())
+            result = maya.cmds.fileDialog2(
+                caption='Select Folder', fileMode=3, startingDirectory=self.folder_line.text())
             if result:
                 result = result[0]
             if not result or not os.path.isdir(result):
@@ -326,7 +331,8 @@ class SelectFolder(QWidget, object):
                 self.set_directory(filename)
                 self._text_changed()
         else:
-            raise NotImplementedError('Open Folder Browser Dialog is not implemented in your current DCC: {}'.format(tp.Dcc.get_name()))
+            raise NotImplementedError(
+                'Open Folder Browser Dialog is not implemented in your current DCC: {}'.format(tp.Dcc.get_name()))
 
         return filename
 
@@ -358,7 +364,8 @@ class SelectFile(QWidget, object):
 
     directoryChanged = Signal(object)  # Signal that is called when a new folder is selected
 
-    def __init__(self, label_text='Select File', directory='', use_app_browser=False, filters=None, use_icon=True, parent=None):
+    def __init__(self, label_text='Select File', directory='', use_app_browser=False,
+                 filters=None, use_icon=True, parent=None):
         super(SelectFile, self).__init__(parent)
 
         self._use_app_browser = use_app_browser
@@ -382,7 +389,8 @@ class SelectFile(QWidget, object):
 
         if self._use_icon:
             folder_icon = qt.resource.icon('folder')
-            self._file_btn = buttons.IconButton(icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
+            self._file_btn = buttons.IconButton(
+                icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         else:
             self._file_btn = buttons.BaseButton('Browse ...')
 
@@ -456,7 +464,8 @@ class SelectFile(QWidget, object):
             file_line = self._file_line.text()
             if os.path.isfile(file_line):
                 file_line = os.path.dirname(file_line)
-            result = maya.cmds.fileDialog2(caption='Select File', fileMode=1, fileFilter=self._filters or '', startingDirectory=file_line)
+            result = maya.cmds.fileDialog2(
+                caption='Select File', fileMode=1, fileFilter=self._filters or '', startingDirectory=file_line)
             if result:
                 result = result[0]
             if not result or not os.path.isfile(result):
@@ -468,7 +477,8 @@ class SelectFile(QWidget, object):
                 self.directoryChanged.emit(filename)
                 self.update_settings(filename=filename)
         else:
-            raise NotImplementedError('Select File Dialog is not implemented in your current DCC: {}'.format(tp.Dcc.get_name()))
+            raise NotImplementedError(
+                'Select File Dialog is not implemented in your current DCC: {}'.format(tp.Dcc.get_name()))
 
         return filename
 

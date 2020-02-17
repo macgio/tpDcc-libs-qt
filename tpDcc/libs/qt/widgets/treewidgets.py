@@ -99,16 +99,19 @@ class TreeWidget(QTreeWidget, object):
             index = self.indexFromItem(item)
             rect = self.visualRect(index)
             rect_left = self.visualRect(index.sibling(index.row(), 0))
-            rect_right = self.visualRect(index.sibling(index.row(), self.header().logicalIndex(self.columnCount()-1)))
+            rect_right = self.visualRect(index.sibling(index.row(), self.header().logicalIndex(self.columnCount() - 1)))
             self._drop_indicator_position = self.position(event.pos(), rect, index)
             if self._drop_indicator_position == self.AboveItem:
-                self._drop_indicator_rect = QRect(rect_left.left(), rect_left.top(), rect_right.right() - rect_left.left(), 0)
+                self._drop_indicator_rect = QRect(
+                    rect_left.left(), rect_left.top(), rect_right.right() - rect_left.left(), 0)
                 event.accept()
             elif self._drop_indicator_position == self.BelowItem:
-                self._drop_indicator_rect = QRect(rect_left.left(), rect_left.bottom(), rect_right.right() - rect_left.left(), 0)
+                self._drop_indicator_rect = QRect(
+                    rect_left.left(), rect_left.bottom(), rect_right.right() - rect_left.left(), 0)
                 event.accept()
             elif self._drop_indicator_position == self.OnItem:
-                self._drop_indicator_rect = QRect(rect_left.left(), rect_left.top(), rect_right.right() - rect_left.left(), rect.height())
+                self._drop_indicator_rect = QRect(
+                    rect_left.left(), rect_left.top(), rect_right.right() - rect_left.left(), rect.height())
                 event.accept()
             else:
                 self._drop_indicator_rect = QRect()
@@ -679,7 +682,6 @@ class FilterTreeDirectoryWidget(base.DirectoryWidget, object):
     def ui(self):
         super(FilterTreeDirectoryWidget, self).ui()
 
-
         self.filter_names = search.SearchFindWidget()
         self.filter_names.set_placeholder_text('Filter Names')
         # self.filter_names.setPlaceholderText('Filter Names')
@@ -920,7 +922,7 @@ class FileTreeWidget(TreeWidget, object):
         elif path.is_file(item_path):
             fileio.delete_file(name, item_directory)
             if item_path.endswith('.py'):
-                fileio.delete_file(name+'.c', item_directory)
+                fileio.delete_file(name + '.c', item_directory)
 
         parent = item.parent()
         if parent:
@@ -1040,8 +1042,8 @@ class FileTreeWidget(TreeWidget, object):
         if path.is_file(item_path):
             size = fileio.get_file_size(item_path)
             date = fileio.get_last_modified_date(item_path)
-            item.setText(self._title_text_index+1, str(size))
-            item.setText(self._title_text_index+2, str(date))
+            item.setText(self._title_text_index + 1, str(size))
+            item.setText(self._title_text_index + 2, str(date))
 
         # Update valid sub files
         # NOTE: Sub files are added dynamically when the user expands an item
@@ -1125,7 +1127,8 @@ class EditFileTreeWidget(base.DirectoryWidget, object):
         self.filter_widget.set_tree_widget(self.tree_widget)
         self.filter_widget.set_directory(self.directory)
         drag_reorder_icon = qt.resource.icon('drag_reorder')
-        self.edit_mode_btn = buttons.IconButton(icon=drag_reorder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
+        self.edit_mode_btn = buttons.IconButton(
+            icon=drag_reorder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         self.edit_mode_btn.setCheckable(True)
         self.edit_mode_btn.setMaximumHeight(20)
         self.edit_mode_btn.setMaximumWidth(40)

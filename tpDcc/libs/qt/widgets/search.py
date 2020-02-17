@@ -60,8 +60,12 @@ class SearchFindWidget(QWidget, object):
             """ % (self._search_button_padded_width(), self._clear_button_padded_width())
         )
         self._search_line.setMinimumSize(
-            max(self._search_line.minimumSizeHint().width(), self._clear_button_padded_width() + self._search_button_padded_width()),
-            max(self._search_line.minimumSizeHint().height(), max(self._clear_button_padded_width(), self._search_button_padded_width()))
+            max(
+                self._search_line.minimumSizeHint().width(),
+                self._clear_button_padded_width() + self._search_button_padded_width()),
+            max(
+                self._search_line.minimumSizeHint().height(),
+                max(self._clear_button_padded_width(), self._search_button_padded_width()))
         )
 
         main_layout.addWidget(self._search_line)
@@ -171,9 +175,10 @@ class SearchFindWidget(QWidget, object):
             screen_rect = QApplication.desktop().availableGeometry(self._search_btn)
             size_hint = self._search_menu.sizeHint()
             rect = self._search_btn.rect()
+            top_diff = rect.top() - size_hint.height()
             x = rect.right() - size_hint.width() if self._search_btn.isRightToLeft() else rect.left()
-            y = rect.bottom() if self._search_btn.mapToGlobal(QPoint(0,
-                                                                     rect.bottom())).y() + size_hint.height() <= screen_rect.height() else rect.top() - size_hint.height()
+            y = rect.bottom() if self._search_btn.mapToGlobal(
+                QPoint(0, rect.bottom())).y() + size_hint.height() <= screen_rect.height() else top_diff
             point = self._search_btn.mapToGlobal(QPoint(x, y))
             point.setX(max(screen_rect.left(), min(point.x(), screen_rect.right() - size_hint.width())))
             point.setY(point.y() + 1)

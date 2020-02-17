@@ -50,7 +50,7 @@ class BaseCheckBox(QCheckBox, animation.BaseAnimObject):
 
         painter.setPen(self._pens_border)
         painter.setBrush(self._brush_border)
-        painter.drawRoundedRect(QRect(x+2, y+2, 13, 13), 3, 3)
+        painter.drawRoundedRect(QRect(x + 2, y + 2, 13, 13), 3, 3)
 
         if self.isEnabled():
             painter.setPen(self._pens_shadow)

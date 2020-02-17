@@ -157,11 +157,12 @@ class Slider(QSlider, object):
                 self._draggers.move(
                     self.mapToGlobal(QPoint(event.pos().x() - 1, event.pos().y() - self._draggers.height() / 2)))
             else:
+                draggers_height = self._draggers.height()
                 self._draggers.move(
-                    self.mapToGlobal(QPoint(event.pos().x() - 1, event.pos().y() - (
-                            self._draggers.height() - self._draggers.height() / 6))))
-        elif event.button() == self._left_button and event.modifiers() not in [
-            Qt.ControlModifier, Qt.ShiftModifier, Qt.ControlModifier | Qt.ShiftModifier]:
+                    self.mapToGlobal(
+                        QPoint(event.pos().x() - 1, event.pos().y() - (self._draggers.height() - draggers_height / 6))))
+        elif event.button() == self._left_button and event.modifiers() not in \
+                [Qt.ControlModifier, Qt.ShiftModifier, Qt.ControlModifier | Qt.ShiftModifier]:
             buttons = Qt.MouseButtons(self._mid_button)
             mouse_event = QMouseEvent(event.type(), event.pos(), self._mid_button, buttons, event.modifiers())
             super(Slider, self).mousePressEvent(mouse_event)
@@ -179,7 +180,7 @@ class Slider(QSlider, object):
             self._start_drag_pos = new_pos
             self._real_start_drag_pos = event.pos()
             super(Slider, self).mousePressEvent(mouse_event)
-            self._delta_value  = self.value() - self._prev_value
+            self._delta_value = self.value() - self._prev_value
             self.setValue(self._prev_value)
         else:
             super(Slider, self).mousePressEvent(event)
@@ -682,7 +683,6 @@ class HoudiniDoubleSlider(QWidget, object):
                 background: #bbb;
                 border-color: #999;
             }
-    
             QSlider::add-page:horizontal:disabled {
                 background: #eee;
                 border-color: #999;
@@ -855,9 +855,8 @@ class ColorSlider(QWidget, object):
                 self._red_slider.mapped_value(), self._green_slider.mapped_value(),
                 self._blue_slider.mapped_value(), self._alpha_slider.mapped_value()))
 
-        for widget in [
-            self._red_slider, self._green_slider, self._blue_slider, self._alpha_slider,
-            self._red_dragger, self._green_dragger, self._blue_dragger, self._alpha_dragger]:
+        for widget in [self._red_slider, self._green_slider, self._blue_slider, self._alpha_slider,
+                       self._red_dragger, self._green_dragger, self._blue_dragger, self._alpha_dragger]:
             widget.setMaximumHeight(height / len(layouts_list) + 1)
             widget.setMinimumHeight(height / len(layouts_list) + 1)
 

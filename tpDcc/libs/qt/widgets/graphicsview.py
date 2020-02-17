@@ -66,7 +66,7 @@ class AutoPanController(object):
             if pos.x() < 0:
                 self._auto_pan_delta = QVector2D(-self._amount, 0.0)
                 self._been_outside = True
-                self._amount = mathlib.clamp(abs(pos.x()) * 0.3, 0.0 ,25.0)
+                self._amount = mathlib.clamp(abs(pos.x()) * 0.3, 0.0, 25.0)
             if pos.x() > rect.width():
                 self._auto_pan_delta = QVector2D(self._amount, 0.0)
                 self._been_outside = True
@@ -222,7 +222,8 @@ class BaseGraphicsView(QGraphicsView, object):
                     self.scene().addItem(self._rubber_rect)
                 if not self._rubber_rect.isVisible():
                     self._rubber_rect.setVisible(True)
-                r = QRectF(press_pos.x(), press_pos.y(), current_pos.x() - press_pos.x(), current_pos.y() - press_pos.y())
+                r = QRectF(
+                    press_pos.x(), press_pos.y(), current_pos.x() - press_pos.x(), current_pos.y() - press_pos.y())
                 self._rubber_rect.setRect(r.normalized())
 
         self._auto_pan_controller.update(self.viewport().rect(), event.pos())

@@ -983,7 +983,8 @@ class CodeTextEdit(QPlainTextEdit, object):
                     paint.setPen(Qt.lightGray)
                 else:
                     paint.setPen(Qt.black)
-                paint.drawText(0, top, self._line_numbers.width(), self.fontMetrics().height(), Qt.AlignRight, str(number))
+                paint.drawText(
+                    0, top, self._line_numbers.width(), self.fontMetrics().height(), Qt.AlignRight, str(number))
             block = block.next()
             top = bottom
             bottom = top + self.blockBoundingRect(block).height()

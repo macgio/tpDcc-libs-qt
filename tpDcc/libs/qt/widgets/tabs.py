@@ -45,7 +45,7 @@ class BaseTabWidget(QTabWidget, object):
         if self._show_close_message:
             can_close = qtutils.get_permission(
                 message='Save graph before closing it?',
-                cancel=self._show_can_cancel,  title='Closing Graph', parent=self)
+                cancel=self._show_can_cancel, title='Closing Graph', parent=self)
             if can_close is None:
                 return
             elif can_close:
@@ -164,7 +164,7 @@ class TearOffTabWidget(BaseTabWidget, object):
 
         def __repr__(self):
             return 'index %d, widget %r, title %s, visible %r, detached %r' % (
-                self.index, self.widget, self.title, self.visible,self.detached)
+                self.index, self.widget, self.title, self.visible, self.detached)
 
     tabAdded = Signal()
     tabDetached = Signal(int, QPoint)
