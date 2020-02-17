@@ -141,14 +141,11 @@ class DockSectionContent(object):
 
         tp.logger.debug('Creating DockSectionContent {}'.format(self._uid))
 
-    # region Static Functions
     def get_next_uid(self):
         next_id = DockSectionContent.next_uid
         DockSectionContent.next_uid += 1
         return next_id
-    # endregion
 
-    # region Public Functions
     def uid(self):
         return self._uid
 
@@ -220,7 +217,6 @@ class DockSectionContent(object):
             return self._unique_name
 
         return self._title
-    # endregion
 
 
 class DockSectionContentWidget(QFrame, object):
@@ -237,7 +233,6 @@ class DockSectionContentWidget(QFrame, object):
 
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-    # region Public Functions
     def clean(self):
         self.main_layout.removeWidget(self._content.content_widget())
 
@@ -262,7 +257,6 @@ class DockSectionTitleWidget(QFrame, object):
         self.main_layout.addWidget(section_content.title_widget())
         self.setLayout(self.main_layout)
 
-    # region Override Functions
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             event.accept()
@@ -326,7 +320,8 @@ class DockSectionTitleWidget(QFrame, object):
                     drop_area = drop.DropArea.TopDropArea
                 if container_widget.outer_right_drop_rect().contains(container_widget.mapFromGlobal(event.globalPos())):
                     drop_area = drop.DropArea.RightDropArea
-                if container_widget.outer_bottom_drop_rect().contains(container_widget.mapFromGlobal(event.globalPos())):
+                if container_widget.outer_bottom_drop_rect().contains(
+                        container_widget.mapFromGlobal(event.globalPos())):
                     drop_area = drop.DropArea.BottomDropArea
                 if container_widget.outer_left_drop_rect().contains(container_widget.mapFromGlobal(event.globalPos())):
                     drop_area = drop.DropArea.LeftDropArea
@@ -384,20 +379,26 @@ class DockSectionTitleWidget(QFrame, object):
             # Mouse is at the edge of the Container Widget
             elif container_widget.outer_top_drop_rect().contains(container_widget.mapFromGlobal(QCursor.pos())):
                 container_widget.drop_overlay().set_allowed_areas([drop.DropArea.TopDropArea])
-                container_widget.drop_overlay().show_drop_overlay(container_widget, container_widget.outer_top_drop_rect())
+                container_widget.drop_overlay().show_drop_overlay(
+                    container_widget, container_widget.outer_top_drop_rect())
             elif container_widget.outer_right_drop_rect().contains(container_widget.mapFromGlobal(QCursor.pos())):
                 container_widget.drop_overlay().set_allowed_areas([drop.DropArea.RightDropArea])
-                container_widget.drop_overlay().show_drop_overlay(container_widget, container_widget.outer_right_drop_rect())
+                container_widget.drop_overlay().show_drop_overlay(
+                    container_widget, container_widget.outer_right_drop_rect())
             elif container_widget.outer_bottom_drop_rect().contains(container_widget.mapFromGlobal(QCursor.pos())):
                 container_widget.drop_overlay().set_allowed_areas([drop.DropArea.BottomDropArea])
-                container_widget.drop_overlay().show_drop_overlay(container_widget, container_widget.outer_bottom_drop_rect())
+                container_widget.drop_overlay().show_drop_overlay(
+                    container_widget, container_widget.outer_bottom_drop_rect())
             elif container_widget.outer_left_drop_rect().contains(container_widget.mapFromGlobal(QCursor.pos())):
                 container_widget.drop_overlay().set_allowed_areas([drop.DropArea.LeftDropArea])
-                container_widget.drop_overlay().show_drop_overlay(container_widget, container_widget.outer_left_drop_rect())
+                container_widget.drop_overlay().show_drop_overlay(
+                    container_widget, container_widget.outer_left_drop_rect())
             else:
                 container_widget.drop_overlay().hide_drop_overlay()
             return
-        elif not self._floating_widget and not self._drag_start_pos.isNull() and (event.buttons() & Qt.LeftButton) and section_widget is not None and not section_widget.title_area_geometry().contains(section_widget.mapFromGlobal(event.globalPos())):
+        elif not self._floating_widget and not self._drag_start_pos.isNull() and (
+                event.buttons() & Qt.LeftButton) and section_widget is not None and \
+                not section_widget.title_area_geometry().contains(section_widget.mapFromGlobal(event.globalPos())):
             event.accept()
 
             # We get the new dock info for the current section
@@ -411,7 +412,9 @@ class DockSectionTitleWidget(QFrame, object):
 
             # Create floating widget and add it to the list of Container floatters
             tp.logger.debug('Creating Floating Widget ...')
-            self._floating_widget = DockFloatingWidget(container=container_widget, section_content=data.content, section_title_widget=data.title_widget, content_widget=data.content_widget, parent=container_widget)
+            self._floating_widget = DockFloatingWidget(container=container_widget, section_content=data.content,
+                                                       section_title_widget=data.title_widget,
+                                                       content_widget=data.content_widget, parent=container_widget)
             self._floating_widget.resize(section_widget.size())
             container_widget.floatings().append(self._floating_widget)
 
@@ -433,16 +436,18 @@ class DockSectionTitleWidget(QFrame, object):
             move_to_pos.setY(0)
             self.move(move_to_pos)
             return
-        elif not self._drag_start_pos.isNull() and (event.buttons() & Qt.LeftButton) and (event.pos() - self._drag_start_pos).manhattanLength() >= QApplication.startDragDistance() and find_parent_section_widget(self) is not None and find_parent_section_widget(self).title_area_geometry().contains(find_parent_section_widget(self).mapFromGlobal(event.globalPos())):
+        elif not self._drag_start_pos.isNull() and (
+                event.buttons() & Qt.LeftButton) and (event.pos() - self._drag_start_pos).manhattanLength() >= \
+                QApplication.startDragDistance() and find_parent_section_widget(self) is not None \
+                and find_parent_section_widget(self).title_area_geometry().contains(
+                find_parent_section_widget(self).mapFromGlobal(event.globalPos())):
             event.accept()
             self._tab_moving = True
             self.raise_()
             return
 
         super(DockSectionTitleWidget, self).mouseMoveEvent(event)
-    # endregion
 
-    # region Public Functions
     def clean(self):
         self.main_layout.removeWidget(self._content.title_widget())
 
@@ -459,17 +464,13 @@ class DockSectionTitleWidget(QFrame, object):
             self.style().polish(self)
             self.update()
             self.activeTabChanged.emit(active)
-    # endregion
 
-    # region Private Functions
     def _on_anim_finished(self, content_widget, data, section_widget, loc):
         data = self._floating_widget.take_content(data)
         self._floating_widget.clean()
         self._floating_widget.deleteLater()
         self._floating_widget = None
         content_widget.drop_content(data, section_widget, loc)
-
-    # endregion
 
 
 class DockSectionWidgetTabsScrollArea(QScrollArea, object):
@@ -488,7 +489,6 @@ class DockSectionWidgetTabsScrollArea(QScrollArea, object):
 
         self.setMaximumHeight(15)
 
-    # region Override Functions
     def wheelEvent(self, event):
         event.accept()
         try:
@@ -501,7 +501,6 @@ class DockSectionWidgetTabsScrollArea(QScrollArea, object):
             self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() + 20)
         else:
             self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - 20)
-    # endregion
 
 
 class DockSectionWidget(QFrame, object):
@@ -571,15 +570,12 @@ class DockSectionWidget(QFrame, object):
         shadow_effect.setBlurRadius(8)
         self.setGraphicsEffect(shadow_effect)
 
-    # region Static Functions
     @staticmethod
     def get_next_uid():
         next_id = DockSectionWidget.next_uid
         DockSectionWidget.next_uid += 1
         return next_id
-    # endregion
 
-    # region Properties
     def uid(self):
         return self._uid
 
@@ -591,9 +587,7 @@ class DockSectionWidget(QFrame, object):
 
     def is_empty(self):
         return len(self._contents) <= 0
-    # endregion
 
-    # region Override Functions
     def showEvent(self, event):
         """
         When the DockSectionWidget is showed, we make need to make sure that the widget is visible
@@ -604,9 +598,7 @@ class DockSectionWidget(QFrame, object):
             self._tabs_scroll_area.ensureWidgetVisible(self._section_titles[self.current_index()])
         except Exception:
             pass
-    # endregion
 
-    # region Public Functions
     def title_area_geometry(self):
         return self._top_layout.geometry()
 
@@ -710,7 +702,8 @@ class DockSectionWidget(QFrame, object):
 
         # Add the DockSectionTitle stored in the data to the list of title widgets and to the layout
         self._section_titles.append(internal_data.title_widget)
-        self._tabs_layout.insertWidget(self._tabs_layout.count() - self._tabs_layout_init_count, internal_data.title_widget)
+        self._tabs_layout.insertWidget(
+            self._tabs_layout.count() - self._tabs_layout_init_count, internal_data.title_widget)
         internal_data.title_widget.clicked.connect(self._on_section_title_clicked)
 
         # Add DockSectionContentWidget stored in the data and associates the DockSectionContent stored also in the data
@@ -809,14 +802,16 @@ class DockSectionWidget(QFrame, object):
     def index_of_content_by_title_pos(self, p, exclude):
         index = -1
         for i in range(len(self._section_titles)):
-            if self._section_titles[i].geometry().contains(p) and (exclude is None or self._section_titles[i] != exclude):
+            if self._section_titles[i].geometry().contains(p) \
+                    and (exclude is None or self._section_titles[i] != exclude):
                 index = i
                 break
 
         return index
 
     def move_content(self, from_index, to_index):
-        if from_index >= len(self._contents) or from_index < 0 or to_index >= len(self._contents) or to_index < 0 or from_index == to_index:
+        if from_index >= len(self._contents) or from_index < 0 or \
+                to_index >= len(self._contents) or to_index < 0 or from_index == to_index:
             tp.logger.warning('Invalid for tab movement - From: {} | To: {}'.format(from_index, to_index))
             self._tabs_layout.update()
             return
@@ -838,9 +833,6 @@ class DockSectionWidget(QFrame, object):
 
         self.update_tabs_menu()
 
-    # endregion
-
-    # region Private Functions
     def _on_close_button_clicked(self):
         index = self.current_index()
         if index < 0 or index > len(self._contents) - 1:
@@ -867,7 +859,6 @@ class DockSectionWidget(QFrame, object):
         index = self.index_of_content_by_uid(uid=uid)
         if index >= 0:
             self.set_current_index(index)
-    # endregion
 
 
 class DockFloatingWidget(QWidget, object):
@@ -907,7 +898,6 @@ class DockFloatingWidget(QWidget, object):
         self.main_layout.addWidget(content_widget, 1)
         content_widget.show()
 
-    # region Public Functions
     def clean(self):
         del self._container._floatings[:]         # Python 2
 
@@ -923,12 +913,9 @@ class DockFloatingWidget(QWidget, object):
         self._content_widget = None
 
         return data
-    # endregion
 
-    # region Private Functions
     def _on_close_button_clicked(self):
         self._container.hide_section_content(self._content)
-    # endregion
 
 
 class DockContainer(QFrame, object):
@@ -955,7 +942,6 @@ class DockContainer(QFrame, object):
         self.main_layout.setContentsMargins(9, 9, 9, 9)
         self.setLayout(self.main_layout)
 
-    # region Static Functions
     @staticmethod
     def check_section_container_lookup_map_by_id(dock_container, container_id):
         return container_id in dock_container._section_container_lookup_map_by_id
@@ -967,14 +953,10 @@ class DockContainer(QFrame, object):
     @staticmethod
     def check_section_widget_lookup_map_by_id(dock_container, widget_id):
         return widget_id in dock_container._section_widget_lookup_map_by_id
-    # endregion
 
-    # region Properties
     def floatings(self):
         return self._floatings
-    # endregion
 
-    # region Public Functions
     def is_empty(self):
         """
         Returns whether the container has sections stored in it or not
@@ -1126,13 +1108,21 @@ class DockContainer(QFrame, object):
         # from scratch dropped in the given drop area
         if not target_section_widget:
             if drop_area == drop.DropArea.TopDropArea:
-                ret = self.drop_content_outer_helper(parent_layout=self.main_layout, internal_data=internal_data, orientation=Qt.Vertical, append=False)
+                ret = self.drop_content_outer_helper(
+                    parent_layout=self.main_layout,
+                    internal_data=internal_data, orientation=Qt.Vertical, append=False)
             elif drop_area == drop.DropArea.RightDropArea:
-                ret = self.drop_content_outer_helper(parent_layout=self.main_layout, internal_data=internal_data, orientation=Qt.Horizontal, append=True)
+                ret = self.drop_content_outer_helper(
+                    parent_layout=self.main_layout,
+                    internal_data=internal_data, orientation=Qt.Horizontal, append=True)
             elif drop_area == drop.DropArea.CenterDropArea or drop_area == drop.DropArea.BottomDropArea:
-                ret = self.drop_content_outer_helper(parent_layout=self.main_layout, internal_data=internal_data, orientation=Qt.Vertical, append=True)
+                ret = self.drop_content_outer_helper(
+                    parent_layout=self.main_layout,
+                    internal_data=internal_data, orientation=Qt.Vertical, append=True)
             elif drop_area == drop.DropArea.LeftDropArea:
-                self.drop_content_outer_helper(parent_layout=self.main_layout, internal_data=internal_data, orientation=Qt.Horizontal, append=False)
+                self.drop_content_outer_helper(
+                    parent_layout=self.main_layout,
+                    internal_data=internal_data, orientation=Qt.Horizontal, append=False)
             else:
                 return None
             return ret
@@ -1310,7 +1300,8 @@ class DockContainer(QFrame, object):
         # When the DOckSectionTitLeWidget is pressed  we notify that the tab have changed
         data.title_widget.activeTabChanged.connect(self._on_active_tab_changed)
 
-        return self.drop_content(internal_data=data, target_section_widget=section_widget, drop_area=drop_area, auto_active=False)
+        return self.drop_content(
+            internal_data=data, target_section_widget=section_widget, drop_area=drop_area, auto_active=False)
 
     def show_section_content(self, section_content):
         if section_content is None:
@@ -1509,14 +1500,13 @@ class DockContainer(QFrame, object):
         if section_content.uid() in self._hidden_section_contents:
             return False
 
-        tp.logger.warning('SectionContent is not a part of this ContainerWidget: {}'.format(section_content.unique_name()))
+        tp.logger.warning(
+            'SectionContent is not a part of this ContainerWidget: {}'.format(section_content.unique_name()))
         return False
 
     def drop_overlay(self):
         return self._drop_overlay
-    # endregion
 
-    # region Private Functions
     def _on_active_tab_changed(self):
         section_title_widget = self.sender()
         if section_title_widget:
@@ -1535,4 +1525,3 @@ class DockContainer(QFrame, object):
             self.show_section_content(section_content)
         else:
             self.hide_section_content(section_content)
-    # endregion

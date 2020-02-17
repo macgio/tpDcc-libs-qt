@@ -150,7 +150,7 @@ class LibraryManager(object):
         """
 
         if extension:
-            full_path = path_utils.normalize_path(path+extension)
+            full_path = path_utils.normalize_path(path + extension)
         else:
             full_path = path_utils.normalize_path(path)
         path = path_utils.normalize_path(path)

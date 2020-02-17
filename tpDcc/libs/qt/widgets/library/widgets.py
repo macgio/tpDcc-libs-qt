@@ -27,12 +27,12 @@ class LibraryImageSequenceWidget(QToolButton, object):
 
     DEFAULT_STYLE = """
     QToolBar {
-        border: 0px solid black; 
-        border-radius:2px;
-        background-color: rgb(0,0,0,100);
+    border: 0px solid black; 
+    border-radius:2px;
+    background-color: rgb(0,0,0,100);
     }
     QToolButton {
-        background-color: transparent;
+    background-color: transparent;
     }
     """
 

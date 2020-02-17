@@ -29,7 +29,8 @@ class PanelState(Enum):
 
 class ExpandablePanel(base.BaseWidget, object):
 
-    def __init__(self, header_text, min_height=30, max_height=1000, show_header_text=True, is_opened=False, parent=None):
+    def __init__(self, header_text, min_height=30, max_height=1000,
+                 show_header_text=True, is_opened=False, parent=None):
 
         self.setObjectName('ExpandablePanel')
         self._header_text = header_text
@@ -66,7 +67,7 @@ class ExpandablePanel(base.BaseWidget, object):
         self.main_layout.addWidget(frame)
 
         main_layout = QVBoxLayout(frame)
-        main_layout.setContentsMargins(2,2,2,2)
+        main_layout.setContentsMargins(2, 2, 2, 2)
         main_layout.setSpacing(0)
         main_layout.setAlignment(Qt.AlignTop)
 
@@ -91,18 +92,20 @@ class ExpandablePanel(base.BaseWidget, object):
         main_layout.addWidget(self._header_area)
         main_layout.addWidget(self._widget_area)
 
-        # region Signals
         self._icon.clicked.connect(self.change_state)
-        # endregion
 
     def update_icon(self):
 
         if self._panel_state == self.PanelState.OPEN:
-            self._icon.setStyleSheet('QLabel {image: url(:/icons/open_hover_collapsible_panel) no-repeat;} QLabel:hover {image:url(:/icons/open_hover_collapsible_panel) no-repeat;}')
+            self._icon.setStyleSheet(
+                'QLabel {image: url(:/icons/open_hover_collapsible_panel) no-repeat;} '
+                'QLabel:hover {image:url(:/icons/open_hover_collapsible_panel) no-repeat;}')
             self._icon.setToolTip('Close')
             self._widget_area.show()
         else:
-            self._icon.setStyleSheet('QLabel {image: url(:/icons/closed_collapsible_panel) no-repeat;} QLabel:hover {image:url(:/icons/closed_hover_collapsible_panel) no-repeat;}')
+            self._icon.setStyleSheet(
+                'QLabel {image: url(:/icons/closed_collapsible_panel) no-repeat;} '
+                'QLabel:hover {image:url(:/icons/closed_hover_collapsible_panel) no-repeat;}')
             self._icon.setToolTip('Open')
             self._widget_area.hide()
 
@@ -191,7 +194,6 @@ class ExpandableLine(QWidget, object):
         expand_view(True)
 
     def set_content_layout(self, content_layout):
-
         self.content_area.destroy()
         self.content_area.setLayout(content_layout)
         collapsed_height = self.sizeHint().height() - self.content_area.maximumHeight()
@@ -259,7 +261,6 @@ class ExpandableGroup(QGroupBox, object):
 
         self.hitbox = QRect(0, 0, self.width(), 18)
 
-    # region Override Functions
     def mouseMoveEvent(self, event):
         if self.hitbox.contains(event.pos()):
             self.setCursor(Qt.SizeVerCursor)
@@ -276,9 +277,7 @@ class ExpandableGroup(QGroupBox, object):
     def resizeEvent(self, event):
         self.hitbox = QRect(0, 0, self.width(), 18)
         self.close_btn.setGeometry(6, 1, 18, 18)
-    # endregion
 
-    # region Public Functions
     def expand(self):
         """
         Expands the group
@@ -320,7 +319,6 @@ class ExpandableGroup(QGroupBox, object):
 
         self.close_btn.setText('-+'[state])
         self.expanded = not state
-    # endregion
 
 
 class TitleFrame(QFrame, object):
@@ -332,7 +330,7 @@ class TitleFrame(QFrame, object):
         self.setStyleSheet('border 1px solid rgb(41, 41, 41);')
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
         self._arrow = ExpandableArrow(collapsed=collapsed)
@@ -367,7 +365,7 @@ class ExpandableArrow(QFrame):
         self.setArrow(int(collapsed))
 
     def setArrow(self, collapsed):
-        if collapsed == True:
+        if collapsed is True:
             self._arrow = self._vertical
         else:
             self._arrow = self._horizontal
@@ -408,7 +406,7 @@ class ExpanderItem(QGroupBox, object):
         self._margin = 2
 
         layout = QVBoxLayout()
-        layout.setContentsMargins(2,2,2,2)
+        layout.setContentsMargins(2, 2, 2, 2)
         layout.setSpacing(0)
         layout.addWidget(widget)
         self.setAcceptDrops(True)
@@ -482,17 +480,17 @@ class ExpanderItem(QGroupBox, object):
         y = self.rect().y()
         w = self.rect().width() - 1
         h = self.rect().height() - 1
-        r = 8
+        _rect = 8
         if self._rolloutStyle == ExpanderStyles.Rounded:
             painter.drawText(x + 33, y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
             self.__drawTriangle(painter, x, y)
             pen = QPen(self.palette().color(QPalette.Light))
             pen.setWidthF(0.6)
             painter.setPen(pen)
-            painter.drawRoundedRect(x + 1, y + 1, w - 1, h - 1, r, r)
+            painter.drawRoundedRect(x + 1, y + 1, w - 1, h - 1, _rect, _rect)
             pen.setColor(self.palette().color(QPalette.Shadow))
             painter.setPen(pen)
-            painter.drawRoundedRect(x, y, w - 1, h - 1, r, r)
+            painter.drawRoundedRect(x, y, w - 1, h - 1, _rect, _rect)
         if self._rolloutStyle == ExpanderStyles.Square:
             painter.drawText(x + 33, y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
             self.__drawTriangle(painter, x, y)
@@ -504,7 +502,9 @@ class ExpanderItem(QGroupBox, object):
             painter.setPen(pen)
             painter.drawRect(x, y, w - 1, h - 1)
         if self._rolloutStyle == ExpanderStyles.Maya:
-            painter.drawText(x + (45 if self.dragDropMode() == ExpanderDragDropModes.InternalMove else 25), y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
+            painter.drawText(
+                x + (45 if self.dragDropMode() == ExpanderDragDropModes.InternalMove else 25),
+                y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
             painter.setRenderHint(QPainter.Antialiasing, False)
             self.__drawTriangle(painter, x, y)
             headerHeight = 20
@@ -553,13 +553,13 @@ class ExpanderItem(QGroupBox, object):
             painter.drawText(x + 10, y + 1, w - 20, 16, Qt.AlignCenter, self.title())
         if self.dragDropMode():
             rect = self.dragDropRect()
-            l = rect.left()
-            r = rect.right()
-            cy = rect.center().y()
+            _layout = rect.left()
+            _rect = rect.right()
+            center_y = rect.center().y()
             pen = QPen(self.palette().color(self.isCollapsed() and QPalette.Shadow or QPalette.Mid))
             painter.setPen(pen)
-            for y in (cy - 3, cy, cy + 3):
-                painter.drawLine(l, y, r, y)
+            for y in (center_y - 3, center_y, center_y + 3):
+                painter.drawLine(_layout, y, _rect, y)
         painter.end()
 
     # ====================================================================================
@@ -614,7 +614,7 @@ class ExpanderItem(QGroupBox, object):
         self._rolloutStyle = style
         m = self.margin()
         if style == ExpanderStyles.Maya:
-            self.layout().setContentsMargins(m, m+9, m, m)
+            self.layout().setContentsMargins(m, m + 9, m, m)
         else:
             self.layout().setContentsMargins(m, m, m, m)
 
@@ -666,7 +666,6 @@ class ExpanderItem(QGroupBox, object):
 
 
 class ExpanderWidget(QScrollArea, object):
-
     itemCollapsed = Signal(ExpanderItem)
     itemMenuRequested = Signal(ExpanderItem)
     itemDragFailed = Signal(ExpanderItem)
@@ -690,7 +689,7 @@ class ExpanderWidget(QScrollArea, object):
         widget = QWidget(self)
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignTop)
-        layout.setContentsMargins(2,2,2,2)
+        layout.setContentsMargins(2, 2, 2, 2)
         layout.setSpacing(2)
         widget.setLayout(layout)
         self.setWidget(widget)
@@ -771,7 +770,7 @@ class ExpanderWidget(QScrollArea, object):
         if index > 0:
             layout = self.widget().layout()
             widget = layout.takeAt(index).widget()
-            layout.insertWidget(index-1, widget)
+            layout.insertWidget(index - 1, widget)
 
     def rolloutStyle(self):
         return self._rolloutStyle
@@ -829,8 +828,10 @@ class ExpanderWidget(QScrollArea, object):
 
     def widgetAt(self, index):
         item = self.itemAt(index)
-        if item: return item.widget()
-        else: return None
+        if item:
+            return item.widget()
+        else:
+            return None
 
     def isBoxedMode(self):
         return self._rolloutStyle == ExpanderStyles.Boxed
@@ -845,9 +846,9 @@ class ExpanderWidget(QScrollArea, object):
         self.widget().layout().setSpacing(space)
 
     def setMargin(self, margin):
-        if type(margin) == type(0):
+        if isinstance(margin, int):
             self.widget().layout().setContentsMargins(margin, margin, margin, margin)
-        elif type(margin) == type([]) and len(margin) == 4:
+        elif isinstance(margin, list) and len(margin) == 4:
             self.widget().layout().setContentsMargins(*margin)
 
     # ====================================================================================

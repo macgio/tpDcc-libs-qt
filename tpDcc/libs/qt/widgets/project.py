@@ -682,7 +682,8 @@ class BlankTemplateData(TemplateData, object):
     name = property(get_name)
 
     def create_project(self, project_name, project_path):
-        new_project = super(BlankTemplateData, self).create_project(project_name=project_name, project_path=project_path)
+        new_project = super(
+            BlankTemplateData, self).create_project(project_name=project_name, project_path=project_path)
         new_project.create_folder(consts.DATA_FOLDER)
         new_project.create_folder(consts.CODE_FOLDER)
         return new_project

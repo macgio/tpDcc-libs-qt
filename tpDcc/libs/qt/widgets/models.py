@@ -23,7 +23,9 @@ class ItemSelection(QItemSelection):
         """
         Override QItemSelection indexes() method
 
-        :warning: Specific to Qt 4.7.0 the QModelIndexList destructor will cause a destructor crash.  This method avoids that crash by overriding the indexes() method and manually building the index list with a python builtin list.
+        :warning: Specific to Qt 4.7.0 the QModelIndexList destructor will cause a destructor crash.
+            This method avoids that crash by overriding the indexes() method and manually building
+            the index list with a python builtin list.
         :seealso: http://www.qtcentre.org/threads/16933
         :return: list<QModelIndex>, list of model indexes corresponding to the selected items
         """
@@ -217,8 +219,8 @@ class TableModel(QAbstractTableModel, object):
         super(TableModel, self).__init__(parent=parent)
         self._items = data
         self._headers = {
-            Qt.Horizontal : horizontal_headers,
-            Qt.Vertical : vertical_headers
+            Qt.Horizontal: horizontal_headers,
+            Qt.Vertical: vertical_headers
         }
 
     # region Override Functions
@@ -280,7 +282,7 @@ class TableModel(QAbstractTableModel, object):
         return True
 
     def insertColumns(self, position, columns, parent=QModelIndex()):
-        self.beginInsertColumns(parent, position, position+columns-1)
+        self.beginInsertColumns(parent, position, position + columns - 1)
         row_count = len(self._items)
         for i in range(columns):
             for j in range(row_count):

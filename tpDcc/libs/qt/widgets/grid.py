@@ -17,7 +17,7 @@ class GridWidget(QTableWidget, object):
     Widget that behaves as a grid widget
     """
 
-    def __init__(self,  parent=None):
+    def __init__(self, parent=None):
         super(GridWidget, self).__init__(parent=parent)
 
     def resizeEvent(self, event):
@@ -29,7 +29,7 @@ class GridWidget(QTableWidget, object):
         total_width = self.viewport().width()
         num_columns = self.columnCount()
         for column in range(num_columns):
-            self.horizontalHeader().resizeSection(column, total_width/num_columns)
+            self.horizontalHeader().resizeSection(column, total_width / num_columns)
 
     def pos_to_row_col(self, pos):
         """

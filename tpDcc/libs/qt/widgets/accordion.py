@@ -151,7 +151,7 @@ class AccordionItem(QGroupBox, object):
         y = self.rect().y()
         w = self.rect().width() - 1
         h = self.rect().height() - 1
-        r = 8
+        _rect = 8
 
         if self.rollout_style == AccordionStyle.ROUNDED:
             painter.drawText(x + 33, y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
@@ -159,10 +159,10 @@ class AccordionItem(QGroupBox, object):
             pen = QPen(self.palette().color(QPalette.Light))
             pen.setWidthF(0.6)
             painter.setPen(pen)
-            painter.drawRoundedRect(x + 1, y + 1, w - 1, h - 1, r, r)
+            painter.drawRoundedRect(x + 1, y + 1, w - 1, h - 1, _rect, _rect)
             pen.setColor(self.palette().color(QPalette.Shadow))
             painter.setPen(pen)
-            painter.drawRoundedRect(x, y, w - 1, h - 1, r, r)
+            painter.drawRoundedRect(x, y, w - 1, h - 1, _rect, _rect)
         elif self.rollout_style == AccordionStyle.SQUARE:
             painter.drawText(x + 33, y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
             self._draw_triangle(painter, x, y)
@@ -225,14 +225,13 @@ class AccordionItem(QGroupBox, object):
 
         if self.drag_drop_mode:
             rect = self.get_drag_drop_rect()
-            l = rect.left()
-            r = rect.right()
-            cy = rect.center().y()
-            for y in (cy - 3, cy, cy + 3):
-                painter.drawLine(l, y, r, y)
+            _layout = rect.left()
+            _rect = rect.right()
+            center_y = rect.center().y()
+            for y in (center_y - 3, center_y, center_y + 3):
+                painter.drawLine(_layout, y, _rect, y)
 
         painter.end()
-
 
     def get_custom_data(self, key, default=None):
         """

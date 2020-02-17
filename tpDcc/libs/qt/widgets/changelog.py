@@ -66,7 +66,8 @@ class Changelog(dialog.Dialog, object):
 
         # ===========================================================================================
 
-        changelog_json_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'changelog.json')
+        changelog_json_file = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'changelog.json')
         if not os.path.isfile(changelog_json_file):
             return
 

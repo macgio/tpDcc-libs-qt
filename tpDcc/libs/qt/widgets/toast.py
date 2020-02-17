@@ -50,7 +50,6 @@ class ToastWidget(QLabel, object):
     #         self.updateGeometry()
     #     return super(ToastWidget, self).eventFilter(obj, event)
 
-
     def updateGeometry(self):
         """
         Overrides base QLabel updateGeometry function

@@ -1774,16 +1774,16 @@ class LibraryItem(QTreeWidgetItem, object):
 
         x, y = 0, 0
         align = Qt.AlignHCenter | Qt.AlignVCenter
-        align_bottom = Qt.AlignBottom | Qt.AlignLeft or align == Qt.AlignBottom \
-                       | Qt.AlignHCenter or align == Qt.AlignBottom | Qt.AlignRight
-        align_h_center = Qt.AlignHCenter or align == Qt.AlignCenter or align == Qt.AlignHCenter \
-                         | Qt.AlignBottom or align == Qt.AlignHCenter | Qt.AlignTop
-        align_v_center = Qt.AlignVCenter or align == Qt.AlignCenter or align == Qt.AlignVCenter \
-                         | Qt.AlignLeft or align == Qt.AlignVCenter | Qt.AlignRight
+        align_bottom_a = Qt.AlignBottom | Qt.AlignLeft
+        align_bottom_b = align == Qt.AlignBottom | Qt.AlignHCenter or align == Qt.AlignBottom | Qt.AlignRight
+        align_h_center_a = Qt.AlignHCenter or align == Qt.AlignCenter
+        align_h_center_b = align == Qt.AlignHCenter | Qt.AlignBottom or align == Qt.AlignHCenter | Qt.AlignTop
+        align_v_center_a = align == Qt.AlignVCenter | Qt.AlignLeft or align == Qt.AlignVCenter | Qt.AlignRight
+        align_v_center_a = Qt.AlignVCenter or align == Qt.AlignCenter
 
-        is_align_bottom = align ==  align_bottom
-        is_align_h_center = align == align_h_center
-        is_align_v_center = align == align_v_center
+        is_align_bottom = align == align_bottom_a or align_bottom_b
+        is_align_h_center = align == align_h_center_a or align_h_center_b
+        is_align_v_center = align == align_v_center_a or align_v_center_b
         if is_align_h_center:
             x += float(rect.width() - pixmap.width()) / 2
         elif is_align_v_center:
@@ -2426,7 +2426,7 @@ class BaseItem(LibraryItem, object):
 
         if icon_path:
             base_name = os.path.basename(icon_path)
-            shutil.copy(icon_path, path+'/'+base_name)
+            shutil.copy(icon_path, path + '/' + base_name)
 
     def load_validator(self, **options):
         """

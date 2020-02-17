@@ -56,7 +56,8 @@ class JoyPad(QWidget, object):
     def set_x(self, x):
         self._x = self.constraint(x, -1.0, 1.0)
         radius = (self._bounds.width() - self._knop_bounds.width()) * 0.5
-        self._knop_bounds.moveCenter(QPointF(self._bounds.center().x() + self._x * radius, self._knop_bounds.center().y()))
+        self._knop_bounds.moveCenter(
+            QPointF(self._bounds.center().x() + self._x * radius, self._knop_bounds.center().y()))
         self.update()
         self.xChanged.emit(self._x)
 
@@ -66,7 +67,8 @@ class JoyPad(QWidget, object):
     def set_y(self, y):
         self._y = self.constraint(y, -1.0, 1.0)
         radius = (self._bounds.width() - self._knop_bounds.width()) * 0.5
-        self._knop_bounds.moveCenter(QPointF(self._knop_bounds.center().x(), self._bounds.center().y() - self._y * radius))
+        self._knop_bounds.moveCenter(
+            QPointF(self._knop_bounds.center().x(), self._bounds.center().y() - self._y * radius))
         self.update()
         self.yChanged.emit(self._x)
 
@@ -88,23 +90,24 @@ class JoyPad(QWidget, object):
         if self._alignment & Qt.AlignTop:
             top_left.setY(0)
         elif self._alignment & Qt.AlignVCenter:
-            top_left.setY((self.height()-a)*0.5)
+            top_left.setY((self.height() - a) * 0.5)
         elif self._alignment & Qt.AlignBottom:
-            top_left.setY(self.height()-a)
+            top_left.setY(self.height() - a)
 
         if self._alignment & Qt.AlignLeft:
             top_left.setX(0)
         elif self._alignment & Qt.AlignHCenter:
-            top_left.setX((self.width()-a) * 0.5)
+            top_left.setX((self.width() - a) * 0.5)
         elif self._alignment & Qt.AlignRight:
-            top_left.setX(self.width()-a)
+            top_left.setX(self.width() - a)
 
         self._bounds = QRectF(top_left, QSize(a, a))
         self._knop_bounds.setWidth(a * 0.3)
         self._knop_bounds.setHeight(a * 0.3)
 
         radius = (self._bounds.width() - self._knop_bounds.height()) * 0.5
-        self._knop_bounds.moveCenter(QPointF(self._bounds.center().x() + self._x * radius, self._bounds.center().y() - self._y * radius))
+        self._knop_bounds.moveCenter(
+            QPointF(self._bounds.center().x() + self._x * radius, self._bounds.center().y() - self._y * radius))
 
     def mousePressEvent(self, event):
         if self._knop_bounds.contains(event.pos()):
@@ -152,7 +155,7 @@ class JoyPad(QWidget, object):
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setRenderHint(QPainter.HighQualityAntialiasing)
 
-        gradient = QRadialGradient(self._bounds.center(), self._bounds.width()*0.5, self._bounds.center())
+        gradient = QRadialGradient(self._bounds.center(), self._bounds.width() * 0.5, self._bounds.center())
         gradient.setFocalRadius(self._bounds.width() * 0.3)
         gradient.setCenterRadius(self._bounds.width() * 0.7)
         gradient.setColorAt(0, Qt.white)
@@ -183,7 +186,8 @@ class JoyPad(QWidget, object):
         if not self.isEnabled():
             return
 
-        gradient = QRadialGradient(self._knop_bounds.center(), self._knop_bounds.width() * 0.5, self._knop_bounds.center())
+        gradient = QRadialGradient(
+            self._knop_bounds.center(), self._knop_bounds.width() * 0.5, self._knop_bounds.center())
         gradient.setFocalRadius(self._knop_bounds.width() * 0.2)
         gradient.setCenterRadius(self._knop_bounds.width() * 0.5)
         gradient.setColorAt(0, Qt.gray)
