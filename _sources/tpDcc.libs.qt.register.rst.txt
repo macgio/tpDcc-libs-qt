@@ -1,0 +1,7 @@
+tpDcc.libs.qt.register module
+=============================
+
+.. automodule:: tpDcc.libs.qt.register
+   :members:
+   :undoc-members:
+   :show-inheritance:

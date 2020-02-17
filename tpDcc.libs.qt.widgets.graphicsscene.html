@@ -1,0 +1,574 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tpDcc.libs.qt.widgets.graphicsscene module &mdash; tpDcc-libs-python 0.0.l documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="tpDcc.libs.qt.widgets.graphicsview module" href="tpDcc.libs.qt.widgets.graphicsview.html" />
+    <link rel="prev" title="tpDcc.libs.qt.widgets.graphicsobject module" href="tpDcc.libs.qt.widgets.graphicsobject.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> tpDcc-libs-python
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">tpDcc</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="tpDcc.html">tpDcc package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="tpDcc.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="tpDcc.libs.html">tpDcc.libs package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tpDcc.html#module-tpDcc">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">tpDcc-libs-python</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">tpDcc</a> &raquo;</li>
+        
+          <li><a href="tpDcc.html">tpDcc package</a> &raquo;</li>
+        
+          <li><a href="tpDcc.libs.html">tpDcc.libs package</a> &raquo;</li>
+        
+          <li><a href="tpDcc.libs.qt.html">tpDcc.libs.qt package</a> &raquo;</li>
+        
+          <li><a href="tpDcc.libs.qt.widgets.html">tpDcc.libs.qt.widgets package</a> &raquo;</li>
+        
+      <li>tpDcc.libs.qt.widgets.graphicsscene module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/tpDcc.libs.qt.widgets.graphicsscene.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-tpDcc.libs.qt.widgets.graphicsscene">
+<span id="tpdcc-libs-qt-widgets-graphicsscene-module"></span><h1>tpDcc.libs.qt.widgets.graphicsscene module<a class="headerlink" href="#module-tpDcc.libs.qt.widgets.graphicsscene" title="Permalink to this headline">¶</a></h1>
+<p>Module that contains different graphic scenes</p>
+<dl class="class">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene">
+<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.graphicsscene.</code><code class="sig-name descname">BackgroundImageScene</code><span class="sig-paren">(</span><em class="sig-param">parent=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tpDcc.libs.qt.widgets.graphicsscene.BaseScene" title="tpDcc.libs.qt.widgets.graphicsscene.BaseScene"><code class="xref py py-class docutils literal notranslate"><span class="pre">tpDcc.libs.qt.widgets.graphicsscene.BaseScene</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Scene with image background drawing support</p>
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.clear_background_image">
+<code class="sig-name descname">clear_background_image</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.clear_background_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears the background image</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.drawBackground">
+<code class="sig-name descname">drawBackground</code><span class="sig-paren">(</span><em class="sig-param">painter</em>, <em class="sig-param">rect</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.drawBackground" title="Permalink to this definition">¶</a></dt>
+<dd><p>Override draw background method to write out image as background</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.get_pixmap">
+<code class="sig-name descname">get_pixmap</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.get_pixmap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.get_use_bg_image">
+<code class="sig-name descname">get_use_bg_image</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.get_use_bg_image" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.pixmap">
+<em class="property">property </em><code class="sig-name descname">pixmap</code><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.pixmap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.set_background_pixmap">
+<code class="sig-name descname">set_background_pixmap</code><span class="sig-paren">(</span><em class="sig-param">pixmap_path</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.set_background_pixmap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the background of the scene
+:param pixmap_path: str, path to the pixmap</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.set_pixmap">
+<code class="sig-name descname">set_pixmap</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.set_pixmap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.set_use_bg_image">
+<code class="sig-name descname">set_use_bg_image</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.set_use_bg_image" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.staticMetaObject">
+<code class="sig-name descname">staticMetaObject</code><em class="property"> = &lt;PySide2.QtCore.QMetaObject object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.staticMetaObject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.use_bg_image">
+<em class="property">property </em><code class="sig-name descname">use_bg_image</code><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BackgroundImageScene.use_bg_image" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BaseScene">
+<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.graphicsscene.</code><code class="sig-name descname">BaseScene</code><span class="sig-paren">(</span><em class="sig-param">auto_z=False</em>, <em class="sig-param">parent=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BaseScene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PySide2.QtWidgets.QGraphicsScene</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base scene for graphics scenes that add support for z index</p>
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BaseScene.addItem">
+<code class="sig-name descname">addItem</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">item:PySide2.QtWidgets.QGraphicsItem</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BaseScene.addItem" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BaseScene.clear">
+<code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BaseScene.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset default Z index on clear</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BaseScene.get_auto_z">
+<code class="sig-name descname">get_auto_z</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BaseScene.get_auto_z" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether auto Z is enabled or not
+:return: bool</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BaseScene.get_items_by_z_value_order">
+<code class="sig-name descname">get_items_by_z_value_order</code><span class="sig-paren">(</span><em class="sig-param">classes_tuple=None</em>, <em class="sig-param">rect=PySide2.QtCore.QRectF(0.000000</em>, <em class="sig-param">0.000000</em>, <em class="sig-param">0.000000</em>, <em class="sig-param">0.000000)</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BaseScene.get_items_by_z_value_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the items of the passed class
+:param classes_tuple:
+:param rect:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BaseScene.get_root">
+<code class="sig-name descname">get_root</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BaseScene.get_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns root scene object
+:return: QSceneObject</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BaseScene.get_top_item">
+<code class="sig-name descname">get_top_item</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BaseScene.get_top_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get top Z value item of the scene
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BaseScene.primary_view">
+<code class="sig-name descname">primary_view</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BaseScene.primary_view" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the first view of the scene</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BaseScene.scene_changed">
+<code class="sig-name descname">scene_changed</code><em class="property"> = &lt;PySide2.QtCore.Signal object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BaseScene.scene_changed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BaseScene.set_auto_z">
+<code class="sig-name descname">set_auto_z</code><span class="sig-paren">(</span><em class="sig-param">auto_z</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BaseScene.set_auto_z" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets whether auto z is enabled or not
+:param auto_z: bool</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BaseScene.set_default_size">
+<code class="sig-name descname">set_default_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BaseScene.set_default_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the view to its default values</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BaseScene.set_root">
+<code class="sig-name descname">set_root</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BaseScene.set_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the root scene object
+:param value: QSceneObject</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BaseScene.set_size">
+<code class="sig-name descname">set_size</code><span class="sig-paren">(</span><em class="sig-param">width</em>, <em class="sig-param">height</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BaseScene.set_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the size of the scene
+:param width: int, new width of the scene
+:param height: int, new height of the scene</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BaseScene.staticMetaObject">
+<code class="sig-name descname">staticMetaObject</code><em class="property"> = &lt;PySide2.QtCore.QMetaObject object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BaseScene.staticMetaObject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.BaseScene.window">
+<code class="sig-name descname">window</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.BaseScene.window" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the view window</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.DropEditableScene">
+<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.graphicsscene.</code><code class="sig-name descname">DropEditableScene</code><span class="sig-paren">(</span><em class="sig-param">parent=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.DropEditableScene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene" title="tpDcc.libs.qt.widgets.graphicsscene.GridScene"><code class="xref py py-class docutils literal notranslate"><span class="pre">tpDcc.libs.qt.widgets.graphicsscene.GridScene</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.DropEditableScene.get_bounding_rect">
+<code class="sig-name descname">get_bounding_rect</code><span class="sig-paren">(</span><em class="sig-param">margin=0</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.DropEditableScene.get_bounding_rect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return scene content bounding box with specified margin</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.DropEditableScene.get_editable">
+<code class="sig-name descname">get_editable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.DropEditableScene.get_editable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.DropEditableScene.set_editable">
+<code class="sig-name descname">set_editable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.DropEditableScene.set_editable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.DropEditableScene.staticMetaObject">
+<code class="sig-name descname">staticMetaObject</code><em class="property"> = &lt;PySide2.QtCore.QMetaObject object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.DropEditableScene.staticMetaObject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridColors">
+<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.graphicsscene.</code><code class="sig-name descname">GridColors</code><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridColors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class that stores predefined colors for grids</p>
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridColors.BaseColor">
+<code class="sig-name descname">BaseColor</code><em class="property"> = PySide2.QtGui.QColor.fromRgbF(0.235294, 0.235294, 0.235294, 0.392157)</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridColors.BaseColor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridColors.DarkerColor">
+<code class="sig-name descname">DarkerColor</code><em class="property"> = PySide2.QtGui.QColor.fromRgbF(0.078431, 0.078431, 0.078431, 0.392157)</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridColors.DarkerColor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene">
+<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.graphicsscene.</code><code class="sig-name descname">GridScene</code><span class="sig-paren">(</span><em class="sig-param">grid_main_spacing=8</em>, <em class="sig-param">grid_secondary_spacing=8</em>, <em class="sig-param">grid_main_pen_color=PySide2.QtGui.QColor.fromRgbF(0.235294</em>, <em class="sig-param">0.235294</em>, <em class="sig-param">0.235294</em>, <em class="sig-param">0.392157)</em>, <em class="sig-param">grid_secondary_pen_color=PySide2.QtGui.QColor.fromRgbF(0.078431</em>, <em class="sig-param">0.078431</em>, <em class="sig-param">0.078431</em>, <em class="sig-param">0.392157)</em>, <em class="sig-param">grid_main_width=1</em>, <em class="sig-param">grid_secondary_width=1</em>, <em class="sig-param">grid_main_style=PySide2.QtCore.Qt.PenStyle.SolidLine</em>, <em class="sig-param">grid_secondary_style=PySide2.QtCore.Qt.PenStyle.SolidLine</em>, <em class="sig-param">draw_main_grid=True</em>, <em class="sig-param">draw_secondary_grid=True</em>, <em class="sig-param">fit_grid=False</em>, <em class="sig-param">fit_grid_main_divisions=10</em>, <em class="sig-param">fit_grid_secondary_divisions=4</em>, <em class="sig-param">parent=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tpDcc.libs.qt.widgets.graphicsscene.BaseScene" title="tpDcc.libs.qt.widgets.graphicsscene.BaseScene"><code class="xref py py-class docutils literal notranslate"><span class="pre">tpDcc.libs.qt.widgets.graphicsscene.BaseScene</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Scene with grid background drawing support</p>
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.drawBackground">
+<code class="sig-name descname">drawBackground</code><span class="sig-paren">(</span><em class="sig-param">painter</em>, <em class="sig-param">rect</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.drawBackground" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw grid background for the graph scene</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.draw_main_grid">
+<em class="property">property </em><code class="sig-name descname">draw_main_grid</code><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.draw_main_grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.draw_secondary_grid">
+<em class="property">property </em><code class="sig-name descname">draw_secondary_grid</code><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.draw_secondary_grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.fit_grid">
+<em class="property">property </em><code class="sig-name descname">fit_grid</code><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.fit_grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.get_draw_main_grid">
+<code class="sig-name descname">get_draw_main_grid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.get_draw_main_grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.get_draw_secondary_grid">
+<code class="sig-name descname">get_draw_secondary_grid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.get_draw_secondary_grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.get_fit_grid">
+<code class="sig-name descname">get_fit_grid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.get_fit_grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.get_grid_main_spacing">
+<code class="sig-name descname">get_grid_main_spacing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.get_grid_main_spacing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.get_grid_secondary_spacing">
+<code class="sig-name descname">get_grid_secondary_spacing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.get_grid_secondary_spacing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.get_grid_width">
+<code class="sig-name descname">get_grid_width</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.get_grid_width" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.get_main_pen_color">
+<code class="sig-name descname">get_main_pen_color</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.get_main_pen_color" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.get_secondary_pen_color">
+<code class="sig-name descname">get_secondary_pen_color</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.get_secondary_pen_color" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.grid_main_pen_color">
+<em class="property">property </em><code class="sig-name descname">grid_main_pen_color</code><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.grid_main_pen_color" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.grid_main_spacing">
+<em class="property">property </em><code class="sig-name descname">grid_main_spacing</code><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.grid_main_spacing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.grid_secondary_pen_color">
+<em class="property">property </em><code class="sig-name descname">grid_secondary_pen_color</code><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.grid_secondary_pen_color" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.grid_secondary_spacing">
+<em class="property">property </em><code class="sig-name descname">grid_secondary_spacing</code><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.grid_secondary_spacing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.grid_width">
+<em class="property">property </em><code class="sig-name descname">grid_width</code><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.grid_width" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.set_draw_main_grid">
+<code class="sig-name descname">set_draw_main_grid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.set_draw_main_grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.set_draw_secondary_grid">
+<code class="sig-name descname">set_draw_secondary_grid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.set_draw_secondary_grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.set_fit_grid">
+<code class="sig-name descname">set_fit_grid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.set_fit_grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.set_grid_main_spacing">
+<code class="sig-name descname">set_grid_main_spacing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.set_grid_main_spacing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.set_grid_secondary_spacing">
+<code class="sig-name descname">set_grid_secondary_spacing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.set_grid_secondary_spacing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.set_grid_width">
+<code class="sig-name descname">set_grid_width</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.set_grid_width" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.set_main_pen_color">
+<code class="sig-name descname">set_main_pen_color</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.set_main_pen_color" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.set_secondary_pen_color">
+<code class="sig-name descname">set_secondary_pen_color</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.set_secondary_pen_color" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.graphicsscene.GridScene.staticMetaObject">
+<code class="sig-name descname">staticMetaObject</code><em class="property"> = &lt;PySide2.QtCore.QMetaObject object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.graphicsscene.GridScene.staticMetaObject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+    <a href="https://github.com/tpDcc/tpDcc-libs-python" target="_blank">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub">
+    </a>
+
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tpDcc.libs.qt.widgets.graphicsview.html" class="btn btn-neutral float-right" title="tpDcc.libs.qt.widgets.graphicsview module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="tpDcc.libs.qt.widgets.graphicsobject.html" class="btn btn-neutral float-left" title="tpDcc.libs.qt.widgets.graphicsobject module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Tomas Poveda
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.history module
+====================================
+
+.. automodule:: tpDcc.libs.qt.widgets.history
+   :members:
+   :undoc-members:
+   :show-inheritance:

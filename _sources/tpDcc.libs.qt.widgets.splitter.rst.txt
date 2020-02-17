@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.splitter module
+=====================================
+
+.. automodule:: tpDcc.libs.qt.widgets.splitter
+   :members:
+   :undoc-members:
+   :show-inheritance:

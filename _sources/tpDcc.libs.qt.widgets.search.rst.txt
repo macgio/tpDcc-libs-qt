@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.search module
+===================================
+
+.. automodule:: tpDcc.libs.qt.widgets.search
+   :members:
+   :undoc-members:
+   :show-inheritance:

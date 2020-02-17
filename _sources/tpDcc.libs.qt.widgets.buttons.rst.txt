@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.buttons module
+====================================
+
+.. automodule:: tpDcc.libs.qt.widgets.buttons
+   :members:
+   :undoc-members:
+   :show-inheritance:

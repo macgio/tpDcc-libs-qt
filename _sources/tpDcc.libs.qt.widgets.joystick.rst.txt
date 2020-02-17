@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.joystick module
+=====================================
+
+.. automodule:: tpDcc.libs.qt.widgets.joystick
+   :members:
+   :undoc-members:
+   :show-inheritance:

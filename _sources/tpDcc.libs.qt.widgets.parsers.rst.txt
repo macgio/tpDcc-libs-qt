@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.parsers module
+====================================
+
+.. automodule:: tpDcc.libs.qt.widgets.parsers
+   :members:
+   :undoc-members:
+   :show-inheritance:

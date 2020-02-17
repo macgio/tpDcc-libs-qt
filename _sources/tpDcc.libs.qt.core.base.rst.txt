@@ -1,0 +1,7 @@
+tpDcc.libs.qt.core.base module
+==============================
+
+.. automodule:: tpDcc.libs.qt.core.base
+   :members:
+   :undoc-members:
+   :show-inheritance:

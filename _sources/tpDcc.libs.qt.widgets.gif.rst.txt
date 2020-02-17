@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.gif module
+================================
+
+.. automodule:: tpDcc.libs.qt.widgets.gif
+   :members:
+   :undoc-members:
+   :show-inheritance:

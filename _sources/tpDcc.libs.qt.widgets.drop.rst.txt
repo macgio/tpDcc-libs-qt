@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.drop module
+=================================
+
+.. automodule:: tpDcc.libs.qt.widgets.drop
+   :members:
+   :undoc-members:
+   :show-inheritance:

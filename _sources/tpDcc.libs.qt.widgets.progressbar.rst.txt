@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.progressbar module
+========================================
+
+.. automodule:: tpDcc.libs.qt.widgets.progressbar
+   :members:
+   :undoc-members:
+   :show-inheritance:

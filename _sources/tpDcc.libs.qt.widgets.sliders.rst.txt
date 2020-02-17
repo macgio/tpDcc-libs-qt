@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.sliders module
+====================================
+
+.. automodule:: tpDcc.libs.qt.widgets.sliders
+   :members:
+   :undoc-members:
+   :show-inheritance:

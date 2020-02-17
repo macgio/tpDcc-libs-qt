@@ -1,0 +1,7 @@
+tpDcc.libs.qt.managers.inputs module
+====================================
+
+.. automodule:: tpDcc.libs.qt.managers.inputs
+   :members:
+   :undoc-members:
+   :show-inheritance:

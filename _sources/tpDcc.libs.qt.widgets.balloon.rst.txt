@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.balloon module
+====================================
+
+.. automodule:: tpDcc.libs.qt.widgets.balloon
+   :members:
+   :undoc-members:
+   :show-inheritance:

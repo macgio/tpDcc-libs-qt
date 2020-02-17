@@ -1,0 +1,7 @@
+tpDcc.libs.qt.managers.preferences module
+=========================================
+
+.. automodule:: tpDcc.libs.qt.managers.preferences
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.graphicsscene module
+==========================================
+
+.. automodule:: tpDcc.libs.qt.widgets.graphicsscene
+   :members:
+   :undoc-members:
+   :show-inheritance:

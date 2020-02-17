@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.messagehandler module
+===========================================
+
+.. automodule:: tpDcc.libs.qt.widgets.messagehandler
+   :members:
+   :undoc-members:
+   :show-inheritance:

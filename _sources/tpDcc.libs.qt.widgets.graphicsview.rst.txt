@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.graphicsview module
+=========================================
+
+.. automodule:: tpDcc.libs.qt.widgets.graphicsview
+   :members:
+   :undoc-members:
+   :show-inheritance:

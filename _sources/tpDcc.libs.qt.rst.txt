@@ -1,0 +1,29 @@
+tpDcc.libs.qt package
+=====================
+
+Subpackages
+-----------
+
+.. toctree::
+
+   tpDcc.libs.qt.core
+   tpDcc.libs.qt.externals
+   tpDcc.libs.qt.managers
+   tpDcc.libs.qt.resources
+   tpDcc.libs.qt.widgets
+
+Submodules
+----------
+
+.. toctree::
+
+   tpDcc.libs.qt.loader
+   tpDcc.libs.qt.register
+
+Module contents
+---------------
+
+.. automodule:: tpDcc.libs.qt
+   :members:
+   :undoc-members:
+   :show-inheritance:

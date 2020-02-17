@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.console module
+====================================
+
+.. automodule:: tpDcc.libs.qt.widgets.console
+   :members:
+   :undoc-members:
+   :show-inheritance:

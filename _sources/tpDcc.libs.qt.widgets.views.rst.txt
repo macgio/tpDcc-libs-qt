@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.views module
+==================================
+
+.. automodule:: tpDcc.libs.qt.widgets.views
+   :members:
+   :undoc-members:
+   :show-inheritance:

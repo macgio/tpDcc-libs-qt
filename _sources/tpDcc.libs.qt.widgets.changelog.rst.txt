@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.changelog module
+======================================
+
+.. automodule:: tpDcc.libs.qt.widgets.changelog
+   :members:
+   :undoc-members:
+   :show-inheritance:

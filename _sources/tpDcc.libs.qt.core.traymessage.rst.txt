@@ -1,0 +1,7 @@
+tpDcc.libs.qt.core.traymessage module
+=====================================
+
+.. automodule:: tpDcc.libs.qt.core.traymessage
+   :members:
+   :undoc-members:
+   :show-inheritance:

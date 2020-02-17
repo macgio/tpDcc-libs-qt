@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.toast module
+==================================
+
+.. automodule:: tpDcc.libs.qt.widgets.toast
+   :members:
+   :undoc-members:
+   :show-inheritance:

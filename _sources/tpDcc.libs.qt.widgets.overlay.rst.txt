@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.overlay module
+====================================
+
+.. automodule:: tpDcc.libs.qt.widgets.overlay
+   :members:
+   :undoc-members:
+   :show-inheritance:

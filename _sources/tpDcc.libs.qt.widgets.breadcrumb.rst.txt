@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.breadcrumb module
+=======================================
+
+.. automodule:: tpDcc.libs.qt.widgets.breadcrumb
+   :members:
+   :undoc-members:
+   :show-inheritance:

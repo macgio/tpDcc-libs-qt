@@ -1,0 +1,7 @@
+tpDcc.libs.qt.core.statusbar module
+===================================
+
+.. automodule:: tpDcc.libs.qt.core.statusbar
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+tpDcc.libs.qt.core.consts module
+================================
+
+.. automodule:: tpDcc.libs.qt.core.consts
+   :members:
+   :undoc-members:
+   :show-inheritance:

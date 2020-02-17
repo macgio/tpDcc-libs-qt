@@ -1,0 +1,7 @@
+tpDcc.libs.qt.resources.res module
+==================================
+
+.. automodule:: tpDcc.libs.qt.resources.res
+   :members:
+   :undoc-members:
+   :show-inheritance:

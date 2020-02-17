@@ -1,0 +1,41 @@
+tpDcc.libs.qt.core package
+==========================
+
+Submodules
+----------
+
+.. toctree::
+
+   tpDcc.libs.qt.core.animation
+   tpDcc.libs.qt.core.awesome
+   tpDcc.libs.qt.core.base
+   tpDcc.libs.qt.core.color
+   tpDcc.libs.qt.core.config
+   tpDcc.libs.qt.core.consts
+   tpDcc.libs.qt.core.dialog
+   tpDcc.libs.qt.core.dragger
+   tpDcc.libs.qt.core.icon
+   tpDcc.libs.qt.core.image
+   tpDcc.libs.qt.core.input
+   tpDcc.libs.qt.core.menu
+   tpDcc.libs.qt.core.pixmap
+   tpDcc.libs.qt.core.preferences
+   tpDcc.libs.qt.core.qtutils
+   tpDcc.libs.qt.core.resource
+   tpDcc.libs.qt.core.settings
+   tpDcc.libs.qt.core.statusbar
+   tpDcc.libs.qt.core.style
+   tpDcc.libs.qt.core.svg
+   tpDcc.libs.qt.core.theme
+   tpDcc.libs.qt.core.timers
+   tpDcc.libs.qt.core.traymessage
+   tpDcc.libs.qt.core.window
+   tpDcc.libs.qt.core.worker
+
+Module contents
+---------------
+
+.. automodule:: tpDcc.libs.qt.core
+   :members:
+   :undoc-members:
+   :show-inheritance:

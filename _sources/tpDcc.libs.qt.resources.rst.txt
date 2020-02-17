@@ -1,0 +1,17 @@
+tpDcc.libs.qt.resources package
+===============================
+
+Submodules
+----------
+
+.. toctree::
+
+   tpDcc.libs.qt.resources.res
+
+Module contents
+---------------
+
+.. automodule:: tpDcc.libs.qt.resources
+   :members:
+   :undoc-members:
+   :show-inheritance:

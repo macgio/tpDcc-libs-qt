@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.checkbox module
+=====================================
+
+.. automodule:: tpDcc.libs.qt.widgets.checkbox
+   :members:
+   :undoc-members:
+   :show-inheritance:

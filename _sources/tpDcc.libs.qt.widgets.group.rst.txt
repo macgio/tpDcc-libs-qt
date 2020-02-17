@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.group module
+==================================
+
+.. automodule:: tpDcc.libs.qt.widgets.group
+   :members:
+   :undoc-members:
+   :show-inheritance:

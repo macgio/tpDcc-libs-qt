@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.expandables module
+========================================
+
+.. automodule:: tpDcc.libs.qt.widgets.expandables
+   :members:
+   :undoc-members:
+   :show-inheritance:

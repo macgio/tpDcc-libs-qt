@@ -1,0 +1,18 @@
+tpDcc.libs.qt.managers package
+==============================
+
+Submodules
+----------
+
+.. toctree::
+
+   tpDcc.libs.qt.managers.inputs
+   tpDcc.libs.qt.managers.preferences
+
+Module contents
+---------------
+
+.. automodule:: tpDcc.libs.qt.managers
+   :members:
+   :undoc-members:
+   :show-inheritance:

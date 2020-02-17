@@ -1,0 +1,769 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tpDcc.libs.qt.widgets.expandables module &mdash; tpDcc-libs-python 0.0.l documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="tpDcc.libs.qt.widgets.formwidget module" href="tpDcc.libs.qt.widgets.formwidget.html" />
+    <link rel="prev" title="tpDcc.libs.qt.widgets.drop module" href="tpDcc.libs.qt.widgets.drop.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> tpDcc-libs-python
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">tpDcc</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="tpDcc.html">tpDcc package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="tpDcc.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="tpDcc.libs.html">tpDcc.libs package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tpDcc.html#module-tpDcc">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">tpDcc-libs-python</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">tpDcc</a> &raquo;</li>
+        
+          <li><a href="tpDcc.html">tpDcc package</a> &raquo;</li>
+        
+          <li><a href="tpDcc.libs.html">tpDcc.libs package</a> &raquo;</li>
+        
+          <li><a href="tpDcc.libs.qt.html">tpDcc.libs.qt package</a> &raquo;</li>
+        
+          <li><a href="tpDcc.libs.qt.widgets.html">tpDcc.libs.qt.widgets package</a> &raquo;</li>
+        
+      <li>tpDcc.libs.qt.widgets.expandables module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/tpDcc.libs.qt.widgets.expandables.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-tpDcc.libs.qt.widgets.expandables">
+<span id="tpdcc-libs-qt-widgets-expandables-module"></span><h1>tpDcc.libs.qt.widgets.expandables module<a class="headerlink" href="#module-tpDcc.libs.qt.widgets.expandables" title="Permalink to this headline">¶</a></h1>
+<p>Module that contains widgets with expandable behaviour</p>
+<dl class="class">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableArrow">
+<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.expandables.</code><code class="sig-name descname">ExpandableArrow</code><span class="sig-paren">(</span><em class="sig-param">collapsed=False</em>, <em class="sig-param">parent=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableArrow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PySide2.QtWidgets.QFrame</span></code></p>
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableArrow.paintEvent">
+<code class="sig-name descname">paintEvent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">arg__1:PySide2.QtGui.QPaintEvent</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableArrow.paintEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableArrow.setArrow">
+<code class="sig-name descname">setArrow</code><span class="sig-paren">(</span><em class="sig-param">collapsed</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableArrow.setArrow" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableArrow.staticMetaObject">
+<code class="sig-name descname">staticMetaObject</code><em class="property"> = &lt;PySide2.QtCore.QMetaObject object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableArrow.staticMetaObject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableFrame">
+<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.expandables.</code><code class="sig-name descname">ExpandableFrame</code><span class="sig-paren">(</span><em class="sig-param">title=''</em>, <em class="sig-param">parent=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableFrame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PySide2.QtWidgets.QWidget</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableFrame.addWidget">
+<code class="sig-name descname">addWidget</code><span class="sig-paren">(</span><em class="sig-param">widget</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableFrame.addWidget" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableFrame.staticMetaObject">
+<code class="sig-name descname">staticMetaObject</code><em class="property"> = &lt;PySide2.QtCore.QMetaObject object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableFrame.staticMetaObject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableFrame.toggleCollapsed">
+<code class="sig-name descname">toggleCollapsed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableFrame.toggleCollapsed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableGroup">
+<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.expandables.</code><code class="sig-name descname">ExpandableGroup</code><span class="sig-paren">(</span><em class="sig-param">title=''</em>, <em class="sig-param">parent=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableGroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PySide2.QtWidgets.QGroupBox</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableGroup.collapse">
+<code class="sig-name descname">collapse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableGroup.collapse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collapses the group</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableGroup.expand">
+<code class="sig-name descname">expand</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableGroup.expand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Expands the group</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableGroup.mouseMoveEvent">
+<code class="sig-name descname">mouseMoveEvent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">event:PySide2.QtGui.QMouseEvent</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableGroup.mouseMoveEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableGroup.mousePressEvent">
+<code class="sig-name descname">mousePressEvent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">event:PySide2.QtGui.QMouseEvent</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableGroup.mousePressEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableGroup.resizeEvent">
+<code class="sig-name descname">resizeEvent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">event:PySide2.QtGui.QResizeEvent</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableGroup.resizeEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableGroup.staticMetaObject">
+<code class="sig-name descname">staticMetaObject</code><em class="property"> = &lt;PySide2.QtCore.QMetaObject object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableGroup.staticMetaObject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableGroup.toggle">
+<code class="sig-name descname">toggle</code><span class="sig-paren">(</span><em class="sig-param">force=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableGroup.toggle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Toggle group expand/collapse state
+:param force: int, if we want a specific state to be applied</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableGroup.wheelEvent">
+<code class="sig-name descname">wheelEvent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">event:PySide2.QtGui.QWheelEvent</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableGroup.wheelEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableLine">
+<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.expandables.</code><code class="sig-name descname">ExpandableLine</code><span class="sig-paren">(</span><em class="sig-param">title=''</em>, <em class="sig-param">animation_duration=300</em>, <em class="sig-param">parent=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableLine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PySide2.QtWidgets.QWidget</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableLine.set_content_layout">
+<code class="sig-name descname">set_content_layout</code><span class="sig-paren">(</span><em class="sig-param">content_layout</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableLine.set_content_layout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandableLine.staticMetaObject">
+<code class="sig-name descname">staticMetaObject</code><em class="property"> = &lt;PySide2.QtCore.QMetaObject object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandableLine.staticMetaObject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandablePanel">
+<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.expandables.</code><code class="sig-name descname">ExpandablePanel</code><span class="sig-paren">(</span><em class="sig-param">header_text</em>, <em class="sig-param">min_height=30</em>, <em class="sig-param">max_height=1000</em>, <em class="sig-param">show_header_text=True</em>, <em class="sig-param">is_opened=False</em>, <em class="sig-param">parent=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandablePanel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tpDcc.libs.qt.core.base.html#tpDcc.libs.qt.core.base.BaseWidget" title="tpDcc.libs.qt.core.base.BaseWidget"><code class="xref py py-class docutils literal notranslate"><span class="pre">tpDcc.libs.qt.core.base.BaseWidget</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandablePanel.add_layout">
+<code class="sig-name descname">add_layout</code><span class="sig-paren">(</span><em class="sig-param">layout</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandablePanel.add_layout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandablePanel.add_widget">
+<code class="sig-name descname">add_widget</code><span class="sig-paren">(</span><em class="sig-param">widget</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandablePanel.add_widget" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandablePanel.change_state">
+<code class="sig-name descname">change_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandablePanel.change_state" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandablePanel.custom_ui">
+<code class="sig-name descname">custom_ui</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandablePanel.custom_ui" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandablePanel.staticMetaObject">
+<code class="sig-name descname">staticMetaObject</code><em class="property"> = &lt;PySide2.QtCore.QMetaObject object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandablePanel.staticMetaObject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandablePanel.update_icon">
+<code class="sig-name descname">update_icon</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandablePanel.update_icon" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpandablePanel.update_size">
+<code class="sig-name descname">update_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpandablePanel.update_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderDragDropModes">
+<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.expandables.</code><code class="sig-name descname">ExpanderDragDropModes</code><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderDragDropModes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderDragDropModes.InternalMove">
+<code class="sig-name descname">InternalMove</code><em class="property"> = 1</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderDragDropModes.InternalMove" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderDragDropModes.NoDragDrop">
+<code class="sig-name descname">NoDragDrop</code><em class="property"> = 0</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderDragDropModes.NoDragDrop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem">
+<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.expandables.</code><code class="sig-name descname">ExpanderItem</code><span class="sig-paren">(</span><em class="sig-param">expander</em>, <em class="sig-param">title</em>, <em class="sig-param">widget</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PySide2.QtWidgets.QGroupBox</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.customData">
+<code class="sig-name descname">customData</code><span class="sig-paren">(</span><em class="sig-param">key</em>, <em class="sig-param">default=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.customData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.dragDropMode">
+<code class="sig-name descname">dragDropMode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.dragDropMode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.dragDropRect">
+<code class="sig-name descname">dragDropRect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.dragDropRect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.dragEnterEvent">
+<code class="sig-name descname">dragEnterEvent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">event:PySide2.QtGui.QDragEnterEvent</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.dragEnterEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.dragMoveEvent">
+<code class="sig-name descname">dragMoveEvent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">event:PySide2.QtGui.QDragMoveEvent</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.dragMoveEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.dropEvent">
+<code class="sig-name descname">dropEvent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">event:PySide2.QtGui.QDropEvent</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.dropEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.enterEvent">
+<code class="sig-name descname">enterEvent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">event:PySide2.QtCore.QEvent</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.enterEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.expandCollapseRect">
+<code class="sig-name descname">expandCollapseRect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.expandCollapseRect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.expanderWidget">
+<code class="sig-name descname">expanderWidget</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.expanderWidget" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.isCollapsed">
+<code class="sig-name descname">isCollapsed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.isCollapsed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.isCollapsible">
+<code class="sig-name descname">isCollapsible</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.isCollapsible" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.margin">
+<code class="sig-name descname">margin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.margin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.mouseMoveEvent">
+<code class="sig-name descname">mouseMoveEvent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">event:PySide2.QtGui.QMouseEvent</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.mouseMoveEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.mousePressEvent">
+<code class="sig-name descname">mousePressEvent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">event:PySide2.QtGui.QMouseEvent</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.mousePressEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.mouseReleaseEvent">
+<code class="sig-name descname">mouseReleaseEvent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">event:PySide2.QtGui.QMouseEvent</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.mouseReleaseEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.paintEvent">
+<code class="sig-name descname">paintEvent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">event:PySide2.QtGui.QPaintEvent</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.paintEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.rolloutStyle">
+<code class="sig-name descname">rolloutStyle</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.rolloutStyle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.setCollapsed">
+<code class="sig-name descname">setCollapsed</code><span class="sig-paren">(</span><em class="sig-param">state=True</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.setCollapsed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.setCollapsible">
+<code class="sig-name descname">setCollapsible</code><span class="sig-paren">(</span><em class="sig-param">state=True</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.setCollapsible" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.setCustomData">
+<code class="sig-name descname">setCustomData</code><span class="sig-paren">(</span><em class="sig-param">key</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.setCustomData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.setDragDropMode">
+<code class="sig-name descname">setDragDropMode</code><span class="sig-paren">(</span><em class="sig-param">mode</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.setDragDropMode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.setMargin">
+<code class="sig-name descname">setMargin</code><span class="sig-paren">(</span><em class="sig-param">margin</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.setMargin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.setRolloutStyle">
+<code class="sig-name descname">setRolloutStyle</code><span class="sig-paren">(</span><em class="sig-param">style</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.setRolloutStyle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.showMenu">
+<code class="sig-name descname">showMenu</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.showMenu" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.staticMetaObject">
+<code class="sig-name descname">staticMetaObject</code><em class="property"> = &lt;PySide2.QtCore.QMetaObject object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.staticMetaObject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.toggleCollapsed">
+<code class="sig-name descname">toggleCollapsed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.toggleCollapsed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderItem.widget">
+<code class="sig-name descname">widget</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderItem.widget" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderStyles">
+<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.expandables.</code><code class="sig-name descname">ExpanderStyles</code><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderStyles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderStyles.Boxed">
+<code class="sig-name descname">Boxed</code><em class="property"> = 0</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderStyles.Boxed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderStyles.Maya">
+<code class="sig-name descname">Maya</code><em class="property"> = 3</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderStyles.Maya" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderStyles.Rounded">
+<code class="sig-name descname">Rounded</code><em class="property"> = 1</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderStyles.Rounded" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderStyles.Square">
+<code class="sig-name descname">Square</code><em class="property"> = 2</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderStyles.Square" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget">
+<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.expandables.</code><code class="sig-name descname">ExpanderWidget</code><span class="sig-paren">(</span><em class="sig-param">parent=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PySide2.QtWidgets.QScrollArea</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.addItem">
+<code class="sig-name descname">addItem</code><span class="sig-paren">(</span><em class="sig-param">title</em>, <em class="sig-param">widget</em>, <em class="sig-param">collapsed=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.addItem" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.canScroll">
+<code class="sig-name descname">canScroll</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.canScroll" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.clear">
+<code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.clear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.count">
+<code class="sig-name descname">count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.dragDropMode">
+<code class="sig-name descname">dragDropMode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.dragDropMode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.emitItemCollapsed">
+<code class="sig-name descname">emitItemCollapsed</code><span class="sig-paren">(</span><em class="sig-param">item</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.emitItemCollapsed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.emitItemDragFailed">
+<code class="sig-name descname">emitItemDragFailed</code><span class="sig-paren">(</span><em class="sig-param">item</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.emitItemDragFailed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.emitItemMenuRequested">
+<code class="sig-name descname">emitItemMenuRequested</code><span class="sig-paren">(</span><em class="sig-param">item</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.emitItemMenuRequested" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.emitItemsReordered">
+<code class="sig-name descname">emitItemsReordered</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.emitItemsReordered" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.eventFilter">
+<code class="sig-name descname">eventFilter</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">arg__1:PySide2.QtCore.QObject</em>, <em class="sig-param">arg__2:PySide2.QtCore.QEvent</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.eventFilter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.indexOf">
+<code class="sig-name descname">indexOf</code><span class="sig-paren">(</span><em class="sig-param">widget</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.indexOf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.isBoxedMode">
+<code class="sig-name descname">isBoxedMode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.isBoxedMode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.itemAt">
+<code class="sig-name descname">itemAt</code><span class="sig-paren">(</span><em class="sig-param">index</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.itemAt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.itemClass">
+<code class="sig-name descname">itemClass</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.itemClass" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.itemCollapsed">
+<code class="sig-name descname">itemCollapsed</code><em class="property"> = &lt;PySide2.QtCore.Signal object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.itemCollapsed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.itemDragFailed">
+<code class="sig-name descname">itemDragFailed</code><em class="property"> = &lt;PySide2.QtCore.Signal object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.itemDragFailed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.itemMenuRequested">
+<code class="sig-name descname">itemMenuRequested</code><em class="property"> = &lt;PySide2.QtCore.Signal object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.itemMenuRequested" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.itemsReordered">
+<code class="sig-name descname">itemsReordered</code><em class="property"> = &lt;PySide2.QtCore.Signal object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.itemsReordered" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.mouseMoveEvent">
+<code class="sig-name descname">mouseMoveEvent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">arg__1:PySide2.QtGui.QMouseEvent</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.mouseMoveEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.mousePressEvent">
+<code class="sig-name descname">mousePressEvent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">arg__1:PySide2.QtGui.QMouseEvent</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.mousePressEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.mouseReleaseEvent">
+<code class="sig-name descname">mouseReleaseEvent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">arg__1:PySide2.QtGui.QMouseEvent</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.mouseReleaseEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.moveItemDown">
+<code class="sig-name descname">moveItemDown</code><span class="sig-paren">(</span><em class="sig-param">index</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.moveItemDown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.moveItemUp">
+<code class="sig-name descname">moveItemUp</code><span class="sig-paren">(</span><em class="sig-param">index</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.moveItemUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.rolloutStyle">
+<code class="sig-name descname">rolloutStyle</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.rolloutStyle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.setBoxedMode">
+<code class="sig-name descname">setBoxedMode</code><span class="sig-paren">(</span><em class="sig-param">state</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.setBoxedMode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.setDragDropMode">
+<code class="sig-name descname">setDragDropMode</code><span class="sig-paren">(</span><em class="sig-param">dragDropMode</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.setDragDropMode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.setItemClass">
+<code class="sig-name descname">setItemClass</code><span class="sig-paren">(</span><em class="sig-param">itemClass</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.setItemClass" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.setMargin">
+<code class="sig-name descname">setMargin</code><span class="sig-paren">(</span><em class="sig-param">margin</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.setMargin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.setRolloutStyle">
+<code class="sig-name descname">setRolloutStyle</code><span class="sig-paren">(</span><em class="sig-param">rolloutStyle</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.setRolloutStyle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.setSpacing">
+<code class="sig-name descname">setSpacing</code><span class="sig-paren">(</span><em class="sig-param">space</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.setSpacing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.staticMetaObject">
+<code class="sig-name descname">staticMetaObject</code><em class="property"> = &lt;PySide2.QtCore.QMetaObject object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.staticMetaObject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.takeAt">
+<code class="sig-name descname">takeAt</code><span class="sig-paren">(</span><em class="sig-param">index</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.takeAt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.ExpanderWidget.widgetAt">
+<code class="sig-name descname">widgetAt</code><span class="sig-paren">(</span><em class="sig-param">index</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.ExpanderWidget.widgetAt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tpDcc.libs.qt.widgets.expandables.PanelState">
+<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.expandables.</code><code class="sig-name descname">PanelState</code><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.PanelState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.PanelState.CLOSED">
+<code class="sig-name descname">CLOSED</code><em class="property"> = 0</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.PanelState.CLOSED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.PanelState.OPEN">
+<code class="sig-name descname">OPEN</code><em class="property"> = 1</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.PanelState.OPEN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tpDcc.libs.qt.widgets.expandables.TitleFrame">
+<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.expandables.</code><code class="sig-name descname">TitleFrame</code><span class="sig-paren">(</span><em class="sig-param">title=''</em>, <em class="sig-param">collapsed=False</em>, <em class="sig-param">parent=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.TitleFrame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PySide2.QtWidgets.QFrame</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.expandables.TitleFrame.mousePressEvent">
+<code class="sig-name descname">mousePressEvent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">event:PySide2.QtGui.QMouseEvent</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.TitleFrame.mousePressEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tpDcc.libs.qt.widgets.expandables.TitleFrame.staticMetaObject">
+<code class="sig-name descname">staticMetaObject</code><em class="property"> = &lt;PySide2.QtCore.QMetaObject object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.expandables.TitleFrame.staticMetaObject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+    <a href="https://github.com/tpDcc/tpDcc-libs-python" target="_blank">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub">
+    </a>
+
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tpDcc.libs.qt.widgets.formwidget.html" class="btn btn-neutral float-right" title="tpDcc.libs.qt.widgets.formwidget module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="tpDcc.libs.qt.widgets.drop.html" class="btn btn-neutral float-left" title="tpDcc.libs.qt.widgets.drop module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Tomas Poveda
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
