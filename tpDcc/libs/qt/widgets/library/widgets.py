@@ -26,13 +26,13 @@ class LibraryImageSequenceWidget(QToolButton, object):
     DEFAULT_PLAYHEAD_HEIGHT = 4
 
     DEFAULT_STYLE = """
-    QToolBar {
-        border: 0px solid black; 
-        border-radius:2px;
-        background-color: rgb(0,0,0,100);
+    QToolBar{
+    border: 0px solid black; 
+    border-radius:2px;
+    background-color: rgb(0,0,0,100);
     }
-    QToolButton {
-        background-color: transparent;
+    QToolButton{
+    background-color: transparent;
     }
     """
 

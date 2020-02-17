@@ -111,7 +111,6 @@ class FramelessWindow(window.MainWindow, object):
         shadow_effect.setOffset(qtutils.dpi_scale(0))
         self.setGraphicsEffect(shadow_effect)
 
-
         # self.dockChanged.connect(self.dockEvent)
 
     def setup_signals(self):

@@ -1452,7 +1452,9 @@ class OptionGroup(QGroupBox, object):
             painter.setPen(pen)
             painter.drawRect(x, y, w - 1, h - 1)
         if self._rollout_style == GroupStyles.Maya:
-            # painter.drawText(x + (45 if self.dragDropMode() == ExpanderDragDropModes.InternalMove else 25), y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
+            # painter.drawText(
+            # x + (45 if self.dragDropMode() == ExpanderDragDropModes.InternalMove else 25),
+            # y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
             painter.drawText(x + 25, y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
             painter.setRenderHint(QPainter.Antialiasing, False)
             self._draw_triangle(painter, x, y)

@@ -56,22 +56,18 @@ class BaseGroup(QGroupBox, object):
 class CollapsableGroup(BaseGroup, object):
     def __init__(self, name='', parent=None, collapsable=True):
         super(CollapsableGroup, self).__init__(name, parent)
-        
         self._collapsable = collapsable
 
-    # region Override Functions
     def mousePRessEvent(self, event):
         super(CollapsableGroup, self).mousePressEvent(event)
-        
+
         if not event.button() == Qt.LeftButton:
             return
 
         if self._collapsable:
             if event.y() < 30:
                 self._base_widget.setVisible(not self._base_widget.isVisible())
-    # endregion
 
-    # region Public Functions
     def set_collapsable(self, flag):
         """
         Sets if the group can be collapsed or not
@@ -94,4 +90,3 @@ class CollapsableGroup(BaseGroup, object):
         """
 
         self._base_widget.setVisible(False)
-    # endregion

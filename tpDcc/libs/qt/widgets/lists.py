@@ -68,7 +68,8 @@ class WidgetItem(QFrame, object):
     closed = Signal(QWidget)
     deleted = Signal(QWidget)
 
-    def __init__(self, item_height=150, item_width=300, height_offset=10, width_offset=10, has_title=True, editable_title=True, is_closable=True, parent=None):
+    def __init__(self, item_height=150, item_width=300, height_offset=10, width_offset=10,
+                 has_title=True, editable_title=True, is_closable=True, parent=None):
         super(WidgetItem, self).__init__(parent=parent)
 
         self._item_height = item_height
