@@ -348,9 +348,9 @@ def calculate_start_angle(x1, y1, rx, ry, coordAngle, largeArcFlag, sweep_flag, 
     if delta > 1:
         rx *= math.sqrt(delta)
         ry *= math.sqrt(delta)
-    var = math.sqrt(
-        (rx ** 2 * ry ** 2 - rx ** 2 * rotated_y1 ** 2 - ry ** 2 * rotated_x1 ** 2) /
-        (rx ** 2 * rotated_y1 ** 2 + ry ** 2 * rotated_x1 ** 2))
+    _a = (rx ** 2 * ry ** 2 - rx ** 2 * rotated_y1 ** 2 - ry ** 2 * rotated_x1 ** 2)
+    _b = (rx ** 2 * rotated_y1 ** 2 + ry ** 2 * rotated_x1 ** 2)
+    var = math.sqrt(_a / _b)
     if largeArcFlag == sweep_flag:
         var *= -1
     ccx = var * (rx * rotated_y1 / ry)
