@@ -5,7 +5,7 @@
 PySide;python_version <= '3.4'
 PySide2;python_version > '3.4'
 tpDcc-libs-python
-tpDcc-libs-core
+tpDcc-core
 Qt.py
 aenum
 scandir
