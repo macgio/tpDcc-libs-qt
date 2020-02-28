@@ -229,7 +229,7 @@ class LibraryWindow(tp.Window, object):
     def _setup_menubar(self):
         icon_color = self.icon_color()
         name = 'New Item'
-        icon = qt.resource.icon('plus', theme='black')
+        icon = tp.ResourcesMgr().icon('plus', theme='black')
         icon.set_color(icon_color)
         tip = 'Add a new item to the selected folder'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_new_menu)
@@ -237,43 +237,43 @@ class LibraryWindow(tp.Window, object):
         self._menubar_widget.addWidget(self._search_widget)
 
         name = 'Filters'
-        icon = qt.resource.icon('filter', theme='black')
+        icon = tp.ResourcesMgr().icon('filter', theme='black')
         icon.set_color(icon_color)
         tip = 'Filter the current results by type.\nCtrl + Click will hide the ohters and show the selected one.'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_filter_by_menu)
 
         name = 'Item View'
-        icon = qt.resource.icon('slider', theme='black')
+        icon = tp.ResourcesMgr().icon('slider', theme='black')
         icon.set_color(icon_color)
         tip = 'Change the style of the item view'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_item_view_menu)
 
         name = 'Group By'
-        icon = qt.resource.icon('grid_view', theme='black')
+        icon = tp.ResourcesMgr().icon('grid_view', theme='black')
         icon.set_color(icon_color)
         tip = 'Group the current items in the view by column'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_group_by_menu)
 
         name = 'Sort By'
-        icon = qt.resource.icon('descending_sorting', theme='black')
+        icon = tp.ResourcesMgr().icon('descending_sorting', theme='black')
         icon.set_color(icon_color)
         tip = 'Sort the current items in the view by column'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_sort_by_menu)
 
         name = 'View'
-        icon = qt.resource.icon('add')
+        icon = tp.ResourcesMgr().icon('add')
         # icon.set_color(icon_color)
         tip = 'Choose to show/hide both the preview and navigation pane\nCtrl + click will hide the menu bar as well.'
         self.add_menubar_action(name, icon, tip, callback=self._on_toggle_view)
 
         name = 'Sync Items'
-        icon = qt.resource.icon('sync', theme='black')
+        icon = tp.ResourcesMgr().icon('sync', theme='black')
         icon.set_color(icon_color)
         tip = 'Sync with the filesystem'
         self.add_menubar_action(name, icon, tip, callback=self._on_sync)
 
         name = 'Settings'
-        icon = qt.resource.icon('settings', theme='black')
+        icon = tp.ResourcesMgr().icon('settings', theme='black')
         icon.set_color(icon_color)
         tip = 'Settings menu'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_settings_menu)
@@ -516,7 +516,7 @@ class LibraryWindow(tp.Window, object):
             path = path_utils.real_path(path)
 
         if path == self.path():
-            tpQtLib.logger.warning('Path is already set!')
+            qt.logger.warning('Path is already set!')
             return
 
         library = self.library()
@@ -1075,7 +1075,7 @@ class LibraryWindow(tp.Window, object):
         queries = [{'filters': [('type', 'is', 'Folder')]}]
 
         items = self.library().find_items(queries)
-        trash_icon_path = qt.resource.get('icons', 'black', 'trash')
+        trash_icon_path = tp.ResourcesMgr().get('icons', 'black', 'trash')
 
         for item in items:
             path = item.path()
@@ -1153,7 +1153,7 @@ class LibraryWindow(tp.Window, object):
 
         if self._new_item_widget == widget:
             msg = 'New Item widget already contains widghet {}'.format(widget)
-            tpQtLib.logger.debug(msg)
+            qt.logger.debug(msg)
         else:
             self.close_new_item_widget()
             self._new_item_widget = widget
@@ -1231,7 +1231,7 @@ class LibraryWindow(tp.Window, object):
 
         if self._preview_widget == widget:
             msg = 'Preview widget already contains widget {}'.format(widget)
-            tpQtLib.logger.debug(msg)
+            qt.logger.debug(msg)
         else:
             self.close_preview_widget()
             self._preview_widget = widget
@@ -1278,7 +1278,7 @@ class LibraryWindow(tp.Window, object):
         """
 
         if not force and self._current_item == item:
-            tpQtLib.logger.debug('The current item preview widget is already set!')
+            qt.logger.debug('The current item preview widget is already set!')
             return
 
         self._current_item = item
@@ -1670,7 +1670,7 @@ class LibraryWindow(tp.Window, object):
         msg = 'Found {0} item{1} in {2:.3f} seconds.'.format(item_count, plural, elapsed_time)
         self.status_widget().show_info_message(msg)
 
-        tpQtLib.logger.debug(msg)
+        qt.logger.debug(msg)
 
     @show_arrow_cursor_decorator
     def show_hello_dialog(self):
@@ -1750,7 +1750,7 @@ class LibraryWindow(tp.Window, object):
         :return: QDialogButtonBox.StandardButton
         """
 
-        tpQtLib.logger.exception(text)
+        qt.logger.exception(text)
         self.show_error_dialog(title, text)
 
     def show_folder_menu(self, pos=None):
@@ -1802,9 +1802,9 @@ class LibraryWindow(tp.Window, object):
         compact = self.is_compact_view()
         action = self.menubar_widget().find_action('View')
         if not compact:
-            icon = qt.resource.icon('view_all', theme='black')
+            icon = tp.ResourcesMgr().icon('view_all', theme='black')
         else:
-            icon = qt.resource.icon('view_compact', theme='black')
+            icon = tp.ResourcesMgr().icon('view_compact', theme='black')
         icon.set_color(self.icon_color())
         action.setIcon(icon)
 
@@ -1814,7 +1814,7 @@ class LibraryWindow(tp.Window, object):
         """
 
         action = self.menubar_widget().find_action('Filters')
-        icon = qt.resource.icon('filter', theme='black')
+        icon = tp.ResourcesMgr().icon('filter', theme='black')
         icon.set_color(self.icon_color())
         if self._filter_by_menu.is_active():
             icon.set_badge(18, 1, 9, 9, color=consts.ICON_BADGE_COLOR)
@@ -1847,7 +1847,7 @@ class LibraryWindow(tp.Window, object):
         :return: QIcon
         """
 
-        return qt.resource.icon('add')
+        return tp.ResourcesMgr().icon('add')
 
     def _create_new_item_menu(self):
         """
@@ -1892,7 +1892,7 @@ class LibraryWindow(tp.Window, object):
         if not self.is_locked():
             context_menu.addMenu(self._create_new_item_menu())
             if item:
-                edit_icon = qt.resource.icon('edit')
+                edit_icon = tp.ResourcesMgr().icon('edit')
                 edit_menu = menu.Menu(context_menu)
                 edit_menu.setTitle('Edit')
                 edit_menu.setIcon(edit_icon)
@@ -1917,7 +1917,7 @@ class LibraryWindow(tp.Window, object):
         :return: QMenu
         """
 
-        settings_icon = qt.resource.icon('settings')
+        settings_icon = tp.ResourcesMgr().icon('settings')
         context_menu = menu.Menu('', self)
         context_menu.setTitle('Settings')
         context_menu.setIcon(settings_icon)

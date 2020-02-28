@@ -47,7 +47,7 @@ class SaveWidget(base.BaseWidget, object):
             self._on_selection_changed()
             # self.set_script_job_enabled(True)
         except NameError as e:
-            tpQtLib.logger.error('{} | {}'.format(e, traceback.format_exc()))
+            qt.logger.error('{} | {}'.format(e, traceback.format_exc()))
 
     def ui(self):
         super(SaveWidget, self).ui()
@@ -85,7 +85,7 @@ class SaveWidget(base.BaseWidget, object):
         self._thumbnail_btn.setToolTip('Take snapshot')
         self._thumbnail_btn.setStyleSheet(
             'color: rgb(40, 40, 40);border: 0px solid rgb(0, 0, 0, 150);background-color: rgb(254, 255, 230, 200);')
-        self._thumbnail_btn.setIcon(qt.resource.icon('thumbnail'))
+        self._thumbnail_btn.setIcon(tp.ResourcesMgr().icon('thumbnail'))
         self._thumbnail_btn.setToolTip("""
         Click to capture a thumbnail from the current viewport.\n
         CTRL + Click to show the capture window for better framing
@@ -295,9 +295,9 @@ class SaveWidget(base.BaseWidget, object):
         sequence_widget.setStyleSheet(self._thumbnail_btn.styleSheet())
         sequence_widget.setToolTip(self._thumbnail_btn.toolTip())
 
-        camera_icon = qt.resource.get('icons', 'camera.svg')
-        expand_icon = qt.resource.get('icons', 'expand.svg')
-        folder_icon = qt.resource.get('icons', 'folder.svg')
+        camera_icon = tp.ResourcesMgr().get('icons', 'camera.svg')
+        expand_icon = tp.ResourcesMgr().get('icons', 'expand.svg')
+        folder_icon = tp.ResourcesMgr().get('icons', 'folder.svg')
 
         sequence_widget.addAction(camera_icon, 'Capture new image', 'Capture new image', self._on_thumbnail_capture)
         sequence_widget.addAction(
@@ -305,7 +305,7 @@ class SaveWidget(base.BaseWidget, object):
         sequence_widget.addAction(
             folder_icon, 'Load image from disk', 'Load image from disk', self._on_show_browse_image_dialog)
 
-        sequence_widget.setIcon(qt.resource.icon('thumbnail2'))
+        sequence_widget.setIcon(tp.ResourcesMgr().icon('thumbnail2'))
         self._thumbnail_frame.layout().insertWidget(0, sequence_widget)
         self._thumbnail_btn.hide()
         self._thumbnail_btn = sequence_widget
@@ -453,7 +453,7 @@ class SaveWidget(base.BaseWidget, object):
             )
         except Exception as e:
             messagebox.MessageBox.critical(self.library_window(), 'Error while capturing thumbnail', str(e))
-            tpQtLib.logger.error(traceback.format_exc())
+            qt.logger.error(traceback.format_exc())
 
     def save(self, path, icon_path, objects=None):
         """
@@ -541,7 +541,7 @@ class SaveWidget(base.BaseWidget, object):
 
         except Exception as e:
             messagebox.MessageBox.critical(self.library_window(), 'Error while saving', str(e))
-            tpQtLib.logger.error(traceback.format_exc())
+            qt.logger.error(traceback.format_exc())
             raise
 
         self.library_window().stack.slide_in_index(0)

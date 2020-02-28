@@ -27,7 +27,6 @@ class BaseLineEdit(QLineEdit, object):
         self.set_default(default)
         self.textChanged.connect(self._on_change)
 
-    # region Properties
     def get_value(self):
         if self.text() == self._default:
             return ''
@@ -38,9 +37,7 @@ class BaseLineEdit(QLineEdit, object):
         self._value = value
 
     value = property(get_value, set_value)
-    # endregion
 
-    # region Override Functions
     def focusInEvent(self, event):
         if self.text() == self._default:
             self.setText('')
@@ -50,16 +47,12 @@ class BaseLineEdit(QLineEdit, object):
         if self.text() == '':
             self.setText(self._default)
             self.setStyleSheet(self._get_off_style())
-    # endregion
 
-    # region Public Functions
     def set_default(self, text):
         self.setText(text)
         self._default = text
         self.setStyleSheet(self._get_off_style())
-    # endregion
 
-    # region Private Functions
     def _get_on_style(self):
         return 'QLineEdit{color:rgb(%s, %s, %s);}' % (self._on_color[0], self._on_color[1], self._on_color[2])
 
@@ -72,7 +65,61 @@ class BaseLineEdit(QLineEdit, object):
             self._value = text
         else:
             self.setStyleSheet(self._get_off_style())
-    # endregion
+
+
+class ClickLineEdit(QLineEdit, object):
+    """
+    Custom QLineEdit that becomes editable on click or double click
+    """
+
+    def __init__(self, text, single=False, double=False, pass_through_click=True):
+        super(ClickLineEdit, self).__init__(text)
+
+        self.setReadOnly(True)
+        self._editing_style = self.styleSheet()
+        self._default_style = "QLineEdit {border: 0;}"
+        self.setStyleSheet(self._default_style)
+        self.setContextMenuPolicy(Qt.NoContextMenu)
+
+        if single:
+            self.mousePressEvent = self.editEvent
+        else:
+            if pass_through_click:
+                self.mousePressEvent = self._mouse_click_pass_through
+        if double:
+            self.mouseDoubleClickEvent = self.editEvent
+        else:
+            if pass_through_click:
+                self.mousePressEvent = self._mouse_click_pass_through
+
+        self.editingFinished.connect(self._on_edit_finished)
+
+    def focusOutEvent(self, event):
+        super(ClickLineEdit, self).focusOutEvent(event)
+        self._on_edit_finished()
+
+    def mousePressEvent(self, event):
+        event.ignore()
+
+    def mouseReleaseEvent(self, event):
+        event.ignore()
+
+    def editEvent(self, event):
+        self.setStyleSheet(self._editing_style)
+        self.selectAll()
+        self.setReadOnly(False)
+        self.setFocus()
+        event.accept()
+
+    def _mouse_click_pass_through(self, event):
+        event.ignore()
+
+    def _on_edit_finished(self):
+        self.setReadOnly(True)
+        self.setStyleSheet(self._default_style)
+        self.deselect()
+
+
 
 
 class BaseAttrLineEdit(QLineEdit, object):
@@ -85,12 +132,10 @@ class BaseAttrLineEdit(QLineEdit, object):
         self.returnPressed.connect(self.update)
         self.editingFinished.connect(self.update)
 
-    # region Properties
     def get_value(self):
         return None
 
     value = property(get_value)
-    # endregion
 
 
 class FloatLineEdit(BaseAttrLineEdit, object):
@@ -107,9 +152,7 @@ class FloatLineEdit(BaseAttrLineEdit, object):
         return float(self.text())
 
     value = property(get_value)
-    # endregion
 
-    # region Override Functions
     def setText(self, text):
         super(FloatLineEdit, self).setText('%.2f' % float(text))
 
@@ -118,7 +161,6 @@ class FloatLineEdit(BaseAttrLineEdit, object):
             self.setText(self.text())
         super(FloatLineEdit, self).update()
         self.valueChanged.emit(float(self.text()))
-    # endregion
 
 
 class IntLineEdit(QLineEdit, object):
@@ -128,16 +170,13 @@ class IntLineEdit(QLineEdit, object):
     def __init__(self, parent=None):
         super(IntLineEdit, self).__init__(parent=parent)
 
-    # region Override Properties
     def get_value(self):
         if not self.text():
             return 0
         return int(self.text())
 
     value = property(get_value)
-    # endregion
 
-    # region Override Functions
     def setText(self, text):
         super(IntLineEdit, self).setText('%s' % int(text))
 
@@ -146,4 +185,3 @@ class IntLineEdit(QLineEdit, object):
             self.setText(self.text())
         super(IntLineEdit, self).update()
         self.valueChanged.emit(int(self.text()))
-    # endregion

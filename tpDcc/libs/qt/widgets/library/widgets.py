@@ -15,9 +15,12 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
+import tpDcc
 from tpDcc.libs import qt
 from tpDcc.libs.qt.core import animation, image, icon, qtutils, color, pixmap, statusbar
 from tpDcc.libs.qt.widgets import progressbar, toolbar, action, buttons
+
+logger = tpDcc.LogsMgr().get_logger()
 
 
 class LibraryImageSequenceWidget(QToolButton, object):
@@ -252,11 +255,11 @@ class LibrarySearchWidget(QLineEdit, object):
 
         self._library = None
         self._space_operator = 'and'
-        search_icon = qt.resource.icon('search', theme='black')
+        search_icon = tpDcc.ResourcesMgr().icon('search', theme='black')
         self._icon_btn = buttons.IconButton(search_icon, icon_padding=2, parent=self)
         self._icon_btn.clicked.connect(self._on_icon_clicked)
         self.set_icon(search_icon)
-        cross_icon = qt.resource.icon('delete', theme='black')
+        cross_icon = tpDcc.ResourcesMgr().icon('delete', theme='black')
         self._clear_btn = buttons.IconButton(cross_icon, icon_padding=2, parent=self)
         self._clear_btn.setCursor(Qt.ArrowCursor)
         self._clear_btn.setToolTip('Clear all search text')
@@ -378,7 +381,7 @@ class LibrarySearchWidget(QLineEdit, object):
             self.library().add_query(self.query())
             self.library().search()
         else:
-            tpQtLib.logger.info('No library found for the search widget')
+            qt.logger.info('No library found for the search widget')
 
         self.update_clear_button()
         self.searchChanged.emit()
@@ -625,7 +628,7 @@ class LibrarySideBarWidgetItem(QTreeWidgetItem, object):
         :return: str
         """
 
-        return self._expanded_icon_path or qt.resource.get('icons', 'black', 'open_folder')
+        return self._expanded_icon_path or tpDcc.ResourcesMgr().get('icons', 'black', 'open_folder')
 
     def collapsed_icon_path(self):
         """
@@ -633,7 +636,7 @@ class LibrarySideBarWidgetItem(QTreeWidgetItem, object):
         :return: str
         """
 
-        return self._collapsed_icon_path or qt.resource.get('icons', 'black', 'folder')
+        return self._collapsed_icon_path or tpDcc.ResourcesMgr().get('icons', 'black', 'folder')
 
     def icon_path(self):
         """
@@ -1035,7 +1038,7 @@ class LibrarySidebarWidget(QTreeWidget, object):
             self.add_paths(data, root=root, split=split)
             self.set_settings(settings)
         except Exception as e:
-            tpQtLib.logger.error('{} | {}'.format(e, traceback.format_exc()))
+            qt.logger.error('{} | {}'.format(e, traceback.format_exc()))
         finally:
             self.blockSignals(False)
 
@@ -1337,7 +1340,7 @@ class LibrarySidebarWidget(QTreeWidget, object):
             self.library().add_query(self.query())
             self.library().search()
         else:
-            tpQtLib.logger.info('No library found for the sidebar widget')
+            qt.logger.info('No library found for the sidebar widget')
 
     def query(self):
         """

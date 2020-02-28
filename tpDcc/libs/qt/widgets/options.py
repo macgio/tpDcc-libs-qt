@@ -68,10 +68,10 @@ class OptionsWidget(base.BaseWidget, object):
     def ui(self):
         super(OptionsWidget, self).ui()
 
-        edit_mode_icon = qt.resource.icon('edit')
-        move_up_icon = qt.resource.icon('sort_up')
-        move_down_icon = qt.resource.icon('sort_down')
-        remove_icon = qt.resource.icon('delete')
+        edit_mode_icon = tp.ResourcesMgr().icon('edit')
+        move_up_icon = tp.ResourcesMgr().icon('sort_up')
+        move_down_icon = tp.ResourcesMgr().icon('sort_down')
+        remove_icon = tp.ResourcesMgr().icon('delete')
 
         self._edit_widget = QWidget()
         top_layout = QHBoxLayout()
@@ -212,7 +212,7 @@ class OptionsWidget(base.BaseWidget, object):
         self._options_list.clear_widgets()
 
         if not self._option_object:
-            tpQtLib.logger.warning('Impossible to update options because option object is not defined!')
+            qt.logger.warning('Impossible to update options because option object is not defined!')
             return
 
         self._options_list.update_options()
@@ -233,7 +233,7 @@ class OptionsWidget(base.BaseWidget, object):
         """
 
         if not self._option_object:
-            tpQtLib.logger.warning('Impossible to check options because option object is not defined!')
+            qt.logger.warning('Impossible to check options because option object is not defined!')
             return
 
         return self._option_object.has_options()
@@ -381,7 +381,7 @@ class OptionList(QGroupBox, object):
         """
 
         if not self._option_object:
-            tpQtLib.logger.warning('Impossible to update options because option object is not defined!')
+            qt.logger.warning('Impossible to update options because option object is not defined!')
             return
 
         options = self._option_object.get_options()
@@ -697,18 +697,18 @@ class OptionList(QGroupBox, object):
         self._context_menu = QMenu()
         self._context_menu.setTearOffEnabled(True)
 
-        plus_icon = qt.resource.icon('plus')
-        string_icon = qt.resource.icon('rename')
-        directory_icon = qt.resource.icon('folder')
-        integer_icon = qt.resource.icon('number_1')
-        float_icon = qt.resource.icon('float_1')
-        bool_icon = qt.resource.icon('true_false')
-        group_icon = qt.resource.icon('group_objects')
-        script_icon = qt.resource.icon('source_code')
-        title_icon = qt.resource.icon('label')
-        clear_icon = qt.resource.icon('clean')
-        copy_icon = qt.resource.icon('copy')
-        paste_icon = qt.resource.icon('paste')
+        plus_icon = tp.ResourcesMgr().icon('plus')
+        string_icon = tp.ResourcesMgr().icon('rename')
+        directory_icon = tp.ResourcesMgr().icon('folder')
+        integer_icon = tp.ResourcesMgr().icon('number_1')
+        float_icon = tp.ResourcesMgr().icon('float_1')
+        bool_icon = tp.ResourcesMgr().icon('true_false')
+        group_icon = tp.ResourcesMgr().icon('group_objects')
+        script_icon = tp.ResourcesMgr().icon('source_code')
+        title_icon = tp.ResourcesMgr().icon('label')
+        clear_icon = tp.ResourcesMgr().icon('clean')
+        copy_icon = tp.ResourcesMgr().icon('copy')
+        paste_icon = tp.ResourcesMgr().icon('paste')
 
         create_menu = self._context_menu.addMenu(plus_icon, 'Add Options')
         add_string_action = QAction(string_icon, 'Add String', create_menu)
@@ -916,7 +916,7 @@ class OptionList(QGroupBox, object):
                     self.add_directory(name, value, widget)
 
         except Exception:
-            tpQtLib.logger.error(traceback.format_exc())
+            qt.logger.error(traceback.format_exc())
 
         self._disable_auto_expand = False
         self.setVisible(True)
@@ -989,7 +989,7 @@ class OptionList(QGroupBox, object):
 
         item_count = self.child_layout.count()
         if item_count <= 0:
-            tpQtLib.logger.debug('No widgets to clear ...')
+            qt.logger.debug('No widgets to clear ...')
             return
 
         permission = qtutils.get_permission('Clear all the widgets in {}'.format(name), parent=self)
@@ -1004,7 +1004,7 @@ class OptionList(QGroupBox, object):
         """
 
         if not self._option_object:
-            tpQtLib.logger.warning('Impossible to write options because option object is not defined!')
+            qt.logger.warning('Impossible to write options because option object is not defined!')
             return
 
         if self._supress_update:
@@ -1030,7 +1030,7 @@ class OptionList(QGroupBox, object):
             return
 
         if not self._option_object:
-            tpQtLib.logger.warning('Impossible to write options because option object is not defined!')
+            qt.logger.warning('Impossible to write options because option object is not defined!')
             return
 
         item_count = widget.child_layout.count()
@@ -1050,7 +1050,7 @@ class OptionList(QGroupBox, object):
     def _write_all(self):
 
         if not self._option_object:
-            tpQtLib.logger.warning('Impossible to write options because option object is not defined!')
+            qt.logger.warning('Impossible to write options because option object is not defined!')
             return
 
         self._option_object.clear_options()
@@ -1181,8 +1181,8 @@ class OptionListGroup(OptionList, object):
 
         super(OptionListGroup, self)._create_context_menu()
 
-        string_icon = qt.resource.icon('rename')
-        remove_icon = qt.resource.icon('trash')
+        string_icon = tp.ResourcesMgr().icon('rename')
+        remove_icon = tp.ResourcesMgr().icon('trash')
 
         rename_action = QAction(string_icon, 'Rename', self._context_menu)
         self._context_menu.addAction(rename_action)
@@ -1727,11 +1727,11 @@ class Option(base.BaseWidget, object):
     def _create_context_menu(self):
         self._context_menu = QMenu()
 
-        move_up_icon = qt.resource.icon('sort_up')
-        move_down_icon = qt.resource.icon('sort_down')
-        rename_icon = qt.resource.icon('rename')
-        remove_icon = qt.resource.icon('delete')
-        copy_icon = qt.resource.icon('copy')
+        move_up_icon = tp.ResourcesMgr().icon('sort_up')
+        move_down_icon = tp.ResourcesMgr().icon('sort_down')
+        rename_icon = tp.ResourcesMgr().icon('rename')
+        remove_icon = tp.ResourcesMgr().icon('delete')
+        copy_icon = tp.ResourcesMgr().icon('copy')
 
         move_up_action = QAction(move_up_icon, 'Move Up', self._context_menu)
         self._context_menu.addAction(move_up_action)

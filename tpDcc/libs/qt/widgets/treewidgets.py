@@ -14,6 +14,7 @@ from Qt.QtWidgets import *
 from Qt.QtGui import *
 
 import tpDcc as tp
+from tpDcc.libs import qt
 from tpDcc.libs.python import path, fileio, folder
 from tpDcc.libs.qt.core import base
 from tpDcc.libs.qt.widgets import buttons, search
@@ -874,7 +875,7 @@ class FileTreeWidget(TreeWidget, object):
         :param refresh: bool, Whether to refresh QTreeWidget items after setting working directory
         """
 
-        tpQtLib.logger.debug('Setting Tree directory: {}'.format(directory))
+        qt.logger.debug('Setting Tree directory: {}'.format(directory))
 
         self._directory = directory
         if refresh:
@@ -1126,7 +1127,7 @@ class EditFileTreeWidget(base.DirectoryWidget, object):
         self.filter_widget = self.FILTER_WIDGET()
         self.filter_widget.set_tree_widget(self.tree_widget)
         self.filter_widget.set_directory(self.directory)
-        drag_reorder_icon = qt.resource.icon('drag_reorder')
+        drag_reorder_icon = tp.ResourcesMgr().icon('drag_reorder')
         self.edit_mode_btn = buttons.IconButton(
             icon=drag_reorder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         self.edit_mode_btn.setCheckable(True)

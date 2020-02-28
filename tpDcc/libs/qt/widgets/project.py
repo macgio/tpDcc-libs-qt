@@ -16,7 +16,7 @@ from Qt.QtGui import *
 
 import tpDcc as tp
 from tpDcc.libs import qt
-from tpDcc.libs.python import path, settings, folder
+from tpDcc.libs.python import path, settings, folder, fileio
 from tpDcc.core import project as core_project
 from tpDcc.core import consts
 from tpDcc.libs.qt.widgets import grid, search, directory, splitters
@@ -64,19 +64,19 @@ class Project(QWidget, core_project.ProjectData):
 
     def contextMenuEvent(self, event):
         menu = QMenu(self)
-        remove_icon = qt.resource.icon(name='delete', extension='png')
+        remove_icon = tp.ResourcesMgr().icon(name='delete', extension='png')
         remove_action = QAction(remove_icon, 'Remove', menu)
         remove_action.setStatusTip(consts.DELETE_PROJECT_TOOLTIP)
         remove_action.setToolTip(consts.DELETE_PROJECT_TOOLTIP)
         remove_action.triggered.connect(self._on_remove_project)
 
-        folder_icon = qt.resource.icon(name='open_folder', extension='png')
+        folder_icon = tp.ResourcesMgr().icon(name='open_folder', extension='png')
         folder_action = QAction(folder_icon, 'Open in Browser', menu)
         folder_action.setStatusTip(consts.OPEN_PROJECT_IN_EXPLORER_TOOLTIP)
         folder_action.setToolTip(consts.OPEN_PROJECT_IN_EXPLORER_TOOLTIP)
         folder_action.triggered.connect(self._on_open_in_browser)
 
-        image_icon = qt.resource.icon(name='picture', extension='png')
+        image_icon = tp.ResourcesMgr().icon(name='picture', extension='png')
         set_image_action = QAction(image_icon, 'Set Project Image', menu)
         set_image_action.setToolTip(consts.SET_PROJECT_IMAGE_TOOLTIP)
         set_image_action.setStatusTip(consts.SET_PROJECT_IMAGE_TOOLTIP)
@@ -663,7 +663,7 @@ class Template(QWidget):
         self.project_btn.toggled.connect(self._on_selected_template)
 
     def get_icon(self):
-        return qt.resource.icon(name='project', extension='png')
+        return tp.ResourcesMgr().icon(name='project', extension='png')
     # endregion
 
     # region Private Functions

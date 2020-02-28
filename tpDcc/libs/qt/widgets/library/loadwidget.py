@@ -13,7 +13,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-from tpDcc.libs import qt
+import tpDcc
 from tpDcc.libs.qt.core import base
 from tpDcc.libs.qt.widgets import formwidget, splitters, history
 from tpDcc.libs.qt.widgets.library import widgets
@@ -104,7 +104,7 @@ class LoadWidget(base.BaseWidget, object):
             'color: rgb(40, 40, 40);\nborder: 1px solid rgb(0, 0, 0, 0);\nbackground-color: rgb(254, 255, 230, 0);')
         self._thumbnail_btn.setLayoutDirection(Qt.LeftToRight)
         self._thumbnail_btn.setText('Snapshot')
-        self._thumbnail_btn.setIcon(qt.resource.icon('thumbnail'))
+        self._thumbnail_btn.setIcon(tpDcc.ResourcesMgr().icon('thumbnail'))
         thumbnail_frame_layout.addWidget(self._thumbnail_btn)
 
         icon_toggle_box_lyt.addWidget(icon_toggle_box_header)
