@@ -205,7 +205,7 @@ class WindowDragger(QFrame, object):
 
         QTimer.singleShot(
             0, lambda: new_tool.window().setGeometry(
-            pos.x() + offset.x(), pos.y() + offset.y(), rect.width(), rect.height()))
+                pos.x() + offset.x(), pos.y() + offset.y(), rect.width(), rect.height()))
         new_tool.framelessChanged.emit(frameless)
         QApplication.processEvents()
 
@@ -222,7 +222,7 @@ class WindowDragger(QFrame, object):
         logo_button.setIconSize(QSize(24, 24))
         logo_button.setFixedSize(QSize(30, 30))
         toggle_frameless = logo_button.addAction(
-            'Toggle Frameless Mode', connect=self._on_toggle_frameless_mode,  checkable=True)
+            'Toggle Frameless Mode', connect=self._on_toggle_frameless_mode, checkable=True)
         toggle_frameless.setChecked(self._window.frameless)
         logo_button.set_menu_align(Qt.AlignLeft)
 
