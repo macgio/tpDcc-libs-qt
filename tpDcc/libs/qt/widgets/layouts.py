@@ -10,24 +10,41 @@ from __future__ import print_function, division, absolute_import
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
+from tpDcc.libs.qt.core import qtutils
+
 
 class FlowLayout(QLayout, object):
     """
     Layout that automatically adjust widgets position depending on the available space
     """
 
-    def __init__(self, expand_last=(False, False), parent=None):
+    def __init__(self, margin=0, spacing_x=2, spacing_y=2, parent=None):
         super(FlowLayout, self).__init__(parent)
 
+        self._spacing_x = 0
+        self._spacing_y = 0
+        self._orientation = Qt.Horizontal
         self._item_list = list()
-        self._expand_h = expand_last[0]
-        self._expand_v = expand_last[1]
-        self._expand_last = expand_last[0] or expand_last[1]
+        self._overflow = None
+        self._size_hint_layout = self.minimumSize()
+
+        self.set_spacing_x(spacing_x)
+        self.set_spacing_y(spacing_y)
 
     def __del__(self):
-        item = self.takeAt(0)
-        while item:
-            item = self.takeAt(0)
+        self.clear()
+
+    @property
+    def spacing_x(self):
+        return self._spacing_x
+
+    @property
+    def spacing_y(self):
+        return self._spacing_y
+
+    @property
+    def items_list(self):
+        return self._item_list
 
     def addItem(self, item):
         """
@@ -71,29 +88,34 @@ class FlowLayout(QLayout, object):
 
     def expandingDirections(self):
         """
+        Sets whether this layout grows only in horizontal or vertical dimension
         Overrides base QLayout expandingDirections function
         :return:Qt.Orientation
         """
 
-        return Qt.Orientations(Qt.Orientation(0))
+        return Qt.Orientations(self.orientation())
 
     def hasHeightForWidth(self):
         """
+        Sets whether layout's preferred height depends on its width or not
         Overrides base QLayout hasHeightForWidth function
         :param width: int
         :return: bool
         """
 
-        return True
+        return self.orientation() == Qt.Horizontal
 
     def heightForWidth(self, width):
         """
+        Returns the preferred heights a layout item with given width
         Overrides base QLayout heightForWidth function
         :param width: int
         :return: int
         """
 
         height = self._generate_layout(QRect(0, 0, width, 0), True)
+        self._size_hint_layout = QSize(width, height)
+
         return height
 
     def setGeometry(self, rect):
@@ -107,20 +129,96 @@ class FlowLayout(QLayout, object):
 
     def sizeHint(self):
         """
+        Returns the preferred size of this layout
         Overrides base QLayout sizeHint function
         :return: QSize
         """
 
-        return self.minimumSize()
+        return self._size_hint_layout
 
     def minimumSize(self):
         """
+        Returns the minimum size for this layout
         Overrides base minimumSize function
         :return: QSize
         """
 
-        size = QSize(2 * self.contentsMargins().top(), 2 * self.contentsMargins().top())
+        size = QSize()
+        for item in self._item_list:
+            size = size.expandedTo(item.minimumSize())
+        size += QSize(2, 2)
+
         return size
+
+    def items(self):
+        """
+        Returns all items in the layout
+        :return: list
+        """
+
+        remove = list()
+        for item in self._item_list:
+            if not qtutils.is_valid_widget(item):
+                remove.append(item)
+
+        [self._item_list.remove(r) for r in remove]
+        return self._item_list
+
+    def set_spacing_x(self, spacing):
+        """
+        Sets the X spacing for each item
+        :param spacing: float
+        """
+
+        self._spacing_x = qtutils.dpi_scale(spacing)
+
+    def set_spacing_y(self, spacing):
+        """
+        Sets the Y spacing for each item
+        :param spacing: float
+        """
+
+        self._spacing_y = qtutils.dpi_scale(spacing)
+
+    def clear(self):
+        """
+        Clears all the widgest in the layout
+        """
+
+        item = self.takeAt(0)
+        while item:
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+            item = self.takeAt(0)
+
+    def orientation(self):
+        """
+        Returns flow layout orientation
+        :return: Qt.Horizontal or Qt.Vertical
+        """
+
+        return self._orientation
+
+    def set_orientation(self, orientation):
+        """
+        Sets how widgets will be laid out (horizontally or vertically)
+        :param orientation: Qt.Horizontal or Qt.Vertical
+        """
+
+        self._orientation = orientation
+
+    def add_spacing(self, spacing):
+        """
+        Adds new spacing into the widget
+        :param spacing: int
+        """
+
+        # TODO: Check if we should use spacer items instead of standard widgets
+
+        space_widget = QWidget()
+        space_widget.setFixedSize(QSize(spacing, spacing))
+        self.addWidget(space_widget)
 
     def insert_widget(self, index, widget):
         """
@@ -129,8 +227,8 @@ class FlowLayout(QLayout, object):
         :param widget: QWidget
         """
 
-        self.addWidget(widget)
-        self._item_list.insert(index, self._item_list.pop(-1))
+        item = QWidgetItem(widget)
+        self._item_list.insert(index, item)
 
     def remove_at(self, index):
         """
@@ -148,6 +246,15 @@ class FlowLayout(QLayout, object):
 
         return True
 
+    def allow_overflow(self, flag):
+        """
+        Sets whether or not alllow layouts to overflow, rather than go onto the next line
+        :param flag: bool
+        :return:
+        """
+
+        self._overflow = flag
+
     def _generate_layout(self, rect, test_only=True):
         """
         Generates layout with proper flow
@@ -159,33 +266,42 @@ class FlowLayout(QLayout, object):
         x = rect.x()
         y = rect.y()
         line_height = 0
+        orientation = self.orientation()
 
         for item in self._item_list:
             widget = item.widget()
-            space_x = self.spacing() + widget.style().layoutSpacing(
-                QSizePolicy.PushButton, QSizePolicy.PushButton, Qt.Horizontal)
-            space_y = self.spacing() + widget.style().layoutSpacing(
-                QSizePolicy.PushButton, QSizePolicy.PushButton, Qt.Vertical) + 1
+            if widget.isHidden():
+                continue
 
-            next_x = x + widget.sizeHint().width() + space_x
-            if next_x - space_x > rect.right() and line_height > 0:
-                x = rect.x()
-                y = y + line_height + space_y
+            space_x = self._spacing_x
+            space_y = self._spacing_y
+
+            if orientation == Qt.Horizontal:
                 next_x = x + item.sizeHint().width() + space_x
-                line_height = 0
-
-            if item == self._item_list[-1] and self._expand_last:
-                width = rect.width() - x - 1 if self._expand_h else item.sizeHint().width()
-                height = rect.height() - y - 1 if self._expand_v else item.sizeHint().height()
-                size = QSize(width, height)
+                if next_x - space_x > rect.right() and line_height > 0:
+                    if not self._overflow:
+                        x = rect.x()
+                        y = y + line_height + (space_y * 2)
+                        next_x = x + item.sizeHint().width() + space_x
+                        line_height = 0
+                if not test_only:
+                    item.setGeometry(QRect(QPoint(x, y), item.sizeHint()))
+                x = next_x
+                line_height = max(line_height, item.sizeHint().height())
             else:
-                size = item.sizeHint()
+                next_y = y + item.sizeHint().height() + space_y
+                if next_y - space_y > rect.bottom() and line_height > 0:
+                    if not self._overflow:
+                        y = rect.y()
+                        x = x + line_height + (space_x * 2)
+                        next_y = y + item.sizeHint().height() + space_y
+                        line_height = 0
+                if not test_only:
+                    item.setGeometry(QRect(QPoint(x, y), item.sizeHint()))
+                x = next_y
+                line_height = max(line_height, item.sizeHint().height())
 
-            if not test_only:
-                item.setGeometry(QRect(QPoint(x, y), size))
-
-            x = next_x
-
-            line_height = max(line_height, item.sizeHint().height())
-
-        return y + line_height - rect.y()
+        if orientation == Qt.Horizontal:
+            return y + line_height - rect.y()
+        else:
+            return x + line_height - rect.x()

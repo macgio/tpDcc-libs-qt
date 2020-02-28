@@ -176,7 +176,7 @@ class SelectFolderButton(QWidget, object):
         main_layout.setSpacing(2)
         self.setLayout(main_layout)
 
-        folder_icon = qt.resource.icon('folder')
+        folder_icon = tp.ResourcesMgr().icon('folder')
         self._folder_btn = buttons.IconButton(
             icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         main_layout.addWidget(self._folder_btn)
@@ -260,7 +260,7 @@ class SelectFolder(QWidget, object):
             self._folder_line.setText(self._directory)
 
         if self._use_icon:
-            folder_icon = qt.resource.icon('folder')
+            folder_icon = tp.ResourcesMgr().icon('folder')
             self._folder_btn = buttons.IconButton(
                 icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         else:
@@ -388,7 +388,7 @@ class SelectFile(QWidget, object):
             self._file_line.setText(self._directory)
 
         if self._use_icon:
-            folder_icon = qt.resource.icon('folder')
+            folder_icon = tp.ResourcesMgr().icon('folder')
             self._file_btn = buttons.IconButton(
                 icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         else:
@@ -469,7 +469,7 @@ class SelectFile(QWidget, object):
             if result:
                 result = result[0]
             if not result or not os.path.isfile(result):
-                tpQtLib.logger.warning('Selected file {} is not a valid file!'.format(result))
+                qt.logger.warning('Selected file {} is not a valid file!'.format(result))
                 return
             else:
                 filename = path.clean_path(result)

@@ -13,7 +13,10 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
+from six import string_types
+
 import tpDcc as tp
+from tpDcc.libs.python import python
 from tpDcc.libs.qt.core import animation, icon, qtutils, menu
 from tpDcc.libs.qt.widgets import tooltips
 
@@ -431,12 +434,12 @@ class ButtonStyles(object):
 class ButtonIcons(QAbstractButton):
 
     highlightOffset = 40
-    icons = None
     iconColors = (128, 128, 128)
     iconScaling = list()
     grayscale = False
     tintComposition = None
 
+    icon = None
     idleIcon = None
     pressedIcon = None
     hoverIcon = None
@@ -450,7 +453,7 @@ class ButtonIcons(QAbstractButton):
             self.setIcon(self.idleIcon)
 
     def setIconSize(self, size):
-        if self.icons is None:
+        if self.idleIcon is None:
             return
 
         super(ButtonIcons, self).setIconSize(qtutils.size_by_dpi(size))
@@ -459,8 +462,8 @@ class ButtonIcons(QAbstractButton):
     def set_highlight(self, highlight):
         self.highlightOffset = highlight
 
-    def set_icons(self, icons, colors=None, size=None, color_offset=None, icon_scaling=None,
-                  tint_composition=QPainter.CompositionMode_Plus, grayscale=False):
+    def set_icon(self, icon, colors=None, size=None, color_offset=None, icon_scaling=None,
+                 tint_composition=QPainter.CompositionMode_Plus, grayscale=False):
 
         if size is not None:
             self.setIconSize(QSize(size, size))
@@ -475,28 +478,31 @@ class ButtonIcons(QAbstractButton):
         self.grayscale = grayscale
         self.tintComposition = tint_composition
 
-        self.icons = icons
+        self.icon = icon
         self.set_icon_color(colors, update=False)
         self.update_icons()
 
     def set_icon_color(self, colors, update=True):
-        self.iconColors = colors
-        if update and self.idleIcon is not None and self.icons is not None:
+        if any(isinstance(el, list) for el in colors):
+            self.iconColors = colors
+        else:
+            self.iconColors = [python.force_list(colors)]
+        if update and self.idleIcon is not None and self.icon is not None:
             self.update_icons()
 
     def update_icons(self):
-        if not self.icons:
+        if not self.icon:
             return
 
         hover_color = (255, 255, 255, self.highlightOffset)
 
         self.idleIcon = icon.colorize_layered_icon(
-            icons=self.icons, size=self.iconSize().width(), icon_scaling=self.iconScaling,
+            icons=self.icon, size=self.iconSize().width(), icon_scaling=self.iconScaling,
             tint_composition=self.tintComposition, colors=self.iconColors, grayscale=self.grayscale
         )
 
         self.hoverIcon = icon.colorize_layered_icon(
-            icons=self.icons, size=self.iconSize().width(), icon_scaling=self.iconScaling,
+            icons=self.icon, size=self.iconSize().width(), icon_scaling=self.iconScaling,
             tint_composition=self.tintComposition, tint_color=hover_color, grayscale=self.grayscale
         )
 
@@ -533,6 +539,14 @@ class BaseMenuButton(QPushButton, ButtonIcons):
             if event.key() == Qt.Key_Control:
                 self._tt_key_pressed = False
 
+        def index(self, name, exclude_search=True):
+            for i, a in enumerate(self.actions()):
+                if a.text() == name:
+                    ret = i
+                    if exclude_search:
+                        ret -= 2
+                    return ret
+
     leftClicked = Signal()
     middleClicked = Signal()
     rightClicked = Signal()
@@ -541,6 +555,16 @@ class BaseMenuButton(QPushButton, ButtonIcons):
     middleDoubleClicked = Signal()
     rightDoubleClicked = Signal()
     cicked = leftClicked
+
+    menuAboutToShow = Signal()
+    middleMenuAboutToShow = Signal()
+    rightMenuAboutToShow = Signal()
+
+    menuChanged = Signal()
+    middleMenuChanged = Signal()
+    rigthMenuChanged = Signal()
+
+    actionTriggered = Signal(object, object)
 
     SINGLE_CLICK = 1
     DOUBLE_CLICK = 2
@@ -610,8 +634,8 @@ class BaseMenuButton(QPushButton, ButtonIcons):
         self._double_click_enabled = enabled
 
     def setWindowTitle(self, window_title, mouse_menu=Qt.LeftButton):
-        menu = self.get_menu(mouse_menu, seaerchable=self.is_searchable(mouse_menu))
-        menu.setWindowTitle(window_title)
+        new_menu = self.menu(mouse_menu, searchable=self.is_searchable(mouse_menu))
+        new_menu.setWindowTitle(window_title)
 
     def setMenu(self, menu, mouse_button=Qt.LeftButton):
         self._click_menu[mouse_button] = menu
@@ -648,6 +672,35 @@ class BaseMenuButton(QPushButton, ButtonIcons):
     def mouseDoubleClickEvent(self, event):
         self._last_click = self.DOUBLE_CLICK
 
+    def menu(self, mouse_menu=Qt.LeftButton, searchable=False, auto_create=True):
+        """
+        Overrides base menu function
+        Get menu depending on the mouse button pressed
+        :param mouse_menu:
+        :param searchable:
+        :param auto_create:
+        :return:
+        """
+
+        if not self._click_menu[mouse_menu] and auto_create:
+            self._click_menu[mouse_menu] = BaseMenuButton.SearchMenu(objectName='searchButton', title='Search Button')
+            self._click_menu[mouse_menu].triggered.connect(lambda action: self.actionTriggered.emit(action, mouse_menu))
+            self._click_menu[mouse_menu].triggered.connect(partial(self._on_menu_changed, mouse_menu))
+            if not searchable:
+                self._click_menu[mouse_menu].set_search_visible(False)
+
+        return self._click_menu[mouse_menu]
+
+    def index(self, name, mouse_menu=Qt.LeftButton):
+        """
+        Returns the index of the menu or action item
+        :param name: str
+        :param mouse_menu:
+        :return: int
+        """
+
+        return self.menu(mouse_menu).index(name)
+
     def mouse_single_click_action(self, button):
         if self._last_click == self.SINGLE_CLICK or self._double_click_enabled is False:
             if button == Qt.LeftButton:
@@ -666,13 +719,30 @@ class BaseMenuButton(QPushButton, ButtonIcons):
             self.rightDoubleClicked.emit()
 
     def set_searchable(self, mouse_menu=Qt.LeftButton, searchable=True):
+        """
+        Sets whether menu with given mouse interaction is searchable or not
+        :param mouse_menu:
+        :param searchable: bool
+        """
+
         self._menu_searchable[mouse_menu] = searchable
+        if self._click_menu[mouse_menu]:
+            self._click_menu[mouse_menu].set_search_visible(searchable)
 
     def is_searchable(self, mouse_menu=Qt.LeftButton):
+        """
+        Returns whether given button menu is searchable or not
+        :param mouse_menu:
+        """
+
         if self._click_menu[mouse_menu] is not None:
             return self._click_menu[mouse_menu].search_visible()
 
         return self._menu_searchable[mouse_menu]
+
+    def set_tear_off_enabled(self, mouse_menu=Qt.LeftButton, tear_off=True):
+        menu = self.menu(mouse_menu, searchable=self.is_searchable(mouse_menu))
+        menu.setTearOffEnabled(tear_off)
 
     def set_menu_align(self, align=Qt.AlignLeft):
         self._menu_align = align
@@ -681,17 +751,27 @@ class BaseMenuButton(QPushButton, ButtonIcons):
         if self._click_menu[mouse_menu] is not None:
             self._click_menu[mouse_menu].clear()
 
-    def get_menu(self, mouse_menu=Qt.LeftButton, searchable=False, auto_create=True):
-        if self._click_menu[mouse_menu] is None and auto_create:
-            self._click_menu[mouse_menu] = BaseMenuButton.SearchMenu(objectName='MenuButton', title='Menu Button')
-            if not searchable:
-                self._click_menu[mouse_menu].set_search_visible(False)
-
-        return self._click_menu[mouse_menu]
-
     def addAction(
-            self, name, mouse_menu=Qt.LeftButton, connect=None, checkable=False, checked=True, action=None, icon=None):
-        new_menu = self.get_menu(mouse_menu, searchable=False)
+            self, name, mouse_menu=Qt.LeftButton, connect=None, checkable=False, checked=True,
+            action=None, action_icon=None, data=None, icon_text=None, icon_color=None, icon_size=16):
+        """
+        Overrides base addAction function
+        Adds a new menu item through an action
+        :param name: str, name of the menu item
+        :param mouse_menu: button that will launch menu (Qt.LeftButton or Qt.MidButton or Qt.RightButton)
+        :param connect: fn, function to launch when the item is pressed
+        :param checkable: bool, Whether or not this menu is checkable
+        :param checked: bool, Whether or not this menu is checked by default
+        :param action:
+        :param action_icon:
+        :param data:
+        :param icon_text:
+        :param icon_color:
+        :param icon_size:
+        :return:
+        """
+
+        new_menu = self.menu(mouse_menu, searchable=False)
         if action is not None:
             new_menu.addAction(action)
             return
@@ -700,10 +780,18 @@ class BaseMenuButton(QPushButton, ButtonIcons):
         new_action.setCheckable(checkable)
         new_action.setChecked(checked)
         new_action.tags = set(self._string_to_tags(name))
+        new_action.setData(data)
         new_menu.addAction(new_action)
 
-        if icon is not None:
-            new_action.setIcon(icon)
+        if action_icon is not None:
+            if isinstance(action_icon, QIcon):
+                new_action.setIcon(action_icon)
+                new_action.setIconText(icon_text or '')
+            elif isinstance(action_icon, string_types):
+                new_action.setIconText(action_icon or icon_text or None)
+                action_icon = tp.ResourcesMgr().icon(action_icon)
+                new_action.setIcon(
+                    icon.colorize_layered_icon(action_icon, colors=[icon_color], size=qtutils.dpi_scale(icon_size)))
 
         if connect is not None:
             if checkable:
@@ -714,17 +802,16 @@ class BaseMenuButton(QPushButton, ButtonIcons):
         return new_action
 
     def add_separator(self, mouse_menu=Qt.LeftButton):
-        menu = self.get_menu(mouse_menu)
-        menu.addSeparator()
+        new_menu = self.menu(mouse_menu)
+        new_menu.addSeparator()
 
-    def _string_to_tags(self, string):
-        res = list()
-        res += string.split(' ')
-        res += [s.lower() for s in string.split(' ')]
-
-        return res
-
-    def _menu_pos(self, widget=None, align=Qt.AlignLeft):
+    def menu_pos(self, widget=None, align=Qt.AlignLeft):
+        """
+        Returns menu position based on the current widget position and size
+        :param widget: QWidget, widget to culculate the width based off
+        :param align:  Qt.Alignleft or Qt.AlignRight, whether to align menu left or right
+        :return:
+        """
 
         pos = 0
 
@@ -737,13 +824,28 @@ class BaseMenuButton(QPushButton, ButtonIcons):
 
         return pos
 
+    def _string_to_tags(self, string):
+        res = list()
+        res += string.split(' ')
+        res += [s.lower() for s in string.split(' ')]
+
+        return res
+
     def _on_context_menu(self, mouse_btn):
         menu = self._click_menu[mouse_btn]
 
         if menu is not None and self._menu_active[mouse_btn]:
-            pos = self._menu_pos(widget=menu, align=self._menu_align)
+            pos = self.menu_pos(widget=menu, align=self._menu_align)
             menu.exec_(pos)
             # add focuss
+
+    def _on_menu_changed(self, mouse_button, object):
+        if mouse_button == Qt.LeftButton:
+            self.menuChanged.emit()
+        elif mouse_button == Qt.MiddleButton:
+            self.middleMenuChanged.emit()
+        elif mouse_button == Qt.RightButton:
+            self.rigthMenuChanged.emit()
 
 
 class IconMenuButton(BaseMenuButton, object):
