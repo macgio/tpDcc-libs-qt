@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>tpDcc.libs.qt.core.dragger module &mdash; tpDcc-libs-python 0.0.l documentation</title>
+  <title>tpDcc.libs.qt.core.dpi module &mdash; tpDcc-libs-python 0.0.l documentation</title>
   
 
   
@@ -35,8 +35,8 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="tpDcc.libs.qt.core.icon module" href="tpDcc.libs.qt.core.icon.html" />
-    <link rel="prev" title="tpDcc.libs.qt.core.dpi module" href="tpDcc.libs.qt.core.dpi.html" /> 
+    <link rel="next" title="tpDcc.libs.qt.core.dragger module" href="tpDcc.libs.qt.core.dragger.html" />
+    <link rel="prev" title="tpDcc.libs.qt.core.dialog module" href="tpDcc.libs.qt.core.dialog.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -152,13 +152,13 @@
         
           <li><a href="tpDcc.libs.qt.core.html">tpDcc.libs.qt.core package</a> &raquo;</li>
         
-      <li>tpDcc.libs.qt.core.dragger module</li>
+      <li>tpDcc.libs.qt.core.dpi module</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/tpDcc.libs.qt.core.dragger.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/tpDcc.libs.qt.core.dpi.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -172,43 +172,47 @@
 
            <div itemprop="articleBody">
             
-  <div class="section" id="module-tpDcc.libs.qt.core.dragger">
-<span id="tpdcc-libs-qt-core-dragger-module"></span><h1>tpDcc.libs.qt.core.dragger module<a class="headerlink" href="#module-tpDcc.libs.qt.core.dragger" title="Permalink to this headline">¶</a></h1>
-<p>Module that contains widgets to to drag PySide windows and dialogs</p>
+  <div class="section" id="module-tpDcc.libs.qt.core.dpi">
+<span id="tpdcc-libs-qt-core-dpi-module"></span><h1>tpDcc.libs.qt.core.dpi module<a class="headerlink" href="#module-tpDcc.libs.qt.core.dpi" title="Permalink to this headline">¶</a></h1>
+<p>Module that contains base class to handle DPI functionality</p>
 <dl class="class">
-<dt id="tpDcc.libs.qt.core.dragger.WindowDragger">
-<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.core.dragger.</code><code class="sig-name descname">WindowDragger</code><span class="sig-paren">(</span><em class="sig-param">window=None</em>, <em class="sig-param">parent=None</em>, <em class="sig-param">show_title=True</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.dragger.WindowDragger" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PySide2.QtWidgets.QFrame</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="attribute">
-<dt id="tpDcc.libs.qt.core.dragger.WindowDragger.DRAGGER_ICON_SIZE">
-<code class="sig-name descname">DRAGGER_ICON_SIZE</code><em class="property"> = 22</em><a class="headerlink" href="#tpDcc.libs.qt.core.dragger.WindowDragger.DRAGGER_ICON_SIZE" title="Permalink to this definition">¶</a></dt>
+<dt id="tpDcc.libs.qt.core.dpi.DPIScaling">
+<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.core.dpi.</code><code class="sig-name descname">DPIScaling</code><a class="headerlink" href="#tpDcc.libs.qt.core.dpi.DPIScaling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Mixin class that can be used in any QWidget to add DPI scaling functionality to it</p>
+<dl class="method">
+<dt id="tpDcc.libs.qt.core.dpi.DPIScaling.setFixedHeight">
+<code class="sig-name descname">setFixedHeight</code><span class="sig-paren">(</span><em class="sig-param">height</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.dpi.DPIScaling.setFixedHeight" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="tpDcc.libs.qt.core.dragger.WindowDragger.set_logo_highlight">
-<code class="sig-name descname">set_logo_highlight</code><span class="sig-paren">(</span><em class="sig-param">highlight_color=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.dragger.WindowDragger.set_logo_highlight" title="Permalink to this definition">¶</a></dt>
+<dt id="tpDcc.libs.qt.core.dpi.DPIScaling.setFixedSize">
+<code class="sig-name descname">setFixedSize</code><span class="sig-paren">(</span><em class="sig-param">size</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.dpi.DPIScaling.setFixedSize" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="tpDcc.libs.qt.core.dragger.WindowDragger.set_title">
-<code class="sig-name descname">set_title</code><span class="sig-paren">(</span><em class="sig-param">title</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.dragger.WindowDragger.set_title" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the title of the window dragger
-:param title: str</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.core.dragger.WindowDragger.setup_signals">
-<code class="sig-name descname">setup_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.dragger.WindowDragger.setup_signals" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="tpDcc.libs.qt.core.dragger.WindowDragger.staticMetaObject">
-<code class="sig-name descname">staticMetaObject</code><em class="property"> = &lt;PySide2.QtCore.QMetaObject object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.core.dragger.WindowDragger.staticMetaObject" title="Permalink to this definition">¶</a></dt>
+<dt id="tpDcc.libs.qt.core.dpi.DPIScaling.setFixedWidth">
+<code class="sig-name descname">setFixedWidth</code><span class="sig-paren">(</span><em class="sig-param">width</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.dpi.DPIScaling.setFixedWidth" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="tpDcc.libs.qt.core.dragger.WindowDragger.ui">
-<code class="sig-name descname">ui</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.dragger.WindowDragger.ui" title="Permalink to this definition">¶</a></dt>
+<dt id="tpDcc.libs.qt.core.dpi.DPIScaling.setMaximumHeight">
+<code class="sig-name descname">setMaximumHeight</code><span class="sig-paren">(</span><em class="sig-param">height</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.dpi.DPIScaling.setMaximumHeight" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.core.dpi.DPIScaling.setMaximumWidth">
+<code class="sig-name descname">setMaximumWidth</code><span class="sig-paren">(</span><em class="sig-param">width</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.dpi.DPIScaling.setMaximumWidth" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.core.dpi.DPIScaling.setMinimumHeight">
+<code class="sig-name descname">setMinimumHeight</code><span class="sig-paren">(</span><em class="sig-param">height</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.dpi.DPIScaling.setMinimumHeight" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.core.dpi.DPIScaling.setMinimumWidth">
+<code class="sig-name descname">setMinimumWidth</code><span class="sig-paren">(</span><em class="sig-param">width</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.dpi.DPIScaling.setMinimumWidth" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -227,10 +231,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="tpDcc.libs.qt.core.icon.html" class="btn btn-neutral float-right" title="tpDcc.libs.qt.core.icon module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="tpDcc.libs.qt.core.dragger.html" class="btn btn-neutral float-right" title="tpDcc.libs.qt.core.dragger module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="tpDcc.libs.qt.core.dpi.html" class="btn btn-neutral float-left" title="tpDcc.libs.qt.core.dpi module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="tpDcc.libs.qt.core.dialog.html" class="btn btn-neutral float-left" title="tpDcc.libs.qt.core.dialog module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

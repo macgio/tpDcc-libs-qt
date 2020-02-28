@@ -13,6 +13,7 @@ Submodules
    tpDcc.libs.qt.core.config
    tpDcc.libs.qt.core.consts
    tpDcc.libs.qt.core.dialog
+   tpDcc.libs.qt.core.dpi
    tpDcc.libs.qt.core.dragger
    tpDcc.libs.qt.core.icon
    tpDcc.libs.qt.core.image
