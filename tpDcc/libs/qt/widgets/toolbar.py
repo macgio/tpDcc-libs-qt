@@ -434,4 +434,3 @@ class FlowToolbarMenu(tpDcc.Dialog, object):
 
     def layout(self):
         return self.main_layout
-

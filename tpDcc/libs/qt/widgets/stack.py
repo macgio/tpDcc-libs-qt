@@ -235,7 +235,6 @@ class StackItem(QFrame, object):
         self.main_layout.addWidget(self._title_frame)
         # self.main_layout.addWidget(self._widget_hider)
 
-
     def setup_signals(self):
         pass
     #     self._title_frame.expand_toggle_button.leftClicked.connect(self._on_toggle_contents)
@@ -490,7 +489,6 @@ class StackTitleFrame(QFrame, dpi.DPIScaling):
         delete_icon = tpDcc.ResourcesMgr().icon('delete')
         shijft_up_icon = tpDcc.ResourcesMgr().icon('collapse')
         shijft_down_icon = tpDcc.ResourcesMgr().icon('expand')
-
 
         self.setContentsMargins(*qtutils.margins_dpi_scale(0, 0, 0, 0))
         self._extras_layout = base.HorizontalLayout(margins=(0, 0, 0, 0), spacing=0)

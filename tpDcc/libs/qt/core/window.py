@@ -339,7 +339,8 @@ class MainWindow(QMainWindow, object):
         # self._base_window.setWindowFlags(Qt.Widget)
         self._base_window.setAttribute(Qt.WA_TranslucentBackground)
         if qtutils.is_pyside2():
-            self._base_window.setWindowFlags(self.windowFlags() | Qt.Widget | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+            self._base_window.setWindowFlags(
+                self.windowFlags() | Qt.Widget | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
         else:
             self._base_window.setWindowFlags(Qt.Widget | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
         self._base_window.setDockOptions(
@@ -743,8 +744,8 @@ class MainWindow(QMainWindow, object):
 
         return {
             "theme": {
-            "accentColor": "rgb(80, 80, 80, 255)",
-            "backgroundColor": "rgb(45, 45, 45, 255)",
+                "accentColor": "rgb(80, 80, 80, 255)",
+                "backgroundColor": "rgb(45, 45, 45, 255)",
             }
         }
 
@@ -1424,7 +1425,7 @@ class DockWindow(QMainWindow, object):
 
     _last_instance = None
 
-    def __init__(self, name='BaseWindow', title='DockWindow',  use_scrollbar=False, parent=None):
+    def __init__(self, name='BaseWindow', title='DockWindow', use_scrollbar=False, parent=None):
         self.main_layout = self.get_main_layout()
         self.__class__._last_instance = self
         super(DockWindow, self).__init__(parent)

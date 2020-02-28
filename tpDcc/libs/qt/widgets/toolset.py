@@ -9,9 +9,7 @@ from __future__ import print_function, division, absolute_import
 
 from Qt.QtCore import *
 from Qt.QtWidgets import *
-from Qt.QtGui import *
 
-import tpDcc
 from tpDcc.libs.qt.widgets import stack, buttons
 
 
@@ -176,7 +174,8 @@ class ToolsetWidget(stack.StackItem, object):
 
         if not widget:
             raise ValueError(
-                'Toolset "{}" contents() must return a list of widgets! None found.'.format(str(self.__class__.__name__)))
+                'Toolset "{}" contents() must return a list of widgets! None found.'.format(
+                    str(self.__class__.__name__)))
 
         self._widgets.append(widget)
         # widget.setParent(self._widget_hider)

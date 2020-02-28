@@ -120,8 +120,6 @@ class ClickLineEdit(QLineEdit, object):
         self.deselect()
 
 
-
-
 class BaseAttrLineEdit(QLineEdit, object):
     attr_type = None
     valueChanged = Signal()
