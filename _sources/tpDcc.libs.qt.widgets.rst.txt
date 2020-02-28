@@ -29,7 +29,6 @@ Submodules
    tpDcc.libs.qt.widgets.drop
    tpDcc.libs.qt.widgets.expandables
    tpDcc.libs.qt.widgets.formwidget
-   tpDcc.libs.qt.widgets.framelesswindow
    tpDcc.libs.qt.widgets.gif
    tpDcc.libs.qt.widgets.graphicseffects
    tpDcc.libs.qt.widgets.graphicsitem

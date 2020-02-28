@@ -1,7 +1,0 @@
-tpDcc.libs.qt.widgets.framelesswindow module
-============================================
-
-.. automodule:: tpDcc.libs.qt.widgets.framelesswindow
-   :members:
-   :undoc-members:
-   :show-inheritance:

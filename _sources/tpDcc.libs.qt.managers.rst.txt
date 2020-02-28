@@ -7,7 +7,6 @@ Submodules
 .. toctree::
 
    tpDcc.libs.qt.managers.inputs
-   tpDcc.libs.qt.managers.preferences
 
 Module contents
 ---------------

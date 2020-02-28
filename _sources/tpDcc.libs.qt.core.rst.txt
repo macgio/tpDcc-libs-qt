@@ -29,6 +29,7 @@ Submodules
    tpDcc.libs.qt.core.svg
    tpDcc.libs.qt.core.theme
    tpDcc.libs.qt.core.timers
+   tpDcc.libs.qt.core.tool
    tpDcc.libs.qt.core.traymessage
    tpDcc.libs.qt.core.window
    tpDcc.libs.qt.core.worker
