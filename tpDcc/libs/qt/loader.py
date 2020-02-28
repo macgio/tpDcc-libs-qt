@@ -24,12 +24,8 @@ def init(do_reload=False, dev=False):
 
     from tpDcc.libs.qt import register
     from tpDcc.libs.python import importer
-    from tpDcc.libs.qt.core import resource as resource_utils
 
     logger = create_logger()
-
-    class tpQtLibResource(resource_utils.Resource, object):
-        RESOURCES_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources')
 
     class tpQtLib(importer.Importer, object):
         def __init__(self, *args, **kwargs):
@@ -96,13 +92,12 @@ def init(do_reload=False, dev=False):
             Dcc = dcc.UnknownDCC
             logger.warning('No DCC found, using abstract one!')
 
-        from tpDcc.managers import callbackmanager
-        callbackmanager.CallbacksManager.initialize()
+        from tpDcc.managers import callbacks
+        callbacks.CallbacksManager.initialize()
 
     qt_importer = importer.init_importer(importer_class=tpQtLib, do_reload=False)
     qt_importer.update_paths()
 
-    register.register_class('resource', tpQtLibResource)
     register.register_class('logger', logger)
 
     qt_importer.import_modules(skip_modules=['tpDcc.libs.qt.externals'])
@@ -112,6 +107,8 @@ def init(do_reload=False, dev=False):
         qt_importer.reload_all()
 
     init_dcc(do_reload=do_reload)
+
+    register_resources()
 
 
 def create_logger():
@@ -144,3 +141,17 @@ def get_logging_config():
     create_logger_directory()
 
     return os.path.normpath(os.path.join(os.path.dirname(__file__), '__logging__.ini'))
+
+
+def register_resources():
+    """
+    Registers tpDcc.libs.qt resources path
+    """
+
+    import tpDcc
+
+    resources_manager = tpDcc.ResourcesMgr()
+    resources_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources')
+    resources_manager.register_resource(resources_path, key='tpDcc-libs-qt')
+
+
