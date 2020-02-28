@@ -7,92 +7,91 @@ Module that contains theme implementation
 
 from __future__ import print_function, division, absolute_import
 
+import os
+
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
+from six import string_types
+
+import tpDcc
 from tpDcc.libs import qt
-from tpDcc.libs.qt.core import color, style
-
-
-THEME_PRESETS = [
-    {
-        "name": "Blue",
-        "accentColor": "rgb(50, 180, 240, 255)",
-        "backgroundColor": None,
-    },
-    {
-        "name": "Green",
-        "accentColor": "rgb(80, 200, 140, 255)",
-        "backgroundColor": None,
-    },
-    {
-        "name": "Yellow",
-        "accentColor": "rgb(250, 200, 0)",
-        "backgroundColor": None,
-    },
-    {
-        "name": "Orange",
-        "accentColor": "rgb(255, 170, 0)",
-        "backgroundColor": None,
-    },
-    {
-        "name": "Peach",
-        "accentColor": "rgb(255, 125, 100)",
-        "backgroundColor": None,
-    },
-    {
-        "name": "Red",
-        "accentColor": "rgb(230, 60, 60)",
-        "backgroundColor": None,
-    },
-    {
-        "name": "Pink",
-        "accentColor": "rgb(255, 87, 123)",
-        "backgroundColor": None,
-    },
-    {
-        "name": "Purple",
-        "accentColor": "rgb(110, 110, 240)",
-        "backgroundColor": None,
-    },
-    {
-        "name": "Dark",
-        "accentColor": None,
-        "backgroundColor": "rgb(60, 64, 79)",
-    },
-    {
-        "name": "Grey",
-        "accentColor": None,
-        "backgroundColor": "rgb(60, 60, 60)",
-    },
-    {
-        "name": "Light",
-        "accentColor": None,
-        "backgroundColor": "rgb(245, 245, 255)",
-    },
-]
+from tpDcc.libs.python import yamlio, color
+from tpDcc.libs.qt.core import style, qtutils, color as qt_color
 
 
 class Theme(QObject, object):
 
     updated = Signal()
 
+    EXTENSION = 'yml'
     DEFAULT_DARK_COLOR = QColor(60, 60, 60)
     DEFAULT_LIGHT_COLOR = QColor(220, 220, 220)
     DEFAULT_ACCENT_COLOR = QColor(0, 175, 255)
     DEFAULT_BACKGROUND_COLOR = QColor(60, 60, 80)
 
-    def __init__(self):
+    def __init__(self, theme_file=None):
         super(Theme, self).__init__()
 
         self._name = 'Default'
+        self._file = theme_file
         self._dpi = 1
         self._accent_color = None
         self._background_color = None
+        self._style = 'default'
+        self._overrides = list()
 
         self.set_accent_color(self.DEFAULT_ACCENT_COLOR)
         self.set_background_color(self.DEFAULT_BACKGROUND_COLOR)
+
+        self._load_theme_data_from_file(theme_file)
+
+    def __getattr__(self, item):
+        options = self.options()
+        if not options or item not in options:
+            return super(Theme, self).__getattribute__(item)
+
+        option_value = options[item]
+        if isinstance(option_value, string_types):
+            if option_value.startswith('^'):
+                return qtutils.dpi_scale(int(option_value[1:]))
+            if color.string_is_hex(option_value):
+                return color.hex_to_rgb(option_value)
+        else:
+            return option_value
+
+    def _load_theme_data_from_file(self, theme_file):
+        """
+        Internal function that laods file data from given file
+        :param theme_file: str
+        :return: dict
+        """
+
+        if not theme_file or not os.path.isfile(theme_file):
+            return
+
+        try:
+            theme_data = yamlio.read_file(theme_file)
+        except Exception:
+            qt.logger.warning('Impossible to load theme data from file: "{}"!'.format(theme_file))
+            return None
+
+        theme_name = theme_data.get('name', None)
+        if not theme_name:
+            qt.logger.warning('Impossible to retrieve them name from theme file: "{}"!'.format(theme_file))
+            return None
+        accent_color = theme_data.get('accentColor', None)
+        background_color = theme_data.get('backgroundColor', None)
+        if not accent_color and not background_color:
+            qt.logger.warning('No theme color definitions found in theme file: "{}"'.format(theme_file))
+            return None
+        self._style = theme_data.get('style', 'default.css')
+        self._overrides = theme_data.get('overrides', list())
+
+        self.set_name(theme_name)
+        self.set_accent_color(accent_color)
+        self.set_background_color(background_color)
 
     def name(self):
         """
@@ -171,9 +170,11 @@ class Theme(QObject, object):
         """
 
         if isinstance(background_color, (str, unicode)):
-            background_color = color.Color.from_string(background_color)
+            background_color = qt_color.Color.from_string(background_color)
         elif isinstance(background_color, QColor):
-            background_color = color.Color.from_color(background_color)
+            background_color = qt_color.Color.from_color(background_color)
+        elif isinstance(background_color, (list, tuple)):
+            background_color = qt_color.Color(*background_color)
         self._background_color = background_color
         self.updated.emit()
 
@@ -184,9 +185,9 @@ class Theme(QObject, object):
         """
 
         if self.is_dark():
-            return color.Color(250, 250, 250, 255)
+            return qt_color.Color(250, 250, 250, 255)
         else:
-            return color.Color(0, 40, 80, 180)
+            return qt_color.Color(0, 40, 80, 180)
 
     def accent_color(self):
         """
@@ -194,7 +195,7 @@ class Theme(QObject, object):
         :return: color.Color
         """
 
-        return self._accent_color
+        return self._accent_color or qt_color.Color()
 
     def set_accent_color(self, accent_color):
         """
@@ -203,9 +204,11 @@ class Theme(QObject, object):
         """
 
         if isinstance(accent_color, (str, unicode)):
-            accent_color = color.Color.from_string(accent_color)
+            accent_color = qt_color.Color.from_string(accent_color)
         elif isinstance(accent_color, QColor):
-            accent_color = color.Color.from_color(accent_color)
+            accent_color = qt_color.Color.from_color(accent_color)
+        elif isinstance(accent_color, (list, tuple)):
+            accent_color = qt_color.Color(*accent_color)
         self._accent_color = accent_color
         self.updated.emit()
 
@@ -222,7 +225,7 @@ class Theme(QObject, object):
         Returns the foregound color for the accent color
         """
 
-        return color.Color(255, 255, 255, 255)
+        return qt_color.Color(255, 255, 255, 255)
 
     def item_background_color(self):
         """
@@ -231,9 +234,9 @@ class Theme(QObject, object):
         """
 
         if self.is_dark():
-            return color.Color(255, 255, 255, 20)
+            return qt_color.Color(255, 255, 255, 20)
         else:
-            return color.Color(255, 255, 255, 120)
+            return qt_color.Color(255, 255, 255, 120)
 
     def item_background_hover_color(self):
         """
@@ -241,7 +244,7 @@ class Theme(QObject, object):
         :return: color.Color
         """
 
-        return color.Color(255, 255, 255, 60)
+        return qt_color.Color(255, 255, 255, 60)
 
     def settings(self):
         """
@@ -266,13 +269,25 @@ class Theme(QObject, object):
 
         accent_color = settings.get('accentColor')
         if accent_color:
-            accent_color = color.Color.from_string(accent_color)
+            accent_color = qt_color.Color.from_string(accent_color)
             self.set_accent_color(accent_color)
 
         background_color = settings.get('backgroundColor')
         if background_color:
-            background_color = color.Color.from_string(background_color)
+            background_color = qt_color.Color.from_string(background_color)
             self.set_background_color(background_color)
+
+    def get_theme_option(self, option_name, default_value=None):
+        """
+        Returns option of the style
+        :return: object
+        """
+
+        theme_options = self.options()
+        if not theme_options:
+            return default_value
+
+        return theme_options[option_name] if option_name in theme_options else default_value
 
     def options(self):
         """
@@ -292,21 +307,34 @@ class Theme(QObject, object):
         else:
             darkness = 'black'
 
-        resource_dirname = qt.resource().dirname.replace('\\', '/')
+        theme_resources_dir = ''
+        if self._file and os.path.isfile(self._file):
+            theme_dir = os.path.dirname(self._file)
+            theme_name = os.path.splitext(os.path.basename(self._file))[0]
+            theme_resources_dir = os.path.join(theme_dir, 'resources', theme_name)
+
+        style_resources_dir = ''
+        style_path = self.stylesheet_file()
+        if style_path and os.path.isfile(style_path):
+            style_dir = os.path.dirname(style_path)
+            style_name = os.path.splitext(os.path.basename(style_path))[0]
+            style_resources_dir = os.path.join(style_dir, 'resources', style_name)
 
         options = {
             "DARKNESS": darkness,
-            "RESOURCE_DIRNAME": resource_dirname,
+
+            "THEME_RESOURCES": theme_resources_dir,
+            "STYLE_RESOURCES": style_resources_dir,
 
             "ACCENT_COLOR": accent_color.to_string(),
-            "ACCENT_COLOR_DARKER": color.Color(accent_color.darker(150)).to_string(),
-            "ACCENT_COLOR_LIGHTER": color.Color(accent_color.lighter(150)).to_string(),
+            "ACCENT_COLOR_DARKER": qt_color.Color(accent_color.darker(150)).to_string(),
+            "ACCENT_COLOR_LIGHTER": qt_color.Color(accent_color.lighter(150)).to_string(),
             "ACCENT_COLOR_R": str(accent_color.red()),
             "ACCENT_COLOR_G": str(accent_color.green()),
             "ACCENT_COLOR_B": str(accent_color.blue()),
 
             "ACCENT_FOREGROUND_COLOR": accent_foreground_color.to_string(),
-            "ACCENT_FOREGROUND_COLOR_DARKER": color.Color(accent_foreground_color.darker(150)).to_string(),
+            "ACCENT_FOREGROUND_COLOR_DARKER": qt_color.Color(accent_foreground_color.darker(150)).to_string(),
 
             "FOREGROUND_COLOR": foreground_color.to_string(),
             "FOREGROUND_COLOR_R": str(foreground_color.red()),
@@ -314,8 +342,8 @@ class Theme(QObject, object):
             "FOREGROUND_COLOR_B": str(foreground_color.blue()),
 
             "BACKGROUND_COLOR": background_color.to_string(),
-            "BACKGROUND_COLOR_LIGHTER": color.Color(background_color.lighter(150)).to_string(),
-            "BACKGROUND_COLOR_DARKER": color.Color(background_color.darker(150)).to_string(),
+            "BACKGROUND_COLOR_LIGHTER": qt_color.Color(background_color.lighter(150)).to_string(),
+            "BACKGROUND_COLOR_DARKER": qt_color.Color(background_color.darker(150)).to_string(),
             "BACKGROUND_COLOR_R": str(background_color.red()),
             "BACKGROUND_COLOR_G": str(background_color.green()),
             "BACKGROUND_COLOR_B": str(background_color.blue()),
@@ -328,7 +356,25 @@ class Theme(QObject, object):
             "ITEM_BACKGROUND_SELECTED_COLOR": accent_color.to_string(),
         }
 
+        overrides = self._overrides or dict()
+        options.update(overrides)
+
         return options
+
+    def stylesheet_file(self):
+        """
+        Returns path where theme stylesheet is located
+        :return: str
+        """
+
+        style_name = self._style or 'default'
+        style_extension = style.StyleSheet.EXTENSION
+        if not style_extension.startswith('.'):
+            style_extension = '.{}'.format(style_extension)
+        style_file_name = '{}{}'.format(style_name, style_extension)
+        style_path = tpDcc.ResourcesMgr().get('styles', style_file_name)
+
+        return style_path
 
     def stylesheet(self):
         """
@@ -337,8 +383,8 @@ class Theme(QObject, object):
         """
 
         options = self.options()
-        path = qt.resource.get('styles', 'default.css')
-        stylesheet = style.StyleSheet.from_path(path, options=options, dpi=self.dpi())
+        style_path = self.stylesheet_file()
+        stylesheet = style.StyleSheet.from_path(style_path, options=options, theme_name=self._name, dpi=self.dpi())
 
         return stylesheet.data()
 
@@ -433,22 +479,3 @@ class Theme(QObject, object):
             self.set_background_color(dialog.selectedColor())
         else:
             self.set_background_color(current_color)
-
-
-def theme_presets():
-    """
-    Returns the default theme presets.
-    :return: list(str)
-    """
-
-    themes = list()
-
-    for data in THEME_PRESETS:
-        theme = Theme()
-        theme.set_name(data.get("name"))
-        theme.set_accent_color(data.get("accentColor"))
-        theme.set_background_color(data.get("backgroundColor"))
-
-        themes.append(theme)
-
-    return themes

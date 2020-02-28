@@ -10,8 +10,14 @@ from __future__ import print_function, division, absolute_import
 import os
 import re
 
+import tpDcc
+from tpDcc.libs.python import color
+from tpDcc.libs.qt.core import qtutils
+
 
 class StyleSheet(object):
+
+    EXTENSION = 'css'
 
     @classmethod
     def from_path(cls, path, **kwargs):
@@ -60,7 +66,7 @@ class StyleSheet(object):
         return data
 
     @staticmethod
-    def format(data=None, options=None, dpi=1):
+    def format(data=None, options=None, dpi=1, **kwargs):
         """
         Returns style with proper format
         :param data: str
@@ -73,7 +79,20 @@ class StyleSheet(object):
             keys = options.keys()
             keys.sort(key=len, reverse=True)
             for key in keys:
-                data = data.replace(key, options[key])
+                key_value = options[key]
+                option_value = str(key_value)
+                if key_value.startswith('^'):
+                    option_value = str(qtutils.dpi_scale(int(key_value[1:])))
+                elif color.string_is_hex(key_value):
+                    color_list = color.hex_to_rgb(key_value)
+                    option_value = 'rgb({}, {}, {})'.format(color_list[0], color_list[1], color_list[2])
+                elif key.startswith('RESOURCE_') or key.startswith('RES_'):
+                    theme_name = kwargs.get('theme_name', 'default') or 'default'
+                    resource_path = tpDcc.ResourcesMgr().get('icons', theme_name, str(key_value))
+                    if resource_path and os.path.isfile(resource_path):
+                        option_value = resource_path
+
+                data = data.replace(key, option_value)
 
         re_dpi = re.compile('[0-9]+[*]DPI')
         new_data = list()
