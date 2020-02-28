@@ -389,3 +389,47 @@ class IconLabel(QLabel, object):
 
     def set_icon(self, icon):
         self._icon = icon
+
+
+class ClippedLabel(QLabel, object):
+    def __init__(self, text='', width=0, ellipsis=True, always_show_all=False, parent=None):
+        super(ClippedLabel, self).__init__(text, parent)
+
+        self._always_show_all = always_show_all
+        self._ellipsis = ellipsis
+
+        self._width = None
+        self._text = None
+        self._elided = None
+
+        self.setMinimumWidth(width if width else 0)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        self.drawFrame(painter)
+        margin = self.margin()
+        rect = self.contentsRect()
+        rect.adjust(margin, margin, -margin, -margin)
+        text = self.text()
+        width = rect.width()
+        if text != self._text or width != self._width:
+            self._text = text
+            self._width = width
+            self._elided = self.fontMetrics().elidedText(text, Qt.ElideRight, width)
+        option = QStyleOption()
+        option.initFrom(self)
+
+        if self._always_show_all:
+            if self._width >= self.sizeHint().width():
+                self.style().drawItemText(
+                    painter, rect, self.alignment(), option.palette, self.isEnabled(),
+                    self.text(), self.foregroundRole())
+        else:
+            if self._ellipsis:
+                self.style().drawItemText(
+                    painter, rect, self.alignment(), option.palette, self.isEnabled(),
+                    self._elided, self.foregroundRole())
+            else:
+                self.style().drawItemText(
+                    painter, rect, self.alignment(), option.palette, self.isEnabled(),
+                    self.text(), self.foregroundRole())
