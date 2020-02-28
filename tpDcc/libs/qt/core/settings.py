@@ -26,17 +26,21 @@ class QtSettings(QSettings, object):
             self._groups = [window.objectName(), 'RecentFiles']
         self._initialize()
 
-    # region Properties
     def has_setting(self, setting_name):
         return self.get(setting_name)
 
-    def get(self, setting_name, default_value=None):
+    def get(self, setting_name, default_value=None, setting_group=None):
         """
         Returns the setting stored with the given name
         :param setting_name: str
         :param default_value: variant
+        :param default_value: variant
+        :param setting_group: str
         :return:
         """
+
+        if setting_group:
+            setting_name = '{}/{}'.format(setting_group, setting_name)
 
         val = self.value(setting_name)
         if not val:
@@ -46,7 +50,7 @@ class QtSettings(QSettings, object):
 
     def getw(self, setting_name, default_value=None):
         """
-        Returns the setting stored with the given name
+        Returns the window setting stored with the given name
         :param setting_name: str
         :param default_value: variant
         :return:
@@ -94,9 +98,7 @@ class QtSettings(QSettings, object):
         return self._groups
 
     groups = property(get_groups)
-    # endregion
 
-    # region Public Functions
     def add_group(self, group):
         """
         Add a group to the current preferences groups
@@ -299,9 +301,7 @@ class QtSettings(QSettings, object):
 
     def clear_recent_files(self):
         self.remove('RecentFiles')
-    # endregion
 
-    # region Private Functions
     def _initialize(self):
         if self._window:
             window_name = self._window.objectName().upper()
@@ -391,31 +391,3 @@ class QtIniSettings(settings.INISettings, object):
             widget.setY(v[1])
         else:
             assert False, "Unknown control type"
-
-
-# class SettingsManager(object):
-#
-#     CONFIGS = dict()
-#     CONFIGS_DIR = None
-#
-#     def get_settings(self, alias):
-#
-#         settings = None
-#         if alias in self.CONFIGS:
-#             settings = QtSettings(self.CONFIGS[alias])
-#
-#         return settings
-#
-#     def get_config_value(self, config_alias, value_key):
-#         settings = self.get_settings(config_alias)
-#         if not settings or not settings.contains(value_key):
-#             return
-#
-#         return settings.value(value_key)
-#
-#     def register_config_file(self, alias, config_path):
-#         if alias not in self.CONFIGS:
-#             self.CONFIGS[alias] = config_path
-#             return True
-#
-#         return False
