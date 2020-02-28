@@ -159,7 +159,8 @@ class Dialog(QDialog, object):
         return main_layout
 
     def ui(self):
-        pass
+        self.main_layout = self.get_main_layout()
+        self.setLayout(self.main_layout)
 
     #     dlg_layout = QVBoxLayout()
     #     dlg_layout.setContentsMargins(0, 0, 0, 0)
@@ -375,14 +376,11 @@ class ColorDialog(Dialog, object):
 
         self._color = None
 
-    # region Properties
     def get_color(self):
         return self._color
 
     color = property(get_color)
-    # endregion
 
-    # region Override Functions
     def ui(self):
 
         self.color_buttons = list()
@@ -460,9 +458,7 @@ class ColorDialog(Dialog, object):
 
         self.ok_btn.clicked.connect(self._on_ok_btn)
         self.cancel_btn.clicked.connect(self._on_cancel_btn)
-    # endregion
 
-    # region Private Functions
     def _on_set_color(self, color_index):
 
         if tp.Dcc.get_name() == tp.Dccs.Maya and tp.Dcc.get_version() <= 2016:
@@ -519,12 +515,9 @@ class BaseFileFolderDialog(Dialog, object):
         self.set_directory(os.path.expanduser('~'))
         self.center()
 
-    # region To Override Functions
     def open_app_browser(self):
         return
-    # endregion
 
-    # region Override Functions
     def ui(self):
         super(BaseFileFolderDialog, self).ui()
 
