@@ -50,7 +50,7 @@ class LibraryItem(QTreeWidgetItem, object):
     DataRole = consts.ITEM_DEFAULT_DATA_ROLE
 
     ThreadPool = QThreadPool()
-    DefaultThumbnailPath = qt.resource.get('icons', 'thumbnail.png')
+    DefaultThumbnailPath = tp.ResourcesMgr().get('icons', 'thumbnail.png')
 
     MAX_ICON_SIZE = consts.ITEM_DEFAULT_MAX_ICON_SIZE
     DEFAULT_FONT_SIZE = consts.ITEM_DEFAULT_FONT_SIZE
@@ -303,7 +303,7 @@ class LibraryItem(QTreeWidgetItem, object):
         if isinstance(icon, (str, unicode)):
             if not os.path.exists(icon):
                 color = color or QColor(255, 255, 255, 20)
-                icon = qt.resource.icon('image', color=color)
+                icon = tp.ResourcesMgr().icon('image', color=color)
             else:
                 icon = QIcon(icon)
         if isinstance(column, (str, unicode)):
@@ -1779,7 +1779,7 @@ class LibraryItem(QTreeWidgetItem, object):
         align_h_center_a = Qt.AlignHCenter or align == Qt.AlignCenter
         align_h_center_b = align == Qt.AlignHCenter | Qt.AlignBottom or align == Qt.AlignHCenter | Qt.AlignTop
         align_v_center_a = align == Qt.AlignVCenter | Qt.AlignLeft or align == Qt.AlignVCenter | Qt.AlignRight
-        align_v_center_a = Qt.AlignVCenter or align == Qt.AlignCenter
+        align_v_center_b = Qt.AlignVCenter or align == Qt.AlignCenter
 
         is_align_bottom = align == align_bottom_a or align_bottom_b
         is_align_h_center = align == align_h_center_a or align_h_center_b
@@ -2259,9 +2259,9 @@ class LibraryFolderItem(LibraryItem, object):
 
     MenuName = 'Folder'
     MenuOrder = 1
-    MenuIconPath = qt.resource.get('icons', 'color', 'folder.png')
-    DefaultThumbnailPath = qt.resource.get('icons', 'folder.png')
-    TrashIconPath = qt.resource.get('icons', 'trash.png')
+    MenuIconPath = tp.ResourcesMgr().get('icons', 'color', 'folder.png')
+    DefaultThumbnailPath = tp.ResourcesMgr().get('icons', 'folder.png')
+    TrashIconPath = tp.ResourcesMgr().get('icons', 'trash.png')
 
     @classmethod
     def match(cls, path):
