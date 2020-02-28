@@ -40,7 +40,8 @@ class DockTool(QDockWidget, tool.DccTool):
 
         self.setToolTip(self.TOOLTIP)
         self.setFeatures(QDockWidget.AllDockWidgetFeatures)
-        self.setAllowedAreas(Qt.BottomDockWidgetArea | Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea | Qt.TopDockWidgetArea)
+        self.setAllowedAreas(
+            Qt.BottomDockWidgetArea | Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea | Qt.TopDockWidgetArea)
         self.setObjectName(self.unique_name())
         self.setTitleBarWidget(DockTitleBar(self))
         self.setFloating(False)
