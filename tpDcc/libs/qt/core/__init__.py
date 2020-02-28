@@ -6,12 +6,12 @@ order = [
     'tpQtLib.core.animation',
     'tpQtLib.core.settings',
     'tpQtLib.core.style',
+    'tpQtLib.core.theme',
     'tpQtLib.core.statusbar',
     'tpQtLib.core.tooltips',
     'tpQtLib.core.buttons',
     'tpQtLib.core.dragger',
     'tpQtLib.core.theme',
     'tpQtLib.core.dialog',
-    'tpQtLib.core.window',
-    'tpQtLib.core.framelesswindow'
+    'tpQtLib.core.window'
 ]

@@ -19,10 +19,11 @@ class HorizontalLayout(QHBoxLayout, object):
     """
 
     def __init__(self, *args, **kwargs):
-        super(HorizontalLayout, self).__init__(*args, **kwargs)
 
         margins = kwargs.pop('margins', (0, 0, 0, 0))
         spacing = kwargs.pop('spacing', consts.DEFAULT_SUB_WIDGET_SPACING)
+
+        super(HorizontalLayout, self).__init__(*args, **kwargs)
 
         self.setContentsMargins(*qtutils.margins_dpi_scale(*margins))
         self.setSpacing(qtutils.dpi_scale(spacing))
@@ -142,6 +143,17 @@ class BaseWidget(QWidget, object):
         """
 
         pass
+
+
+class BaseFrame(QFrame, object):
+    mouseReleased = Signal(object)
+
+    def __init__(self, *args, **kwargs):
+        super(BaseFrame, self).__init__(*args, **kwargs)
+
+    def mouseReleaseEvent(self, event):
+        self.mouseReleased.emit(event)
+        return super(BaseFrame, self).mouseReleaseEvent(event)
 
 
 class ContainerWidget(QWidget, object):
