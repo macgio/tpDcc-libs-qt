@@ -1,0 +1,7 @@
+# Purple theme
+
+name: Purple
+accentColor: [110, 110, 240, 255]
+backgroundColor: null
+style: default
+overrides: []

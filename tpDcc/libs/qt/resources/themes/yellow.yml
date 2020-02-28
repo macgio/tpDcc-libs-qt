@@ -1,0 +1,7 @@
+# Yellow theme
+
+name: Blue
+accentColor: [250, 200, 0, 255]
+backgroundColor: null
+style: default.css
+overrides: []

@@ -1,0 +1,7 @@
+# Pink theme
+
+name: Pink
+accentColor: [255, 87, 123, 255]
+backgroundColor: null
+style: default
+overrides: []

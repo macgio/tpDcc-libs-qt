@@ -1,0 +1,7 @@
+# Dark theme
+
+name: Dark
+accentColor: null
+backgroundColor: [60, 64, 79, 255]
+style: default
+overrides: []

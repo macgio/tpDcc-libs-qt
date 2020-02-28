@@ -1,0 +1,7 @@
+# Light theme
+
+name: Light
+accentColor: null
+backgroundColor: [245, 245, 255, 255]
+style: default
+overrides: []

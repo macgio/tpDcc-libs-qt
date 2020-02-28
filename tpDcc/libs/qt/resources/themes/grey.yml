@@ -1,0 +1,7 @@
+# Grey theme
+
+name: Grey
+accentColor: null
+backgroundColor: [60, 60, 60, 255]
+style: default
+overrides: []

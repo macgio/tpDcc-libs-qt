@@ -1,0 +1,7 @@
+# Blue theme
+
+name: Blue
+accentColor: [50, 180, 240, 255]
+backgroundColor: null
+style: default
+overrides: []

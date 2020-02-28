@@ -1,0 +1,7 @@
+# Green theme
+
+name: Green
+accentColor: [80, 200, 140, 255]
+backgroundColor: null
+style: default
+overrides: []

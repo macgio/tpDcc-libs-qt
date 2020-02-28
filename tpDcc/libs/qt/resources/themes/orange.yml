@@ -1,0 +1,7 @@
+# Orange theme
+
+name: Orange
+accentColor: [255, 170, 0, 255]
+backgroundColor: null
+style: default
+overrides: []
