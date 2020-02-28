@@ -177,7 +177,7 @@
 <p>Module that contains custom extra layout implementations</p>
 <dl class="class">
 <dt id="tpDcc.libs.qt.widgets.layouts.FlowLayout">
-<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.layouts.</code><code class="sig-name descname">FlowLayout</code><span class="sig-paren">(</span><em class="sig-param">expand_last=(False</em>, <em class="sig-param">False)</em>, <em class="sig-param">parent=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.layouts.FlowLayout" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.layouts.</code><code class="sig-name descname">FlowLayout</code><span class="sig-paren">(</span><em class="sig-param">margin=0</em>, <em class="sig-param">spacing_x=2</em>, <em class="sig-param">spacing_y=2</em>, <em class="sig-param">parent=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.layouts.FlowLayout" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PySide2.QtWidgets.QLayout</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Layout that automatically adjust widgets position depending on the available space</p>
 <dl class="method">
@@ -185,6 +185,27 @@
 <code class="sig-name descname">addItem</code><span class="sig-paren">(</span><em class="sig-param">item</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.layouts.FlowLayout.addItem" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overrides base QLayout addItem function
 :param item: QObject</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.layouts.FlowLayout.add_spacing">
+<code class="sig-name descname">add_spacing</code><span class="sig-paren">(</span><em class="sig-param">spacing</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.layouts.FlowLayout.add_spacing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds new spacing into the widget
+:param spacing: int</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.layouts.FlowLayout.allow_overflow">
+<code class="sig-name descname">allow_overflow</code><span class="sig-paren">(</span><em class="sig-param">flag</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.layouts.FlowLayout.allow_overflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets whether or not alllow layouts to overflow, rather than go onto the next line
+:param flag: bool
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.layouts.FlowLayout.clear">
+<code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.layouts.FlowLayout.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears all the widgest in the layout</p>
 </dd></dl>
 
 <dl class="method">
@@ -197,14 +218,16 @@
 <dl class="method">
 <dt id="tpDcc.libs.qt.widgets.layouts.FlowLayout.expandingDirections">
 <code class="sig-name descname">expandingDirections</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.layouts.FlowLayout.expandingDirections" title="Permalink to this definition">¶</a></dt>
-<dd><p>Overrides base QLayout expandingDirections function
+<dd><p>Sets whether this layout grows only in horizontal or vertical dimension
+Overrides base QLayout expandingDirections function
 :return:Qt.Orientation</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tpDcc.libs.qt.widgets.layouts.FlowLayout.hasHeightForWidth">
 <code class="sig-name descname">hasHeightForWidth</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.layouts.FlowLayout.hasHeightForWidth" title="Permalink to this definition">¶</a></dt>
-<dd><p>Overrides base QLayout hasHeightForWidth function
+<dd><p>Sets whether layout’s preferred height depends on its width or not
+Overrides base QLayout hasHeightForWidth function
 :param width: int
 :return: bool</p>
 </dd></dl>
@@ -212,7 +235,8 @@
 <dl class="method">
 <dt id="tpDcc.libs.qt.widgets.layouts.FlowLayout.heightForWidth">
 <code class="sig-name descname">heightForWidth</code><span class="sig-paren">(</span><em class="sig-param">width</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.layouts.FlowLayout.heightForWidth" title="Permalink to this definition">¶</a></dt>
-<dd><p>Overrides base QLayout heightForWidth function
+<dd><p>Returns the preferred heights a layout item with given width
+Overrides base QLayout heightForWidth function
 :param width: int
 :return: int</p>
 </dd></dl>
@@ -234,10 +258,30 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="tpDcc.libs.qt.widgets.layouts.FlowLayout.items">
+<code class="sig-name descname">items</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.layouts.FlowLayout.items" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all items in the layout
+:return: list</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.layouts.FlowLayout.items_list">
+<em class="property">property </em><code class="sig-name descname">items_list</code><a class="headerlink" href="#tpDcc.libs.qt.widgets.layouts.FlowLayout.items_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="tpDcc.libs.qt.widgets.layouts.FlowLayout.minimumSize">
 <code class="sig-name descname">minimumSize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.layouts.FlowLayout.minimumSize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Overrides base minimumSize function
+<dd><p>Returns the minimum size for this layout
+Overrides base minimumSize function
 :return: QSize</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.layouts.FlowLayout.orientation">
+<code class="sig-name descname">orientation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.layouts.FlowLayout.orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns flow layout orientation
+:return: Qt.Horizontal or Qt.Vertical</p>
 </dd></dl>
 
 <dl class="method">
@@ -256,11 +300,43 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="tpDcc.libs.qt.widgets.layouts.FlowLayout.set_orientation">
+<code class="sig-name descname">set_orientation</code><span class="sig-paren">(</span><em class="sig-param">orientation</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.layouts.FlowLayout.set_orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets how widgets will be laid out (horizontally or vertically)
+:param orientation: Qt.Horizontal or Qt.Vertical</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.layouts.FlowLayout.set_spacing_x">
+<code class="sig-name descname">set_spacing_x</code><span class="sig-paren">(</span><em class="sig-param">spacing</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.layouts.FlowLayout.set_spacing_x" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the X spacing for each item
+:param spacing: float</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.layouts.FlowLayout.set_spacing_y">
+<code class="sig-name descname">set_spacing_y</code><span class="sig-paren">(</span><em class="sig-param">spacing</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.layouts.FlowLayout.set_spacing_y" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the Y spacing for each item
+:param spacing: float</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="tpDcc.libs.qt.widgets.layouts.FlowLayout.sizeHint">
 <code class="sig-name descname">sizeHint</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.layouts.FlowLayout.sizeHint" title="Permalink to this definition">¶</a></dt>
-<dd><p>Overrides base QLayout sizeHint function
+<dd><p>Returns the preferred size of this layout
+Overrides base QLayout sizeHint function
 :return: QSize</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.layouts.FlowLayout.spacing_x">
+<em class="property">property </em><code class="sig-name descname">spacing_x</code><a class="headerlink" href="#tpDcc.libs.qt.widgets.layouts.FlowLayout.spacing_x" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tpDcc.libs.qt.widgets.layouts.FlowLayout.spacing_y">
+<em class="property">property </em><code class="sig-name descname">spacing_y</code><a class="headerlink" href="#tpDcc.libs.qt.widgets.layouts.FlowLayout.spacing_y" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="attribute">
 <dt id="tpDcc.libs.qt.widgets.layouts.FlowLayout.staticMetaObject">
