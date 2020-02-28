@@ -172,78 +172,8 @@
 
            <div itemprop="articleBody">
             
-  <div class="section" id="module-tpDcc.libs.qt.widgets.stack">
-<span id="tpdcc-libs-qt-widgets-stack-module"></span><h1>tpDcc.libs.qt.widgets.stack module<a class="headerlink" href="#module-tpDcc.libs.qt.widgets.stack" title="Permalink to this headline">¶</a></h1>
-<p>Module that contains custom Qt stack widgets</p>
-<dl class="class">
-<dt id="tpDcc.libs.qt.widgets.stack.SlidingStackedWidget">
-<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.stack.</code><code class="sig-name descname">SlidingStackedWidget</code><span class="sig-paren">(</span><em class="sig-param">parent=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.stack.SlidingStackedWidget" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PySide2.QtWidgets.QStackedWidget</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>QStackedWidget width sliding functionality</p>
-<dl class="attribute">
-<dt id="tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.animFinished">
-<code class="sig-name descname">animFinished</code><em class="property"> = &lt;PySide2.QtCore.Signal object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.animFinished" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.current_widget">
-<em class="property">property </em><code class="sig-name descname">current_widget</code><a class="headerlink" href="#tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.current_widget" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.set_animation">
-<code class="sig-name descname">set_animation</code><span class="sig-paren">(</span><em class="sig-param">animation_type</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.set_animation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the curve animation type of the sliding
-:param animation_type: QEasingCurve</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.set_speed">
-<code class="sig-name descname">set_speed</code><span class="sig-paren">(</span><em class="sig-param">speed</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.set_speed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the animation speed of the sliding
-:param speed: int</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.set_vertical_mode">
-<code class="sig-name descname">set_vertical_mode</code><span class="sig-paren">(</span><em class="sig-param">vertical=True</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.set_vertical_mode" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets whether the sliding animation is done vertically or horizontally
-:param vertical: bool</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.set_wrap">
-<code class="sig-name descname">set_wrap</code><span class="sig-paren">(</span><em class="sig-param">wrap</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.set_wrap" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets whether the page index is restarted when we arrive the last one or not
-:param wrap: bool</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.slide_in_index">
-<code class="sig-name descname">slide_in_index</code><span class="sig-paren">(</span><em class="sig-param">next</em>, <em class="sig-param">force=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.slide_in_index" title="Permalink to this definition">¶</a></dt>
-<dd><p>Slides to the given widget index
-:param next: int, index of the widget to slide</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.slide_in_next">
-<code class="sig-name descname">slide_in_next</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.slide_in_next" title="Permalink to this definition">¶</a></dt>
-<dd><p>Slides into the next widget</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.slide_in_prev">
-<code class="sig-name descname">slide_in_prev</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.slide_in_prev" title="Permalink to this definition">¶</a></dt>
-<dd><p>Slides into the previous widget</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.staticMetaObject">
-<code class="sig-name descname">staticMetaObject</code><em class="property"> = &lt;PySide2.QtCore.QMetaObject object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.stack.SlidingStackedWidget.staticMetaObject" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+  <div class="section" id="tpdcc-libs-qt-widgets-stack-module">
+<h1>tpDcc.libs.qt.widgets.stack module<a class="headerlink" href="#tpdcc-libs-qt-widgets-stack-module" title="Permalink to this headline">¶</a></h1>
 </div>
 
 

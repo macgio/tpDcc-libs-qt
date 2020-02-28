@@ -64,6 +64,7 @@ Submodules
    tpDcc.libs.qt.widgets.tabs
    tpDcc.libs.qt.widgets.toast
    tpDcc.libs.qt.widgets.toolbar
+   tpDcc.libs.qt.widgets.toolset
    tpDcc.libs.qt.widgets.tooltips
    tpDcc.libs.qt.widgets.treewidgets
    tpDcc.libs.qt.widgets.views

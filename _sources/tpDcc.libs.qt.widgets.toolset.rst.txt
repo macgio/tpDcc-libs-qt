@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.toolset module
+====================================
+
+.. automodule:: tpDcc.libs.qt.widgets.toolset
+   :members:
+   :undoc-members:
+   :show-inheritance:

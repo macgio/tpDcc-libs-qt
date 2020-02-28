@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="tpDcc.libs.qt.widgets.tooltips module" href="tpDcc.libs.qt.widgets.tooltips.html" />
+    <link rel="next" title="tpDcc.libs.qt.widgets.toolset module" href="tpDcc.libs.qt.widgets.toolset.html" />
     <link rel="prev" title="tpDcc.libs.qt.widgets.toast module" href="tpDcc.libs.qt.widgets.toast.html" /> 
 </head>
 
@@ -172,139 +172,8 @@
 
            <div itemprop="articleBody">
             
-  <div class="section" id="module-tpDcc.libs.qt.widgets.toolbar">
-<span id="tpdcc-libs-qt-widgets-toolbar-module"></span><h1>tpDcc.libs.qt.widgets.toolbar module<a class="headerlink" href="#module-tpDcc.libs.qt.widgets.toolbar" title="Permalink to this headline">¶</a></h1>
-<p>Module that contains classes that extend QToolBar functionality</p>
-<dl class="class">
-<dt id="tpDcc.libs.qt.widgets.toolbar.ToolBar">
-<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.widgets.toolbar.</code><code class="sig-name descname">ToolBar</code><span class="sig-paren">(</span><em class="sig-param">*args</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.toolbar.ToolBar" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PySide2.QtWidgets.QToolBar</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Class that adds functionality to expand/collapse QToolBars</p>
-<dl class="attribute">
-<dt id="tpDcc.libs.qt.widgets.toolbar.ToolBar.DEFAULT_COLLAPSED_HEIGHT">
-<code class="sig-name descname">DEFAULT_COLLAPSED_HEIGHT</code><em class="property"> = 10</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.toolbar.ToolBar.DEFAULT_COLLAPSED_HEIGHT" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="tpDcc.libs.qt.widgets.toolbar.ToolBar.DEFAULT_EXPANDED_HEIGHT">
-<code class="sig-name descname">DEFAULT_EXPANDED_HEIGHT</code><em class="property"> = 34</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.toolbar.ToolBar.DEFAULT_EXPANDED_HEIGHT" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.toolbar.ToolBar.actions">
-<code class="sig-name descname">actions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.toolbar.ToolBar.actions" title="Permalink to this definition">¶</a></dt>
-<dd><p>Overrides base QToolBar actions function
-Returns all the widgets that are a child of the menu bar widget
-:return: list(QWidget)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.toolbar.ToolBar.collapse">
-<code class="sig-name descname">collapse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.toolbar.ToolBar.collapse" title="Permalink to this definition">¶</a></dt>
-<dd><p>Collapse the menu bar to the collapse height</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.toolbar.ToolBar.collapse_height">
-<code class="sig-name descname">collapse_height</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.toolbar.ToolBar.collapse_height" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the height of widget when collapsed
-:return: int</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.toolbar.ToolBar.expand">
-<code class="sig-name descname">expand</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.toolbar.ToolBar.expand" title="Permalink to this definition">¶</a></dt>
-<dd><p>Expand the menu bar to the expand height</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.toolbar.ToolBar.expand_height">
-<code class="sig-name descname">expand_height</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.toolbar.ToolBar.expand_height" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the height of menu bar when is expanded
-:return: float</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.toolbar.ToolBar.find_action">
-<code class="sig-name descname">find_action</code><span class="sig-paren">(</span><em class="sig-param">text</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.toolbar.ToolBar.find_action" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find the action with the given text
-:param text: str
-:return: QAction or None</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.toolbar.ToolBar.find_tool_button">
-<code class="sig-name descname">find_tool_button</code><span class="sig-paren">(</span><em class="sig-param">text</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.toolbar.ToolBar.find_tool_button" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find the QToolButton with the given text
-:param text: str
-:return: QToolButton or None</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.toolbar.ToolBar.insertAction">
-<code class="sig-name descname">insertAction</code><span class="sig-paren">(</span><em class="sig-param">before</em>, <em class="sig-param">action</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.toolbar.ToolBar.insertAction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Overrides base QToolBar insertAction function
-Support the before argument as string
-:param before: QAction or str
-:param action: QAction
-:return: QAction</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.toolbar.ToolBar.is_expanded">
-<code class="sig-name descname">is_expanded</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.toolbar.ToolBar.is_expanded" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns whether the menu bar is expanded or not
-:return: bool</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.toolbar.ToolBar.mousePressEvent">
-<code class="sig-name descname">mousePressEvent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">event:PySide2.QtGui.QMouseEvent</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.toolbar.ToolBar.mousePressEvent" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.toolbar.ToolBar.setFixedHeight">
-<code class="sig-name descname">setFixedHeight</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.toolbar.ToolBar.setFixedHeight" title="Permalink to this definition">¶</a></dt>
-<dd><p>Overrides base QToolBar setFixedHeight
-Allows to also set the height for all child widgets of the menu bar
-:param value: float</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.toolbar.ToolBar.set_children_height">
-<code class="sig-name descname">set_children_height</code><span class="sig-paren">(</span><em class="sig-param">height</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.toolbar.ToolBar.set_children_height" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the height of all the child widgets to the given height
-:param height: int</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.toolbar.ToolBar.set_children_hidden">
-<code class="sig-name descname">set_children_hidden</code><span class="sig-paren">(</span><em class="sig-param">flag</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.toolbar.ToolBar.set_children_hidden" title="Permalink to this definition">¶</a></dt>
-<dd><p>Hide/Show all child widgets
-:param flag: bool</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.toolbar.ToolBar.set_icon_color">
-<code class="sig-name descname">set_icon_color</code><span class="sig-paren">(</span><em class="sig-param">color</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.toolbar.ToolBar.set_icon_color" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the icon colors to the current foregroundRole
-:param color: QColor</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="tpDcc.libs.qt.widgets.toolbar.ToolBar.staticMetaObject">
-<code class="sig-name descname">staticMetaObject</code><em class="property"> = &lt;PySide2.QtCore.QMetaObject object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.widgets.toolbar.ToolBar.staticMetaObject" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.widgets.toolbar.ToolBar.widgets">
-<code class="sig-name descname">widgets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.widgets.toolbar.ToolBar.widgets" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns all the widgets that are a child of the menu bar widget
-:return: list(QWidget)</p>
-</dd></dl>
-
-</dd></dl>
-
+  <div class="section" id="tpdcc-libs-qt-widgets-toolbar-module">
+<h1>tpDcc.libs.qt.widgets.toolbar module<a class="headerlink" href="#tpdcc-libs-qt-widgets-toolbar-module" title="Permalink to this headline">¶</a></h1>
 </div>
 
 
@@ -319,7 +188,7 @@ Allows to also set the height for all child widgets of the menu bar
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="tpDcc.libs.qt.widgets.tooltips.html" class="btn btn-neutral float-right" title="tpDcc.libs.qt.widgets.tooltips module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="tpDcc.libs.qt.widgets.toolset.html" class="btn btn-neutral float-right" title="tpDcc.libs.qt.widgets.toolset module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="tpDcc.libs.qt.widgets.toast.html" class="btn btn-neutral float-left" title="tpDcc.libs.qt.widgets.toast module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
