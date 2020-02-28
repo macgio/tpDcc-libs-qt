@@ -76,14 +76,15 @@ if QT_AVAILABLE:
             except ImportError:
                 UILOADER_AVAILABLE = False
 
-from tpDcc.libs.qt.core import color
+import tpDcc
+from tpDcc.libs import qt
+from tpDcc.libs.qt.core import consts, color
 from tpDcc.libs.python import mathlib
 
 # ==============================================================================
 
 UI_EXTENSION = '.ui'
 QWIDGET_SIZE_MAX = (1 << 24) - 1
-DEFAULT_DPI = 96
 FLOAT_RANGE_MIN = 0.1 + (-mathlib.MAX_INT - 1.0)
 FLOAT_RANGE_MAX = mathlib.MAX_INT + 0.1
 INT_RANGE_MIN = -mathlib.MAX_INT
@@ -414,11 +415,11 @@ def load_ui(ui_file, parent_widget=None):
     """
 
     if not QT_AVAILABLE:
-        tpQtLib.logger.error(QT_ERROR_MESSAGE)
+        qt.logger.error(QT_ERROR_MESSAGE)
         return None
 
     if not UILOADER_AVAILABLE:
-        tpQtLib.logger.error('QtUiLoader is not available, impossible teo load ui file!')
+        qt.logger.error('QtUiLoader is not available, impossible teo load ui file!')
         return None
 
     customWidgets = UiLoader.get_custom_widgets(ui_file)
@@ -437,11 +438,11 @@ def load_ui_type(ui_file):
     """
 
     if not QT_AVAILABLE:
-        tpQtLib.logger.warning(QT_ERROR_MESSAGE)
+        qt.logger.warning(QT_ERROR_MESSAGE)
         return None, None
 
     if not PYSIDEUIC_AVAILABLE:
-        tpQtLib.logger.warning('pysideuic is not available. UI compilation functionality is not available!')
+        qt.logger.warning('pysideuic is not available. UI compilation functionality is not available!')
         return None, None
 
     parsed = ElementTree.parse(ui_file)
@@ -469,15 +470,15 @@ def compile_ui(ui_file, py_file):
     """
 
     if not QT_AVAILABLE:
-        tpQtLib.logger.warning(QT_ERROR_MESSAGE)
+        qt.logger.warning(QT_ERROR_MESSAGE)
         return
 
     if not PYSIDEUIC_AVAILABLE:
-        tpQtLib.logger.warning('pysideuic is not available. UI compilation functionality is not available!')
+        qt.logger.warning('pysideuic is not available. UI compilation functionality is not available!')
         return
 
     if not os.path.isfile(ui_file):
-        tpQtLib.logger.warning('UI file "{}" does not exists!'.format(ui_file))
+        qt.logger.warning('UI file "{}" does not exists!'.format(ui_file))
         return
 
     if os.path.isfile(ui_file):
@@ -495,11 +496,11 @@ def compile_uis(root_path, recursive=True, use_qt=True):
     """
 
     if not QT_AVAILABLE:
-        tpQtLib.logger.warning(QT_ERROR_MESSAGE)
+        qt.logger.warning(QT_ERROR_MESSAGE)
         return
 
     if not os.path.exists(root_path):
-        tpQtLib.logger.error('Impossible to compile UIs because path "{}" is not valid!'.format(root_path))
+        qt.logger.error('Impossible to compile UIs because path "{}" is not valid!'.format(root_path))
         return
 
     if recursive:
@@ -510,7 +511,7 @@ def compile_uis(root_path, recursive=True, use_qt=True):
 
                     py_file = ui_file.replace('.ui', '_ui.py')
 
-                    tpQtLib.logger.debug('> COMPILING: {}'.format(ui_file))
+                    qt.logger.debug('> COMPILING: {}'.format(ui_file))
                     compile_ui(ui_file=ui_file, py_file=py_file)
 
                     # pysideuic will use the proper Qt version used to compile it when generating .ui Python code
@@ -555,7 +556,7 @@ def clean_compiled_uis(root_path, recusive=True):
             for f in files:
                 if f.endswith('_ui.py') or f.endswith('_ui.pyc'):
                     os.remove(os.path.join(root, f))
-                    tpQtLib.logger.debug('Removed compiled UI: "{}"'.format(os.path.join(root, f)))
+                    qt.logger.debug('Removed compiled UI: "{}"'.format(os.path.join(root, f)))
 
 
 def create_python_qrc_file(qrc_file, py_file):
@@ -799,6 +800,26 @@ def clear_layout(layout):
     #         w = item.widget()
     #         if w:
     #             w.setParent(None)
+
+
+def layout_items(layout):
+    """
+    Returns the items from the given layout and returns them
+    :param layout: QLayout, layout to retrieve items from
+    :return: list(QWidgetItem)
+    """
+
+    return [layout.itemAt(i) for i in range(layout.count())]
+
+
+def layout_widgets(layout):
+    """
+    Returns the widgets from the given layout and returns them
+    :param layout: QLayout, layout to retrieve widgets from
+    :return: list(QWidget)
+    """
+
+    return [layout.itemAt(i).widget() for i in range(layout.count())]
 
 
 def image_to_clipboard(path):
@@ -1403,7 +1424,7 @@ def dpi_scale(value):
     :rtype: int
     """
 
-    mult = QApplication.desktop().logicalDpiY() / DEFAULT_DPI
+    mult = QApplication.desktop().logicalDpiY() / consts.DEFAULT_DPI
     return value * mult
 
 
@@ -1414,7 +1435,7 @@ def dpi_scale_divide(value):
     :return: int divided size in pixels
     """
 
-    mult = QApplication.desktop().logicalDpiY() / DEFAULT_DPI
+    mult = QApplication.desktop().logicalDpiY() / consts.DEFAULT_DPI
     if value != 0:
         return value / mult
 
@@ -1454,3 +1475,116 @@ def size_by_dpi(size):
     """
 
     return QSize(dpi_scale(size.width()), dpi_scale(size.height()))
+
+
+def get_window_menu_bar(window=None):
+    """
+    Returns menu bar of given window. If not given, DCC main window will be used
+    :param window: QMainWindow
+    :return: QMenuBar or None
+    """
+
+    window = window or tpDcc.Dcc.get_main_window()
+    if not window:
+        return
+
+    if hasattr(window, 'menuBar'):
+        return window.menuBar()
+    else:
+        menu_bars = window.findChildren(QMenuBar)
+        if not menu_bars:
+            return None
+        return menu_bars[0]
+
+
+def force_window_menu_bar(window_instance):
+    """
+    Forces to add a menubar into a window if it does not exists
+    :param window_instance:
+    """
+
+    menu = window_instance.menuBar()
+    for child in menu.children():
+        if isinstance(child, QMenu):
+            break
+    else:
+        return
+
+    menu.setSizePolicy(menu.sizePolicy().horizontalPolicy(), QSizePolicy.Fixed)
+    window_instance.centralWidget().layout().insertWidget(0, menu)
+
+
+def find_coordinates_inside_screen(x, y, width, height, padding=0):
+    """
+    Using information of position and size, find a location of a rectangle that is inside the screen
+    :param x:
+    :param y:
+    :param width:
+    :param height:
+    :param padding:
+    :return:
+    """
+
+    # Only support Windows for now
+    if not os.name == 'nt':
+        return x, y
+
+    from tpDcc.libs.python import win32
+
+    monitor_adjusted = [
+        (x1, y1, x2 - width - padding, y2 - height - padding
+         ) for x1, y1, x2, y2 in tuple(m[1] for m in win32.get_active_monitor_area())]
+    location_groups = tuple(zip(*monitor_adjusted))
+
+    x_orig = x
+    y_orig = y
+
+    if monitor_adjusted:
+
+        # Make sure window is within monitor bounds
+        x_min = min(location_groups[0])
+        x_max = max(location_groups[2])
+        y_min = min(location_groups[1])
+        y_max = max(location_groups[3])
+
+        if x < x_min:
+            x = x_min
+        elif x > x_max:
+            x = x_max
+        if y < y_min:
+            y = y_min
+        elif y > y_max:
+            y = y_max
+
+        # Check offset to find closest monitor
+        monitor_offsets = {}
+        for monitor_location in monitor_adjusted:
+            monitor_offsets[monitor_location] = 0
+            x1, y1, x2, y2 = monitor_location
+            if x < x1:
+                monitor_offsets[monitor_location] += x1 - x
+            elif x > x2:
+                monitor_offsets[monitor_location] += x - x2
+            if y < y1:
+                monitor_offsets[monitor_location] += y1 - y
+            elif y > y2:
+                monitor_offsets[monitor_location] += y - y2
+
+        # Check the window is correctly in the monitor
+        x1, y1, x2, y2 = min(monitor_offsets.items(), key=lambda d: d[1])[0]
+        if x < x1:
+            x = x1
+        elif x > x2:
+            x = x2
+        if y < y1:
+            y = y1
+        elif y > y2:
+            y = y2
+
+    # Reverse window padding if needed
+    if x != x_orig:
+        x -= padding
+    if y != y_orig:
+        y -= padding
+
+    return x, y
