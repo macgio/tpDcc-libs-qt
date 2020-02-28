@@ -319,6 +319,17 @@ QTextBrowser:disabled {
     color: TEXT_INACTIVE_COLOR;
 }
 
+/*
+ QSizeGrip
+*/
+
+QSizeGrip {
+    background-color: rgb(35, 35, 35);
+    image: url(:/icons/sizegrip);
+    width: 16px;
+    height: 16px;
+}
+
 
 
 /*
@@ -520,17 +531,7 @@ StackItem #title:hover
 
 
 
-/*!**/
-/* --------------------------------------------------------------------------*/
-/* Size Grip*/
-/* --------------------------------------------------------------------------*/
-/**!*/
-/*QSizeGrip {*/
-/*    background-color: rgb(35, 35, 35);*/
-/*    image: url(:/icons/sizegrip);*/
-/*    width: 16px;*/
-/*    height: 16px;*/
-/*}*/
+
 
 /*!**/
 /* --------------------------------------------------------------------------*/

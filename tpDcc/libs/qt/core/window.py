@@ -72,6 +72,7 @@ class MainWindow(QMainWindow, object):
         self._show_status_bar = kwargs.pop('show_statusbar', True)
         self._init_menubar = kwargs.pop('init_menubar', False)
         self._frameless = kwargs.get('frameless', True)
+        self._config = kwargs.pop('config', None)
         self._settings = kwargs.pop('settings', None)
         self._prefs_settings = kwargs.pop('preferences_settings', None)
         auto_load = kwargs.get('auto_load', True)

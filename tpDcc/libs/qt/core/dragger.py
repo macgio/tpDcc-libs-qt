@@ -164,7 +164,7 @@ class WindowDragger(QFrame, object):
                 [icon], colors=[None], tint_composition=QPainter.CompositionMode_Plus, size=size,
                 icon_scaling=[1], color_offset=0, grayscale=True)
         else:
-            self._logo_button.set_icon([icon], colors=[None, None], size=size, icon_scaling=[1], color_offset=0)
+            self._logo_button.set_icon([icon], colors=None, size=size, icon_scaling=[1], color_offset=0)
 
         self._logo_button.set_icon_idle(icon)
 
