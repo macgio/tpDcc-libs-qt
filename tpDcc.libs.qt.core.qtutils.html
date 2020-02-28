@@ -332,6 +332,25 @@ In some DCCs, such as 3ds Max this function does not work properly. In those cas
 </dd></dl>
 
 <dl class="function">
+<dt id="tpDcc.libs.qt.core.qtutils.find_coordinates_inside_screen">
+<code class="sig-prename descclassname">tpDcc.libs.qt.core.qtutils.</code><code class="sig-name descname">find_coordinates_inside_screen</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">width</em>, <em class="sig-param">height</em>, <em class="sig-param">padding=0</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.qtutils.find_coordinates_inside_screen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Using information of position and size, find a location of a rectangle that is inside the screen
+:param x:
+:param y:
+:param width:
+:param height:
+:param padding:
+:return:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tpDcc.libs.qt.core.qtutils.force_window_menu_bar">
+<code class="sig-prename descclassname">tpDcc.libs.qt.core.qtutils.</code><code class="sig-name descname">force_window_menu_bar</code><span class="sig-paren">(</span><em class="sig-param">window_instance</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.qtutils.force_window_menu_bar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forces to add a menubar into a window if it does not exists
+:param window_instance:</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="tpDcc.libs.qt.core.qtutils.get_column_layout">
 <code class="sig-prename descclassname">tpDcc.libs.qt.core.qtutils.</code><code class="sig-name descname">get_column_layout</code><span class="sig-paren">(</span><em class="sig-param">*widgets</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.qtutils.get_column_layout" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a QVBoxLayout with all given widgets added to it
@@ -464,6 +483,14 @@ with the given name already exists in the menu bar
 </dd></dl>
 
 <dl class="function">
+<dt id="tpDcc.libs.qt.core.qtutils.get_window_menu_bar">
+<code class="sig-prename descclassname">tpDcc.libs.qt.core.qtutils.</code><code class="sig-name descname">get_window_menu_bar</code><span class="sig-paren">(</span><em class="sig-param">window=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.qtutils.get_window_menu_bar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns menu bar of given window. If not given, DCC main window will be used
+:param window: QMainWindow
+:return: QMenuBar or None</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="tpDcc.libs.qt.core.qtutils.image_to_clipboard">
 <code class="sig-prename descclassname">tpDcc.libs.qt.core.qtutils.</code><code class="sig-name descname">image_to_clipboard</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.qtutils.image_to_clipboard" title="Permalink to this definition">¶</a></dt>
 <dd><p>Copies the image at path to the system’s global clipboard
@@ -554,6 +581,22 @@ with the given name already exists in the menu bar
 <dd><p>Checks if a widget is a valid in the backend
 :param widget: QWidget
 :return: bool, True if the widget still has a C++ object, False otherwise</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tpDcc.libs.qt.core.qtutils.layout_items">
+<code class="sig-prename descclassname">tpDcc.libs.qt.core.qtutils.</code><code class="sig-name descname">layout_items</code><span class="sig-paren">(</span><em class="sig-param">layout</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.qtutils.layout_items" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the items from the given layout and returns them
+:param layout: QLayout, layout to retrieve items from
+:return: list(QWidgetItem)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tpDcc.libs.qt.core.qtutils.layout_widgets">
+<code class="sig-prename descclassname">tpDcc.libs.qt.core.qtutils.</code><code class="sig-name descname">layout_widgets</code><span class="sig-paren">(</span><em class="sig-param">layout</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.qtutils.layout_widgets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the widgets from the given layout and returns them
+:param layout: QLayout, layout to retrieve widgets from
+:return: list(QWidget)</p>
 </dd></dl>
 
 <dl class="function">
