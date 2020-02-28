@@ -9,6 +9,7 @@ from __future__ import print_function, division, absolute_import
 
 import random
 
+from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
@@ -330,7 +331,27 @@ LIGHT_CYAN = QColor(0.25, 1.0, 1.0)
 # =================================================================================================================
 
 
+def string_is_hex(color_str):
+    """
+    Returns whether or not given string is a valid hexadecimal color
+    :param color_str: str
+    :return: bool
+    """
+
+    hex_regex = QRegExp('^[0-9A-F]{6}$', Qt.CaseInsensitive)
+    if hex_regex.exactMatch(color_str):
+        return True
+
+    return False
+
+
 def convert_2_hex(color):
+    """
+    Converts given color to hexadecimal value
+    :param color:
+    :return: str
+    """
+
     hex = '#'
     for var in color:
         var = format(var, 'x')
