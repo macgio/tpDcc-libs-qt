@@ -21,6 +21,7 @@ except ImportError:
 from Qt.QtCore import *
 from Qt.QtGui import *
 
+from tpDcc.libs import qt
 from tpDcc.libs.python import python, path as path_utils
 
 LOGGER = logging.getLogger()
@@ -248,7 +249,7 @@ class ImageWorker(QRunnable, object):
                 image = QImage(str(self._path))
                 self.signals.triggered.emit(image)
         except Exception as e:
-            tpQtLib.logger.error('Cannot load thumbnail image!')
+            qt.logger.error('Cannot load thumbnail image!')
 
 
 class ImageSequence(QObject, object):

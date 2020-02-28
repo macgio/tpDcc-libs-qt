@@ -78,6 +78,8 @@ def colorize_pixmap(pixmap, new_color):
 
     if isinstance(new_color, str):
         new_color = color.Color.from_string(new_color)
+    elif isinstance(new_color, (tuple, list)):
+        new_color = color.Color(*new_color)
 
     mask = pixmap.mask()
     pixmap.fill(new_color)

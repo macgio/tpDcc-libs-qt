@@ -10,7 +10,7 @@ from __future__ import print_function, division, absolute_import
 import os
 
 from tpDcc.libs.python import folder, path
-from tpDcc.libs.qt.core import qtutils, pixmap as pixmap_resource, icon as icon_resource
+from tpDcc.libs.qt.core import qtutils, pixmap as pixmap_resource, icon as icon_resource, theme as theme_resource
 
 
 class Resource(object):
@@ -89,10 +89,13 @@ class Resource(object):
         :return:
         """
 
+        if not extension.startswith('.'):
+            extension = '.{}'.format(extension)
+
         if theme:
-            path = self._get(category, theme, name + '.' + extension)
+            path = self._get(category, theme, '{}{}'.format(name, extension))
         else:
-            path = self._get(category, name + '.' + extension)
+            path = self._get(category, '{}{}'.format(name, extension))
 
         return path
 
@@ -105,7 +108,24 @@ class Resource(object):
         :return:
         """
 
-        return self._get(category, name + '.' + extension)
+        if not extension.startswith('.'):
+            extension = '.{}'.format(extension)
+
+        return self._get(category, '{}{}'.format(name, extension))
+
+    def theme_path(self, name, category='themes', extension=theme_resource.Theme.EXTENSION):
+        """
+        Returns path where tmee file is located
+        :param name: str
+        :param category: str
+        :param extension: str
+        :return: str
+        """
+
+        if not extension.startswith('.'):
+            extension = '.{}'.format(extension)
+
+        return self._get(category, '{}{}'.format(name, extension))
 
     @classmethod
     def icon(cls, *args, **kwargs):
@@ -151,6 +171,20 @@ class Resource(object):
         else:
             return cls()._ui(*args, **kwargs)
 
+    @classmethod
+    def theme(cls, *args, **kwargs):
+        """
+        Returns Theme loaded from theme file
+        :param args:
+        :param kwargs:
+        :return:
+        """
+
+        if 'dirname' in kwargs:
+            return cls(kwargs.pop('dirname'))._theme(*args, **kwargs)
+        else:
+            return cls()._theme(*args, **kwargs)
+
     def _get(self, *args):
         """
         Returns the resource path with the given paths
@@ -162,7 +196,7 @@ class Resource(object):
 
         return self._path
 
-    def _icon(self, name, category='icons', extension='png', color=None, theme='color'):
+    def _icon(self, name, category='icons', extension='png', color=None, theme='default'):
         """
         Returns a icon_resource.Icon object from the given resource name
         :param name: str, name of the icon
@@ -206,3 +240,18 @@ class Resource(object):
             return qtutils.load_ui(ui_file=path)
         else:
             return qtutils.load_ui_type(ui_file=path)
+
+    def _theme(self, name, category='themes', extension=theme_resource.Theme.EXTENSION):
+        """
+        Returns Theme loaded from theme file
+        :param name: str, name of the theme file you want to load
+        :param category:
+        :param extension:
+        :return:
+        """
+
+        theme_path = self.theme_path(name=name, category=category, extension=extension)
+        if not os.path.isfile(theme_path):
+            return None
+
+        return theme_resource.Theme(theme_path)

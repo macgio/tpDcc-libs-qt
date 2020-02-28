@@ -12,6 +12,7 @@ import copy
 from Qt.QtCore import *
 from Qt.QtGui import *
 
+from tpDcc.libs.python import python
 from tpDcc.libs.qt.core import color, qtutils, pixmap as px
 
 
@@ -239,7 +240,7 @@ def colorize_icon(icon, size=None, color=(255, 255, 255), overlay_icon=None, ove
         overlay_pixmap = overlay_icon.pixmap(orig_size)
         px.overlay_pixmap(pixmap, overlay_pixmap, overlay_color)
 
-    pixmap = pixmap.scaled(QSize(size, size), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+    pixmap = pixmap.scaled(size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
     return Icon(pixmap)
 
@@ -260,6 +261,8 @@ def colorize_layered_icon(icons, size, colors=None, icon_scaling=None, tint_colo
 
     if not icons:
         return
+
+    icons = python.force_list(icons)
 
     if not colors:
         colors = list()
