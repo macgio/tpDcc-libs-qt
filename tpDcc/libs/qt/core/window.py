@@ -34,158 +34,62 @@ class WindowContents(QFrame, object):
         super(WindowContents, self).__init__(parent=parent)
 
 
-class MainWindow(QMainWindow, object):
-    """
-    Main class to create windows
-    """
+class BaseWindow(QMainWindow, object):
 
     closed = Signal()
-    dockChanged = Signal(object)
-    windowResizedFinished = Signal()
-    framelessChanged = Signal(object)
-    windowReady = Signal()
-    clearedInstance = Signal()
 
     WindowName = 'New Window'
 
-    STATUS_BAR_WIDGET = statusbar.StatusWidget
-    DRAGGER_CLASS = dragger.WindowDragger
-
-    _WINDOW_INSTANCES = dict()
-
     def __init__(self, parent=None, **kwargs):
+
         main_window = tp.Dcc.get_main_window()
         if parent is None:
             parent = main_window
 
-        self._setup_resizers()
-
         window_id = kwargs.get('id', None)
-        self._preference_widgets_classes = list()
         self._theme = None
         self._docks = list()
         self._toolbars = dict()
-        self._has_main_menu = False
         self._dpi = kwargs.get('dpi', 1.0)
-        self._transparent = kwargs.get('transparent', False)
         self._fixed_size = kwargs.get('fixed_size', False)
-        self._show_status_bar = kwargs.pop('show_statusbar', True)
-        self._init_menubar = kwargs.pop('init_menubar', False)
-        self._frameless = kwargs.get('frameless', True)
-        self._config = kwargs.pop('config', None)
-        self._settings = kwargs.pop('settings', None)
-        self._prefs_settings = kwargs.pop('preferences_settings', None)
-        auto_load = kwargs.get('auto_load', True)
         self._init_width = kwargs.get('width', 600)
         self._init_height = kwargs.get('height', 800)
-        self._dockable = getattr(self, 'WindowDockable', False)
-        self._was_docked = False
-        self._window_loaded = False
-        self._window_closed = False
+        self._has_main_menu = False
+        self._show_status_bar = kwargs.pop('show_statusbar', True)
+        self._init_menubar = kwargs.pop('init_menubar', False)
+        self._settings = kwargs.pop('settings', None)
+        self._prefs_settings = kwargs.pop('preferences_settings', None)
         self._enable_save_position = True
         self._initial_pos_override = None
         self._signals = defaultdict(list)
         self._force_disable_saving = False
-        self._current_docked = None
+        win_settings = kwargs.pop('settings', None)
+        prefs_settings = kwargs.pop('preferences_settings', None)
+        auto_load = kwargs.get('auto_load', True)
 
         if not hasattr(self, 'WindowId'):
             if window_id:
                 self.WindowId = window_id
             else:
                 self._force_disable_saving = True
-                self.WindowId = uuid.uuid4()
+                self.WindowId = str(uuid.uuid4())
 
-        super(MainWindow, self).__init__(parent=parent)
+        super(BaseWindow, self).__init__(parent)
 
         self.setObjectName(str(self.WindowId))
+        self.setWindowTitle(kwargs.get('title', self.WindowName))
+        self.setWindowIcon(kwargs.get('icon', tp.ResourcesMgr().icon('tpdcc')))
 
         self.resize(self._init_width, self._init_height)
         self.center(self._init_width, self._init_height)
 
-        self.load_settings()
-
         self.ui()
         self.setup_signals()
 
+        self.load_settings(settings=win_settings)
+
         if auto_load:
             self.load_theme()
-
-        self.set_frameless(self._frameless)
-        if not self._frameless:
-            self.set_resizer_active(False)
-
-        # We set the window title after setting window frameless mode
-        self.setWindowTitle(kwargs.get('title', self.WindowName))
-
-        MainWindow._WINDOW_INSTANCES[self.WindowId] = {
-            'window': self
-        }
-
-        self.windowReady.connect(lambda: setattr(self, '_window_loaded', True))
-
-    # ============================================================================================================
-    # PROPERTIES
-    # ============================================================================================================
-
-    @property
-    def widget(self):
-        """
-        Returns widget
-        """
-
-        return self._widget
-
-    @property
-    def frameless(self):
-        """
-        Returns whether this window can be frameless or not
-        :return: bool
-        """
-
-        return self._frameless
-
-    @frameless.setter
-    def frameless(self, flag):
-        """
-        Sets whether or not this window can be frameless
-        :param flag: bool
-        """
-
-        self._frameless = flag
-
-    # ============================================================================================================
-    # CLASS METHODS
-    # ============================================================================================================
-
-    @classmethod
-    def instance(cls, parent=None, **kwargs):
-        pass
-
-    @classmethod
-    def clear_window_instance(cls, window_id):
-        """
-        Closes the last class instance
-        :param window_id:
-        :return:
-        """
-
-        inst = cls._WINDOW_INSTANCES.pop(window_id, None)
-        if inst is not None:
-            try:
-                inst['window'].clearedInstance.emit()
-            except RuntimeError as exc:
-                tp.logger.error('Error while clearing window instance: {} | {}'.format(window_id, exc))
-
-        return inst
-
-    @classmethod
-    def clear_window_instances(cls):
-        """
-        Closes every loaded window
-        """
-
-        for window_id in tuple(cls._WINDOW_INSTANCES):
-            cls.clear_window_instance(window_id)
 
     # ============================================================================================================
     # OVERRIDES
@@ -194,32 +98,24 @@ class MainWindow(QMainWindow, object):
     def menuBar(self):
         return self._menubar
 
-    def showEvent(self, event):
-        if self.docked() != self._current_docked:
-            self._current_docked = self.docked()
-            self.dockChanged.emit(self._current_docked)
+    def show(self, *args, **kwargs):
+        """
+        Shows the window and load its position
+        :param self:
+        :param args:
+        :param kwargs:
+        """
 
-        super(MainWindow, self).showEvent(event)
+        super(BaseWindow, self).show()
+        self.load_window_position()
+
+        return self
 
     def closeEvent(self, event):
-        self._window_closed = True
         self.save_settings()
-        self.unregister_callbacks()
-        self.clear_window_instance(self.WindowId)
-        self.closed.emit()
         self.setParent(None)
         self.deleteLater()
-        return super(MainWindow, self).closeEvent(event)
-
-    def setWindowIcon(self, icon):
-        if self.is_frameless():
-            self._dragger.set_icon(icon)
-        super(MainWindow, self).setWindowIcon(icon)
-
-    def setWindowTitle(self, title):
-        if self.is_frameless():
-            self._dragger.set_title(title)
-        super(MainWindow, self).setWindowTitle(title)
+        self.closed.emit()
 
     def addDockWidget(self, area, dock_widget, orientation=Qt.Horizontal, tabify=True):
         """
@@ -243,263 +139,11 @@ class MainWindow(QMainWindow, object):
                     dock_widget.raise_()
                     return
 
-        super(MainWindow, self).addDockWidget(area, dock_widget, orientation)
-
-    def show(self, *args, **kwargs):
-        """
-        Shows the window and load its position
-        :param self:
-        :param args:
-        :param kwargs:
-        """
-
-        super(MainWindow, self).show()
-        self.load_window_position()
-        self.windowReady.emit()
-
-        return self
-
-    # ============================================================================================================
-    # UI
-    # ============================================================================================================
-
-    def get_main_layout(self):
-        """
-        Returns the main layout being used by the window
-        :return: QLayout
-        """
-
-        main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
-
-        return main_layout
-
-    def ui(self):
-        """
-        Function used to define UI of the window
-        """
-
-        self.setDockNestingEnabled(True)
-        self.setDocumentMode(True)
-        self.setDockOptions(QMainWindow.AllowNestedDocks | QMainWindow.AnimatedDocks | QMainWindow.AllowTabbedDocks)
-        self.setTabPosition(Qt.AllDockWidgetAreas, QTabWidget.North)
-
-        for r in self._resizers:
-            r.setParent(self)
-
-        # Central Widget
-
-        central_widget = QWidget(parent=self)
-        self.setCentralWidget(central_widget)
-        central_layout = base.VerticalLayout(margins=(0, 0, 0, 0), spacing=0)
-        central_widget.setLayout(central_layout)
-
-        # Status Bar
-        #
-        # self.statusBar().showMessage('')
-        # self.statusBar().setSizeGripEnabled(not self._fixed_size)
-        # self._status_bar = self.STATUS_BAR_WIDGET(self)
-        # self.statusBar().addWidget(self._status_bar)
-        # self.statusBar().setVisible(self._show_status_bar)
-
-        # Dragger and MenuBar
-
-        top_widget = QWidget()
-        top_layout = base.VerticalLayout(margins=(0, 0, 0, 0), spacing=0)
-        top_widget.setLayout(top_layout)
-        self._dragger = self.DRAGGER_CLASS(window=self)
-        self._button_settings = QPushButton()
-        self._button_settings.setIconSize(QSize(25, 25))
-        self._button_settings.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
-        self._button_settings.setIcon(tp.ResourcesMgr().icon('winsettings', theme='window'))
-        self._button_settings.setStyleSheet('QWidget {background-color: rgba(255, 255, 255, 0); border:0px;}')
-        self._button_settings.clicked.connect(self._on_show_preferences_dialog)
-        self._dragger.buttons_layout.insertWidget(3, self._button_settings)
-
-        self._menubar = QMenuBar()
-        if self._init_menubar:
-            self._has_main_menu = True
-            self._file_menu = self.menuBar().addMenu('File')
-            self._view_menu = self.menuBar().addMenu('View')
-            self._exit_action = QAction(self)
-            self._exit_action.setText('Close')
-            self._exit_action.setShortcut('Ctrl + Q')
-            self._exit_action.setIcon(tp.ResourcesMgr().resource.icon('close_window'))
-            self._exit_action.setToolTip('Close application')
-            self._file_menu.addAction(self._exit_action)
-            self._exit_action.triggered.connect(self.fade_close)
-            for i in self._docks:
-                self._view_menu.addAction(i.toggleViewAction())
-
-        top_layout.addWidget(self._dragger)
-        top_layout.addWidget(self._menubar)
-
-        self._base_window = QMainWindow(central_widget)
-        self._base_window.setAttribute(Qt.WA_AlwaysShowToolTips, True)
-        # self._base_window.setWindowFlags(Qt.Widget)
-        self._base_window.setAttribute(Qt.WA_TranslucentBackground)
-        if qtutils.is_pyside2():
-            self._base_window.setWindowFlags(
-                self.windowFlags() | Qt.Widget | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
-        else:
-            self._base_window.setWindowFlags(Qt.Widget | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
-        self._base_window.setDockOptions(
-            QMainWindow.AnimatedDocks | QMainWindow.AllowNestedDocks | QMainWindow.AllowTabbedDocks)
-        window_layout = QVBoxLayout()
-        window_layout.setContentsMargins(0, 0, 0, 0)
-        window_layout.setSpacing(0)
-        self._base_window.setLayout(window_layout)
-        self.main_widget = WindowContents()
-        self.main_layout = self.get_main_layout()
-        self.main_widget.setLayout(self.main_layout)
-        self._base_window.setCentralWidget(self.main_widget)
-
-        for r in self._resizers:
-            r.windowResizedFinished.connect(self.windowResizedFinished)
-        self.set_resize_directions()
-
-        grid_layout = base.GridLayout()
-        grid_layout.setHorizontalSpacing(0)
-        grid_layout.setVerticalSpacing(0)
-        grid_layout.setContentsMargins(0, 0, 0, 0)
-        grid_layout.addWidget(top_widget, 1, 1, 1, 1)
-        grid_layout.addWidget(self.main_widget, 2, 1, 1, 1)
-        grid_layout.addWidget(self._top_left_resizer, 0, 0, 1, 1)
-        grid_layout.addWidget(self._top_resizer, 0, 1, 1, 1)
-        grid_layout.addWidget(self._top_right_resizer, 0, 2, 1, 1)
-        grid_layout.addWidget(self._left_resizer, 1, 0, 2, 1)
-        grid_layout.addWidget(self._right_resizer, 1, 2, 2, 1)
-        grid_layout.addWidget(self._bottom_left_resizer, 3, 0, 1, 1)
-        grid_layout.addWidget(self._bottom_resizer, 3, 1, 1, 1)
-        grid_layout.addWidget(self._bottom_right_resizer, 3, 2, 1, 1)
-        grid_layout.setColumnStretch(1, 1)
-        grid_layout.setRowStretch(2, 1)
-
-        central_layout.addLayout(grid_layout)
-
-        shadow_effect = QGraphicsDropShadowEffect(self)
-        shadow_effect.setBlurRadius(qtutils.dpi_scale(15))
-        shadow_effect.setColor(QColor(0, 0, 0, 150))
-        shadow_effect.setOffset(qtutils.dpi_scale(0))
-        self.setGraphicsEffect(shadow_effect)
-
-        for r in self._resizers:
-            r.windowResizedFinished.connect(self.windowResizedFinished)
-
-    # ============================================================================================================
-    # SIGNALS
-    # ============================================================================================================
-
-    def setup_signals(self):
-        """
-        Override in derived class to setup signals
-        This function is called after ui() function is called
-        """
-
-        pass
-
-    def signal_connect(self, signal, fn, group=None):
-        """
-        Adds a new signal for the given group
-        :param signal:
-        :param fn:
-        :param group:
-        """
-
-        self._signals[group].append((signal, fn))
-        signal.connect(fn)
-
-        return fn
-
-    def signal_disconnect(self, group):
-        """
-        Disconnects and returns all functions for a current group
-        :param group:
-        :return: list
-        """
-
-        signals = list()
-        for (signal, fn) in self._signals.pop(group, list()):
-            try:
-                signal.disconnect(fn)
-            except RuntimeError:
-                pass
-            else:
-                signals.append((signal, fn))
-
-        return signals
-
-    def signal_pause(self, *groups):
-        """
-        Pauses a certain set of signals during execution
-        :param groups: list
-        """
-
-        if not groups:
-            groups = self._signals
-
-        signal_cache = dict()
-        for group in groups:
-            signal_cache[group] = self.signal_disconnect(group)
-
-        yield
-
-        for group in groups:
-            for signal, fn in signal_cache[group]:
-                self.signal_connect(signal, fn, group=group)
-
-    def register_callback(self, callback_type, fn):
-        """
-        Registers the given callback with the given function
-        :param callback_type: tpDccLib.DccCallbacks
-        :param fn: Python function to be called when callback is emitted
-        """
-
-        if type(callback_type) in [list, tuple]:
-            callback_type = callback_type[0]
-
-        if callback_type not in tp.callbacks():
-            tp.logger.warning('Callback Type: "{}" is not valid! Aborting callback creation ...'.format(callback_type))
-            return
-
-        from tpDcc.managers import callbacks
-        return callbacks.CallbacksManager.register(callback_type=callback_type, fn=fn, owner=self)
-
-    def unregister_callbacks(self):
-        """
-        Unregisters all callbacks registered by this window
-        """
-
-        from tpDcc.managers import callbacks
-        callbacks.CallbacksManager.unregister_owner_callbacks(owner=self)
+        super(BaseWindow, self).addDockWidget(area, dock_widget, orientation)
 
     # ============================================================================================================
     # BASE
     # ============================================================================================================
-
-    def exists(self):
-        """
-        Returns whether or not this window exists
-        :return: bool
-        """
-
-        return True
-
-    def is_loaded(self):
-        """
-        Returns whether or not this window has been already loaded
-        :return: bool
-        """
-
-        return self._window_loaded and not self.is_closed()
-
-    def is_closed(self):
-        """
-        Returns whether or not this window has been closed
-        """
-
-        return self._window_closed
 
     def process_events(self):
         """
@@ -507,42 +151,6 @@ class MainWindow(QMainWindow, object):
         """
 
         QApplication.processEvents()
-
-    def is_frameless(self):
-        """
-        Returns whether or not frameless functionality for this window is enable or not
-        :return: bool
-        """
-
-        return self.window().windowFlags() & Qt.FramelessWindowHint == Qt.FramelessWindowHint
-
-    def set_frameless(self, flag):
-        """
-        Sets whether frameless functionality is enabled or not
-        :param flag: bool
-        :param show: bool
-        """
-
-        window = self.window()
-
-        if flag and not self.is_frameless():
-            window.setAttribute(Qt.WA_TranslucentBackground)
-            if qtutils.is_pyside2() or qtutils.is_pyqt5():
-                window.setWindowFlags(window.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
-                window.setWindowFlags(window.windowFlags() ^ Qt.WindowMinMaxButtonsHint)
-            else:
-                window.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
-                window.setWindowFlags(window.windowFlags() ^ Qt.WindowMinMaxButtonsHint)
-            self.set_resizer_active(True)
-        elif not flag and self.is_frameless():
-            window.setAttribute(Qt.WA_TranslucentBackground)
-            if qtutils.is_pyside2() or qtutils.is_pyqt5():
-                window.setWindowFlags(window.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
-            else:
-                self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
-            self.set_resizer_active(False)
-
-        window.show()
 
     def center(self, width=None, height=None):
         """
@@ -630,82 +238,152 @@ class MainWindow(QMainWindow, object):
         self._status_bar.show_error_message(message=message, msecs=msecs)
 
     # ============================================================================================================
-    # RESIZERS
+    # UI
     # ============================================================================================================
 
-    def set_resizer_active(self, flag):
+    def get_main_layout(self):
         """
-        Sets whether resizers are enable or not
-        :param flag: bool
-        """
-
-        if flag:
-            for r in self._resizers:
-                r.show()
-        else:
-            for r in self._resizers:
-                r.hide()
-
-    def set_resize_directions(self):
-        """
-        Sets the resize directions for the resizer widget of this window
+        Returns the main layout being used by the window
+        :return: QLayout
         """
 
-        self._top_resizer.set_resize_direction(ResizeDirection.Top)
-        self._bottom_resizer.set_resize_direction(ResizeDirection.Bottom)
-        self._right_resizer.set_resize_direction(ResizeDirection.Right)
-        self._left_resizer.set_resize_direction(ResizeDirection.Left)
-        self._top_left_resizer.set_resize_direction(ResizeDirection.Left | ResizeDirection.Top)
-        self._top_right_resizer.set_resize_direction(ResizeDirection.Right | ResizeDirection.Top)
-        self._bottom_left_resizer.set_resize_direction(ResizeDirection.Left | ResizeDirection.Bottom)
-        self._bottom_right_resizer.set_resize_direction(ResizeDirection.Right | ResizeDirection.Bottom)
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
 
-    def get_resizers_height(self):
+        return main_layout
+
+    def ui(self):
         """
-        Returns the total height of the vertical resizers
-        :return: float
+        Function used to define UI of the window
         """
 
-        resizers = [self._top_resizer, self._bottom_resizer]
-        total_height = 0
-        for r in resizers:
-            if not r.isHidden():
-                total_height += r.minimumSize().height()
+        self.setDockNestingEnabled(True)
+        self.setDocumentMode(True)
+        self.setDockOptions(QMainWindow.AllowNestedDocks | QMainWindow.AnimatedDocks | QMainWindow.AllowTabbedDocks)
+        self.setTabPosition(Qt.AllDockWidgetAreas, QTabWidget.North)
 
-        return total_height
+        # Central Widget
 
-    def get_resizers_width(self):
+        central_widget = QWidget(parent=self)
+        self.setCentralWidget(central_widget)
+        self._central_layout = base.VerticalLayout(margins=(0, 0, 0, 0), spacing=0)
+        central_widget.setLayout(self._central_layout)
+
+        self._top_widget = QWidget()
+        self._top_layout = base.VerticalLayout(margins=(0, 0, 0, 0), spacing=0)
+        self._top_widget.setLayout(self._top_layout)
+
+        # Status Bar
+        #
+        # self.statusBar().showMessage('')
+        # self.statusBar().setSizeGripEnabled(not self._fixed_size)
+        # self._status_bar = self.STATUS_BAR_WIDGET(self)
+        # self.statusBar().addWidget(self._status_bar)
+        # self.statusBar().setVisible(self._show_status_bar)
+
+        # MenuBar
+        self._menubar = QMenuBar()
+        if self._init_menubar:
+            self._has_main_menu = True
+            self._file_menu = self.menuBar().addMenu('File')
+            self._view_menu = self.menuBar().addMenu('View')
+            self._exit_action = QAction(self)
+            self._exit_action.setText('Close')
+            self._exit_action.setShortcut('Ctrl + Q')
+            self._exit_action.setIcon(tp.ResourcesMgr().resource.icon('close_window'))
+            self._exit_action.setToolTip('Close application')
+            self._file_menu.addAction(self._exit_action)
+            self._exit_action.triggered.connect(self.fade_close)
+            for i in self._docks:
+                self._view_menu.addAction(i.toggleViewAction())
+        self._top_layout.addWidget(self._menubar)
+
+        self._base_window = QMainWindow()
+        self._base_window.setParent(central_widget)
+        self._base_window.setAttribute(Qt.WA_AlwaysShowToolTips, True)
+        self._base_window.setWindowFlags(Qt.Widget)
+        self._base_window.setAttribute(Qt.WA_TranslucentBackground)
+        # if qtutils.is_pyside2():
+        #     self._base_window.setWindowFlags(
+        #         self.windowFlags() | Qt.Widget | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+        # else:
+        #     self._base_window.setWindowFlags(Qt.Widget | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+        self._base_window.setDockOptions(
+            QMainWindow.AnimatedDocks | QMainWindow.AllowNestedDocks | QMainWindow.AllowTabbedDocks)
+        window_layout = QVBoxLayout()
+        window_layout.setContentsMargins(0, 0, 0, 0)
+        window_layout.setSpacing(0)
+        self._base_window.setLayout(window_layout)
+        self.main_widget = WindowContents()
+        self.main_layout = self.get_main_layout()
+        self.main_widget.setLayout(self.main_layout)
+        self._base_window.setCentralWidget(self.main_widget)
+
+        self._central_layout.addWidget(self._top_widget)
+        self._central_layout.addWidget(self._base_window)
+
+    # ============================================================================================================
+    # SIGNALS
+    # ============================================================================================================
+
+    def setup_signals(self):
         """
-        Returns the total widht of the horizontal resizers
-        :return: float
+        Override in derived class to setup signals
+        This function is called after ui() function is called
         """
 
-        resizers = [self._left_resizer, self._right_resizer]
-        total_width = 0
-        for r in resizers:
-            if not r.isHidden():
-                total_width += r.minimumSize().width()
+        pass
 
-        return total_width
-
-    def _setup_resizers(self):
+    def signal_connect(self, signal, fn, group=None):
         """
-        Internal function that setup window resizers
+        Adds a new signal for the given group
+        :param signal:
+        :param fn:
+        :param group:
         """
 
-        self._top_resizer = VerticalResizer()
-        self._bottom_resizer = VerticalResizer()
-        self._right_resizer = HorizontalResizer()
-        self._left_resizer = HorizontalResizer()
-        self._top_left_resizer = CornerResizer()
-        self._top_right_resizer = CornerResizer()
-        self._bottom_left_resizer = CornerResizer()
-        self._bottom_right_resizer = CornerResizer()
+        self._signals[group].append((signal, fn))
+        signal.connect(fn)
 
-        self._resizers = [
-            self._top_resizer, self._top_right_resizer, self._right_resizer, self._bottom_right_resizer,
-            self._bottom_resizer, self._bottom_left_resizer, self._left_resizer, self._top_left_resizer
-        ]
+        return fn
+
+    def signal_disconnect(self, group):
+        """
+        Disconnects and returns all functions for a current group
+        :param group:
+        :return: list
+        """
+
+        signals = list()
+        for (signal, fn) in self._signals.pop(group, list()):
+            try:
+                signal.disconnect(fn)
+            except RuntimeError:
+                pass
+            else:
+                signals.append((signal, fn))
+
+        return signals
+
+    def signal_pause(self, *groups):
+        """
+        Pauses a certain set of signals during execution
+        :param groups: list
+        """
+
+        if not groups:
+            groups = self._signals
+
+        signal_cache = dict()
+        for group in groups:
+            signal_cache[group] = self.signal_disconnect(group)
+
+        yield
+
+        for group in groups:
+            for signal, fn in signal_cache[group]:
+                self.signal_connect(signal, fn, group=group)
 
     # ============================================================================================================
     # SETTINGS
@@ -718,22 +396,6 @@ class MainWindow(QMainWindow, object):
         """
 
         return self._settings
-
-    def preferences_settings(self):
-        """
-        Returns window preferences settings
-        :return: QtSettings
-        """
-
-        return self._prefs_settings
-
-    def set_preferences_settings(self, prefs_settings):
-        """
-        Sets window preference settings
-        :param prefs_settings:
-        """
-
-        self._prefs_settings = prefs_settings
 
     def default_settings(self):
         """
@@ -793,7 +455,7 @@ class MainWindow(QMainWindow, object):
             if not settings:
                 self._settings = qt_settings.QtSettings(filename=self.get_settings_file(), window=self)
                 self._settings.setFallbacksEnabled(False)
-                if not self._pref_settings:
+                if not self._prefs_settings:
                     self._prefs_settings = self._settings
             return self.set_settings(self._settings)
 
@@ -829,26 +491,6 @@ class MainWindow(QMainWindow, object):
         """
 
         return path.clean_path(os.path.expandvars(os.path.join(self.get_settings_path(), 'settings.cfg')))
-
-    def register_preference_widget_class(self, widget_class):
-        """
-        Function used to registere preference widgets
-        """
-
-        if not hasattr(widget_class, 'CATEGORY'):
-            qt.logger.warning(
-                'Impossible to register Category Wigdet Class "{}" because it does not '
-                'defines a CATEGORY attribute'.format(widget_class))
-            return
-
-        registered_prefs_categories = [pref.CATEGORY for pref in self._preference_widgets_classes]
-        if widget_class.CATEGORY in registered_prefs_categories:
-            qt.logger.warning(
-                'Impossible to register Category Widget Class "{}" because its CATEGORY "{}" its '
-                'already registered!'.format(widget_class, widget_class.CATEGORY))
-            return
-
-        self._preference_widgets_classes.append(widget_class)
 
     def enable_save_window_position(self, enable):
         """
@@ -1004,52 +646,6 @@ class MainWindow(QMainWindow, object):
     # DOCK
     # ============================================================================================================
 
-    def dockable(self, raw=False):
-        """
-        Returns whether or not the window is dockable
-        :param raw: bool, If True, get current state of the window, otherwise get current setting
-        :return: bool
-        """
-
-        if not raw and self._was_docked is not None:
-            return self._was_docked
-
-        return self._dockable
-
-    def set_dockable(self, dockable, override=False):
-        """
-        Sets whether or not this window is dockable
-        :param dockable: bool
-        :param override: bool, If the dockable raw value should be set.
-            Only should be used if the dock state has changed
-        """
-
-        if override:
-            self._was_docked = self._dockable = dockable
-        else:
-            self._was_docked = self._dockable
-            self._dockable = dockable
-            self.save_window_position()
-
-    def docked(self):
-        """
-        Returns whether or not this window is currently docked
-        :return: bool
-        """
-
-        if not self.dockable():
-            return False
-
-        raise NotImplementedError('docked function is not implemented!')
-
-    def is_floating(self):
-        """
-        Returns whether or not this window is floating
-        :return: bool
-        """
-
-        return tp.Dcc.is_window_floating(self.WindowId)
-
     def add_dock(self, name, widget=None, pos=Qt.LeftDockWidgetArea, tabify=True):
         """
         Adds a new dockable widget to the window
@@ -1105,6 +701,15 @@ class MainWindow(QMainWindow, object):
 
         return None
 
+    def _parent_override(self):
+        """
+        Internal function that overrides parent functionality to make sure that proper parent attributes are used
+        in dockable windows
+        """
+
+        # Make sure this function is inherited
+        return super(MainWindow, self)
+
     # ============================================================================================================
     # INTERNAL
     # ============================================================================================================
@@ -1122,6 +727,480 @@ class MainWindow(QMainWindow, object):
         loaded_ui = qtutils.load_ui(ui_file=ui_file)
 
         return loaded_ui
+
+
+class MainWindow(BaseWindow, object):
+    """
+    Main class to create windows
+    """
+
+    dockChanged = Signal(object)
+    windowResizedFinished = Signal()
+    framelessChanged = Signal(object)
+    windowReady = Signal()
+    clearedInstance = Signal()
+
+    STATUS_BAR_WIDGET = statusbar.StatusWidget
+    DRAGGER_CLASS = dragger.WindowDragger
+
+    _WINDOW_INSTANCES = dict()
+
+    def __init__(self, parent=None, **kwargs):
+
+        self._setup_resizers()
+
+        self._preference_widgets_classes = list()
+        self._toolset = kwargs.get('toolset', None)
+        self._transparent = kwargs.get('transparent', False)
+        self._frameless = kwargs.get('frameless', True)
+        self._config = kwargs.pop('config', None)
+        self._dockable = getattr(self, 'WindowDockable', False)
+        self._was_docked = False
+        self._window_loaded = False
+        self._window_closed = False
+        self._current_docked = None
+
+        super(MainWindow, self).__init__(parent=parent, **kwargs)
+
+        self.set_frameless(self._frameless)
+        if not self._frameless:
+            self.set_resizer_active(False)
+            self._dragger.set_dragging_enabled(False)
+            self._dragger.set_window_buttons_state(False)
+        else:
+            self._dragger.set_dragging_enabled(True)
+            self._dragger.set_window_buttons_state(True)
+
+        # We set the window title after UI is created
+        self.setWindowTitle(kwargs.get('title', 'tete'))
+        self.setWindowIcon(kwargs.get('icon', tp.ResourcesMgr().icon('ok')))
+
+        MainWindow._WINDOW_INSTANCES[self.WindowId] = {
+            'window': self
+        }
+
+        self.windowReady.connect(lambda: setattr(self, '_window_loaded', True))
+
+    # ============================================================================================================
+    # PROPERTIES
+    # ============================================================================================================
+
+    @property
+    def widget(self):
+        """
+        Returns widget
+        """
+
+        return self._widget
+
+    @property
+    def frameless(self):
+        """
+        Returns whether this window can be frameless or not
+        :return: bool
+        """
+
+        return self._frameless
+
+    @frameless.setter
+    def frameless(self, flag):
+        """
+        Sets whether or not this window can be frameless
+        :param flag: bool
+        """
+
+        self._frameless = flag
+
+    # ============================================================================================================
+    # CLASS METHODS
+    # ============================================================================================================
+
+    @classmethod
+    def instance(cls, parent=None, **kwargs):
+        pass
+
+    @classmethod
+    def clear_window_instance(cls, window_id):
+        """
+        Closes the last class instance
+        :param window_id:
+        :return:
+        """
+
+        inst = cls._WINDOW_INSTANCES.pop(window_id, None)
+        if inst is not None:
+            try:
+                inst['window'].clearedInstance.emit()
+            except RuntimeError as exc:
+                tp.logger.error('Error while clearing window instance: {} | {}'.format(window_id, exc))
+
+        return inst
+
+    @classmethod
+    def clear_window_instances(cls):
+        """
+        Closes every loaded window
+        """
+
+        for window_id in tuple(cls._WINDOW_INSTANCES):
+            cls.clear_window_instance(window_id)
+
+    # ============================================================================================================
+    # OVERRIDES
+    # ============================================================================================================
+
+    def showEvent(self, event):
+        if self.docked() != self._current_docked:
+            self._current_docked = self.docked()
+            self.dockChanged.emit(self._current_docked)
+
+        super(MainWindow, self).showEvent(event)
+
+    def closeEvent(self, event):
+        self._window_closed = True
+        self.unregister_callbacks()
+        self.clear_window_instance(self.WindowId)
+        super(MainWindow, self).closeEvent(event)
+
+    def setWindowIcon(self, icon):
+        if self.is_frameless() or (hasattr(self, '_dragger') and self._dragger):
+            self._dragger.set_icon(icon)
+        super(MainWindow, self).setWindowIcon(icon)
+
+    def setWindowTitle(self, title):
+        if self.is_frameless() or (hasattr(self, '_dragger') and self._dragger):
+            self._dragger.set_title(title)
+        super(MainWindow, self).setWindowTitle(title)
+
+    def show(self, *args, **kwargs):
+        """
+        Shows the window and load its position
+        :param self:
+        :param args:
+        :param kwargs:
+        """
+
+        super(MainWindow, self).show()
+        self.windowReady.emit()
+
+        return self
+
+    # ============================================================================================================
+    # UI
+    # ============================================================================================================
+
+    def ui(self):
+        """
+        Function used to define UI of the window
+        """
+
+        super(MainWindow, self).ui()
+
+        for r in self._resizers:
+            r.setParent(self)
+
+        # Dragger
+        self._dragger = self.DRAGGER_CLASS(window=self)
+        self._top_layout.insertWidget(0, self._dragger)
+
+        for r in self._resizers:
+            r.windowResizedFinished.connect(self.windowResizedFinished)
+        self.set_resize_directions()
+
+        grid_layout = base.GridLayout()
+        grid_layout.setHorizontalSpacing(0)
+        grid_layout.setVerticalSpacing(0)
+        grid_layout.setContentsMargins(0, 0, 0, 0)
+        grid_layout.addWidget(self._top_widget, 1, 1, 1, 1)
+        grid_layout.addWidget(self._base_window, 2, 1, 1, 1)
+        grid_layout.addWidget(self._top_left_resizer, 0, 0, 1, 1)
+        grid_layout.addWidget(self._top_resizer, 0, 1, 1, 1)
+        grid_layout.addWidget(self._top_right_resizer, 0, 2, 1, 1)
+        grid_layout.addWidget(self._left_resizer, 1, 0, 2, 1)
+        grid_layout.addWidget(self._right_resizer, 1, 2, 2, 1)
+        grid_layout.addWidget(self._bottom_left_resizer, 3, 0, 1, 1)
+        grid_layout.addWidget(self._bottom_resizer, 3, 1, 1, 1)
+        grid_layout.addWidget(self._bottom_right_resizer, 3, 2, 1, 1)
+        # grid_layout.setColumnStretch(1, 1)
+        # grid_layout.setRowStretch(2, 1)
+
+        self._central_layout.addLayout(grid_layout)
+
+        shadow_effect = QGraphicsDropShadowEffect(self)
+        shadow_effect.setBlurRadius(qtutils.dpi_scale(15))
+        shadow_effect.setColor(QColor(0, 0, 0, 150))
+        shadow_effect.setOffset(qtutils.dpi_scale(0))
+        self.setGraphicsEffect(shadow_effect)
+
+        for r in self._resizers:
+            r.windowResizedFinished.connect(self.windowResizedFinished)
+
+        if self._toolset:
+            self.main_layout.addWidget(self._toolset)
+
+    # ============================================================================================================
+    # SIGNALS
+    # ============================================================================================================
+
+    def register_callback(self, callback_type, fn):
+        """
+        Registers the given callback with the given function
+        :param callback_type: tpDcc.DccCallbacks
+        :param fn: Python function to be called when callback is emitted
+        """
+
+        if type(callback_type) in [list, tuple]:
+            callback_type = callback_type[0]
+
+        if callback_type not in tp.callbacks():
+            tp.logger.warning('Callback Type: "{}" is not valid! Aborting callback creation ...'.format(callback_type))
+            return
+
+        from tpDcc.managers import callbacks
+        return callbacks.CallbacksManager.register(callback_type=callback_type, fn=fn, owner=self)
+
+    def unregister_callbacks(self):
+        """
+        Unregisters all callbacks registered by this window
+        """
+
+        from tpDcc.managers import callbacks
+        callbacks.CallbacksManager.unregister_owner_callbacks(owner=self)
+
+    # ============================================================================================================
+    # BASE
+    # ============================================================================================================
+
+    def exists(self):
+        """
+        Returns whether or not this window exists
+        :return: bool
+        """
+
+        return True
+
+    def is_loaded(self):
+        """
+        Returns whether or not this window has been already loaded
+        :return: bool
+        """
+
+        return self._window_loaded and not self.is_closed()
+
+    def is_closed(self):
+        """
+        Returns whether or not this window has been closed
+        """
+
+        return self._window_closed
+
+    def is_frameless(self):
+        """
+        Returns whether or not frameless functionality for this window is enable or not
+        :return: bool
+        """
+
+        return self.window().windowFlags() & Qt.FramelessWindowHint == Qt.FramelessWindowHint
+
+    def set_frameless(self, flag):
+        """
+        Sets whether frameless functionality is enabled or not
+        :param flag: bool
+        :param show: bool
+        """
+
+        window = self.window()
+
+        if flag and not self.is_frameless():
+            window.setAttribute(Qt.WA_TranslucentBackground)
+            if qtutils.is_pyside2() or qtutils.is_pyqt5():
+                window.setWindowFlags(window.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+                window.setWindowFlags(window.windowFlags() ^ Qt.WindowMinMaxButtonsHint)
+            else:
+                window.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+                window.setWindowFlags(window.windowFlags() ^ Qt.WindowMinMaxButtonsHint)
+            self.set_resizer_active(True)
+        elif not flag and self.is_frameless():
+            window.setAttribute(Qt.WA_TranslucentBackground)
+            if qtutils.is_pyside2() or qtutils.is_pyqt5():
+                window.setWindowFlags(window.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+            else:
+                self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+            self.set_resizer_active(False)
+
+        window.show()
+
+    # ============================================================================================================
+    # RESIZERS
+    # ============================================================================================================
+
+    def set_resizer_active(self, flag):
+        """
+        Sets whether resizers are enable or not
+        :param flag: bool
+        """
+
+        if flag:
+            for r in self._resizers:
+                r.show()
+        else:
+            for r in self._resizers:
+                r.hide()
+
+    def set_resize_directions(self):
+        """
+        Sets the resize directions for the resizer widget of this window
+        """
+
+        self._top_resizer.set_resize_direction(ResizeDirection.Top)
+        self._bottom_resizer.set_resize_direction(ResizeDirection.Bottom)
+        self._right_resizer.set_resize_direction(ResizeDirection.Right)
+        self._left_resizer.set_resize_direction(ResizeDirection.Left)
+        self._top_left_resizer.set_resize_direction(ResizeDirection.Left | ResizeDirection.Top)
+        self._top_right_resizer.set_resize_direction(ResizeDirection.Right | ResizeDirection.Top)
+        self._bottom_left_resizer.set_resize_direction(ResizeDirection.Left | ResizeDirection.Bottom)
+        self._bottom_right_resizer.set_resize_direction(ResizeDirection.Right | ResizeDirection.Bottom)
+
+    def get_resizers_height(self):
+        """
+        Returns the total height of the vertical resizers
+        :return: float
+        """
+
+        resizers = [self._top_resizer, self._bottom_resizer]
+        total_height = 0
+        for r in resizers:
+            if not r.isHidden():
+                total_height += r.minimumSize().height()
+
+        return total_height
+
+    def get_resizers_width(self):
+        """
+        Returns the total widht of the horizontal resizers
+        :return: float
+        """
+
+        resizers = [self._left_resizer, self._right_resizer]
+        total_width = 0
+        for r in resizers:
+            if not r.isHidden():
+                total_width += r.minimumSize().width()
+
+        return total_width
+
+    def _setup_resizers(self):
+        """
+        Internal function that setup window resizers
+        """
+
+        self._top_resizer = VerticalResizer()
+        self._bottom_resizer = VerticalResizer()
+        self._right_resizer = HorizontalResizer()
+        self._left_resizer = HorizontalResizer()
+        self._top_left_resizer = CornerResizer()
+        self._top_right_resizer = CornerResizer()
+        self._bottom_left_resizer = CornerResizer()
+        self._bottom_right_resizer = CornerResizer()
+
+        self._resizers = [
+            self._top_resizer, self._top_right_resizer, self._right_resizer, self._bottom_right_resizer,
+            self._bottom_resizer, self._bottom_left_resizer, self._left_resizer, self._top_left_resizer
+        ]
+
+    # ============================================================================================================
+    # PREFERENCES SETTINGS
+    # ============================================================================================================
+
+    def preferences_settings(self):
+        """
+        Returns window preferences settings
+        :return: QtSettings
+        """
+
+        return self._prefs_settings
+
+    def set_preferences_settings(self, prefs_settings):
+        """
+        Sets window preference settings
+        :param prefs_settings:
+        """
+
+        self._prefs_settings = prefs_settings
+
+    def register_preference_widget_class(self, widget_class):
+        """
+        Function used to registere preference widgets
+        """
+
+        if not hasattr(widget_class, 'CATEGORY'):
+            qt.logger.warning(
+                'Impossible to register Category Wigdet Class "{}" because it does not '
+                'defines a CATEGORY attribute'.format(widget_class))
+            return
+
+        registered_prefs_categories = [pref.CATEGORY for pref in self._preference_widgets_classes]
+        if widget_class.CATEGORY in registered_prefs_categories:
+            qt.logger.warning(
+                'Impossible to register Category Widget Class "{}" because its CATEGORY "{}" its '
+                'already registered!'.format(widget_class, widget_class.CATEGORY))
+            return
+
+        self._preference_widgets_classes.append(widget_class)
+
+    # ============================================================================================================
+    # DOCK
+    # ============================================================================================================
+
+    def dockable(self, raw=False):
+        """
+        Returns whether or not the window is dockable
+        :param raw: bool, If True, get current state of the window, otherwise get current setting
+        :return: bool
+        """
+
+        if not raw and self._was_docked is not None:
+            return self._was_docked
+
+        return self._dockable
+
+    def set_dockable(self, dockable, override=False):
+        """
+        Sets whether or not this window is dockable
+        :param dockable: bool
+        :param override: bool, If the dockable raw value should be set.
+            Only should be used if the dock state has changed
+        """
+
+        if override:
+            self._was_docked = self._dockable = dockable
+        else:
+            self._was_docked = self._dockable
+            self._dockable = dockable
+            self.save_window_position()
+
+    def docked(self):
+        """
+        Returns whether or not this window is currently docked
+        :return: bool
+        """
+
+        if not self.dockable():
+            return False
+
+        raise NotImplementedError('docked function is not implemented!')
+
+    def is_floating(self):
+        """
+        Returns whether or not this window is floating
+        :return: bool
+        """
+
+        return tp.Dcc.is_window_floating(self.WindowId)
+
+    # ============================================================================================================
+    # INTERNAL
+    # ============================================================================================================
 
     def _settings_validator(self, **kwargs):
         """
@@ -1235,48 +1314,6 @@ class MainWindow(QMainWindow, object):
         theme_prefs_widget = ThemeCategoryWidget(parent=self._preferences_window)
 
         return theme_prefs_widget
-
-    def _parent_override(self):
-        """
-        Internal function that overrides parent functionality to make sure that proper parent attributes are used
-        in dockable windows
-        """
-
-        # Make sure this function is inherited
-        return super(MainWindow, self)
-
-    # ============================================================================================================
-    # CALLBACKS
-    # ============================================================================================================
-
-    def _on_show_preferences_dialog(self):
-
-        from tpDcc.libs.qt.widgets import lightbox
-        from tpDcc.libs.qt.core import preferences
-        self._lightbox = lightbox.Lightbox(self)
-        self._lightbox.closed.connect(self._on_close_lightbox)
-        self._preferences_window = preferences.PreferencesWidget(settings=self.preferences_settings())
-        self._preferences_window.setFixedHeight(500)
-        self._preferences_window.closed.connect(self._on_close_preferences_window)
-        self._lightbox.set_widget(self._preferences_window)
-        for pref_widget in self._preference_widgets_classes:
-            pref_widget = pref_widget()
-            self._preferences_window.add_category(pref_widget.CATEGORY, pref_widget)
-        self._theme_widget = self._setup_theme_preferences()
-        self._preferences_window.add_category(self._theme_widget.CATEGORY, self._theme_widget)
-        self._lightbox.show()
-
-    def _on_close_preferences_window(self, save_widget=False):
-        self._on_close_lightbox(save_widget)
-        self._lightbox.blockSignals(True)
-        self._lightbox.close()
-        self._lightbox.blockSignals(False)
-
-    def _on_close_lightbox(self, save_widgets=False):
-        if not save_widgets:
-            self._settings_accepted(**self._theme_widget._dlg._form_widget.default_values())
-        else:
-            self._settings_accepted(**self._theme_widget._dlg._form_widget.values())
 
 
 class DetachedWindow(QMainWindow):
@@ -1561,7 +1598,7 @@ class SubWindow(MainWindow, object):
     """
 
     def __init__(self, parent=None, **kwargs):
-        super(SubWindow, self).__init__(parent=parent, show_dragger=False, **kwargs)
+        super(SubWindow, self).__init__(parent=parent, frameless=False, **kwargs)
 
 
 class DirectoryWindow(MainWindow, object):
@@ -1571,7 +1608,7 @@ class DirectoryWindow(MainWindow, object):
 
     def __init__(self, parent=None, **kwargs):
         self.directory = None
-        super(DirectoryWindow, self).__init__(parent=parent, show_dragger=False, **kwargs)
+        super(DirectoryWindow, self).__init__(parent=parent, frameless=False, **kwargs)
 
     def set_directory(self, directory):
         """

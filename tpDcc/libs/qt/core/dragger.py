@@ -32,6 +32,8 @@ class WindowDragger(QFrame, object):
         super(WindowDragger, self).__init__(window)
 
         self._window = window
+        self._dragging_enabled = True
+        self._lock_window_operations = False
         self._mouse_press_pos = None
         self._mouse_move_pos = None
         self._dragging_threshold = 5
@@ -58,13 +60,12 @@ class WindowDragger(QFrame, object):
         self._logo_button = self._setup_logo_button()
         self._title_text = label.ClippedLabel(text=self._window.windowTitle())
         self._title_text.setObjectName('WindowDraggerLabel')
-        self._contents_layout = QVBoxLayout()
+        self._contents_layout = QHBoxLayout()
         self._corner_contents_layout = QHBoxLayout()
-        # self._title_text.setStyleSheet('background-color: transparent')
 
         main_layout.addWidget(self._logo_button)
         main_layout.addWidget(self._title_text)
-        # main_layout.addItem(QSpacerItem(20, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
+        main_layout.addItem(QSpacerItem(25, 0, QSizePolicy.Fixed, QSizePolicy.Fixed))
         main_layout.addLayout(self._contents_layout)
         main_layout.addLayout(self._corner_contents_layout)
 
@@ -117,7 +118,7 @@ class WindowDragger(QFrame, object):
         return self._corner_contents_layout
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.LeftButton and self._dragging_enabled:
             self._mouse_press_pos = event.globalPos()
             self._mouse_move_pos = event.globalPos() - self._window.pos()
         super(WindowDragger, self).mousePressEvent(event)
@@ -125,7 +126,7 @@ class WindowDragger(QFrame, object):
     def mouseMoveEvent(self, event):
         if event.buttons() & Qt.LeftButton:
             global_pos = event.globalPos()
-            if self._mouse_press_pos:
+            if self._mouse_press_pos and self._dragging_enabled:
                 moved = global_pos - self._mouse_press_pos
                 if moved.manhattanLength() > self._dragging_threshold:
                     diff = global_pos - self._mouse_move_pos
@@ -134,6 +135,8 @@ class WindowDragger(QFrame, object):
         super(WindowDragger, self).mouseMoveEvent(event)
 
     def mouseDoubleClickEvent(self, event):
+        if self._lock_window_operations:
+            return
         if self._button_maximized.isVisible():
             self._on_maximize_window()
         else:
@@ -141,7 +144,7 @@ class WindowDragger(QFrame, object):
 
     def mouseReleaseEvent(self, event):
         if self._mouse_press_pos is not None:
-            if event.button() == Qt.LeftButton:
+            if event.button() == Qt.LeftButton and self._dragging_enabled:
                 moved = event.globalPos() - self._mouse_press_pos
                 if moved.manhattanLength() > self._dragging_threshold:
                     event.ignore()
@@ -177,6 +180,33 @@ class WindowDragger(QFrame, object):
         """
 
         self._title_text.setText(title)
+    
+    def set_dragging_enabled(self, flag):
+        """
+        Sets whether or not drag functionality is enabled
+        :param flag: bool
+        """
+        
+        self._dragging_enabled = flag
+    
+    def set_window_buttons_state(self, state):
+        """
+        Sets the state of the dragger buttons
+        :param enabled: bool
+        :param visible: bool
+        """
+
+        self._lock_window_operations = not state
+        for btn in [self._button_closed, self._button_minimized, self._button_maximized]:
+            btn.setEnabled(state)
+            btn.setVisible(state)
+        if not state:
+            self._button_restored.setEnabled(state)
+            self._button_restored.setVisible(state)
+        else:
+            if self.isMaximized():
+                self._button_restored.setEnabled(state)
+                self._button_restored.setVisible(state)
 
     def set_frameless_enabled(self, frameless=False):
         """
@@ -274,7 +304,7 @@ class WindowDragger(QFrame, object):
 
 class DialogDragger(WindowDragger, object):
     def __init__(self, parent=None, on_close=None):
-        super(DialogDragger, self).__init__(parent=parent, on_close=on_close)
+        super(DialogDragger, self).__init__(window=parent, on_close=on_close)
 
         for btn in [self._button_maximized, self._button_minimized, self._button_restored]:
             btn.setEnabled(False)
