@@ -11,6 +11,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
+from tpDcc.libs import qt
 from tpDcc.libs.qt.core import base
 from tpDcc.libs.qt.widgets import toast, action
 from tpDcc.libs.qt.widgets.library import consts, treewidget, listview, items
@@ -1090,7 +1091,7 @@ class LibraryViewer(base.BaseWidget, object):
             try:
                 item.context_menu(menu)
             except Exception as e:
-                tpQtLib.logger.exception(e)
+                qt.logger.exception(e)
         else:
             item_action = QAction(menu)
             item_action.setText('No Item selected')

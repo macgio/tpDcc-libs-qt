@@ -1388,6 +1388,9 @@ class LibraryItem(QTreeWidgetItem, object):
         path = self.image_sequence_path() or self.thumbnail_path()
         movie = None
 
+        if not path:
+            return
+
         if os.path.isfile(path) and path.lower().endswith('.gif'):
             movie = QMovie(path)
             movie.setCacheMode(QMovie.CacheAll)

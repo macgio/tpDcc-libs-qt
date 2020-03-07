@@ -22,6 +22,7 @@ import six
 from tpDcc.libs.python import python, decorators, fileio, path as path_utils
 
 import tpDcc as tp
+from tpDcc.libs import qt
 from tpDcc.libs.qt.widgets.library import exceptions
 
 if tp.is_maya():
@@ -418,7 +419,7 @@ class TransferObject(object):
         :param path: str
         """
 
-        tpQtLib.logger.info('Saving object: {}'.format(path))
+        qt.logger.info('Saving object: {}'.format(path))
 
         data = self.data_to_save()
 
@@ -429,7 +430,7 @@ class TransferObject(object):
         with open(path, 'w') as f:
             f.write(str(data))
 
-        tpQtLib.logger.debug('Saved object: {}'.format(path))
+        qt.logger.debug('Saved object: {}'.format(path))
 
 
 def absolute_path(data, start):

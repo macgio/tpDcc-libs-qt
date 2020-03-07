@@ -14,8 +14,8 @@ from collections import OrderedDict
 
 from Qt.QtCore import *
 
+from tpDcc.libs import qt
 from tpDcc.libs.python import decorators, path as path_utils
-
 from tpDcc.libs.qt.widgets.library import consts, utils
 
 
@@ -140,7 +140,7 @@ class Library(QObject, object):
         :return: list(LibraryItem)
         """
 
-        tpQtLib.logger.debug('Sort by: {}'.format(sort_by))
+        qt.logger.debug('Sort by: {}'.format(sort_by))
         t = time.time()
         for field in reversed(sort_by):
             tokens = field.split(':')
@@ -154,7 +154,7 @@ class Library(QObject, object):
                 return item.item_data().get(field, default)
 
             items = sorted(items, key=sort_key, reverse=reverse)
-        tpQtLib.logger.debug('Sort items took {}'.format(time.time() - t))
+        qt.logger.debug('Sort items took {}'.format(time.time() - t))
 
         return items
 
@@ -167,7 +167,7 @@ class Library(QObject, object):
         :return: dict
         """
 
-        tpQtLib.logger.debug('Group by: {}'.format(fields))
+        qt.logger.debug('Group by: {}'.format(fields))
 
         # TODO: Implement support for multiple grups not only top level group
 
@@ -197,7 +197,7 @@ class Library(QObject, object):
         for group in groups:
             results[group] = results_[group]
 
-        tpQtLib.logger.debug('Group Items Took {}'.format(time.time() - t))
+        qt.logger.debug('Group Items Took {}'.format(time.time() - t))
 
         return results
 
@@ -371,7 +371,7 @@ class Library(QObject, object):
         """
 
         if not self.path():
-            tpQtLib.logger.info('No path set for reading the data from disk')
+            qt.logger.info('No path set for reading the data from disk')
             return self._data
 
         if self.is_dirty():
@@ -387,7 +387,7 @@ class Library(QObject, object):
         """
 
         if not self.path():
-            tpQtLib.logger.info('No path set for saving the data to disk')
+            qt.logger.info('No path set for saving the data to disk')
 
         utils.save_json(self.data_path(), data)
         self.set_dirty(True)
@@ -447,7 +447,7 @@ class Library(QObject, object):
         :param emit_data_changed: bool
         """
 
-        tpQtLib.logger.debug('Saving Items: {}'.format(items))
+        qt.logger.debug('Saving Items: {}'.format(items))
 
         data_ = self.read()
         for item in items:
@@ -468,7 +468,7 @@ class Library(QObject, object):
         :param items: list(LibraryItem)
         """
 
-        tpQtLib.logger.debug('Loading item data: {}'.format(items))
+        qt.logger.debug('Loading item data: {}'.format(items))
 
         data = self.read()
         for item in items:
@@ -686,14 +686,14 @@ class Library(QObject, object):
             return
 
         t = time.time()
-        tpQtLib.logger.debug('Searching items ...')
+        qt.logger.debug('Searching items ...')
         self.searchStarted.emit()
         self._results = self.find_items(self.queries())
         self._grouped_results = self.group_items(self._results, self.group_by())
         self.searchFinished.emit()
         self._search_time = time.time() - t
         self.searchTimeFinished.emit()
-        tpQtLib.logger.debug('Search time: {}'.format(self._search_time))
+        qt.logger.debug('Search time: {}'.format(self._search_time))
 
     def results(self):
         """
@@ -725,7 +725,7 @@ class Library(QObject, object):
         """
 
         if not self.path():
-            tpQtLib.logger.warning('No path set for syncing data')
+            qt.logger.warning('No path set for syncing data')
             return
 
         data = self.read()

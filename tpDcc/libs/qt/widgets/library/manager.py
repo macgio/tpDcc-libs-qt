@@ -10,14 +10,13 @@ from __future__ import print_function, division, absolute_import
 import os
 from collections import OrderedDict
 
-from tpDcc.libs.python import fileio, folder, settings, osplatform, path as path_utils
-
 from tpDcc.core import scripts
-
+from tpDcc.libs import qt
+from tpDcc.libs.python import fileio, folder, settings, osplatform, path as path_utils
 from tpDcc.libs.qt.widgets.library import items
 
 try:
-    from tpPyUtils.externals.scandir import walk
+    from tpDcc.libs.python.externals.scandir import walk
 except ImportError:
     from os import walk
 
@@ -134,7 +133,7 @@ class LibraryManager(object):
                 valid_items.append(cls)
 
         if len(valid_items) > 1:
-            tpQtLib.logger.warning(
+            qt.logger.warning(
                 'Multiple data file supports data type {}:\n{}'.format(data_type, '\n'.join(valid_items)))
         valid_item = valid_items[0]
 
@@ -192,7 +191,7 @@ class LibraryManager(object):
                 items.append(item)
             else:
                 msg = 'Cannot find the item for path "{}"'.format(path)
-                tpQtLib.logger.warning(msg)
+                qt.logger.warning(msg)
 
         return items
 
@@ -413,13 +412,13 @@ class LibraryDataFolder(fileio.FileManager, object):
                 data_type = scripts.ScriptTypes.Python
                 self.settings.set('data_type', data_type)
         if not data_type:
-            tpQtLib.logger.warning(
+            qt.logger.warning(
                 'Impossible to instantiate Data Folder because given Data Type: {} is not valid!'.format(data_type))
             return
 
         data_manager = self.get_manager()
         if not data_manager:
-            tpQtLib.logger.warning('Impossible to instantiate Data Folder because LibraryManager is not defined!')
+            qt.logger.warning('Impossible to instantiate Data Folder because LibraryManager is not defined!')
             return
 
         data_inst = data_manager.get_type_instance(data_type)

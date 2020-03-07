@@ -19,7 +19,7 @@ from Qt.QtGui import *
 import tpDcc as tp
 from tpDcc.libs.python import decorators, path as path_utils
 from tpDcc.libs import qt
-from tpDcc.libs.qt.core import base, icon, menu, qtutils, animation
+from tpDcc.libs.qt.core import base, icon, menu, qtutils, animation, window
 from tpDcc.libs.qt.widgets import stack, messagebox, action
 from tpDcc.libs.qt.widgets.library import consts, utils, library, viewer, widgets
 
@@ -49,8 +49,8 @@ class SidebarFrame(QFrame):
     pass
 
 
-class LibraryWindow(tp.Window, object):
-
+class LibraryWindow(window.BaseWindow, object):
+    
     LIBRARY_CLASS = library.Library
     VIEWER_CLASS = viewer.LibraryViewer
     SEARCH_WIDGET_CLASS = widgets.LibrarySearchWidget
@@ -101,7 +101,8 @@ class LibraryWindow(tp.Window, object):
         self._status_widget_visible = True
         self._new_item_widget_visible = False
 
-        super(LibraryWindow, self).__init__(name=name, parent=parent, show_dragger=False, auto_load=False, **kwargs)
+        super(LibraryWindow, self).__init__(parent=parent)
+        # super(LibraryWindow, self).__init__(name=name, parent=parent, show_dragger=False, auto_load=False, **kwargs)
 
         self.set_refresh_enabled(True)
 

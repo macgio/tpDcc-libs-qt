@@ -13,6 +13,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
+from tpDcc.libs import qt
 from tpDcc.libs.qt.widgets.library import consts, mixin
 
 
@@ -196,7 +197,7 @@ class LibraryListView(mixin.LibraryViewWidgetMixin, QListView):
             if self.tree_widget().is_sort_by_custom_order():
                 self.move_items(selected_items, item)
             else:
-                tpQtLib.logger.info('You can only re-order items when sorting by custom order')
+                qt.logger.info('You can only re-order items when sorting by custom order')
 
         if item:
             item.drop_event(event)
@@ -444,7 +445,7 @@ class LibraryListView(mixin.LibraryViewWidgetMixin, QListView):
             for item in items:
                 self.tree_widget().setItemSelected(item, value)
         except Exception as e:
-            tpQtLib.logger.error('{} | {}'.format(e, traceback.format_exc()))
+            qt.logger.error('{} | {}'.format(e, traceback.format_exc()))
         finally:
             self.tree_widget().blockSignals(False)
 

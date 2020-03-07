@@ -350,7 +350,7 @@ class LoadWidget(base.BaseWidget, object):
         self._thumbnail_btn.hide()
         self._thumbnail_btn = self._sequence_widget
         path = self.item().thumbnail_path()
-        if os.path.exists(path):
+        if path and os.path.exists(path):
             self.set_icon_path(path)
         if self.item().image_sequence_path():
             self._sequence_widget.set_dirname(self.item().image_sequence_path())

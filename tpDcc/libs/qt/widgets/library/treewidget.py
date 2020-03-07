@@ -13,6 +13,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
+from tpDcc.libs import qt
 from tpDcc.libs.qt.widgets.library import consts, mixin, items
 
 
@@ -465,7 +466,7 @@ class LibraryTreeWidget(mixin.LibraryViewWidgetMixin, QTreeWidget):
                 hidden = settings[label].get('hidden', False)
                 self.setColumnHidden(column, hidden)
             else:
-                tpQtLib.logger.debug('Cannot set the column setting for header label: {}'.format(label))
+                qt.logger.debug('Cannot set the column setting for header label: {}'.format(label))
 
     """
     ##########################################################################################
