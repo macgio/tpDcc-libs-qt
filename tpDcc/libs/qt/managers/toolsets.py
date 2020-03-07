@@ -186,6 +186,9 @@ class ToolsetsManager(object):
         :return: tuple(float, float, float)
         """
 
+        if not toolset_id:
+            return 255, 255, 255
+
         if not package_name:
             package_name = toolset_id.replace('.', '-').split('-')[0]
 
