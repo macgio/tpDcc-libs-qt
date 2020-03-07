@@ -174,60 +174,6 @@
             
   <div class="section" id="module-tpDcc.libs.qt.core.timers">
 <span id="tpdcc-libs-qt-core-timers-module"></span><h1>tpDcc.libs.qt.core.timers module<a class="headerlink" href="#module-tpDcc.libs.qt.core.timers" title="Permalink to this headline">¶</a></h1>
-<p>Module that contains different types of Qt timers</p>
-<dl class="class">
-<dt id="tpDcc.libs.qt.core.timers.ClickTimer">
-<em class="property">class </em><code class="sig-prename descclassname">tpDcc.libs.qt.core.timers.</code><code class="sig-name descname">ClickTimer</code><a class="headerlink" href="#tpDcc.libs.qt.core.timers.ClickTimer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PySide2.QtCore.QObject</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="attribute">
-<dt id="tpDcc.libs.qt.core.timers.ClickTimer.EXECUTE">
-<code class="sig-name descname">EXECUTE</code><em class="property"> = &lt;PySide2.QtCore.Signal object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.core.timers.ClickTimer.EXECUTE" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.core.timers.ClickTimer.init_data">
-<code class="sig-name descname">init_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.timers.ClickTimer.init_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.core.timers.ClickTimer.remove_timer">
-<code class="sig-name descname">remove_timer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.timers.ClickTimer.remove_timer" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.core.timers.ClickTimer.set_data">
-<code class="sig-name descname">set_data</code><span class="sig-paren">(</span><em class="sig-param">button</em>, <em class="sig-param">modifier</em>, <em class="sig-param">pos</em>, <em class="sig-param">selected</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.timers.ClickTimer.set_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.core.timers.ClickTimer.start">
-<code class="sig-name descname">start</code><span class="sig-paren">(</span><em class="sig-param">interval</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.timers.ClickTimer.start" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="tpDcc.libs.qt.core.timers.ClickTimer.staticMetaObject">
-<code class="sig-name descname">staticMetaObject</code><em class="property"> = &lt;PySide2.QtCore.QMetaObject object&gt;</em><a class="headerlink" href="#tpDcc.libs.qt.core.timers.ClickTimer.staticMetaObject" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tpDcc.libs.qt.core.timers.ClickTimer.timerEvent">
-<code class="sig-name descname">timerEvent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">event:PySide2.QtCore.QTimerEvent</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.timers.ClickTimer.timerEvent" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="tpDcc.libs.qt.core.timers.defer">
-<code class="sig-prename descclassname">tpDcc.libs.qt.core.timers.</code><code class="sig-name descname">defer</code><span class="sig-paren">(</span><em class="sig-param">delay</em>, <em class="sig-param">fn</em>, <em class="sig-param">default_delay=1</em><span class="sig-paren">)</span><a class="headerlink" href="#tpDcc.libs.qt.core.timers.defer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Append artificial delay to <cite>func</cite>
-This aids in keeping the GUI responsive, but complicates logic
-when producing tests. To combat this, the environment variable ensures
-that every operation is synchronous.
-:param delay: float, Delay multiplier; default 1, 0 means no delay
-:param fn: callable, Any callable
-:param default_delay: float</p>
-</dd></dl>
-
 </div>
 
 
