@@ -17,7 +17,7 @@
 
 QWidget {
     color: FOREGROUND_COLOR;
-    border: 0px transparent;
+    /*border: 0px transparent;*/
     font-family: Roboto;
     background-color: transparent;
 }
@@ -35,10 +35,29 @@ QWidget::item:hover {
  QMainWindow
 */
 
-QMainWindow,
-QFrame {
+QMainWindow {
     background-color: BACKGROUND_COLOR;
 }
+
+/*
+ QDialog
+*/
+
+QDialog{
+    background-color: BACKGROUND_COLOR;
+}
+
+/*
+ QFrame
+*/
+QFrame{
+    background-color: BACKGROUND_COLOR;
+    border-top-left-radius: WINDOW_DRAGGER_ROUNDED_CORNERSpx;
+    border-top-right-radius: WINDOW_DRAGGER_ROUNDED_CORNERSpx;
+    border-bottom-left-radius: WINDOW_DRAGGER_ROUNDED_CORNERSpx;
+    border-bottom-right-radius: WINDOW_DRAGGER_ROUNDED_CORNERSpx;
+}
+
 
 /*
  QLabel
@@ -64,7 +83,7 @@ QPushButton {
     padding: BUTTON_PADDINGpx;
     border-radius: BUTTON_BORDER_RADIUSpx;
     border-width: 0px 0px 2px 0px;
-    min-height: 25px;
+    border: 0px transparent;
 }
 
 QPushButton:disabled {
@@ -84,14 +103,6 @@ QPushButton:pressed {
     border-bottom: solid ACCENT_COLOR_DARKER;
     border-width: 0px 0px 1px 0px;
     padding-bottom: 1*DPIpx;
-}
-
-QPushButton {
-    border-radius: 2*DPIpx;
-    outline: none;
-    /*margin-bottom: 4px;*/
-    min-height: 25px;
-    border-width: 0px 0px 2px 0px;
 }
 
 QPushButton:checked {
@@ -142,9 +153,9 @@ QCheckBox:disabled {
 */
 
 QRadioButton {
-    color: MAIN_FOREGROUND_COLOR;
-    width: RADIO_SIZEpx;
-    height: RADIO_SIZEpx;
+    color: FOREGROUND_COLOR;
+    /*width: RADIO_SIZEpx;*/
+    /*height: RADIO_SIZEpx;*/
     background-color: transparent;
 }
 
@@ -158,7 +169,7 @@ QRadioButton::indicator:checked {
 }
 
 QRadioButton::indicator:unchecked {
-    background: SECONDARY_BACKGROUND_COLOR;
+    /*background: SECONDARY_BACKGROUND_COLOR;*/     /*Disable to avoid problem with checkbox with images*/
     width: RADIO_UNCHECKED_SIZEpx;
     height: RADIO_UNCHECKED_SIZEpx;
     border-radius: RADIO_UNCHECKED_RADIUSpx;
@@ -217,7 +228,7 @@ QComboBox:hover {
 
 QComboBox::down-arrow {
     image: url('RESOURCE_COMBO_ICON');
-    color: MAIN_FOREGROUND_COLOR;
+    color: FOREGROUND_COLOR;
     width: COMBO_ICON_SIZEpx;
     height: COMBO_ICON_SIZEpx;
 }
@@ -320,6 +331,28 @@ QTextBrowser:disabled {
 }
 
 /*
+ QSpinBox
+*/
+
+QAbstractSpinBox {
+    background-color: SECONDARY_BACKGROUND_COLOR;
+    color: FOREGROUND_COLOR;
+    selection-color: ACCENT_FOREGROUND_COLOR;
+	selection-background-color: ACCENT_COLOR;
+    padding: 0 4px;
+    border-radius: WIDGET_ROUNDED_CORNERSpx;
+    /*background-color: rgb(FOREGROUND_COLOR_R, FOREGROUND_COLOR_G, FOREGROUND_COLOR_B, 30);*/
+}
+
+QSpinBox {
+    border: THREE_PIXELSpx solid SECONDARY_BACKGROUND_COLOR;
+}
+
+QDoubleSpinBox {
+    border: THREE_PIXELSpx solid SECONDARY_BACKGROUND_COLOR;
+}
+
+/*
  QSizeGrip
 */
 
@@ -330,6 +363,57 @@ QSizeGrip {
     height: 16px;
 }
 
+/*
+ QScrollArea
+*/
+
+QAbstractScrollArea {
+    background-color: transparent;
+}
+
+QScrollArea {
+    background-color: transparent;
+}
+
+/*
+ QMenu
+*/
+
+QMenu {
+    color: FOREGROUND_COLOR;
+}
+
+/*
+ QMenuBar
+*/
+
+QMenuBar {
+    background-color: BACKGROUND_COLOR;
+    color: FOREGROUND_COLOR;
+}
+
+QMenuBar::item {
+    background: transparent;
+}
+
+QMenuBar::item:pressed {
+    background-color: SECONDARY_BACKGROUND_COLOR;
+    color: FOREGROUND_COLOR;
+}
+
+/*
+ QSplitter
+*/
+
+QSplitter:handle {
+	background-color: transparent;
+	/*background-color: SECONDARY_BACKGROUND_COLOR;*/
+    /*width: 4px;*/
+}
+
+QSplitter::handle:hover {
+    background-color: ACCENT_COLOR;
+}
 
 
 /*
@@ -346,6 +430,16 @@ WindowDragger {
     background-color: WINDOW_DRAGGER_COLOR;
     border-top-left-radius: WINDOW_DRAGGER_ROUNDED_CORNERSpx;
     border-top-right-radius: WINDOW_DRAGGER_ROUNDED_CORNERSpx;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+ToolsetFrame {
+    background-color: WINDOW_DRAGGER_COLOR;
+}
+
+ToolsetFrame QFrame {
+    background-color: WINDOW_DRAGGER_COLOR;
 }
 
 ClippedLabel#WindowDraggerLabel {
@@ -355,37 +449,77 @@ ClippedLabel#WindowDraggerLabel {
     font-size: WINDOW_DRAGGER_FONT_SIZEpx;
 }
 
+WindowContents {
+    backgrond-color: WINDOW_CONTENTS;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: WINDOW_ROUNDED_CORNERSpx;
+    border-bottom-right-radius: WINDOW_ROUNDED_CORNERSpx;
+}
+
+
 /*
  Stack
 */
 
-StackItem #title
-{
+StackItem#title {
     background-color: STACK_ITEM_BACKGROUND_COLOR;
 }
 
-StackItem #title:hover
-{
+StackItem#title:hover {
     border: 0px solid transparent;
     background-color: HOVER_BACKGROUND_COLOR;
 }
 
+StackTitleFrame {
+    background-color: STACK_ITEM_BACKGROUND_COLOR;
+    border-radius: ONE_PIXELpx;
+}
+
+StackTitleFrame#selected {
+    background-color: PRIMARY_COLOR;
+    border-radius: ONE_PIXELpx;
+}
+
+StackTitleFrame QLineEdit
+{
+    background-color: transparent;
+}
+
+StackTitleFrame QLineEdit:focus {
+    background-color: transparent;
+}
 
 
+StackTitleFrame QLineEdit:disabled {
+    color: transparent;
+}
 
 
-
-
-
-/*!*QSpinBox,*!*/
-/*	height: 25px;*/
-/*	padding: 0 4px;*/
-/*	border-radius: 0px;*/
-/*	background-color: rgb(FOREGROUND_COLOR_R, FOREGROUND_COLOR_G, FOREGROUND_COLOR_B, 15);*/
-/*	border-bottom: 0px solid rgb(255, 255, 255, 50);*/
-/*	selection-color: rgb(255, 255, 255, 230);*/
-/*	selection-background-color: ACCENT_COLOR;*/
+/*StackTitleFrame QLineEdit#disabled*/
+/*{*/
+/*    color: STACK_TITLE_DISABLED;*/
 /*}*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /*QToolBar, QToolButton{*/
@@ -949,27 +1083,6 @@ StackItem #title:hover
 /*!*}*!*/
 
 
-/*!**/
-/* --------------------------------------------------------------------------*/
-/* QSplitter*/
-/* --------------------------------------------------------------------------*/
-/**!*/
-
-/*!*QSplitter {*!*/
-/*	!*background-color: BACKGROUND_COLOR_LIGHTER;*!*/
-/*    !*width: 4px;*!*/
-/*    !*border: none;*!*/
-/*!*}*!*/
-
-/*!*QSplitter:handle {*!*/
-/*	!*background-color: BACKGROUND_COLOR_LIGHTER;*!*/
-/*    !*width: 4px;*!*/
-
-/*!*}*!*/
-
-/*!*QSplitter::handle:hover {*!*/
-/*    !*background-color: ACCENT_COLOR;*!*/
-/*!*}*!*/
 
 /*QMainWindow::separator*/
 /*{*/
