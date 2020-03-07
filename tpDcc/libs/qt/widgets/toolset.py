@@ -45,7 +45,7 @@ class ToolsetWidget(stack.StackItem, object):
 
         self._block_save = False
         self._show_warnings = True
-        self._icon = self.CONFIG.get('icon')
+        self._icon = self.CONFIG.get('icon') if self.CONFIG else None
         self._icon_color = icon_color
         self._tree_widget = tree_widget
         self._toolset_widget_item = widget_item
@@ -55,7 +55,7 @@ class ToolsetWidget(stack.StackItem, object):
         self._settings_button = None
         self._widgets = list()
         self._attacher = None
-        title = self.CONFIG.get('label', 'Not defined')
+        title = self.CONFIG.get('label', 'Not defined') if self.CONFIG else 'Not defined'
         collapsable = kwargs.get('collapsable', True)
         show_item_icon = kwargs.get('show_item_icon', True)
 
@@ -364,7 +364,7 @@ class ToolsetWidget(stack.StackItem, object):
         :param widgets: list
         """
 
-        if not self.CONFIG.get('auto_link_properties', True):
+        if not self.CONFIG and self.CONFIG.get('auto_link_properties', True):
             return
 
         new_properties = list()
@@ -412,7 +412,7 @@ class ToolsetWidget(stack.StackItem, object):
         Internal callback function that is called when help button is clicked
         """
 
-        url = self.CONFIG.get('help_url', '')
+        url = self.CONFIG.get('help_url', '') if self.CONFIG else ''
         if not url:
             return
         webbrowser.open(url)
