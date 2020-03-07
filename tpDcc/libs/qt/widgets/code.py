@@ -16,6 +16,7 @@ from Qt.QtWidgets import *
 from Qt.QtGui import *
 
 import tpDcc as tp
+from tpDcc.libs import qt
 from tpDcc.libs.python import python, fileio, code, folder as folder_utils, path as path_utils
 from tpDcc.libs.qt.core import qtutils
 
@@ -1071,7 +1072,7 @@ class CodeTextEdit(QPlainTextEdit, object):
 
     def _on_save(self):
         if not self.document().isModified():
-            tpQtLib.logger.warning('No changes to save in {}'.format(self._file_path))
+            qt.logger.warning('No changes to save in {}'.format(self._file_path))
             return
 
         old_last_modified = self._last_modified

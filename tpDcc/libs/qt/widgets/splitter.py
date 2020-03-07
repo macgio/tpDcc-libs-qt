@@ -84,7 +84,7 @@ class CollapsibleSplitterHandle(QSplitterHandle, object):
 
         self._is_expanded = True
 
-        expand_icon = tpDcc.ResourcesMgr().icon('expand')
+        expand_icon = tpDcc.ResourcesMgr().icon('back')
         expand_hover_icon = tpDcc.ResourcesMgr().icon('expand_hover')
         expand_pressed_icon = tpDcc.ResourcesMgr().icon('expand_pressed')
         self.expand_btn = CollapsibleSplitterButton(
@@ -97,7 +97,7 @@ class CollapsibleSplitterHandle(QSplitterHandle, object):
         self.expand_btn.setFocusPolicy(Qt.NoFocus)
         self.expand_btn.setVisible(False)
 
-        collapse_icon = tpDcc.ResourcesMgr().icon('collapse')
+        collapse_icon = tpDcc.ResourcesMgr().icon('next')
         collapse_hover_icon = tpDcc.ResourcesMgr().icon('collapse_hover')
         collapse_pressed_icon = tpDcc.ResourcesMgr().icon('collapse_pressed')
         self.collapse_btn = CollapsibleSplitterButton(

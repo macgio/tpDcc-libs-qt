@@ -11,6 +11,8 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
+import tpDcc
+
 
 class AccordionStyle(object):
     BOXED = 1
@@ -313,7 +315,9 @@ class AccordionWidget(QScrollArea, object):
     def __init__(self, parent=None):
         super(AccordionWidget, self).__init__(parent=parent)
 
-        self._rollout_style = AccordionStyle.ROUNDED
+        self._rollout_style = AccordionStyle.SQUARE
+        if tpDcc.is_maya():
+            self._rollout_style = AccordionStyle.MAYA
         self._drag_drop_mode = AccordionDragDrop.NO_DRAG_DROP
         self._scrolling = False
         self._scroll_init_y = 0

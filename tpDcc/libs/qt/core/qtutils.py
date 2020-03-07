@@ -1416,6 +1416,15 @@ def recursively_set_menu_actions_visibility(menu, state):
         menu.menuAction().setVisible(state)
 
 
+def dpi_multiplier():
+    """
+    Returns current application DPI multiplier
+    :return: float
+    """
+
+    return max(1, float(QApplication.desktop().logicalDpiY()) / float(consts.DEFAULT_DPI))
+
+
 def dpi_scale(value):
     """
     Resizes by value based on current DPI
@@ -1424,7 +1433,7 @@ def dpi_scale(value):
     :rtype: int
     """
 
-    mult = QApplication.desktop().logicalDpiY() / consts.DEFAULT_DPI
+    mult = dpi_multiplier()
     return value * mult
 
 
@@ -1435,9 +1444,9 @@ def dpi_scale_divide(value):
     :return: int divided size in pixels
     """
 
-    mult = QApplication.desktop().logicalDpiY() / consts.DEFAULT_DPI
+    mult = dpi_multiplier()
     if value != 0:
-        return value / mult
+        return float(value) / float(mult)
 
     return value
 
@@ -1451,6 +1460,10 @@ def margins_dpi_scale(left, top, right, bottom):
     :param int bottom:
     :return: tuple(int, int, int, int)
     """
+
+    if isinstance(left, tuple):
+        margins = left
+        return dpi_scale(margins[0]), dpi_scale(margins[1]), dpi_scale(margins[2]), dpi_scale(margins[3])
 
     return dpi_scale(left), dpi_scale(top), dpi_scale(right), dpi_scale(bottom)
 
@@ -1512,6 +1525,33 @@ def force_window_menu_bar(window_instance):
 
     menu.setSizePolicy(menu.sizePolicy().horizontalPolicy(), QSizePolicy.Fixed)
     window_instance.centralWidget().layout().insertWidget(0, menu)
+
+
+def desktop_pixmap_from_rect(rect):
+    """
+    Generates a pixmap of the application desktop in the given rect
+    :param rect: QRect
+    :return: QPixmap
+    """
+
+    desktop = QApplication.instance().desktop()
+
+    return QPixmap.grabWindow(desktop.winId(), rect.x(), rect.y(), rect.width(), rect.height())
+
+
+def screens_contains_point(point):
+    """
+    Returns whether given point is contained in current screen
+    :param point: QPoint
+    :return: bool
+    """
+
+    desktop = QApplication.desktop()
+    for i in range(desktop.screenCount()):
+        if desktop.geometry().contains(point):
+            return True
+
+    return False
 
 
 def find_coordinates_inside_screen(x, y, width, height, padding=0):
@@ -1588,3 +1628,45 @@ def find_coordinates_inside_screen(x, y, width, height, padding=0):
         y -= padding
 
     return x, y
+
+
+def update_widget_style(widget):
+    """
+    Updates object widget style
+    Should be called for example when an style name changes
+    :param widget: QWidget
+    """
+
+    widget.setStyle(widget.style())
+
+
+def iterate_parents(widget):
+    """
+    Yields all parents of the given widget
+    :param widget: QWidget
+    :return:
+    """
+
+    parent = widget
+    while True:
+        parent = parent.parentWidget()
+        if parent is None:
+            break
+
+        yield parent
+
+
+def iterate_children(widget, skip=None):
+    """
+    Yields all descendant widgets depth first of the given widget
+    :param widget: QWWidget, widget to iterate through
+    :param skip: str, if the widget has this property, children will be skip
+    :return:
+    """
+
+    for child in widget.children():
+        yield child
+        if skip is not None and child.property(skip) is not None:
+            continue
+        for grand_cihld in iterate_children(widget=child, skip=skip):
+            yield grand_cihld

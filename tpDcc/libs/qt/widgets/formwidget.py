@@ -16,8 +16,8 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
+from tpDcc.libs import qt
 from tpDcc.libs.python import decorators
-
 from tpDcc.libs.qt.widgets import label, color
 
 
@@ -377,7 +377,7 @@ class FormWidget(QFrame, object):
         for data in schema:
             cls = FIELD_WIDGET_REGISTRY.get(data.get('type', 'label'))
             if not cls:
-                tpQtLib.logger.warning('Cannot find widget for {}'.format(data))
+                qt.logger.warning('Cannot find widget for {}'.format(data))
                 continue
             if layout and not data.get('layout'):
                 data['layout'] = layout
@@ -433,7 +433,7 @@ class FormWidget(QFrame, object):
                 self._set_state(fields)
             self.validated.emit()
         else:
-            tpQtLib.logger.debug('No validator set')
+            qt.logger.debug('No validator set')
 
     def has_errors(self):
         """
@@ -661,7 +661,7 @@ class FieldWidget(QFrame, object):
                 try:
                     self.set_value(value)
                 except TypeError as e:
-                    tpQtLib.logger.exception('{} | {}'.format(e, traceback.format_exc()))
+                    qt.logger.exception('{} | {}'.format(e, traceback.format_exc()))
             enabled = state.get('enabled', None)
             if enabled is not None:
                 self.setEnabled(enabled)
@@ -1218,7 +1218,7 @@ class EnumFieldWidget(FieldWidget, object):
         if index != -1:
             self.widget().setCurrentIndex(index)
         else:
-            tpQtLib.logger.warning('Cannot set the value for field {}'.format(self.name()))
+            qt.logger.warning('Cannot set the value for field {}'.format(self.name()))
 
 
 class SeparatorFieldWidget(FieldWidget, object):

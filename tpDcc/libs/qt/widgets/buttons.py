@@ -805,6 +805,15 @@ class BaseMenuButton(QPushButton, ButtonIcons):
         new_menu = self.menu(mouse_menu)
         new_menu.addSeparator()
 
+    def launch_context_menu(self, mouse_btn):
+        menu = self._click_menu[mouse_btn]
+
+        if menu is not None and self._menu_active[mouse_btn]:
+            pos = self.menu_pos(widget=menu, align=self._menu_align)
+            menu.exec_(pos)
+            # add focuss
+            # menu.search_edit.focus()
+            
     def menu_pos(self, widget=None, align=Qt.AlignLeft):
         """
         Returns menu position based on the current widget position and size
@@ -832,12 +841,7 @@ class BaseMenuButton(QPushButton, ButtonIcons):
         return res
 
     def _on_context_menu(self, mouse_btn):
-        menu = self._click_menu[mouse_btn]
-
-        if menu is not None and self._menu_active[mouse_btn]:
-            pos = self.menu_pos(widget=menu, align=self._menu_align)
-            menu.exec_(pos)
-            # add focuss
+        self.launch_context_menu(mouse_btn=mouse_btn)
 
     def _on_menu_changed(self, mouse_button, object):
         if mouse_button == Qt.LeftButton:
@@ -946,9 +950,9 @@ class ColorButton(QPushButton, object):
 
     colorChanged = Signal()
 
-    def __init__(self, colorR=1.0, colorG=0.0, colorB=0.0, parent=None, **kwargs):
+    def __init__(self, color_r=1.0, color_g=0.0, color_b=0.0, parent=None, **kwargs):
         super(ColorButton, self).__init__(parent=parent, **kwargs)
-        self._color = QColor.fromRgbF(colorR, colorG, colorB)
+        self._color = QColor.fromRgbF(color_r, color_g, color_b)
         self.setSizePolicy(QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
         self._update_color()
 
@@ -962,7 +966,7 @@ class ColorButton(QPushButton, object):
         self._update_color()
 
     def show_color_editor(self):
-        if tp.Dcc.get_name() == tp.Dccs.Maya:
+        if tp.is_maya():
             import maya.cmds as cmds
             cmds.colorEditor(rgbValue=(self._color.redF(), self._color.greenF(), self._color.blueF()))
             if not cmds.colorEditor(query=True, result=True):

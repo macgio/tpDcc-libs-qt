@@ -115,7 +115,7 @@ class StatusWidget(QFrame, object):
         self._timer.stop()
         self._button.hide()
         self._label.setText('')
-        icon = resource.icon('blank')
+        icon = tpDcc.ResourcesMgr().icon('blank')
         self._button.setIcon(icon) if icon else self._button.setIcon(QIcon())
         self.setStyleSheet('')
         self._blocking = False
