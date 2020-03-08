@@ -1017,7 +1017,7 @@ class MainWindow(BaseWindow, object):
                 window.setWindowFlags(window.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
                 window.setWindowFlags(window.windowFlags() ^ Qt.WindowMinMaxButtonsHint)
             else:
-                window.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+                window.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
                 window.setWindowFlags(window.windowFlags() ^ Qt.WindowMinMaxButtonsHint)
             self.set_resizer_active(True)
         elif not flag and self.is_frameless():
@@ -1025,7 +1025,7 @@ class MainWindow(BaseWindow, object):
             if qtutils.is_pyside2() or qtutils.is_pyqt5():
                 window.setWindowFlags(window.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
             else:
-                self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+                self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
             self.set_resizer_active(False)
 
         window.show()
