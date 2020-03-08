@@ -195,7 +195,7 @@ class WindowDragger(QFrame, object):
         :param enabled: bool
         :param visible: bool
         """
-        
+
         self._lock_window_operations = not state
         for btn in [self._button_closed, self._button_minimized, self._button_maximized]:
             btn.setEnabled(state)
