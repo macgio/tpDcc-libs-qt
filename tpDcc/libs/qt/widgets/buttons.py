@@ -813,7 +813,7 @@ class BaseMenuButton(QPushButton, ButtonIcons):
             menu.exec_(pos)
             # add focuss
             # menu.search_edit.focus()
-            
+
     def menu_pos(self, widget=None, align=Qt.AlignLeft):
         """
         Returns menu position based on the current widget position and size

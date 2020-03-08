@@ -50,7 +50,6 @@ class SidebarFrame(QFrame):
 
 
 class LibraryWindow(window.BaseWindow, object):
-    
     LIBRARY_CLASS = library.Library
     VIEWER_CLASS = viewer.LibraryViewer
     SEARCH_WIDGET_CLASS = widgets.LibrarySearchWidget

@@ -94,8 +94,8 @@ class Dialog(QDialog, object):
 
         return {
             "theme": {
-            "accentColor": "rgb(80, 80, 80, 255)",
-            "backgroundColor": "rgb(45, 45, 45, 255)",
+                "accentColor": "rgb(80, 80, 80, 255)",
+                "backgroundColor": "rgb(45, 45, 45, 255)",
             }
         }
 
