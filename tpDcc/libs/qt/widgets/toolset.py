@@ -55,7 +55,7 @@ class ToolsetWidget(stack.StackItem, object):
         self._settings_button = None
         self._widgets = list()
         self._attacher = None
-        title = self.CONFIG.get('label', 'Not defined') if self.CONFIG else 'Not defined'
+        title = self.CONFIG.data.get('label', '') if self.CONFIG else ''
         collapsable = kwargs.get('collapsable', True)
         show_item_icon = kwargs.get('show_item_icon', True)
 
