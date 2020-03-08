@@ -180,7 +180,7 @@ class WindowDragger(QFrame, object):
         """
 
         self._title_text.setText(title)
-    
+
     def set_dragging_enabled(self, flag):
         """
         Sets whether or not drag functionality is enabled
