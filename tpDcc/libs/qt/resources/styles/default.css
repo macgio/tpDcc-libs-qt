@@ -980,10 +980,10 @@ StackItem .QToolButton{
     border-color: transparent;
 }
 
-StackItem QLineEdit
-{
-    background-color: transparent;
-}
+/*StackItem QLineEdit*/
+/*{*/
+/*    background-color: transparent;*/
+/*}*/
 
 StackTitleFrame {
     background-color: STACK_ITEM_BACKGROUND_COLOR;
@@ -1009,10 +1009,10 @@ StackTitleFrame QLineEdit:disabled {
     color: transparent;
 }
 
-/*StackTitleFrame QLineEdit#disabled*/
-/*{*/
-/*    color: STACK_TITLE_DISABLED;*/
-/*}*/
+StackTitleFrame QLineEdit#disabled
+{
+    color: STACK_TITLE_DISABLED;
+}
 
 
 
