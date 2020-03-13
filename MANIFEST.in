@@ -1,17 +1,3 @@
 include tpDcc/libs/qt/__logging__.ini
-include tpDcc/libs/qt/resources/*.*
-include tpDcc/libs/qt/resources/icons/*.*
-include tpDcc/libs/qt/resources/icons/default/*.*
-include tpDcc/libs/qt/resources/icons/black/*.*
-include tpDcc/libs/qt/resources/icons/color/*.*
-include tpDcc/libs/qt/resources/icons/common/*.*
-include tpDcc/libs/qt/resources/icons/material/*.*
-include tpDcc/libs/qt/resources/icons/white/*.*
-include tpDcc/libs/qt/resources/icons/window/*.*
-include tpDcc/libs/qt/resources/icons/windows/*.*
-include tpDcc/libs/qt/resources/fonts/*.*
-include tpDcc/libs/qt/resources/styles/*.*
-include tpDcc/libs/qt/resources/themes/*.*
-include tpDcc/libs/qt/resources/themes/resources/*.*
-include tpDcc/libs/qt/resources/themes/resources/default/*.*
+recursive-include tpDcc/libs/qt/resources/* *.*
 include tpDcc/libs/qt/externals/pysideutils/QtUiTools.pyd
