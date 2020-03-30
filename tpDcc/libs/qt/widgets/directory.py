@@ -357,7 +357,7 @@ class SelectFolder(QWidget, object):
         self.directoryChanged.emit(directory)
 
 
-class SelectFile(QWidget, object):
+class SelectFile(base.DirectoryWidget, object):
     """
     Widget with button and line edit that opens a file dialog to select file paths
     """
@@ -366,7 +366,6 @@ class SelectFile(QWidget, object):
 
     def __init__(self, label_text='Select File', directory='', use_app_browser=False,
                  filters=None, use_icon=True, parent=None):
-        super(SelectFile, self).__init__(parent)
 
         self._use_app_browser = use_app_browser
         self.settings = None
@@ -375,10 +374,29 @@ class SelectFile(QWidget, object):
         self._label_text = label_text
         self._filters = filters
 
+        super(SelectFile, self).__init__(parent)
+
+    @property
+    def file_label(self):
+        return self._file_label
+
+    @property
+    def file_line(self):
+        return self._file_line
+
+    @property
+    def file_btn(self):
+        return self._folder_btn
+
+    def get_main_layout(self):
         main_layout = QHBoxLayout()
         main_layout.setContentsMargins(2, 2, 2, 2)
         main_layout.setSpacing(2)
-        self.setLayout(main_layout)
+
+        return main_layout
+
+    def ui(self):
+        super(SelectFile, self).ui()
 
         self._file_label = QLabel('{0}'.format(self._label_text)) if self._label_text == '' else QLabel(
             '{0}:'.format(self._label_text))
@@ -395,21 +413,11 @@ class SelectFile(QWidget, object):
             self._file_btn = buttons.BaseButton('Browse ...')
 
         for widget in [self._file_label, self._file_line, self._file_btn]:
-            main_layout.addWidget(widget)
+            self.main_layout.addWidget(widget)
 
+    def setup_signals(self):
         self._file_btn.clicked.connect(self._open_file_browser_dialog)
-
-    @property
-    def file_label(self):
-        return self._file_label
-
-    @property
-    def file_line(self):
-        return self._file_line
-
-    @property
-    def file_btn(self):
-        return self._folder_btn
+        self._file_line.textChanged.connect(self._text_changed)
 
     def set_settings(self, settings):
         """
@@ -436,13 +444,15 @@ class SelectFile(QWidget, object):
 
         self._file_label.setText(text)
 
-    def set_directory_text(self, new_text):
+    def set_directory(self, directory):
         """
         Sets the text of the directory line
-        :param new_text: str
+        :param directory: str
         """
 
-        self._file_line.setText(new_text)
+        super(SelectFile, self).set_directory(directory=directory)
+
+        self._file_line.setText(directory)
 
     def get_directory(self):
         """

@@ -9,6 +9,8 @@ from __future__ import print_function, division, absolute_import
 
 from collections import defaultdict
 
+from tpDcc import register
+from tpDcc.libs.python import decorators
 from tpDcc.libs.qt.core import input
 
 
@@ -53,3 +55,12 @@ class InputManager(object):
         """
 
         pass
+
+
+@decorators.Singleton
+class InputsManagerSingleton(InputManager, object):
+    def __init__(self):
+        InputManager.__init__(self)
+
+
+register.register_class('InputsMgr', InputsManagerSingleton)
