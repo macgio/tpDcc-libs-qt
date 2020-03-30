@@ -772,8 +772,8 @@ class MainWindow(BaseWindow, object):
             self._dragger.set_window_buttons_state(True)
 
         # We set the window title after UI is created
-        self.setWindowTitle(kwargs.get('title', 'tete'))
-        self.setWindowIcon(kwargs.get('icon', tp.ResourcesMgr().icon('ok')))
+        self.setWindowTitle(kwargs.get('title', 'tpDcc'))
+        self.setWindowIcon(kwargs.get('icon', tp.ResourcesMgr().icon('tpdcc')))
 
         MainWindow._WINDOW_INSTANCES[self.WindowId] = {
             'window': self

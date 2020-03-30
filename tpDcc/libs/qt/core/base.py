@@ -100,6 +100,14 @@ class BaseWidget(QWidget, object):
     def keyPressEvent(self, event):
         return
 
+    def mousePressEvent(self, event):
+        modifiers = QApplication.keyboardModifiers()
+        if modifiers == Qt.AltModifier:
+            pos = self.mapToGlobal((self.rect().topLeft()))
+            QWhatsThis.showText(pos, self.whatsThis())
+        else:
+            super(BaseWidget, self).mousePressEvent(event)
+
     def get_main_layout(self):
         """
         Function that generates the main layout used by the widget
@@ -201,7 +209,6 @@ class BaseNumberWidget(BaseWidget, object):
         self._name = name
         super(BaseNumberWidget, self).__init__(parent)
 
-    # region Override Functions
     def get_main_layout(self):
         main_layout = QHBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -222,9 +229,7 @@ class BaseNumberWidget(BaseWidget, object):
         self.main_layout.addSpacing(5)
         self.main_layout.addWidget(self._value_label, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self._number_widget)
-    # endregion
 
-    # region Public Functions
     def get_number_widget(self):
         """
         Returns the widget used to edit numeric value
@@ -261,12 +266,9 @@ class BaseNumberWidget(BaseWidget, object):
     def set_value_label(self, new_value):
         self._value_label.show()
         self._value_label.setText(str(new_value))
-    # endregion
 
-    # region Private Functions
     def _on_value_changed(self):
         self.valueChanged.emit(self.get_value())
-    # endregion
 
 
 class DirectoryWidget(BaseWidget, object):
@@ -279,7 +281,6 @@ class DirectoryWidget(BaseWidget, object):
         self.last_directory = None
         super(DirectoryWidget, self).__init__(parent=parent, **kwargs)
 
-    # region Public Functions
     def set_directory(self, directory):
         """
         Set the directory used by this widget
@@ -288,7 +289,6 @@ class DirectoryWidget(BaseWidget, object):
 
         self.last_directory = self.directory
         self.directory = directory
-    # endregion
 
 
 class PlaceholderWidget(QWidget, object):
