@@ -22,7 +22,7 @@ from tpDcc.libs.qt.widgets import directory, formwidget, messagebox
 from tpDcc.libs.qt.widgets.library import widgets
 
 if tp.is_maya():
-    from tpDcc.dccs.maya.core import thumbnail
+    from tpDcc.dccs.maya.ui import thumbnail
 
 
 class SaveWidget(base.BaseWidget, object):
@@ -415,7 +415,7 @@ class SaveWidget(base.BaseWidget, object):
         buttons = QDialogButtonBox.Yes | QDialogButtonBox.Ignore | QDialogButtonBox.Cancel
         parent = self.item().library_window()
         btn = messagebox.MessageBox.question(
-            parent, 'Create a thumbnail', 'Would you like to capture a thumbnail?', buttons=buttons)
+            None, 'Create a thumbnail', 'Would you like to capture a thumbnail?', buttons=buttons)
         if btn == QDialogButtonBox.Yes:
             self.thumbnail_capture()
 

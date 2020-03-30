@@ -784,7 +784,10 @@ class LibraryItem(QTreeWidgetItem, object):
         """
 
         if self.path():
-            return self.path()
+            file_path = path_utils.clean_path(os.path.join(self.path(), self.name()))
+            if not os.path.isfile(file_path):
+                file_path = self.path()
+            return file_path
 
         return self._mime_text or self.text(0)
 
@@ -792,6 +795,7 @@ class LibraryItem(QTreeWidgetItem, object):
         """
         Sets the mime text for drag and drop
         :param text: str
+
         """
 
         self._mime_text = text
@@ -803,7 +807,10 @@ class LibraryItem(QTreeWidgetItem, object):
         """
 
         if self.path():
-            return QUrl('file:///{}'.format(self.path()))
+            file_path = path_utils.clean_path(os.path.join(self.path(), self.name()))
+            if not os.path.isfile(file_path):
+                file_path = self.path()
+            return QUrl('file:///{}'.format(file_path))
 
         if not self._url:
             self._url = QUrl(self.text(0))
