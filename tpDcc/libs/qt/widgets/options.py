@@ -495,6 +495,29 @@ class OptionList(QGroupBox, object):
         self._handle_parenting(int_option, parent)
         self._write_options(clear=False)
 
+    def add_dictionary(self, name='dictionary', value=[{},[]], parent=None):
+        """
+        Adds new dictionary property to the group box
+        :param name: str
+        :param value: list(dict, list)
+        :param parent: QWidget
+        """
+
+        if type(name) == bool:
+            name = 'dictionary'
+
+        if type(value) == type(dict):
+            keys = dict.keys()
+            if keys:
+                keys.sort()
+            value = [dict, keys]
+
+        name = self._get_unique_name(name, parent)
+        dict_option = DictOption(name=name)
+        dict_option.set_value(value)
+        self._handle_parenting(dict_option, parent)
+        self._write_options(False)
+
     def add_string(self, name='string', value='', parent=None):
         """
         Adds new string property to the group box
@@ -512,9 +535,26 @@ class OptionList(QGroupBox, object):
         self._handle_parenting(string_option, parent)
         self._write_options(clear=False)
 
-    def add_directory(self, name='file', value='', parent=None):
+    def add_directory(self, name='directory', value='', parent=None):
         """
         Adds new directory property to the group box
+        :param name: str
+        :param value: str, default value of the property
+        :param parent: QWidget
+        """
+
+        if type(name) == bool:
+            name = 'directory'
+
+        name = self._get_unique_name(name, parent)
+        directory_option = DirectoryOption(name=name, parent=parent, main_widget=self._parent)
+        directory_option.set_value(value)
+        self._handle_parenting(directory_option, parent)
+        self._write_options(clear=False)
+
+    def add_file(self, name='file', value='', parent=None):
+        """
+        Adds new file property to the group box
         :param name: str
         :param value: str, default value of the property
         :param parent: QWidget
@@ -524,9 +564,9 @@ class OptionList(QGroupBox, object):
             name = 'file'
 
         name = self._get_unique_name(name, parent)
-        directory_option = DirectoryOption(name=name, parent=parent, main_widget=self._parent)
-        directory_option.set_value(value)
-        self._handle_parenting(directory_option, parent)
+        file_option = FileOption(name=name, parent=parent, main_widget=self._parent)
+        file_option.set_value(value)
+        self._handle_parenting(file_option, parent)
         self._write_options(clear=False)
 
     def add_non_editable_text(self, name='string', value='', parent=None):
@@ -537,7 +577,7 @@ class OptionList(QGroupBox, object):
         :param parent: QWidget
         """
 
-        ame = self._get_unique_name(name, parent)
+        name = self._get_unique_name(name, parent)
         string_option = NonEditTextOption(name=name, parent=parent, main_widget=self._parent)
         string_option.set_value(value)
         self._handle_parenting(string_option, parent)
@@ -700,9 +740,11 @@ class OptionList(QGroupBox, object):
         plus_icon = tp.ResourcesMgr().icon('plus')
         string_icon = tp.ResourcesMgr().icon('rename')
         directory_icon = tp.ResourcesMgr().icon('folder')
+        file_icon = tp.ResourcesMgr().icon('file')
         integer_icon = tp.ResourcesMgr().icon('number_1')
         float_icon = tp.ResourcesMgr().icon('float_1')
         bool_icon = tp.ResourcesMgr().icon('true_false')
+        dict_icon = tp.ResourcesMgr().icon('dictionary')
         group_icon = tp.ResourcesMgr().icon('group_objects')
         script_icon = tp.ResourcesMgr().icon('source_code')
         title_icon = tp.ResourcesMgr().icon('label')
@@ -715,12 +757,16 @@ class OptionList(QGroupBox, object):
         create_menu.addAction(add_string_action)
         add_directory_action = QAction(directory_icon, 'Add Directory', create_menu)
         create_menu.addAction(add_directory_action)
+        add_file_action = QAction(file_icon, 'Add File', create_menu)
+        create_menu.addAction(add_file_action)
         add_integer_action = QAction(integer_icon, 'Add Integer', create_menu)
         create_menu.addAction(add_integer_action)
         add_float_action = QAction(float_icon, 'Add Float', create_menu)
         create_menu.addAction(add_float_action)
         add_bool_action = QAction(bool_icon, 'Add Bool', create_menu)
         create_menu.addAction(add_bool_action)
+        add_dict_action = QAction(dict_icon, 'Add Dictionary', create_menu)
+        create_menu.addAction(add_dict_action)
         add_group_action = QAction(group_icon, 'Add Group', create_menu)
         create_menu.addAction(add_group_action)
         add_script_action = QAction(script_icon, 'Add Script', create_menu)
@@ -740,9 +786,11 @@ class OptionList(QGroupBox, object):
 
         add_string_action.triggered.connect(self.add_string)
         add_directory_action.triggered.connect(self.add_directory)
+        add_file_action.triggered.connect(self.add_file)
         add_integer_action.triggered.connect(self.add_integer)
         add_float_action.triggered.connect(self.add_float)
         add_bool_action.triggered.connect(self.add_boolean)
+        add_dict_action.triggered.connect(self.add_dictionary)
         add_group_action.triggered.connect(self.add_group)
         add_title_action.triggered.connect(self.add_title)
         add_script_action.triggered.connect(self.add_script)
@@ -902,7 +950,7 @@ class OptionList(QGroupBox, object):
                     if type(option[1]) == bool:
                         self.add_boolean(name, value, widget)
                     if type(option[1]) == dict:
-                        self.add_dictonary(name, [value, []], widget)
+                        self.add_dictionary(name, [value, []], widget)
                     elif option[1] is None:
                         self.add_title(name, widget)
 
@@ -914,6 +962,10 @@ class OptionList(QGroupBox, object):
                     self.add_non_editable_text(name, value, widget)
                 if option_type == 'directory':
                     self.add_directory(name, value, widget)
+                if option_type == 'file':
+                    self.add_file(name, value, widget)
+                if option_type == 'dictionary':
+                    self.add_dictionary(name, value, widget)
 
         except Exception:
             qt.logger.error(traceback.format_exc())
@@ -1843,6 +1895,31 @@ class DirectoryOption(Option, object):
         self._option_widget.directoryChanged.connect(self._on_value_change)
 
 
+class FileOption(Option, object):
+    def __init__(self, name, parent, main_widget):
+        super(FileOption, self).__init__(name=name, parent=parent, main_widget=main_widget)
+
+    def get_option_type(self):
+        return 'file'
+
+    def get_option_widget(self):
+        return FileWidget(self._name)
+
+    def get_value(self):
+        value = self._option_widget.get_directory()
+        if not value:
+            value = ''
+
+        return value
+
+    def set_value(self, value):
+        value = str(value)
+        self._option_widget.set_directory(value)
+
+    def _setup_option_widget_value_change(self):
+        self._option_widget.directoryChanged.connect(self._on_value_change)
+
+
 class FloatOption(Option, object):
 
     def __init__(self, name, parent, main_widget):
@@ -1877,7 +1954,34 @@ class IntegerOption(FloatOption, object):
         return spinbox.BaseSpinBox(self._name)
 
 
-class BooleanOption(FloatOption, object):
+class DictOption(FloatOption, object):
+    def __init__(self, name):
+        super(DictOption, self).__init__(name=name)
+
+    def get_option_type(self):
+        return 'dictionary'
+
+    def get_option_widget(self):
+        return DictWidget(name=self._name)
+
+    def get_label(self):
+        return self._option_widget.get_label()
+
+    def get_value(self):
+        order = self._option_widget.get_order()
+        dictionary = self._option_widget.get_value()
+
+        return [dictionary, order]
+
+    def set_value(self, dictionary_value):
+        self._option_widget.set_order(dictionary_value[0])
+        self._option_widget.set_value(dictionary_value[1])
+
+    def _setup_option_widget_value_change(self):
+        self._option_widget.dictionary_widget.dict_changed.connect(self._on_value_changed)
+
+
+class BooleanOption(Option, object):
 
     def __init__(self, name, parent, main_widget):
         super(BooleanOption, self).__init__(name=name, parent=parent, main_widget=main_widget)
@@ -1888,6 +1992,15 @@ class BooleanOption(FloatOption, object):
 
     def get_option_widget(self):
         return BoolWidget(self._name)
+
+    def get_value(self):
+        return self._option_widget.get_value()
+
+    def set_value(self, value):
+        self._option_widget.set_value(value)
+
+    def _setup_option_widget_value_change(self):
+        self._option_widget.valueChanged.connect(self._on_value_change)
 
 
 class ScriptOption(Option, object):
@@ -2112,6 +2225,22 @@ class BoolWidget(base.BaseNumberWidget, object):
         self.valueChanged.emit(self.get_value())
 
 
+class DictWidget(base.BaseWidget, object):
+    valueChanged = Signal(object)
+
+    def __init__(self, name):
+        self._name = name
+        self._order = list()
+        super(DictWidget, self).__init__()
+
+    def ui(self):
+        super(DictWidget, self).ui()
+
+        self._label = QLabel(self._name)
+
+        self.main_layout.addWidget(self._label)
+
+
 class DirectoryWidget(base.BaseWidget, object):
 
     directoryChanged = Signal(object)
@@ -2134,6 +2263,33 @@ class DirectoryWidget(base.BaseWidget, object):
 
     def set_directory(self, value):
         self.directory_widget.set_directory(value)
+
+    def get_label_text(self):
+        return self._name
+
+
+class FileWidget(base.BaseWidget, object):
+
+    directoryChanged = Signal(object)
+
+    def __init__(self, name, parent=None):
+        self._name = name
+        super(FileWidget, self).__init__(parent=parent)
+
+    def ui(self):
+        super(FileWidget, self).ui()
+
+        self.file_widget = directory.SelectFile()
+        self.main_layout.addWidget(self.file_widget)
+
+    def setup_signals(self):
+        self.file_widget.directoryChanged.connect(self.directoryChanged.emit)
+
+    def get_directory(self):
+        return self.file_widget.get_directory()
+
+    def set_directory(self, value):
+        self.file_widget.set_directory(value)
 
     def get_label_text(self):
         return self._name
