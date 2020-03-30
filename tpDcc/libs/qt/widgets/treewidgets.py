@@ -25,8 +25,6 @@ class TreeWidget(QTreeWidget, object):
     ITEM_WIDGET = QTreeWidgetItem
     ITEM_WIDGET_SIZE = None
 
-    SelectionChanged = Signal()
-
     def __init__(self, parent=None):
         super(TreeWidget, self).__init__(parent)
 
@@ -82,11 +80,20 @@ class TreeWidget(QTreeWidget, object):
         self._paint_drop_indicator(painter)
 
     def mousePressEvent(self, event):
+
+        modifiers = QApplication.keyboardModifiers()
+        if modifiers == Qt.AltModifier:
+            pos = self.mapToGlobal((self.rect().topLeft()))
+            QWhatsThis.showText(pos, self.whatsThis())
+            return
+
         super(TreeWidget, self).mousePressEvent(event)
 
         item = self.itemAt(event.pos())
         if not item:
             self._clear_selection()
+        else:
+            self._current_item = item
 
     def mouseDoubleClickEvent(self, event):
         position = event.pos()
@@ -323,6 +330,72 @@ class TreeWidget(QTreeWidget, object):
         for child in children:
             del child
 
+    def _drop_on(self, event_list):
+        """
+        Internal function that checks whether or not event list contains a valid drop operation
+        :param event_list: list
+        :return: bool
+        """
+
+        event, row, col, index = event_list
+        root = self.rootIndex()
+
+        if self.viewport().rect().contains(event.pos()):
+            index = self.indexAt(event.pos())
+            if not index.isValid() or not self.visualRect(index).contains(event.pos()):
+                index = root
+
+        if index != root:
+            drop_indicator_position = self.position(event.pos(), self.visualRect(index), index)
+            if self._drop_indicator_position == self.AboveItem:
+                # Drop Above item
+                row = index.row()
+                col = index.column()
+                index = index.parent()
+            elif self._drop_indicator_position == self.BelowItem:
+                # Drop Below item
+                row = index.row() + 1
+                col = index.column()
+                index = index.parent()
+        else:
+            self._drop_indicator_position = self.OnViewport
+
+        # Update given referenced list
+        event_list[0], event_list[1], event_list[2], event_list[3] = event, row, col, index
+
+        return True
+
+    def _is_item_dropped(self, event, strict=False):
+        """
+        Returns whether or not an item has been dropped in given event
+        :param event: QDropEvent
+        :param strict: bool, True to handle ordered alphabetically list; False otherwise.
+        :return: bool
+        """
+
+        is_dropped = False
+
+        pos = event.pos()
+        index = self.indexAt(pos)
+
+        if event.source == self and event.dropAction() == Qt.MoveAction or \
+                self.dragDropMode() == QAbstractItemView.InternalMove:
+            top_index =  QModelIndex()
+            col = -1
+            row = -1
+            event_list = [event, row, col, top_index]
+            if self._drop_on(event_list):
+                event, row, col, top_index = event_list
+                if row > -1:
+                    if row == index.row() - 1:
+                        is_dropped = False
+                if row == -1:
+                    is_dropped = True
+                if row == index.row() + 1:
+                    is_dropped = False if strict else True
+
+        return is_dropped
+
     def _paint_drop_indicator(self, painter):
         """
         Internal function used to paint the drop indicator manually
@@ -558,8 +631,6 @@ class TreeWidget(QTreeWidget, object):
 
         if not current_item:
             self._emit_item_click(current_item)
-
-        self.SelectionChanged.emit()
 
     def _on_item_clicked(self, item, column):
         """
@@ -1040,11 +1111,12 @@ class FileTreeWidget(TreeWidget, object):
         item.setText(self._title_text_index, file_name)
 
         # Retrieve file properties
-        if path.is_file(item_path):
-            size = fileio.get_file_size(item_path)
-            date = fileio.get_last_modified_date(item_path)
-            item.setText(self._title_text_index + 1, str(size))
-            item.setText(self._title_text_index + 2, str(date))
+        if self.header().count() > 1:
+            if path.is_file(item_path):
+                size = fileio.get_file_size(item_path)
+                date = fileio.get_last_modified_date(item_path)
+                item.setText(self._title_text_index + 1, str(size))
+                item.setText(self._title_text_index + 2, str(date))
 
         # Update valid sub files
         # NOTE: Sub files are added dynamically when the user expands an item
@@ -1065,14 +1137,13 @@ class FileTreeWidget(TreeWidget, object):
         # Add item to tree hierarchy
         if parent:
             parent.addChild(item)
+            try:
+                self.blockSignals(True)
+                self.setCurrentItem(item)
+            finally:
+                self.blockSignals(False)
         else:
             self.addTopLevelItem(item)
-
-        try:
-            self.blockSignals(True)
-            self.setCurrentItem(item)
-        finally:
-            self.blockSignals(False)
 
         return item
 
