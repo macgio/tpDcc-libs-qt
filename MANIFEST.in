@@ -1,3 +1,5 @@
 include tpDcc/libs/qt/__logging__.ini
 recursive-include tpDcc/libs/qt/resources/* *.*
 include tpDcc/libs/qt/externals/pysideutils/QtUiTools.pyd
+include versioneer.py
+include tpDcc/libs/qt/_version.py

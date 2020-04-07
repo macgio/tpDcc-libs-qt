@@ -2,9 +2,18 @@
 # -*- coding: utf-8 -*-
 
 """
-Module that defines package version for tpDcc-libs-qt
+Version module for tpDcc-libs-qt
 """
 
 from __future__ import print_function, division, absolute_import
 
-__version__ = "0.0.5"
+__author__ = "Tomas Poveda"
+__license__ = "MIT"
+__maintainer__ = "Tomas Poveda"
+__email__ = "tpovedatd@gmail.com"
+
+from ._version import get_versions
+
+
+__version__ = get_versions()['version']
+del get_versions
