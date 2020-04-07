@@ -5,6 +5,7 @@ Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
    tpDcc.libs.qt.widgets.library
 
@@ -12,6 +13,7 @@ Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 4
 
    tpDcc.libs.qt.widgets.accordion
    tpDcc.libs.qt.widgets.action

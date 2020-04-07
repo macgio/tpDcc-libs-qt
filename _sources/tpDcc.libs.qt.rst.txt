@@ -5,6 +5,7 @@ Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
    tpDcc.libs.qt.core
    tpDcc.libs.qt.externals
@@ -16,6 +17,7 @@ Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 4
 
    tpDcc.libs.qt.loader
    tpDcc.libs.qt.register
