@@ -495,7 +495,7 @@ class OptionList(QGroupBox, object):
         self._handle_parenting(int_option, parent)
         self._write_options(clear=False)
 
-    def add_dictionary(self, name='dictionary', value=[{},[]], parent=None):
+    def add_dictionary(self, name='dictionary', value=[{}, []], parent=None):
         """
         Adds new dictionary property to the group box
         :param name: str

@@ -380,7 +380,7 @@ class TreeWidget(QTreeWidget, object):
 
         if event.source == self and event.dropAction() == Qt.MoveAction or \
                 self.dragDropMode() == QAbstractItemView.InternalMove:
-            top_index =  QModelIndex()
+            top_index = QModelIndex()
             col = -1
             row = -1
             event_list = [event, row, col, top_index]
