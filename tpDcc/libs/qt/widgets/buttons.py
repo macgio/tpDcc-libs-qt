@@ -17,7 +17,7 @@ from six import string_types
 
 import tpDcc as tp
 from tpDcc.libs.python import python
-from tpDcc.libs.qt.core import animation, icon, qtutils, menu
+from tpDcc.libs.qt.core import animation, icon, qtutils, mixin, theme, menu
 from tpDcc.libs.qt.widgets import tooltips
 
 # ===================================================================
@@ -28,7 +28,360 @@ INNER, OUTER = 1, 2
 # ===================================================================
 
 
-class BaseButton(QPushButton, animation.BaseAnimObject):
+@mixin.theme_mixin
+@mixin.cursor_mixin
+class BaseButton(QPushButton, object):
+
+    class Types(object):
+        DEFAULT = 'default'
+        PRIMARY = 'primary'
+        SUCCESS = 'success'
+        WARNING = 'warning'
+        DANGER = 'danger'
+
+    def __init__(self, text='', icon=None, parent=None):
+        if not icon:
+            super(BaseButton, self).__init__(text=text, parent=parent)
+        else:
+            super(BaseButton, self).__init__(text=text, parent=parent, icon=icon)
+
+        self._type = self.Types.DEFAULT
+        self._size = self.theme_default_size()
+
+        # NOTE: Without this, button will not call focusIn/out events when pressed
+        self.setFocusPolicy(Qt.StrongFocus)
+
+    # =================================================================================================================
+    # PROPERTIES
+    # =================================================================================================================
+
+    def _get_type(self):
+        """
+        Returns button type
+        :return: float
+        """
+
+        return self._type
+
+    def _set_type(self, value):
+        """
+        Sets button type
+        :param value: str
+        """
+
+        if value in [self.Types.DEFAULT, self.Types.PRIMARY, self.Types.SUCCESS, self.Types.WARNING, self.Types.DANGER]:
+            self._type = value
+        else:
+            raise ValueError(
+                'Given button type: "{}" is not supported. Supported types '
+                'are: default, primary, success, warning and danger'.format(value))
+        self.style().polish(self)
+
+    def _get_size(self):
+        """
+        Returns the button height size
+        :return: float
+        """
+
+        return self._size
+
+    def _set_size(self, value):
+        """
+        Sets button height size
+        :param value: float
+        """
+
+        self._size = value
+        self.style().polish(self)
+
+    theme_type = Property(str, _get_type, _set_type)
+    theme_size = Property(int, _get_size, _set_size)
+
+    # =================================================================================================================
+    # BASE
+    # =================================================================================================================
+
+    def default(self):
+        """
+        Sets button to default style
+        """
+
+        self.theme_type = self.Types.DEFAULT
+
+        return self
+
+    def primary(self):
+        """
+        Sets button to primary style
+        """
+
+        self.theme_type = self.Types.PRIMARY
+
+        return self
+
+    def success(self):
+        """
+        Sets button to success style
+        """
+
+        self.theme_type = self.Types.SUCCESS
+
+        return self
+
+    def warning(self):
+        """
+        Sets button to warning style
+        """
+
+        self.theme_type = self.Types.WARNING
+
+        return self
+
+    def danger(self):
+        """
+        Sets button to danger style
+        """
+
+        self.theme_type = self.Types.DANGER
+
+        return self
+
+    def tiny(self):
+        """
+        Sets button to tiny size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.tiny if widget_theme else theme.Theme.Sizes.TINY
+
+        return self
+
+    def small(self):
+        """
+        Sets button to small size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.small if widget_theme else theme.Theme.Sizes.SMALL
+
+        return self
+
+    def medium(self):
+        """
+        Sets button to medium size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.medium if widget_theme else theme.Theme.Sizes.MEDIUM
+
+        return self
+
+    def large(self):
+        """
+        Sets button to large size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.large if widget_theme else theme.Theme.Sizes.LARGE
+
+        return self
+
+    def huge(self):
+        """
+        Sets button to huge size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.huge if widget_theme else theme.Theme.Sizes.HUGE
+
+        return self
+
+
+@mixin.theme_mixin
+@mixin.cursor_mixin
+class BaseRadioButton(QRadioButton, object):
+    def __init__(self, *args, **kwargs):
+        super(BaseRadioButton, self).__init__(*args, **kwargs)
+
+
+@mixin.theme_mixin
+@mixin.cursor_mixin
+class BaseToolButton(QToolButton, object):
+    def __init__(self, parent=None):
+        super(BaseToolButton, self).__init__(parent=parent)
+
+        self._image = None
+        self._image_theme = None
+        self._size = self.theme_default_size()
+
+        self.setAutoExclusive(False)
+        self.setAutoRaise(True)
+        self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+
+        self._polish_icon()
+
+        self.toggled.connect(self._polish_icon)
+
+    # =================================================================================================================
+    # PROPERTIES
+    # =================================================================================================================
+
+    def _get_size(self):
+        """
+        Returns the button height size
+        :return: float
+        """
+
+        return self._size
+
+    def _set_size(self, value):
+        """
+        Sets button height size
+        :param value: float
+        """
+
+        self._size = value
+        self.style().polish(self)
+        if self.toolButtonStyle() == Qt.ToolButtonIconOnly:
+            self.setFixedSize(self._size, self._size)
+
+    theme_size = Property(int, _get_size, _set_size)
+
+    # =================================================================================================================
+    # OVERRIDES
+    # =================================================================================================================
+
+    def enterEvent(self, event):
+        if self._image:
+            theme = self.theme()
+            if theme:
+                accent_color = theme.accent_color
+                if self._image_theme:
+                    self.setIcon(tp.ResourcesMgr().icon(self._image, theme=self._image_theme, color=accent_color))
+                else:
+                    self.setIcon(tp.ResourcesMgr().icon(self._image, color=accent_color))
+        return super(BaseToolButton, self).enterEvent(event)
+
+    def leaveEvent(self, event):
+        self._polish_icon()
+        return super(BaseToolButton, self).leaveEvent(event)
+
+    def _polish_icon(self, checked=None, **kwargs):
+        if self._image:
+            image_theme = kwargs.get('theme', self._image_theme)
+            if image_theme:
+                kwargs['theme'] = image_theme
+            if self.isCheckable() and self.isChecked():
+                self.setIcon(tp.ResourcesMgr().icon(self._image, **kwargs))
+            else:
+                self.setIcon(tp.ResourcesMgr().icon(self._image, **kwargs))
+
+    # =================================================================================================================
+    # BASE
+    # =================================================================================================================
+
+    def image(self, name, **kwargs):
+        """
+        Sets the name of the icon to use by the tool button
+        :param str name:
+        :return:
+        """
+
+        self._image = name
+        self._image_theme = kwargs.get('theme', None)
+        self._polish_icon(**kwargs)
+
+        return self
+
+    def tiny(self):
+        """
+        Sets tool button to tiny size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.tiny if widget_theme else theme.Theme.Sizes.TINY
+
+        return self
+
+    def small(self):
+        """
+        Sets tool button to small size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.small if widget_theme else theme.Theme.Sizes.SMALL
+
+        return self
+
+    def medium(self):
+        """
+        Sets tool button to medium size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.medium if widget_theme else theme.Theme.Sizes.MEDIUM
+
+        return self
+
+    def large(self):
+        """
+        Sets tool button to large size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.large if widget_theme else theme.Theme.Sizes.LARGE
+
+        return self
+
+    def huge(self):
+        """
+        Sets tool button to huge size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.huge if widget_theme else theme.Theme.Sizes.HUGE
+
+        return self
+
+    def icon_only(self):
+        """
+        Sets tool button style to icon only
+        """
+
+        self.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        self.setFixedSize(self._size, self._size)
+
+        return self
+
+    def text_only(self):
+        """
+        Sets tool button style to icon only
+        """
+
+        self.setToolButtonStyle(Qt.ToolButtonTextOnly)
+
+        return self
+
+    def text_beside_icon(self):
+        """
+        Sets tool button style to text beside icon
+        """
+
+        self.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+
+        return self
+
+    def text_under_icon(self):
+        """
+        Sets tool button style to text under icon
+        """
+
+        self.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+
+        return self
+
+
+class StyleBaseButton(QPushButton, animation.BaseAnimObject):
     def __init__(self, *args, **kwargs):
 
         self._style = kwargs.pop('button_style', None)
@@ -48,12 +401,12 @@ class BaseButton(QPushButton, animation.BaseAnimObject):
 
     def paintEvent(self, event):
         if not self._style:
-            super(BaseButton, self).paintEvent(event)
+            super(StyleBaseButton, self).paintEvent(event)
         else:
             self._style.paintEvent(self, event)
 
 
-class IconButton(BaseButton, object):
+class IconButton(StyleBaseButton, object):
     def __init__(self, icon=None, icon_padding=0, icon_min_size=8, button_style=None, parent=None):
         super(IconButton, self).__init__(button_style=button_style, parent=parent)
 
@@ -82,7 +435,7 @@ class IconButton(BaseButton, object):
         painter.end()
 
 
-class CloseButton(BaseButton, object):
+class CloseButton(StyleBaseButton, object):
     def __init__(self, *args, **kwargs):
         super(CloseButton, self).__init__(*args, **kwargs)
 

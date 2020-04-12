@@ -11,10 +11,16 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-from tpDcc.libs.qt.core import animation
+from tpDcc.libs.qt.core import mixin, animation
 
 
-class BaseCheckBox(QCheckBox, animation.BaseAnimObject):
+@mixin.cursor_mixin
+class BaseCheckBox(QCheckBox, object):
+    def __init__(self, text='', parent=None):
+        super(BaseCheckBox, self).__init__(text=text, parent=parent)
+
+
+class StyledBaseCheckBox(BaseCheckBox, animation.BaseAnimObject):
     _glow_brushes = dict()
     for index in range(1, 11):
         _glow_brushes[index] = [QBrush(QColor(0, 255, 0, 1 * index)),
