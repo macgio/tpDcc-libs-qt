@@ -10,7 +10,7 @@ from __future__ import print_function, division, absolute_import
 from Qt.QtCore import *
 from Qt.QtGui import *
 
-from tpDcc.libs.qt.core import color
+from tpDcc.libs.qt.core import color, cache
 
 
 class Pixmap(QPixmap, object):
@@ -153,3 +153,6 @@ def grayscale_pixmap(pixmap):
     image.setAlphaChannel(alpha)
 
     return QPixmap(image)
+
+
+PixmapCache = cache.CacheResource(Pixmap)

@@ -9,6 +9,7 @@ from __future__ import print_function, division, absolute_import
 
 import os
 
+
 from tpDcc.libs.python import folder, path
 from tpDcc.libs.qt.core import qtutils, pixmap as pixmap_resource, icon as icon_resource, theme as theme_resource
 
@@ -113,7 +114,7 @@ class Resource(object):
 
         return self._get(category, '{}{}'.format(name, extension))
 
-    def theme_path(self, name, category='themes', extension=theme_resource.Theme.EXTENSION):
+    def theme_path(self, name, category='themes', extension=None):
         """
         Returns path where tmee file is located
         :param name: str
@@ -121,6 +122,9 @@ class Resource(object):
         :param extension: str
         :return: str
         """
+
+        if not extension:
+            extension = theme_resource.Theme.EXTENSION
 
         if not extension.startswith('.'):
             extension = '.{}'.format(extension)
@@ -205,12 +209,14 @@ class Resource(object):
         :return: icon_resource.Icon
         """
 
-        p = self._pixmap(name=name, category=category, extension=extension, color=color, theme=theme)
-        return icon_resource.Icon(p)
+        path = self.image_path(name=name, category=category, extension=extension, theme=theme)
+        p = icon_resource.IconCache(path=path, color=color)
+
+        return p
 
     def _pixmap(self, name, category='images', extension='png', color=None, theme=None):
         """
-        Return a QPixmap object from the given resource anme
+        Return a QPixmap object from the given resource name
         :param name: str, name of the pixmap
         :param category: str, category of the pixmap
         :param extension: str, extension of the pixmap
@@ -219,9 +225,7 @@ class Resource(object):
         """
 
         path = self.image_path(name=name, category=category, extension=extension, theme=theme)
-        p = pixmap_resource.Pixmap(path)
-        if color:
-            p.set_color(new_color=color)
+        p = pixmap_resource.PixmapCache(path=path, color=color)
 
         return p
 
@@ -241,7 +245,7 @@ class Resource(object):
         else:
             return qtutils.load_ui_type(ui_file=path)
 
-    def _theme(self, name, category='themes', extension=theme_resource.Theme.EXTENSION):
+    def _theme(self, name, category='themes', extension=None):
         """
         Returns Theme loaded from theme file
         :param name: str, name of the theme file you want to load
@@ -249,6 +253,9 @@ class Resource(object):
         :param extension:
         :return:
         """
+
+        if not extension:
+            extension = theme_resource.Theme.EXTENSION
 
         theme_path = self.theme_path(name=name, category=category, extension=extension)
         if not os.path.isfile(theme_path):

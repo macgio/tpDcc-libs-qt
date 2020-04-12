@@ -21,7 +21,7 @@ from tpDcc.libs import qt
 import tpDcc as tp
 from tpDcc import register
 from tpDcc.libs.python import path, folder
-from tpDcc.libs.qt.core import qtutils, base, animation, color, theme, statusbar, dragger, settings as qt_settings
+from tpDcc.libs.qt.core import qtutils, base, animation, theme, color, statusbar, dragger, settings as qt_settings
 
 
 class WindowContents(QFrame, object):
@@ -83,13 +83,19 @@ class BaseWindow(QMainWindow, object):
         self.resize(self._init_width, self._init_height)
         self.center(self._init_width, self._init_height)
 
-        self.ui()
-        self.setup_signals()
+        # Load base generic window UI
+        self._base_ui()
 
         self.load_settings(settings=win_settings)
 
         if auto_load:
             self.load_theme()
+
+        # Load custom window UI
+        self.ui()
+        self.setup_signals()
+
+        self.reload_stylesheet()
 
     # ============================================================================================================
     # OVERRIDES
@@ -248,14 +254,21 @@ class BaseWindow(QMainWindow, object):
         """
 
         main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
+        main_layout.setContentsMargins(2, 2, 2, 2)
+        main_layout.setSpacing(2)
 
         return main_layout
 
     def ui(self):
         """
         Function used to define UI of the window
+        """
+
+        pass
+
+    def _base_ui(self):
+        """
+        Internal function that setup basic window UI
         """
 
         self.setDockNestingEnabled(True)
@@ -403,14 +416,7 @@ class BaseWindow(QMainWindow, object):
         :return: dict
         """
 
-        # "accentColor": "rgb(0, 175, 240, 255)",
-
-        return {
-            "theme": {
-                "accentColor": "rgb(80, 80, 80, 255)",
-                "backgroundColor": "rgb(45, 45, 45, 255)",
-            }
-        }
+        return {}
 
     def set_settings(self, settings):
         """
@@ -539,18 +545,20 @@ class BaseWindow(QMainWindow, object):
         """
 
         def_settings = self.default_settings()
-        def_theme_settings = def_settings.get('theme')
-        accent_color = self.settings().getw('theme/accentColor') or def_theme_settings['accentColor']
-        background_color = self.settings().getw('theme/backgroundColor') or def_theme_settings['backgroundColor']
+        def_theme_settings = def_settings.get('theme', dict())
+        accent_color = self.settings().getw('theme/accent_color') or def_theme_settings.get('accent_color')
+        background_color = self.settings().getw('theme/background_color') or def_theme_settings.get('background_color')
         accent_color = 'rgb(%d, %d, %d, %d)' % accent_color.getRgb() if isinstance(
             accent_color, QColor) else accent_color
         background_color = 'rgb(%d, %d, %d, %d)' % background_color.getRgb() if isinstance(
             background_color, QColor) else background_color
 
-        theme_settings = {
-            "accentColor": accent_color,
-            "backgroundColor": background_color
-        }
+        theme_settings = dict()
+        if accent_color:
+            theme_settings['accent_color'] = accent_color
+        if background_color:
+            theme_settings['background_color'] = background_color
+
         self.set_theme_settings(theme_settings)
 
     def theme(self):
@@ -560,7 +568,7 @@ class BaseWindow(QMainWindow, object):
         """
 
         if not self._theme:
-            self._theme = theme.Theme()
+            return None
 
         return self._theme
 
@@ -583,7 +591,7 @@ class BaseWindow(QMainWindow, object):
         current_theme = self._settings.get('theme', 'default')
         new_theme = tp.ResourcesMgr().theme(current_theme)
         if not new_theme:
-            new_theme = theme.Them()
+            new_theme = theme.Theme()
         new_theme.set_settings(settings)
         self.set_theme(new_theme)
 
@@ -594,38 +602,13 @@ class BaseWindow(QMainWindow, object):
 
         current_theme = self.theme()
         current_theme.set_dpi(self.dpi())
-        options = current_theme.options()
         stylesheet = current_theme.stylesheet()
-
-        all_widgets = self.main_layout.findChildren(QObject)
-
-        text_color = color.Color.from_string(options["ITEM_TEXT_COLOR"])
-        text_selected_color = color.Color.from_string(options["ITEM_TEXT_SELECTED_COLOR"])
-        background_color = color.Color.from_string(options["ITEM_BACKGROUND_COLOR"])
-        background_hover_color = color.Color.from_string(options["ITEM_BACKGROUND_HOVER_COLOR"])
-        background_selected_color = color.Color.from_string(options["ITEM_BACKGROUND_SELECTED_COLOR"])
-
         self.setStyleSheet(stylesheet)
 
+        all_widgets = self.main_layout.findChildren(QObject)
         for w in all_widgets:
-            found = False
-            if hasattr(w, 'set_text_color'):
-                w.set_text_color(text_color)
-                found = True
-            if hasattr(w, 'set_text_selected_color'):
-                w.set_text_selected_color(text_selected_color)
-                found = True
-            if hasattr(w, 'set_background_color'):
-                w.set_background_color(background_color)
-                found = True
-            if hasattr(w, 'set_background_hover_color'):
-                w.set_background_hover_color(background_hover_color)
-                found = True
-            if hasattr(w, 'set_background_selected_color'):
-                w.set_background_selected_color(background_selected_color)
-                found = True
-
-            if found:
+            if hasattr(w, 'setStyleSheet'):
+                w.setStyleSheet(stylesheet)
                 w.update()
 
     # ============================================================================================================
@@ -926,6 +909,9 @@ class MainWindow(BaseWindow, object):
 
         self._central_layout.addLayout(grid_layout)
 
+        # Shadow effect for window
+        # BUG: This causes some rendering problems when using other shadow effects in child widgets of the window
+        # https://bugreports.qt.io/browse/QTBUG-35196
         shadow_effect = QGraphicsDropShadowEffect(self)
         shadow_effect.setBlurRadius(qtutils.dpi_scale(15))
         shadow_effect.setColor(QColor(0, 0, 0, 150))
