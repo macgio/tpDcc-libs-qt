@@ -15,10 +15,20 @@ from Qt.QtWidgets import *
 
 import tpDcc as tp
 from tpDcc.libs.python import mathlib
-from tpDcc.libs.qt.core import qtutils, color
+from tpDcc.libs.qt.core import qtutils, color, mixin
 
 FLOAT_SLIDER_DRAG_STEPS = [100.0, 10.0, 1.0, 0.1, 0.01, 0.001]
 INT_SLIDER_DRAG_STEPS = [100.0, 10.0, 1.0]
+
+
+@mixin.theme_mixin
+class BaseSlider(QSlider, object):
+    def __init__(self, orientation=Qt.Horizontal, parent=None):
+        super(BaseSlider, self).__init__(orientation, parent=parent)
+
+    def mouseMoveEvent(self, event):
+        QToolTip.showText(event.globalPos(), str(self.value()), self)
+        return super(BaseSlider, self).mouseMoveEvent(event)
 
 
 class SliderDraggers(QWidget, object):

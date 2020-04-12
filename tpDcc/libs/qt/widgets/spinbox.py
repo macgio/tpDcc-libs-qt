@@ -11,14 +11,186 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-from tpDcc.libs.qt.core import base
+from tpDcc.libs.qt.core import base, mixin, theme
 
 
-class BaseSpinBox(base.BaseNumberWidget):
+@mixin.theme_mixin
+@mixin.cursor_mixin
+class BaseSpinBox(QSpinBox, object):
+    def __init__(self, parent=None):
+        super(BaseSpinBox, self).__init__(parent=parent)
+
+        self._size = self.theme_default_size()
+
+    # =================================================================================================================
+    # PROPERTIES
+    # =================================================================================================================
+
+    def _get_size(self):
+        """
+        Returns the spin box height size
+        :return: float
+        """
+
+        return self._size
+
+    def _set_size(self, value):
+        """
+        Sets spin box height size
+        :param value: float
+        """
+
+        self._size = value
+        self.style().polish(self)
+
+    theme_size = Property(int, _get_size, _set_size)
+
+    # =================================================================================================================
+    # BASE
+    # =================================================================================================================
+
+    def tiny(self):
+        """
+        Sets spin box to tiny size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.tiny if widget_theme else theme.Theme.Sizes.TINY
+
+        return self
+
+    def small(self):
+        """
+        Sets spin box to small size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.small if widget_theme else theme.Theme.Sizes.SMALL
+
+        return self
+
+    def medium(self):
+        """
+        Sets spin box to medium size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.medium if widget_theme else theme.Theme.Sizes.MEDIUM
+
+        return self
+
+    def large(self):
+        """
+        Sets spin box to large size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.large if widget_theme else theme.Theme.Sizes.LARGE
+
+        return self
+
+    def huge(self):
+        """
+        Sets spin box to huge size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.huge if widget_theme else theme.Theme.Sizes.HUGE
+
+        return self
+
+
+@mixin.theme_mixin
+@mixin.cursor_mixin
+class BaseDoubleSpinBox(QDoubleSpinBox, object):
+    def __init__(self, parent=None):
+        super(BaseDoubleSpinBox, self).__init__(parent=parent)
+
+        self._size = self.theme_default_size()
+
+    # =================================================================================================================
+    # PROPERTIES
+    # =================================================================================================================
+
+    def _get_size(self):
+        """
+        Returns the double spin box height size
+        :return: float
+        """
+
+        return self._size
+
+    def _set_size(self, value):
+        """
+        Sets double spin box height size
+        :param value: float
+        """
+
+        self._size = value
+        self.style().polish(self)
+
+    theme_size = Property(int, _get_size, _set_size)
+
+    # =================================================================================================================
+    # BASE
+    # =================================================================================================================
+
+    def tiny(self):
+        """
+        Sets double spin box to tiny size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.tiny if widget_theme else theme.Theme.Sizes.TINY
+
+        return self
+
+    def small(self):
+        """
+        Sets double spin box to small size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.small if widget_theme else theme.Theme.Sizes.SMALL
+
+        return self
+
+    def medium(self):
+        """
+        Sets double spin box to medium size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.medium if widget_theme else theme.Theme.Sizes.MEDIUM
+
+        return self
+
+    def large(self):
+        """
+        Sets double spin box to large size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.large if widget_theme else theme.Theme.Sizes.LARGE
+
+        return self
+
+    def huge(self):
+        """
+        Sets double spin box to huge size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.huge if widget_theme else theme.Theme.Sizes.HUGE
+
+        return self
+
+
+class BaseSpinBoxNumber(base.BaseNumberWidget):
     enterPressed = Signal()
 
     def __init__(self, name='', parent=None):
-        super(BaseSpinBox, self).__init__(name=name, parent=parent)
+        super(BaseSpinBoxNumber, self).__init__(name=name, parent=parent)
 
         self._setup_spin_widget()
 
@@ -46,9 +218,9 @@ class BaseSpinBox(base.BaseNumberWidget):
         self._number_widget.valueChanged.connect(self._on_value_changed)
 
 
-class BaseDoubleSpinBox(BaseSpinBox, object):
+class BaseDoubleNumberSpinBox(BaseSpinBoxNumber, object):
     def __init__(self, name='', parent=None):
-        super(BaseDoubleSpinBox, self).__init__(name=name, parent=parent)
+        super(BaseDoubleNumberSpinBox, self).__init__(name=name, parent=parent)
 
     def get_number_widget(self):
         spin_box = QDoubleSpinBox()
