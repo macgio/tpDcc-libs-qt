@@ -45,6 +45,22 @@ class VerticalLayout(QVBoxLayout, object):
         self.setSpacing(qtutils.dpi_scale(spacing))
 
 
+class FormLayout(QFormLayout, object):
+    """
+    Custom QFormLayout implementation with support for 4k resolution
+    """
+
+    def __init__(self, *args, **kwargs):
+
+        margins = kwargs.pop('margins', (0, 0, 0, 0))
+        spacing = kwargs.pop('spacing', consts.DEFAULT_SUB_WIDGET_SPACING)
+
+        super(FormLayout, self).__init__(*args, **kwargs)
+
+        self.setContentsMargins(*qtutils.margins_dpi_scale(*margins))
+        self.setSpacing(qtutils.dpi_scale(spacing))
+
+
 class GridLayout(QGridLayout, object):
     """
     Custom QGridLayout implementation with support for 4k resolution
@@ -80,6 +96,23 @@ class GridLayout(QGridLayout, object):
             self.setColumnMinimumWidth(column_min_width[0], qtutils.dpi_scale(column_min_width[1]))
         if column_min_width_b:
             self.setColumnMinimumWidth(column_min_width_b[0], qtutils.dpi_scale(column_min_width_b[1]))
+
+
+class ChildWidget(QWidget, object):
+    """
+    Base widget that is contained inside Qt windows.
+    Contains functionality to update style depending on parent theme
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(ChildWidget, self).__init__(*args, **kwargs)
+
+    def top_widget(self):
+        top_widget = self
+        while top_widget.parentWidget():
+            top_widget = top_widget.parentWidget()
+
+        return top_widget
 
 
 class BaseWidget(QWidget, object):
@@ -151,6 +184,14 @@ class BaseWidget(QWidget, object):
         """
 
         pass
+
+    def set_spacing(self, value):
+        """
+        Set the spacing used by widget's main layout
+        :param value: float
+        """
+
+        self.main_layout.setSpacing(value)
 
 
 class BaseFrame(QFrame, object):

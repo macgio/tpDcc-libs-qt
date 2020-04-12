@@ -29,16 +29,15 @@ class Color(QColor, object):
         else:
             return False
 
-    # region Class Functions
     @classmethod
     def from_color(cls, color):
         """
-        Gets a string formateed color from a QColor
+        Gets a string formatted color from a QColor
         :param color: QColor, color to parse
         :return: (str)
         """
 
-        color = ('rgb(%d, %d, %d, %d)' % color.getRgb())
+        color = ('rgba(%d, %d, %d, %d)' % color.getRgb())
         return cls.from_string(color)
 
     @classmethod
@@ -46,14 +45,24 @@ class Color(QColor, object):
         """
         Returns a (int, int, int, int) format color from a string format color
         :param text_color: str, string format color to parse
+        :param alpha: int, alpha of the color
         :return: (int, int, int, int)
         """
 
         a = 255
-        try:
-            r, g, b, a = text_color.replace('rgb(', '').replace(')', '').split(',')
-        except ValueError:
-            r, g, b = text_color.replace('rgb(', '').replace(')', '').split(',')
+        if string_is_hex(text_color):
+            r, g, b = cls.rgb_from_hex(text_color)
+        else:
+            try:
+                if text_color.startswith('rgb'):
+                    r, g, b, a = text_color.replace('rgb(', '').replace(')', '').split(',')
+                else:
+                    r, g, b, a = text_color.replace('rgba(', '').replace(')', '').split(',')
+            except ValueError:
+                if text_color.startswith('rgb'):
+                    r, g, b = text_color.replace('rgb(', '').replace(')', '').split(',')
+                else:
+                    r, g, b = text_color.replace('rgba(', '').replace(')', '').split(',')
 
         return cls(int(r), int(g), int(b), int(a))
 
@@ -63,6 +72,9 @@ class Color(QColor, object):
         Returns a RGB triplet from an hexadecimal value
         :param triplet: r,g,b Hexadecimal Color tuple
         """
+
+        if triplet.startswith('#'):
+            triplet = triplet[1:]
 
         return _HEXDEC[triplet[0:2]], _HEXDEC[triplet[2:4]], _HEXDEC[triplet[4:6]]
 
@@ -179,7 +191,7 @@ class Color(QColor, object):
         :return: str
         """
 
-        return 'rgb(%d, %d, %d, %d)' % self.getRgb()
+        return 'rgba(%d, %d, %d, %d)' % self.getRgb()
 
     def is_dark(self):
         """
@@ -202,7 +214,6 @@ class ColorSwatch(QToolButton, object):
 
         self.clicked.connect(self._on_open_color_picker)
 
-    # region Public Functions
     def set_color(self, color):
         """
         Sets an RGB color value
@@ -241,9 +252,7 @@ class ColorSwatch(QToolButton, object):
             return self.qcolor.toRgb().red(), self.qcolor.toRgb().green(), self.qcolor.toRgb().blue()
         else:
             return self.qcolor.toRgb().redF(), self.qcolor.toRgb().greenF(), self.qcolor.toRgb().blueF()
-    # endregion
 
-    # region Private Functions
     def _update(self):
         """
         Updates the widget color
@@ -303,30 +312,30 @@ class ColorSwatch(QToolButton, object):
 
 DEFAULT_DARK_COLOR = Color(50, 50, 50, 255)
 DEFAULT_LIGHT_COLOR = Color(180, 180, 180, 255)
-BLACK = QColor(0, 0, 0, 255)
-GRAY = QColor(110, 110, 110, 255)
-RED = QColor(255, 0, 0, 255)
-GREEN = QColor(0, 255, 0, 255)
-BLUE = QColor(0, 0, 255, 255)
-YELLOW = QColor(255, 255, 0, 255)
-ORANGE = QColor(209, 84, 0, 255)
-MAGENTA = QColor(1.0, 0.0, 1.0)
-CYAN = QColor(0.0, 1.0, 1.0)
-WHITE = QColor(1.0, 1.0, 1.0)
-DARK_GRAY = QColor(60, 60, 60, 255)
-DARK_RED = QColor(0.75, 0.0, 0.0)
-DARK_GREEN = QColor(0.0, 0.75, 0.0)
-DARK_BLUE = QColor(0.0, 0.0, 0.75)
-DARK_YELLOW = QColor(0.75, 0.75, 0.0)
-DARK_MAGENTA = QColor(0.75, 0.0, 0.75)
-DARK_CYAN = QColor(0.0, 0.75, 0.75)
-LIGHT_GRAY = QColor(0.75, 0.75, 0.75)
-LIGHT_RED = QColor(1.0, 0.25, 0.25)
-LIGHT_GREEN = QColor(0.25, 1.0, 0.25)
-LIGHT_BLUE = QColor(0.25, 0.25, 1.0)
-LIGHT_YELLOW = QColor(1.0, 1.0, 0.25)
-LIGHT_MAGENTA = QColor(1.0, 0.25, 1.0)
-LIGHT_CYAN = QColor(0.25, 1.0, 1.0)
+BLACK = Color(0, 0, 0, 255)
+GRAY = Color(110, 110, 110, 255)
+RED = Color(255, 0, 0, 255)
+GREEN = Color(0, 255, 0, 255)
+BLUE = Color(0, 0, 255, 255)
+YELLOW = Color(255, 255, 0, 255)
+ORANGE = Color(209, 84, 0, 255)
+MAGENTA = Color(1.0, 0.0, 1.0)
+CYAN = Color(0.0, 1.0, 1.0)
+WHITE = Color(1.0, 1.0, 1.0)
+DARK_GRAY = Color(60, 60, 60, 255)
+DARK_RED = Color(0.75, 0.0, 0.0)
+DARK_GREEN = Color(0.0, 0.75, 0.0)
+DARK_BLUE = Color(0.0, 0.0, 0.75)
+DARK_YELLOW = Color(0.75, 0.75, 0.0)
+DARK_MAGENTA = Color(0.75, 0.0, 0.75)
+DARK_CYAN = Color(0.0, 0.75, 0.75)
+LIGHT_GRAY = Color(0.75, 0.75, 0.75)
+LIGHT_RED = Color(1.0, 0.25, 0.25)
+LIGHT_GREEN = Color(0.25, 1.0, 0.25)
+LIGHT_BLUE = Color(0.25, 0.25, 1.0)
+LIGHT_YELLOW = Color(1.0, 1.0, 0.25)
+LIGHT_MAGENTA = Color(1.0, 0.25, 1.0)
+LIGHT_CYAN = Color(0.25, 1.0, 1.0)
 
 # =================================================================================================================
 
@@ -338,8 +347,12 @@ def string_is_hex(color_str):
     :return: bool
     """
 
-    hex_regex = QRegExp('^[0-9A-F]{6}$', Qt.CaseInsensitive)
-    if hex_regex.exactMatch(color_str):
+    if color_str.startswith('#'):
+        color_str = color_str[1:]
+    hex_regex1 = QRegExp('^[0-9A-F]{3}$', Qt.CaseInsensitive)
+    hex_regex2 = QRegExp('^[0-9A-F]{6}$', Qt.CaseInsensitive)
+    hex_regex3 = QRegExp('^[0-9A-F]{8}$', Qt.CaseInsensitive)
+    if hex_regex1.exactMatch(color_str) or hex_regex2.exactMatch(color_str) or hex_regex3.exactMatch(color_str):
         return True
 
     return False
@@ -352,6 +365,9 @@ def convert_2_hex(color):
     :return: str
     """
 
+    if isinstance(color, (str, unicode)) and string_is_hex(color):
+        return color
+
     hex = '#'
     for var in color:
         var = format(var, 'x')
@@ -360,4 +376,66 @@ def convert_2_hex(color):
         else:
             hex += str(var)
 
+    if len(hex) == 9:
+        hex = '#{}{}'.format(hex[-2:], hex[1:-2])
+
     return hex
+
+
+def generate_color(primary_color, index):
+    """
+    Generates a new color from the given one and with given index (between 1 and 10)
+    https://github.com/phenom-films/dayu_widgets/blob/master/dayu_widgets/utils.py
+    :param primary_color: base color (RRGGBB)
+    :param index: color step from 1 (light) to 10 (dark)
+    :return: out color Color
+    """
+
+    hue_step = 2
+    saturation_step = 16
+    saturation_step2 = 5
+    brightness_step1 = 5
+    brightness_step2 = 15
+    light_color_count = 5
+    dark_color_count = 4
+
+    def _get_hue(color, i, is_light):
+        h_comp = color.hue()
+        if 60 <= h_comp <= 240:
+            hue = h_comp - hue_step * i if is_light else h_comp + hue_step * i
+        else:
+            hue = h_comp + hue_step * i if is_light else h_comp - hue_step * i
+        if hue < 0:
+            hue += 359
+        elif hue >= 359:
+            hue -= 359
+        return hue / 359.0
+
+    def _get_saturation(color, i, is_light):
+        s_comp = color.saturationF() * 100
+        if is_light:
+            saturation = s_comp - saturation_step * i
+        elif i == dark_color_count:
+            saturation = s_comp + saturation_step
+        else:
+            saturation = s_comp + saturation_step2 * i
+        saturation = min(100.0, saturation)
+        if is_light and i == light_color_count and saturation > 10:
+            saturation = 10
+        saturation = max(6.0, saturation)
+        return round(saturation * 10) / 1000.0
+
+    def _get_value(color, i, is_light):
+        v_comp = color.valueF()
+        if is_light:
+            return min((v_comp * 100 + brightness_step1 * i) / 100, 1.0)
+        return max((v_comp * 100 - brightness_step2 * i) / 100, 0.0)
+
+    light = index <= 6
+    hsv_color = Color(primary_color) if isinstance(primary_color, basestring) else primary_color
+    index = light_color_count + 1 - index if light else index - light_color_count - 1
+    return Color(QColor.fromHsvF(
+        _get_hue(hsv_color, index, light),
+        _get_saturation(hsv_color, index, light),
+        _get_value(hsv_color, index, light)
+    )).name()
