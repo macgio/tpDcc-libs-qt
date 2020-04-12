@@ -18,7 +18,7 @@ import tpDcc as tp
 from tpDcc.libs import qt
 from tpDcc.libs.python import name as name_utils
 from tpDcc.libs.qt.core import base, qtutils
-from tpDcc.libs.qt.widgets import buttons, splitters, spinbox, code, directory
+from tpDcc.libs.qt.widgets import buttons, dividers, spinbox, code, directory
 
 
 class GroupStyles(object):
@@ -104,7 +104,7 @@ class OptionsWidget(base.BaseWidget, object):
         top_layout.addWidget(self.move_down_btn)
         top_layout.addWidget(self.remove_btn)
         self._edit_splitter = QWidget()
-        edit_splitter_layout = splitters.SplitterLayout()
+        edit_splitter_layout = dividers.DividerLayout()
         self._edit_splitter.setLayout(edit_splitter_layout)
         self.main_layout.addWidget(self._edit_splitter)
 
@@ -1929,7 +1929,7 @@ class FloatOption(Option, object):
         return 'float'
 
     def get_option_widget(self):
-        return spinbox.BaseDoubleSpinBox(self._name)
+        return spinbox.BaseDoubleNumberSpinBox(self._name)
 
     def get_value(self):
         return self._option_widget.get_value()
@@ -1951,7 +1951,7 @@ class IntegerOption(FloatOption, object):
         return 'integer'
 
     def get_option_widget(self):
-        return spinbox.BaseSpinBox(self._name)
+        return spinbox.BaseSpinBoxNumber(self._name)
 
 
 class DictOption(FloatOption, object):

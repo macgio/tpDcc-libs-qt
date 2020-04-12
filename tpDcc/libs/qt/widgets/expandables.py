@@ -14,7 +14,7 @@ from Qt.QtGui import *
 from tpDcc.libs.python import python
 
 from tpDcc.libs.qt.core import base
-from tpDcc.libs.qt.widgets import splitters
+from tpDcc.libs.qt.widgets import dividers
 
 if python.is_python2():
     from aenum import Enum
@@ -77,7 +77,7 @@ class ExpandablePanel(base.BaseWidget, object):
         self._widget_area.setAutoFillBackground(True)
         self._widget_area.setPalette(widget_palette)
 
-        self._header_text_label = splitters.Splitter(self._header_text)
+        self._header_text_label = dividers.Divider(self._header_text)
 
         self._widget_layout = QVBoxLayout()
         self._widget_layout.setMargin(5)

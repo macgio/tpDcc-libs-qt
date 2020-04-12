@@ -264,7 +264,7 @@ class SelectFolder(QWidget, object):
             self._folder_btn = buttons.IconButton(
                 icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         else:
-            self._folder_btn = buttons.BaseButton('Browse...')
+            self._folder_btn = buttons.StyleBaseButton('Browse...')
         self._folder_btn.setMaximumHeight(20)
 
         for widget in [self._folder_label, self._folder_line, self._folder_btn]:
@@ -410,7 +410,7 @@ class SelectFile(base.DirectoryWidget, object):
             self._file_btn = buttons.IconButton(
                 icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         else:
-            self._file_btn = buttons.BaseButton('Browse ...')
+            self._file_btn = buttons.StyleBaseButton('Browse ...')
 
         for widget in [self._file_label, self._file_line, self._file_btn]:
             self.main_layout.addWidget(widget)
