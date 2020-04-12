@@ -27,7 +27,7 @@ class CircleLoading(base.BaseWidget, object):
             'loading', extension='svg', color=color or self.accent_color()).scaledToWidth(size, Qt.SmoothTransformation)
         self._loading_anim = QPropertyAnimation()
         self._loading_anim.setTargetObject(self)
-        self._loading_anim.setDuration(1000 * (1/speed))
+        self._loading_anim.setDuration(1000 * (1 / speed))
         self._loading_anim.setPropertyName('rotation')
         self._loading_anim.setStartValue(0)
         self._loading_anim.setEndValue(360)

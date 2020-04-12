@@ -47,8 +47,8 @@ class BaseCard(base.BaseWidget, object):
 
         map_label = {
             widget_theme.small if widget_theme else theme.Theme.Sizes.SMALL: (label.BaseLabel.Levels.H4, 10),
-            widget_theme.medium if widget_theme else theme.Theme.Sizes.MEDIUM:  (label.BaseLabel.Levels.H3, 15),
-            widget_theme.large if widget_theme else theme.Theme.Sizes.LARGE:  (label.BaseLabel.Levels.H2, 20)
+            widget_theme.medium if widget_theme else theme.Theme.Sizes.MEDIUM: (label.BaseLabel.Levels.H3, 15),
+            widget_theme.large if widget_theme else theme.Theme.Sizes.LARGE: (label.BaseLabel.Levels.H2, 20)
         }
         size = self._size or widget_theme.default if widget_theme else theme.Theme.Sizes.MEDIUM
         padding = map_label.get(size)[-1]

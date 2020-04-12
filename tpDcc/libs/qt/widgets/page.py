@@ -85,7 +85,8 @@ class Page(base.BaseWidget, mixin.FieldMixin):
         ])
         self.register_field('total', 0)
         self.register_field('current_page', 0)
-        self.register_field('total_page', lambda: self._get_total_pages(self.field('total'), self.field('page_size_selected')))
+        self.register_field('total_page', lambda: self._get_total_pages(
+            self.field('total'), self.field('page_size_selected')))
         self.register_field('total_page_text', lambda: str(self.field('total_page')))
         self.register_field('display_text', lambda: self._get_page_display_string(
             self.field('current_page'), self.field('page_size_selected'), self.field('total')))

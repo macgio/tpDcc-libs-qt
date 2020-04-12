@@ -96,7 +96,6 @@ class SliderPanel(base.BaseWidget, object):
     def ui(self):
         super(SliderPanel, self).ui()
 
-
         self._title_label = label.BaseLabel(parent=self).h4()
         self._title_label.setText(self._title)
 

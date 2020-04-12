@@ -644,8 +644,3 @@ class MenuTabWidget(base.BaseWidget, object):
         """
 
         self.tool_btn_grp.add_button(data_dict, index)
-
-
-
-
-

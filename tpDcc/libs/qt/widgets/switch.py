@@ -12,6 +12,7 @@ from Qt.QtWidgets import *
 
 from tpDcc.libs.qt.core import mixin, theme
 
+
 @mixin.theme_mixin
 @mixin.cursor_mixin
 class SwitchWidget(QRadioButton, object):

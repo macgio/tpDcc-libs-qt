@@ -47,4 +47,3 @@ def theme_widget(cls):
     setattr(cls, 'accent_color', accent_color)
 
     return cls
-
