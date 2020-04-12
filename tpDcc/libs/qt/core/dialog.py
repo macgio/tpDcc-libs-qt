@@ -19,7 +19,7 @@ from Qt.QtGui import *
 import tpDcc as tp
 from tpDcc import register
 from tpDcc.libs.qt.core import qtutils, color, animation, theme, dragger
-from tpDcc.libs.qt.widgets import splitters
+from tpDcc.libs.qt.widgets import dividers
 
 
 class Dialog(QDialog, object):
@@ -425,7 +425,7 @@ class ColorDialog(Dialog, object):
 
         self.ok_btn = QPushButton('Ok')
         self.cancel_btn = QPushButton('Cancel')
-        bottom_layout.addLayout(splitters.SplitterLayout())
+        bottom_layout.addLayout(dividers.DividerLayout())
         bottom_layout.addWidget(self.ok_btn)
         bottom_layout.addWidget(self.cancel_btn)
 
