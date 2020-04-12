@@ -80,19 +80,27 @@ class StyleSheet(object):
             keys.sort(key=len, reverse=True)
             for key in keys:
                 key_value = options[key]
+                str_key_value = str(key_value)
                 option_value = str(key_value)
-                if key_value.startswith('^'):
-                    option_value = str(qtutils.dpi_scale(int(key_value[1:])))
-                elif color.string_is_hex(key_value):
-                    color_list = color.hex_to_rgb(key_value)
-                    option_value = 'rgb({}, {}, {})'.format(color_list[0], color_list[1], color_list[2])
-                elif key.startswith('RESOURCE_') or key.startswith('RES_'):
+                if str_key_value.startswith('@^'):
+                    option_value = str(qtutils.dpi_scale(int(str_key_value[2:])))
+                elif str_key_value.startswith('^'):
+                    option_value = str(qtutils.dpi_scale(int(str_key_value[1:])))
+                elif 'icon' in key:
                     theme_name = kwargs.get('theme_name', 'default') or 'default'
                     resource_path = tpDcc.ResourcesMgr().get('icons', theme_name, str(key_value))
                     if resource_path and os.path.isfile(resource_path):
                         option_value = resource_path
+                elif color.string_is_hex(str_key_value):
+                    try:
+                        color_list = color.hex_to_rgba(str_key_value)
+                        option_value = 'rgba({}, {}, {}, {})'.format(
+                            color_list[0], color_list[1], color_list[2], color_list[3])
+                    except ValueError:
+                        # This exception will be raised if we try to convert an attribute that is not a color.
+                        option_value = key_value
 
-                data = data.replace(key, option_value)
+                data = data.replace('@{}'.format(key), option_value)
 
         re_dpi = re.compile('[0-9]+[*]DPI')
         new_data = list()

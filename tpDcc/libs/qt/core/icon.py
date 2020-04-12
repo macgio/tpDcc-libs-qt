@@ -13,7 +13,7 @@ from Qt.QtCore import *
 from Qt.QtGui import *
 
 from tpDcc.libs.python import python
-from tpDcc.libs.qt.core import color, qtutils, pixmap as px
+from tpDcc.libs.qt.core import color, qtutils, cache, pixmap as px
 
 
 class Icon(QIcon, object):
@@ -325,3 +325,6 @@ def grayscale_icon(icon):
         icon.addPixmap(icon.pixmap(size, QIcon.Disabled))
 
     return icon
+
+
+IconCache = cache.CacheResource(Icon)
