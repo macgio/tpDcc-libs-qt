@@ -15,6 +15,364 @@ from tpDcc.libs.qt.core import qtutils
 from tpDcc.libs.qt.widgets import graphicseffects
 
 
+class BaseLabel(QLabel, object):
+
+    class Levels(object):
+        H1 = 1
+        H2 = 2
+        H3 = 3
+        H4 = 4
+
+    class Types(object):
+        SECONDARY = 'secondary'
+        WARNING = 'warning'
+        DANGER = 'danger'
+
+    def __init__(self, text='', parent=None, flags=0):
+        super(BaseLabel, self).__init__(text, parent, flags)
+
+        self._actual_text = text
+        self._underline = False
+        self._mark = False
+        self._delete = False
+        self._strong = False
+        self._code = False
+        self._elide_mode = Qt.ElideNone
+
+        self._type = ''
+        self._level = 0
+
+        self.setTextInteractionFlags(Qt.TextBrowserInteraction | Qt.LinksAccessibleByMouse)
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        self.setProperty('label_text', text)
+
+    # =================================================================================================================
+    # PROPERTIES
+    # =================================================================================================================
+
+    def _get_type(self):
+        """
+        Returns label type
+        :return: str, BaseLabel.Types
+        """
+
+        return self._type
+
+    def _set_type(self, value):
+        """
+        Sets label type
+        :param value: BaseLabel.Types
+        """
+
+        self._type = value
+        self.style().polish(self)
+
+    def _get_level(self):
+        """
+        Returns label level
+        :return: str
+        """
+
+        return self._level
+
+    def _set_level(self, value):
+        """
+        Sets label level
+        :param value: itn (BaseLabel.Levels)
+        """
+
+        self._level = value
+        self.style().polish(self)
+
+    def _get_underline(self):
+        """
+        Returns whether or not label is using an underline style
+        :return: bool
+        """
+
+        return self._underline
+
+    def _set_underline(self, flag):
+        """
+         Sets label to use an underline style
+         :return: bool
+         """
+
+        self._underline = flag
+        self.style().polish(self)
+
+    def _get_delete(self):
+        """
+        Returns whether or not label is using a delete style
+        :return: bool
+        """
+
+        return self._delete
+
+    def _set_delete(self, flag):
+        """
+         Sets label to use a delete style
+         :return: bool
+         """
+
+        self._delete = flag
+        self.style().polish(self)
+
+    def _get_strong(self):
+        """
+        Returns whether or not label is using a strong style
+        :return: bool
+        """
+
+        return self._strong
+
+    def _set_strong(self, flag):
+        """
+         Sets label to use a strong style
+         :return: bool
+         """
+
+        self._strong = flag
+        self.style().polish(self)
+
+    def _get_mark(self):
+        """
+        Returns whether or not label is using a mark style
+        :return: bool
+        """
+
+        return self._mark
+
+    def _set_mark(self, flag):
+        """
+         Sets label to use a mark style
+         :return: bool
+         """
+
+        self._mark = flag
+        self.style().polish(self)
+
+    def _get_code(self):
+        """
+        Returns whether or not label is using a code style
+        :return: bool
+        """
+
+        return self._code
+
+    def _set_code(self, flag):
+        """
+         Sets label to use a code style
+         :return: bool
+         """
+
+        self._code = flag
+        self.style().polish(self)
+
+    def _get_elide_mode(self):
+        """
+        Returns which elide mode label is using
+        :return: Qt.ElideLeft/Qt.ElideMiddle/Qt.ElideRight/Qt.ElideNone
+        """
+
+        return self._elide_mode
+
+    def _set_elide_mode(self, value):
+        """
+        Sets elide mode used by the label
+        :param value: Qt.ElideLeft/Qt.ElideMiddle/Qt.ElideRight/Qt.ElideNone
+        """
+
+        self._elide_mode = value
+        self._update_elided_text()
+
+    theme_type = Property(str, _get_type, _set_type)
+    theme_level = Property(int, _get_level, _set_level)
+    theme_underline = Property(bool, _get_underline, _set_underline)
+    theme_delete = Property(bool, _get_delete, _set_delete)
+    theme_mark = Property(bool, _get_mark, _set_mark)
+    theme_strong = Property(bool, _get_strong, _set_strong)
+    theme_code = Property(bool, _get_code, _set_code)
+    theme_elide_mode = Property(bool, _get_elide_mode, _set_elide_mode)
+
+    # =================================================================================================================
+    # OVERRIDES
+    # =================================================================================================================
+
+    def event(self, event):
+        """
+        Overrides base QObject event function
+        """
+
+        if event.type() == QEvent.DynamicPropertyChange and event.propertyName() == 'label_text':
+            self.setText(self.property('label_text'))
+
+        return super(BaseLabel, self).event(event)
+
+    def minimumSizeHint(self):
+        """
+         Overrides base QObject minimumSizeHint function
+         :return: QSize
+         """
+
+        return QSize(1, self.fontMetrics().height())
+
+    def resizeEvent(self, event):
+        """
+        Overrides base QObject resizeEvent function
+        """
+
+        self._update_elided_text()
+
+    def text(self):
+        """
+        Overrides base QLabel text function
+        :return: str
+        """
+
+        return self._actual_text
+
+    def setText(self, text):
+        """
+        Overrides base QLabel setText function
+        :return: str
+        """
+
+        self._actual_text = text
+        self._update_elided_text()
+        self.setToolTip(text)
+
+    # =================================================================================================================
+    # BASE
+    # =================================================================================================================
+
+    def h1(self):
+        """
+        Sets label with h1 type
+        """
+
+        self.theme_level = self.Levels.H1
+
+        return self
+
+    def h2(self):
+        """
+        Sets label with h2 type
+        """
+
+        self.theme_level = self.Levels.H2
+
+        return self
+
+    def h3(self):
+        """
+        Sets label with h3 type
+        """
+
+        self.theme_level = self.Levels.H3
+
+        return self
+
+    def h4(self):
+        """
+        Sets label with h4 type
+        """
+
+        self.theme_level = self.Levels.H4
+
+        return self
+
+    def secondary(self):
+        """
+        Sets label with secondary type
+        """
+
+        self.theme_type = self.Types.SECONDARY
+
+        return self
+
+    def warning(self):
+        """
+        Sets label with warning type
+        """
+
+        self.theme_type = self.Types.WARNING
+
+        return self
+
+    def danger(self):
+        """
+        Sets label with danger type
+        """
+
+        self.theme_type = self.Types.DANGER
+
+        return self
+
+    def strong(self, flag=True):
+        """
+        Sets label with strong type
+        :param flag:
+        """
+
+        self.theme_strong = flag
+
+        return self
+
+    def mark(self, flag=True):
+        """
+        Sets label with mark type
+        :param flag:
+        """
+
+        self.theme_mark = flag
+
+        return self
+
+    def code(self, flag=True):
+        """
+        Sets label with code type
+        :param flag:
+        """
+
+        self.theme_code = flag
+
+        return self
+
+    def delete(self, flag=True):
+        """
+        Sets label with delete type
+        :param flag:
+        """
+
+        self.theme_delete = flag
+
+        return self
+
+    def underline(self, flag=True):
+        """
+        Sets label with underline type
+        :param flag:
+        """
+
+        self.theme_underline = flag
+
+        return self
+
+    # =================================================================================================================
+    # INTERNAL
+    # =================================================================================================================
+
+    def _update_elided_text(self):
+        """
+        Internal function that updates the elided text on the label
+        """
+
+        font_metrics = self.fontMetrics()
+        elided_text = font_metrics.elidedText(self._actual_text, self._elide_mode, self.width() - 2 * 2)
+        super(BaseLabel, self).setText(elided_text)
+
+
 class DragDropLine(QLineEdit, object):
     """
     QLineEdit that supports drag and drop behaviour
