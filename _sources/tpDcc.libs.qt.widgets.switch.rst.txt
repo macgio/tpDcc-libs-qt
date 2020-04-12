@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.switch module
+===================================
+
+.. automodule:: tpDcc.libs.qt.widgets.switch
+   :members:
+   :undoc-members:
+   :show-inheritance:

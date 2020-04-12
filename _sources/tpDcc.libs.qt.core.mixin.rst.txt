@@ -1,0 +1,7 @@
+tpDcc.libs.qt.core.mixin module
+===============================
+
+.. automodule:: tpDcc.libs.qt.core.mixin
+   :members:
+   :undoc-members:
+   :show-inheritance:

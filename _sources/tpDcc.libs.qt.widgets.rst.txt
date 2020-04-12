@@ -18,15 +18,22 @@ Submodules
    tpDcc.libs.qt.widgets.accordion
    tpDcc.libs.qt.widgets.action
    tpDcc.libs.qt.widgets.attributes
+   tpDcc.libs.qt.widgets.avatar
+   tpDcc.libs.qt.widgets.badge
    tpDcc.libs.qt.widgets.balloon
    tpDcc.libs.qt.widgets.breadcrumb
+   tpDcc.libs.qt.widgets.browser
    tpDcc.libs.qt.widgets.buttons
+   tpDcc.libs.qt.widgets.card
    tpDcc.libs.qt.widgets.changelog
    tpDcc.libs.qt.widgets.checkbox
    tpDcc.libs.qt.widgets.code
    tpDcc.libs.qt.widgets.color
+   tpDcc.libs.qt.widgets.combobox
    tpDcc.libs.qt.widgets.console
+   tpDcc.libs.qt.widgets.datetime
    tpDcc.libs.qt.widgets.directory
+   tpDcc.libs.qt.widgets.dividers
    tpDcc.libs.qt.widgets.dock
    tpDcc.libs.qt.widgets.drop
    tpDcc.libs.qt.widgets.expandables
@@ -48,11 +55,15 @@ Submodules
    tpDcc.libs.qt.widgets.lineedit
    tpDcc.libs.qt.widgets.listdelegates
    tpDcc.libs.qt.widgets.lists
+   tpDcc.libs.qt.widgets.loading
+   tpDcc.libs.qt.widgets.message
    tpDcc.libs.qt.widgets.messagebox
    tpDcc.libs.qt.widgets.messagehandler
    tpDcc.libs.qt.widgets.models
    tpDcc.libs.qt.widgets.options
    tpDcc.libs.qt.widgets.overlay
+   tpDcc.libs.qt.widgets.page
+   tpDcc.libs.qt.widgets.panel
    tpDcc.libs.qt.widgets.parsers
    tpDcc.libs.qt.widgets.progressbar
    tpDcc.libs.qt.widgets.project
@@ -60,8 +71,8 @@ Submodules
    tpDcc.libs.qt.widgets.sliders
    tpDcc.libs.qt.widgets.spinbox
    tpDcc.libs.qt.widgets.splitter
-   tpDcc.libs.qt.widgets.splitters
    tpDcc.libs.qt.widgets.stack
+   tpDcc.libs.qt.widgets.switch
    tpDcc.libs.qt.widgets.tabbars
    tpDcc.libs.qt.widgets.tabs
    tpDcc.libs.qt.widgets.toast

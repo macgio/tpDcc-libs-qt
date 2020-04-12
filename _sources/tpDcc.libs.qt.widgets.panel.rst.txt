@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.panel module
+==================================
+
+.. automodule:: tpDcc.libs.qt.widgets.panel
+   :members:
+   :undoc-members:
+   :show-inheritance:

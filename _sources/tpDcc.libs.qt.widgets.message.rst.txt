@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.message module
+====================================
+
+.. automodule:: tpDcc.libs.qt.widgets.message
+   :members:
+   :undoc-members:
+   :show-inheritance:

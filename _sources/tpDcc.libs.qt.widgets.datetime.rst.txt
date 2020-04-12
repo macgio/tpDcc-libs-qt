@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.datetime module
+=====================================
+
+.. automodule:: tpDcc.libs.qt.widgets.datetime
+   :members:
+   :undoc-members:
+   :show-inheritance:
