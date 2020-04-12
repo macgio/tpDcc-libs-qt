@@ -12,8 +12,16 @@ __license__ = "MIT"
 __maintainer__ = "Tomas Poveda"
 __email__ = "tpovedatd@gmail.com"
 
-from ._version import get_versions
+__version__ = None
 
 
-__version__ = get_versions()['version']
-del get_versions
+def get_version():
+    global __version__
+    if __version__:
+        return __version__
+
+    from ._version import get_versions
+    __version__ = get_versions()['version']
+    del get_versions
+
+    return __version__

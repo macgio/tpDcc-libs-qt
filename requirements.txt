@@ -13,3 +13,4 @@ aenum
 scandir
 pathlib2
 pysvg
+singledispatch;python_version < '3.4'
