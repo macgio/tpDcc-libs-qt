@@ -2,9 +2,11 @@ order = [
     'tpDcc.libs.qt.widgets.layouts',
     'tpDcc.libs.qt.widgets.graphicseffects',
     'tpDcc.libs.qt.widgets.buttons',
+    'tpDcc.libs.qt.widgets.group',
     'tpDcc.libs.qt.widgets.label',
+    'tpDcc.libs.qt.widgets.avatar',
     'tpDcc.libs.qt.widgets.lineedit',
-    'tpDcc.libs.qt.widgets.splitters',
+    'tpDcc.libs.qt.widgets.dividers',
     'tpDcc.libs.qt.widgets.gif',
     'tpDcc.libs.qt.widgets.directory',
     'tpDcc.libs.qt.widgets.grid',
@@ -15,5 +17,9 @@ order = [
     'tpDcc.libs.qt.widgets.tabs',
     'tpDcc.libs.qt.widgets.overlay',
     'tpDcc.libs.qt.widgets.dpi',
-    'tpDcc.libs.qt.widgets.stack'
+    'tpDcc.libs.qt.widgets.stack',
+    'tpDcc.libs.qt.widgets.loading',
+    'tpDcc.libs.qt.widgets.message',
+    'tpDcc.libs.qt.widgets.combobox',
+    'tpDcc.libs.qt.widgets.spinbox',
 ]

@@ -12,9 +12,10 @@ import os
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
+import tpDcc as tp
 from tpDcc.libs.python import path, python
-from tpDcc.libs.qt.core import resource, base, qtutils
-from tpDcc.libs.qt.widgets import label
+from tpDcc.libs.qt.core import mixin, base, qtutils
+from tpDcc.libs.qt.widgets import buttons, label
 
 
 class Breadcrumb(object):
@@ -31,48 +32,92 @@ class Breadcrumb(object):
         return self._label
 
 
-class BreadcrumbWidget(QWidget, object):
-    def __init__(self, parent=None):
+@mixin.theme_mixin
+class BreadcrumbWidget(base.BaseWidget, object):
+    """
+    Widget that display current location withing a hierarchy
+    It allows going back/forward inside a hierarchy
+    """
+
+    def __init__(self, separator=None, parent=None):
         super(BreadcrumbWidget, self).__init__(parent=parent)
 
+        current_theme = self.theme()
+
+        separator_color = current_theme.accent_color if current_theme else '#E2AC2C'
+
+        self._separator = separator or "<span style='color:{}'> &#9656; </span>".format(separator_color)
+        self._separators = list()
+
         self.setObjectName('BreadcrumbWidget')
+        self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
 
-        self._widgets = list()
-
+    def get_main_layout(self):
         main_layout = QHBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
-        self.setLayout(main_layout)
+        main_layout.addStretch()
 
-        self._path_label = label.ElidedLabel()
-        sp = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sp.setHorizontalStretch(0)
-        sp.setVerticalStretch(0)
-        sp.setHeightForWidth(self._path_label.sizePolicy().hasHeightForWidth())
-        self._path_label.setSizePolicy(sp)
-        main_layout.addWidget(self._path_label)
+        return main_layout
 
-    def set(self, breadcrumbs):
+    def ui(self):
+        super(BreadcrumbWidget, self).ui()
+
+        self._button_group = QButtonGroup()
+
+    def set_items(self, data_list):
         """
-        Populates the breadcrumb control with a list of breadcrumbs
-        :param breadcrumbs: each breadcrumb should derive from Breadcrumb class
+        Sets the the items of the breadcrumb cleaning old ones
+        :param data_list:
+        :return:
         """
 
-        breadcrumbs = python.force_list(breadcrumbs)
-        self._widgets = list()
-        for b in breadcrumbs:
-            if not isinstance(b, Breadcrumb):
-                if type(b) in [str, unicode]:
-                    self._widgets.append(Breadcrumb(b))
-                else:
-                    tp.logger.warning('Impossible to convert {} to Breadcrumb'.format(b))
+        for btn in self._button_group.buttons():
+            self._button_group.removeButton(btn)
+            self.main_layout.removeWidget(btn)
+            btn.setVisible(False)
+            btn.deleteLater()
+        for sep in self._separators:
+            self.main_layout.removeWidget(sep)
+            sep.setVisible(False)
+            sep.deleteLater()
+
+        for index, data_dict in enumerate(data_list):
+            self.add_item(data_dict, index)
+
+    def add_item(self, data_dict, index=None):
+        """
+        Adds a new item to the breadcrumb
+        :param data_dict: dict
+        :param index: int
+        """
+
+        btn = buttons.BaseToolButton()
+        btn.setText(data_dict.get('text'))
+        if data_dict.get('image'):
+            btn.image(data_dict.get('image'))
+        if data_dict.get('tooltip'):
+            btn.setProperty('toolTip', data_dict.get('tooltip'))
+        if data_dict.get('clicked'):
+            btn.clicked.connect(data_dict.get('clicked'))
+        if data_dict.get('text'):
+            if data_dict.get('svg') or data_dict.get('icon'):
+                btn.text_beside_icon()
             else:
-                self._widgets.append(b)
+                btn.text_only()
+        else:
+            btn.icon_only()
 
-        path = "<span style='color:#E2AC2C'> &#9656; </span>".join([crumb.label for crumb in self._widgets])
-        path = "<big>%s</big>" % path
+        if self._button_group.buttons():
+            separator = label.BaseLabel(self._separator).secondary()
+            self._separators.append(separator)
+            self.main_layout.insertWidget(self.main_layout.count() - 1, separator)
+        self.main_layout.insertWidget(self.main_layout.count() - 1, btn)
 
-        self._path_label.setText(path)
+        if index is None:
+            self._button_group.addButton(btn)
+        else:
+            self._button_group.addButton(btn, index)
 
     def set_from_path(self, file_path):
         """
@@ -82,49 +127,22 @@ class BreadcrumbWidget(QWidget, object):
         self._widgets = list()
         file_path = os.path.dirname(file_path)
         folders = path.get_folders_from_path(file_path)
-        self._widgets = [Breadcrumb(f) for f in folders]
-        self.set(self._widgets)
+        data_list = list()
+        for folder in folders:
+            data_list.append({'text': folder})
+        self.set_items(data_list)
 
-    def get_texts(self):
+    def get_breadcumbs(self):
         """
-        Returns current
+        Returns current list of breadcumb texts
         :return: list(str)
         """
 
-        return [crumb.label for crumb in self._widgets]
-
-
-class BreadcrumbButtonWidget(base.BaseWidget, object):
-    def __init__(self, parent=None):
-        super(BreadcrumbButtonWidget, self).__init__(parent=parent)
-
-    def ui(self):
-        super(BreadcrumbButtonWidget, self).ui()
-
-        self._bread_layout = QHBoxLayout()
-        self._bread_layout.setContentsMargins(2, 2, 2, 2)
-        self._bread_layout.setSpacing(2)
-        self._bread_layout.setAlignment(Qt.AlignLeft)
-        self.main_layout.addLayout(self._bread_layout)
-
-    def update_path(self, names_lists):
-        qtutils.clear_layout(self._bread_layout)
-
-        for name in names_lists:
-            new_btn = QPushButton(name)
-            btn_width = new_btn.fontMetrics().boundingRect(new_btn.text()).width()
-            new_btn.setMaximumWidth(btn_width + 10)
-            self._bread_layout.addWidget(new_btn)
-
-    def add_separator(self):
-        sep_lbl = QLabel()
-        sep_pixmap = resource.pixmap(name='play', extension='png').scaled(20, 20, Qt.KeepAspectRatio)
-        sep_lbl.setPixmap(sep_pixmap)
-        self._bread_layout.addWidget(sep_lbl)
+        return [btn.text() for btn in self._button_group.buttons()]
 
 
 class BreadcrumbFrame(QFrame, object):
-    def __init__(self, parent=None):
+    def __init__(self, separator=None, parent=None):
         super(BreadcrumbFrame, self).__init__(parent)
 
         self.setObjectName('TaskFrame')
@@ -135,7 +153,7 @@ class BreadcrumbFrame(QFrame, object):
         main_layout.setSpacing(2)
         self.setLayout(main_layout)
 
-        self._breadcrumb = BreadcrumbWidget()
+        self._breadcrumb = BreadcrumbWidget(separator=separator, parent=self)
 
         title_layout = QHBoxLayout()
         title_layout.addItem(QSpacerItem(30, 0, QSizePolicy.Expanding, QSizePolicy.Fixed))
@@ -144,13 +162,14 @@ class BreadcrumbFrame(QFrame, object):
 
         main_layout.addLayout(title_layout)
 
-    def set(self, breadcrumbs):
+    def set_items(self, data_list):
         """
-        Populates the breadcrumb control with a list of breadcrumbs
-        :param breadcrumbs: each breadcrumb should derive from Breadcrumb class
+        Sets the the items of the breadcrumb cleaning old ones
+        :param data_list:
+        :return:
         """
 
-        self._breadcrumb.set(breadcrumbs)
+        self._breadcrumb.set_items(data_list)
 
     def set_from_path(self, file_path):
         """
@@ -159,10 +178,10 @@ class BreadcrumbFrame(QFrame, object):
 
         self._breadcrumb.set_from_path(file_path)
 
-    def get_texts(self):
+    def get_breadcumbs(self):
         """
         Returns current
         :return: list(str)
         """
 
-        return self._breadcrumb.get_texts()
+        return self._breadcrumb.get_breadcumbs()
