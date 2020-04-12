@@ -12,9 +12,9 @@ from Qt.QtWidgets import *
 from Qt.QtGui import *
 
 import tpDcc as tp
-from tpDcc.libs.qt.core import qtutils
-from tpDcc.libs.qt.core import window
-from tpDcc.libs.qt.widgets import tabbars
+from tpDcc.libs.qt.core import qtutils, mixin
+from tpDcc.libs.qt.core import base, window, theme
+from tpDcc.libs.qt.widgets import tabbars, buttons, group, dividers
 
 
 class BaseTabWidget(QTabWidget, object):
@@ -528,3 +528,124 @@ class EditableTearOffTabWidget(TearOffTabWidget, object):
         self.setTabBar(tabBar)
         self.update_tab_bar_signals()
         self.setTabsClosable(True)
+
+
+class MenuTabBlockButton(buttons.BaseToolButton, object):
+    def __init__(self, parent=None):
+        super(MenuTabBlockButton, self).__init__(parent=parent)
+
+        self.setCheckable(True)
+
+
+@mixin.theme_mixin
+class MenuTabBlockButtonGroup(group.BaseButtonGroup, object):
+    checkedChanged = Signal(int)
+
+    def __init_(self, parent=None):
+        super(MenuTabBlockButtonGroup, self).__init__(parent=parent)
+
+        self.set_spacing(1)
+        self._button_group.setExclusive(True)
+        self._button_group.buttonClicked[int].connect(self.checkedChanged)
+
+    # =================================================================================================================
+    # PROPERTIES
+    # =================================================================================================================
+
+    def _get_checked(self):
+        """
+        Returns current checked button's ID
+        :return:  int
+        """
+
+        return self._button_group.checkedId()
+
+    def _set_checked(self, value):
+        """
+        Sets current checked button's ID
+        :param value: int
+        """
+
+        btn = self._button_group.button(value)
+        btn.setChecked(True)
+        self.checkedChanged.emit(value)
+
+    checked = Property(int, _get_checked, _set_checked, notify=checkedChanged)
+
+    # =================================================================================================================
+    # OVERRIDES
+    # =================================================================================================================
+
+    def create_button(self, data_dict):
+        button_theme = self.theme()
+
+        btn = MenuTabBlockButton()
+        if data_dict.get('image'):
+            btn.image(data_dict.get('image'))
+        if data_dict.get('text'):
+            if data_dict.get('image') or data_dict.get('icon'):
+                btn.text_beside_icon()
+            else:
+                btn.text_only()
+        btn.theme_size = button_theme.large if button_theme else theme.Theme.Sizes.LARGE
+
+        return btn
+
+
+class MenuTabWidget(base.BaseWidget, object):
+    def __init__(self, parent=None):
+        super(MenuTabWidget, self).__init__(parent=parent)
+
+    def get_main_layout(self):
+        main_layout = QVBoxLayout()
+        main_layout.setSpacing(0)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        return main_layout
+
+    def ui(self):
+        super(MenuTabWidget, self).ui()
+
+        self.tool_btn_grp = MenuTabBlockButtonGroup()
+
+        bar_widget = QWidget()
+        bar_widget.setObjectName('bar_widget')
+        self._bar_layout = QHBoxLayout()
+        self._bar_layout.setContentsMargins(10, 0, 10, 0)
+        bar_widget.setLayout(self._bar_layout)
+        self._bar_layout.addWidget(self.tool_btn_grp)
+        self._bar_layout.addStretch()
+
+        self.main_layout.addWidget(bar_widget)
+        self.main_layout.addWidget(dividers.Divider())
+        self.main_layout.addSpacing(5)
+
+    def append_widget(self, widget):
+        """
+        Adds a new widget to the end of the toolbar
+        :param widget: QWidget
+        """
+
+        self._bar_layout.addWidget(widget)
+
+    def insert_widget(self, widget):
+        """
+        Inserts the widget to the start of the toolbar
+        :param widget: QWidget
+        """
+
+        self._bar_layout.insertWidget(0, widget)
+
+    def add_menu(self, data_dict, index=None):
+        """
+        Adds a new menu
+        :param data_dict: dict
+        :param index: int
+        """
+
+        self.tool_btn_grp.add_button(data_dict, index)
+
+
+
+
+
