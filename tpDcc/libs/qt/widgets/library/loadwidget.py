@@ -15,7 +15,7 @@ from Qt.QtGui import *
 
 import tpDcc
 from tpDcc.libs.qt.core import base
-from tpDcc.libs.qt.widgets import formwidget, splitters, history
+from tpDcc.libs.qt.widgets import formwidget, dividers, history
 from tpDcc.libs.qt.widgets.library import widgets
 
 
@@ -224,7 +224,7 @@ class LoadWidget(base.BaseWidget, object):
         self.main_layout.addWidget(info_toggle_box)
         self.main_layout.addWidget(version_toggle_box)
         # self.main_layout.addWidget(options_toggle_box)
-        self.main_layout.addWidget(splitters.Splitter())
+        self.main_layout.addWidget(dividers.Divider())
         self.main_layout.addWidget(preview_buttons_frame)
         self.main_layout.addItem(QSpacerItem(0, 250, QSizePolicy.Preferred, QSizePolicy.Expanding))
 

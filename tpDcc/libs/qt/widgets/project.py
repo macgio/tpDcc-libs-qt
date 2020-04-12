@@ -19,7 +19,7 @@ from tpDcc.libs import qt
 from tpDcc.libs.python import path, settings, folder, fileio
 from tpDcc.core import project as core_project
 from tpDcc.core import consts
-from tpDcc.libs.qt.widgets import grid, search, directory, splitters
+from tpDcc.libs.qt.widgets import grid, search, directory, dividers
 
 LOGGER = logging.getLogger()
 
@@ -410,7 +410,7 @@ class OpenProjectWidget(QWidget, object):
         buttons_layout.addLayout(buttons_layout1)
 
         main_layout.addWidget(self.search_widget)
-        main_layout.addWidget(splitters.Splitter('   PROJECTS   '))
+        main_layout.addWidget(dividers.Divider('   PROJECTS   '))
         main_layout.addWidget(self._projects_list)
         main_layout.addLayout(buttons_layout)
 
@@ -528,7 +528,7 @@ class NewProjectWidget(QWidget, object):
         project_line_layout.addWidget(self.project_btn)
         self.name_line = QLineEdit()
         self.name_line.setPlaceholderText('Project Name')
-        project_line_layout.addWidget(splitters.get_horizontal_separator_widget())
+        project_line_layout.addWidget(dividers.get_horizontal_separator_widget())
         project_line_layout.addWidget(self.name_line)
 
         buttons_layout = QHBoxLayout()
@@ -539,8 +539,8 @@ class NewProjectWidget(QWidget, object):
         buttons_layout.addWidget(self.create_btn)
 
         main_layout.addWidget(self.search_widget)
-        main_layout.addLayout(splitters.SplitterLayout())
-        main_layout.addWidget(splitters.Splitter('   TEMPLATES   '))
+        main_layout.addLayout(dividers.DividerLayout())
+        main_layout.addWidget(dividers.Divider('   TEMPLATES   '))
         main_layout.addWidget(self.templates_list)
         main_layout.addLayout(project_layout)
         main_layout.addLayout(buttons_layout)
