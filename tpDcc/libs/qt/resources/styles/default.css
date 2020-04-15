@@ -21,6 +21,16 @@
 }
 
 /*
+QToolTip
+*/
+
+QToolTip
+{
+    border: none;
+    background-color: @background_selected_color;
+}
+
+/*
 QScrollBar
 */
 
@@ -155,10 +165,12 @@ QSpinBox
 QAbstractSpinBox
 {
     spacing: 4px;
-    border: 1px solid @border_color;
-    border-radius: 3px;
+    /*border: 1px solid @border_color;*/
+    /*border-radius: 3px;*/
     color: @primary_text_color;
     background-color:@background_in_color;
+    selection-background-color: @accent_color;
+    padding: 0 4px;
 }
 
 QAbstractSpinBox:focus
@@ -176,49 +188,49 @@ QAbstractSpinBox::up-button
     background: @background_out_color;
 }
 
-QAbstractSpinBox::down-button
-{
-    subcontrol-origin: border;
-    subcontrol-position: bottom right;
-    margin-bottom: 1px;
-    margin-right: 1px;
-    border-left: 1px solid @border_color;
-    border-top: 1px solid @border_color;
-    background: @background_out_color;
-}
+/*QAbstractSpinBox::down-button*/
+/*{*/
+/*    subcontrol-origin: border;*/
+/*    subcontrol-position: bottom right;*/
+/*    margin-bottom: 1px;*/
+/*    margin-right: 1px;*/
+/*    border-left: 1px solid @border_color;*/
+/*    border-top: 1px solid @border_color;*/
+/*    background: @background_out_color;*/
+/*}*/
 
-QAbstractSpinBox::up-button:hover,
-QAbstractSpinBox::down-button:hover
-{
-    border-left: 1px solid @accent_color;
-}
+/*QAbstractSpinBox::up-button:hover,*/
+/*QAbstractSpinBox::down-button:hover*/
+/*{*/
+/*    border-left: 1px solid @accent_color;*/
+/*}*/
 
-QAbstractSpinBox::up-arrow
-{
-    image: url(@up_icon);
-}
+/*QAbstractSpinBox::up-arrow*/
+/*{*/
+/*    image: url(@up_icon);*/
+/*}*/
 
-QAbstractSpinBox::down-arrow
-{
-    image: url(@down_icon);
-}
+/*QAbstractSpinBox::down-arrow*/
+/*{*/
+/*    image: url(@down_icon);*/
+/*}*/
 
-QAbstractSpinBox::up-arrow:disabled,
-/*QAbstractSpinBox::up-arrow:off,*/
-QAbstractSpinBox::down-arrow:disabled
-/*QAbstractSpinBox::down-arrow:off*/
-{
-    background-color: @disable_color;
-}
+/*QAbstractSpinBox::up-arrow:disabled,*/
+/*!*QAbstractSpinBox::up-arrow:off,*!*/
+/*QAbstractSpinBox::down-arrow:disabled*/
+/*!*QAbstractSpinBox::down-arrow:off*!*/
+/*{*/
+/*    background-color: @disable_color;*/
+/*}*/
 
 /*
 QComboBox
 */
 
 
-QCombBox > QLineEdit{
-    background-color: red;
-}
+/*QComboBox > QLineEdit{*/
+/*    background-color: red;*/
+/*}*/
 
 /*
 QToolButton
@@ -1361,6 +1373,31 @@ WindowContents {
 }
 
 /*
+BaseLineEdit
+*/
+
+BaseLineEdit
+{
+    border: 1px solid @border_color;
+    background-color: @background_in_color;
+}
+
+BaseLineEdit:focus
+{
+    border: 1px solid @accent_color;
+}
+
+BaseLineEdit[theme_type=error]
+{
+    color: @error_5;
+}
+
+BaseLineEdit[theme_type=error]:focus
+{
+    border: 1px solid @error_5;
+}
+
+/*
 SliderPanel
 */
 
@@ -1401,6 +1438,32 @@ MenuTabWidget::tab-bar
 {
     padding: 5px;
 }
+
+/*
+DragFileButton/DragFolderButton
+*/
+
+DragFileButton, DragFolderButton
+{
+    color: @primary_text_color;
+    background-color: @background_color;
+    border: 2px dashed @border_color;
+    border-radius: 10px;
+    padding: 20px 40px;
+}
+
+DragFileButton:hover, DragFolderButton:hover
+{
+    color: @accent_color;
+    border-color: @accent_color_5;
+}
+
+DragFileButton:pressed, DragFolderButton:pressed
+{
+    color: @accent_color;
+    border-color: @accent_color_7;
+}
+
 
 /*!**/
 /* Stack*/

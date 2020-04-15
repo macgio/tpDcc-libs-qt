@@ -199,7 +199,7 @@ class BaseSpinBoxNumber(base.BaseNumberWidget):
             self.enterPressed.emit()
 
     def get_number_widget(self):
-        spin_box = QSpinBox()
+        spin_box = BaseSpinBox()
         spin_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         return spin_box
 
@@ -223,7 +223,7 @@ class BaseDoubleNumberSpinBox(BaseSpinBoxNumber, object):
         super(BaseDoubleNumberSpinBox, self).__init__(name=name, parent=parent)
 
     def get_number_widget(self):
-        spin_box = QDoubleSpinBox()
+        spin_box = BaseDoubleSpinBox()
         spin_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         return spin_box
 
