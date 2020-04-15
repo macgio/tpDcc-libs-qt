@@ -199,15 +199,15 @@ class BaseLabel(QLabel, object):
     # OVERRIDES
     # =================================================================================================================
 
-    def event(self, event):
-        """
-        Overrides base QObject event function
-        """
-
-        if event.type() == QEvent.DynamicPropertyChange and event.propertyName() == 'label_text':
-            self.setText(self.property('label_text'))
-
-        return super(BaseLabel, self).event(event)
+    # def event(self, event):
+    #     """
+    #     Overrides base QObject event function
+    #     """
+    #
+    #     if event.type() == QEvent.DynamicPropertyChange and event.propertyName() == 'label_text':
+    #         self.setText(self.property('label_text'))
+    #
+    #     return super(BaseLabel, self).event(event)
 
     def minimumSizeHint(self):
         """
