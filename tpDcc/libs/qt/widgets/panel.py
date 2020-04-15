@@ -242,7 +242,8 @@ class SliderPanel(base.BaseWidget, object):
             self._pos_anim.setStartValue(QPoint(target_x + self.width(), target_y))
             self._pos_anim.setEndValue(QPoint(target_x, target_y))
         if self._position == SliderPanelPositions.TOP:
-            pos = parent_geo.topLeft() if dcc_window or parent_parent is None else parent.mapToGlobal(parent_geo.topLeft())
+            pos = parent_geo.topLeft() if dcc_window or parent_parent is None else parent.mapToGlobal(
+                parent_geo.topLeft())
             self.setFixedWidth(parent_geo.width())
             target_x = pos.x()
             target_y = pos.y()

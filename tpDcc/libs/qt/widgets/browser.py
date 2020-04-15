@@ -332,7 +332,7 @@ class ClickSaveFileToolButton(buttons.BaseToolButton, object):
 
 @mixin.property_mixin
 class ClickBrowserFolderToolButton(buttons.BaseToolButton, object):
-    folderChanged= Signal(str)
+    folderChanged = Signal(str)
     foldersChanged = Signal(list)
 
     _on_browse_folder = browse_folder
