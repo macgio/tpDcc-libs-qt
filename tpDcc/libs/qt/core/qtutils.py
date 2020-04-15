@@ -1656,17 +1656,20 @@ def iterate_parents(widget):
         yield parent
 
 
-def iterate_children(widget, skip=None):
+def iterate_children(widget, skip=None, qobj_class=None):
     """
     Yields all descendant widgets depth first of the given widget
     :param widget: QWWidget, widget to iterate through
     :param skip: str, if the widget has this property, children will be skip
+    :param qobj_class:
     :return:
     """
 
     for child in widget.children():
         yield child
         if skip is not None and child.property(skip) is not None:
+            continue
+        if qobj_class is not None and not isinstance(child, qobj_class):
             continue
         for grand_cihld in iterate_children(widget=child, skip=skip):
             yield grand_cihld

@@ -605,7 +605,7 @@ class BaseWindow(QMainWindow, object):
         stylesheet = current_theme.stylesheet()
         self.setStyleSheet(stylesheet)
 
-        all_widgets = self.main_layout.findChildren(QObject)
+        all_widgets = qtutils.iterate_children(self.main_widget, qobj_class=QObject)
         for w in all_widgets:
             if hasattr(w, 'setStyleSheet'):
                 w.setStyleSheet(stylesheet)

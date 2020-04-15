@@ -10,7 +10,7 @@ from __future__ import print_function, division, absolute_import
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
-from tpDcc.libs.qt.core import consts, qtutils
+from tpDcc.libs.qt.core import consts, qtutils, mixin, theme
 
 
 class HorizontalLayout(QHBoxLayout, object):
@@ -98,23 +98,8 @@ class GridLayout(QGridLayout, object):
             self.setColumnMinimumWidth(column_min_width_b[0], qtutils.dpi_scale(column_min_width_b[1]))
 
 
-class ChildWidget(QWidget, object):
-    """
-    Base widget that is contained inside Qt windows.
-    Contains functionality to update style depending on parent theme
-    """
-
-    def __init__(self, *args, **kwargs):
-        super(ChildWidget, self).__init__(*args, **kwargs)
-
-    def top_widget(self):
-        top_widget = self
-        while top_widget.parentWidget():
-            top_widget = top_widget.parentWidget()
-
-        return top_widget
-
-
+@mixin.theme_mixin
+@mixin.cursor_mixin
 class BaseWidget(QWidget, object):
     """
     Base class for all QWidgets based items
@@ -125,10 +110,39 @@ class BaseWidget(QWidget, object):
     def __init__(self, parent=None, **kwargs):
         super(BaseWidget, self).__init__(parent=parent)
 
+        self._size = self.theme_default_size()
+
         self._use_scrollbar = kwargs.get('use_scrollbar', self.def_use_scrollbar)
 
         self.ui()
         self.setup_signals()
+
+    # =================================================================================================================
+    # PROPERTIES
+    # =================================================================================================================
+
+    def _get_size(self):
+        """
+        Returns the spin box height size
+        :return: float
+        """
+
+        return self._size
+
+    def _set_size(self, value):
+        """
+        Sets spin box height size
+        :param value: float
+        """
+
+        self._size = value
+        self.style().polish(self)
+
+    theme_size = Property(int, _get_size, _set_size)
+
+    # =================================================================================================================
+    # OVERRIDES
+    # =================================================================================================================
 
     def keyPressEvent(self, event):
         return
@@ -140,6 +154,10 @@ class BaseWidget(QWidget, object):
             QWhatsThis.showText(pos, self.whatsThis())
         else:
             super(BaseWidget, self).mousePressEvent(event)
+
+    # =================================================================================================================
+    # BASE
+    # =================================================================================================================
 
     def get_main_layout(self):
         """
@@ -192,6 +210,56 @@ class BaseWidget(QWidget, object):
         """
 
         self.main_layout.setSpacing(value)
+
+    def tiny(self):
+        """
+        Sets spin box to tiny size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.tiny if widget_theme else theme.Theme.Sizes.TINY
+
+        return self
+
+    def small(self):
+        """
+        Sets spin box to small size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.small if widget_theme else theme.Theme.Sizes.SMALL
+
+        return self
+
+    def medium(self):
+        """
+        Sets spin box to medium size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.medium if widget_theme else theme.Theme.Sizes.MEDIUM
+
+        return self
+
+    def large(self):
+        """
+        Sets spin box to large size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.large if widget_theme else theme.Theme.Sizes.LARGE
+
+        return self
+
+    def huge(self):
+        """
+        Sets spin box to huge size
+        """
+
+        widget_theme = self.theme()
+        self.theme_size = widget_theme.huge if widget_theme else theme.Theme.Sizes.HUGE
+
+        return self
 
 
 class BaseFrame(QFrame, object):
@@ -260,10 +328,10 @@ class BaseNumberWidget(BaseWidget, object):
         super(BaseNumberWidget, self).ui()
 
         self._number_widget = self.get_number_widget()
-        self._number_label = QLabel(self._name)
+        self._number_label = QLabel(self._name, parent=self)
         if not self._name:
             self._number_label.hide()
-        self._value_label = QLabel('value')
+        self._value_label = QLabel('value', parent=self)
         self._value_label.hide()
 
         self.main_layout.addWidget(self._number_label)
@@ -277,7 +345,7 @@ class BaseNumberWidget(BaseWidget, object):
         :return: QWidget
         """
 
-        spin_box = QSpinBox()
+        spin_box = QSpinBox(parent=self)
         spin_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         return spin_box
 

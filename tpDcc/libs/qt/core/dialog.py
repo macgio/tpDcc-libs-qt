@@ -270,38 +270,12 @@ class Dialog(QDialog, object):
 
         current_theme = self.theme()
         current_theme.set_dpi(self.dpi())
-        options = current_theme.options()
         stylesheet = current_theme.stylesheet()
 
         all_widgets = self.main_layout.findChildren(QObject)
-
-        text_color = color.Color.from_string(options["ITEM_TEXT_COLOR"])
-        text_selected_color = color.Color.from_string(options["ITEM_TEXT_SELECTED_COLOR"])
-        background_color = color.Color.from_string(options["ITEM_BACKGROUND_COLOR"])
-        background_hover_color = color.Color.from_string(options["ITEM_BACKGROUND_HOVER_COLOR"])
-        background_selected_color = color.Color.from_string(options["ITEM_BACKGROUND_SELECTED_COLOR"])
-
-        self.setStyleSheet(stylesheet)
-
         for w in all_widgets:
-            found = False
-            if hasattr(w, 'set_text_color'):
-                w.set_text_color(text_color)
-                found = True
-            if hasattr(w, 'set_text_selected_color'):
-                w.set_text_selected_color(text_selected_color)
-                found = True
-            if hasattr(w, 'set_background_color'):
-                w.set_background_color(background_color)
-                found = True
-            if hasattr(w, 'set_background_hover_color'):
-                w.set_background_hover_color(background_hover_color)
-                found = True
-            if hasattr(w, 'set_background_selected_color'):
-                w.set_background_selected_color(background_selected_color)
-                found = True
-
-            if found:
+            if hasattr(w, 'setStyleSheet'):
+                w.setStyleSheet(stylesheet)
                 w.update()
 
     def setup_signals(self):
