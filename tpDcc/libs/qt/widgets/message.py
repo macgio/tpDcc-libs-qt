@@ -194,7 +194,7 @@ class BaseMessage(base.BaseWidget, object):
 @mixin.theme_mixin
 class PopupMessage(base.BaseWidget, object):
     """
-    Message that appears at the top of the window and show s feedback in response to user actions
+    Message that appears at the top of the window and shows feedback in response to user actions
     """
 
     DEFAULT_CONFIG = {'duration': 2, 'top': 24}
@@ -261,8 +261,9 @@ class PopupMessage(base.BaseWidget, object):
         else:
             icon_label = avatar.Avatar.tiny()
             current_type = self._theme_type or MessageTypes.INFO
-            icon_label.image = tp.ResourcesMgr().pixmap(
-                current_type, color=getattr(current_theme, '{}_color'.format(current_type)))
+            if current_theme:
+                icon_label.image = tp.ResourcesMgr().pixmap(
+                    current_type, color=getattr(current_theme, '{}_color'.format(current_type)))
 
         self._content_label = label.BaseLabel(parent=self)
         self._content_label.setText(self._text)
@@ -396,7 +397,8 @@ class PopupMessage(base.BaseWidget, object):
 
     def _set_proper_position(self, parent):
         parent_parent = parent.parent()
-        dcc_window = parent_parent == tp.Dcc.get_main_window()
+        dcc_win = tp.Dcc.get_main_window()
+        dcc_window = parent_parent == dcc_win or parent_parent.objectName() == dcc_win.objectName()
         parent_geo = parent.geometry()
         pos = parent_geo.topLeft() if dcc_window else parent.mapToGlobal(parent_geo.topLeft())
         # pos = parent_geo.topLeft() if parent.parent() is None else parent.mapToGlobal(parent_geo.topLeft())

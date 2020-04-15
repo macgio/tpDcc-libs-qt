@@ -224,7 +224,8 @@ class SliderPanel(base.BaseWidget, object):
 
         parent = self.parent()
         parent_parent = parent.parent()
-        dcc_window = parent_parent == tp.Dcc.get_main_window()
+        dcc_win = tp.Dcc.get_main_window()
+        dcc_window = parent_parent == dcc_win or parent_parent.objectName() == dcc_win.objectName()
         parent_geo = parent.geometry()
         if self._position == SliderPanelPositions.LEFT:
             pos = parent_geo.topLeft() if dcc_window else parent.mapToGlobal(parent_geo.topLeft())
@@ -241,7 +242,7 @@ class SliderPanel(base.BaseWidget, object):
             self._pos_anim.setStartValue(QPoint(target_x + self.width(), target_y))
             self._pos_anim.setEndValue(QPoint(target_x, target_y))
         if self._position == SliderPanelPositions.TOP:
-            pos = parent_geo.topLeft() if dcc_window else parent.mapToGlobal(parent_geo.topLeft())
+            pos = parent_geo.topLeft() if dcc_window or parent_parent is None else parent.mapToGlobal(parent_geo.topLeft())
             self.setFixedWidth(parent_geo.width())
             target_x = pos.x()
             target_y = pos.y()
