@@ -12,7 +12,7 @@ from functools import partial
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
-from tpDcc.libs.qt.core import theme as core_theme
+from tpDcc.libs.qt.core import qtutils, theme as core_theme
 
 
 def theme_mixin(cls):
@@ -41,6 +41,9 @@ def theme_mixin(cls):
             if hasattr(top_widget, 'theme') and callable(getattr(top_widget, 'theme')):
                 found_theme = top_widget.theme()
                 break
+
+        if not found_theme:
+            found_theme = core_theme.Theme()
 
         return found_theme
 
@@ -150,6 +153,108 @@ def focus_shadow_mixin(cls):
 
     setattr(cls, 'focusInEvent', _new_focus_in_event)
     setattr(cls, 'focusOutEvent', _new_focus_out_event)
+
+    return cls
+
+
+def hover_shadow_mixin(cls):
+    """
+    Adds a shadow effect for decorated class when widget is hovered.
+    If the widget is hovered, shadow effect is enabled; otherwise shadow effect is disabled.
+    :param cls:
+    :return: cls
+    """
+
+    old_enter_event = cls.enterEvent
+    old_leave_event = cls.leaveEvent
+
+    def _new_enter_event(self, *args, **kwargs):
+        old_enter_event(self, *args, **kwargs)
+        if not self.graphicsEffect():
+            shadow_effect = QGraphicsDropShadowEffect(self)
+            object_type = self.property('type')
+            theme = getattr(cls, 'theme') if hasattr(cls, 'theme') else None
+            if theme:
+                color = vars(theme).get('{}_color'.format(object_type or 'primary'))
+            else:
+                color = Qt.red
+            shadow_effect.setColor(color)
+            shadow_effect.setOffset(0, 0)
+            shadow_effect.setBlurRadius(5)
+            shadow_effect.setEnabled(False)
+            self.setGraphicsEffect(shadow_effect)
+        if self.isEnabled():
+            self.graphicsEffect().setEnabled(True)
+
+    def _new_leave_event(self, *args, **kwargs):
+        old_leave_event(self, *args, **kwargs)
+        if self.graphicsEffect():
+            self.graphicsEffect().setEnabled(False)
+
+    setattr(cls, 'enterEvent', _new_enter_event)
+    setattr(cls, 'leaveEvent', _new_leave_event)
+
+    return cls
+
+
+def stacked_opacity_animation_mixin(cls):
+    """
+    Decorators for stacked widget
+    When stacked widget index changes, show opacity and position animation for current widget
+    :param cls:
+    :return:
+    """
+
+    if not qtutils.is_stackable(cls):
+        return cls
+
+    old_init = cls.__init__
+
+    def _new_init(self, *args, **kwargs):
+        old_init(self, *args, **kwargs)
+        self._prev_index = 0
+        self._to_show_pos_anim = QPropertyAnimation()
+        self._to_show_pos_anim.setDuration(400)
+        self._to_show_pos_anim.setPropertyName('pos')
+        self._to_show_pos_anim.setEndValue(QPoint(0, 0))
+        self._to_show_pos_anim.setEasingCurve(QEasingCurve.OutCubic)
+        self._to_hide_pos_anim = QPropertyAnimation()
+        self._to_hide_pos_anim.setDuration(400)
+        self._to_hide_pos_anim.setPropertyName('pos')
+        self._to_hide_pos_anim.setEndValue(QPoint(0, 0))
+        self._to_hide_pos_anim.setEasingCurve(QEasingCurve.OutCubic)
+        self._opacity_effect = QGraphicsOpacityEffect()
+        self._opacity_anim = QPropertyAnimation()
+        self._opacity_anim.setDuration(400)
+        self._opacity_anim.setEasingCurve(QEasingCurve.InCubic)
+        self._opacity_anim.setPropertyName('opacity')
+        self._opacity_anim.setStartValue(0.0)
+        self._opacity_anim.setEndValue(1.0)
+        self._opacity_anim.setTargetObject(self._opacity_effect)
+        self._opacity_anim.finished.connect(self._on_disable_opacity)
+        self.currentChanged.connect(self._on_play_anim)
+
+    def _on_play_anim(self, index):
+        current_widget = self.widget(index)
+        if self._prev_index < index:
+            self._to_show_pos_anim.setStartValue(QPoint(self.width(), 0))
+            self._to_show_pos_anim.setTargetObject(current_widget)
+            self._to_show_pos_anim.start()
+        else:
+            self._to_hide_pos_anim.setStartValue(QPoint(-self.width(), 0))
+            self._to_hide_pos_anim.setTargetObject(current_widget)
+            self._to_hide_pos_anim.start()
+        current_widget.setGraphicsEffect(self._opacity_effect)
+        current_widget.graphicsEffect().setEnabled(True)
+        self._opacity_anim.start()
+        self._prev_index = index
+
+    def _on_disable_opacity(self):
+        self.currentWidget().graphicsEffect().setEnabled(False)
+
+    setattr(cls, '__init__', _new_init)
+    setattr(cls, '_on_play_anim', _on_play_anim)
+    setattr(cls, '_on_disable_opacity', _on_disable_opacity)
 
     return cls
 
