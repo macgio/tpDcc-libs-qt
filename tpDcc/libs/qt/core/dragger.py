@@ -253,7 +253,7 @@ class WindowDragger(QFrame, object):
         logo_button.setFixedSize(QSize(30, 30))
         toggle_frameless = logo_button.addAction(
             'Toggle Frameless Mode', connect=self._on_toggle_frameless_mode, checkable=True)
-        toggle_frameless.setChecked(self._window.frameless)
+        toggle_frameless.setChecked(self._window.is_frameless())
         logo_button.set_menu_align(Qt.AlignLeft)
 
         return logo_button
@@ -296,10 +296,13 @@ class WindowDragger(QFrame, object):
         Internal callback function that is called when the user clicks on close button
         """
 
-        if self._window.docked():
-            self._window.fade_close()
+        if hasattr(self._window, 'docked'):
+            if self._window.docked():
+                self._window.fade_close()
+            else:
+                self.window().fade_close()
         else:
-            self.window().fade_close()
+            self._window.fade_close()
 
 
 class DialogDragger(WindowDragger, object):
@@ -312,3 +315,16 @@ class DialogDragger(WindowDragger, object):
 
     def mouseDoubleClickEvent(self, event):
         return
+
+    def _setup_logo_button(self):
+        """
+        Internal function that setup window dragger button logo
+        :return: IconMenuButton
+        """
+
+        from tpDcc.libs.qt.widgets import buttons
+        logo_button = buttons.IconMenuButton(parent=self)
+        logo_button.setIconSize(QSize(24, 24))
+        logo_button.setFixedSize(QSize(30, 30))
+
+        return logo_button

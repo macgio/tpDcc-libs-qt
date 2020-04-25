@@ -21,7 +21,7 @@ from tpDcc.libs import qt
 import tpDcc as tp
 from tpDcc import register
 from tpDcc.libs.python import path, folder
-from tpDcc.libs.qt.core import qtutils, base, animation, theme, color, statusbar, dragger, settings as qt_settings
+from tpDcc.libs.qt.core import qtutils, base, animation, theme, statusbar, dragger, resizers, settings as qt_settings
 
 
 class WindowContents(QFrame, object):
@@ -119,9 +119,11 @@ class BaseWindow(QMainWindow, object):
 
     def closeEvent(self, event):
         self.save_settings()
+        self.closed.emit()
+        for child in self.findChildren(QWidget):
+            child.close()
         self.setParent(None)
         self.deleteLater()
-        self.closed.emit()
 
     def addDockWidget(self, area, dock_widget, orientation=Qt.Horizontal, tabify=True):
         """
@@ -312,29 +314,29 @@ class BaseWindow(QMainWindow, object):
                 self._view_menu.addAction(i.toggleViewAction())
         self._top_layout.addWidget(self._menubar)
 
-        self._base_window = QMainWindow()
-        self._base_window.setParent(central_widget)
-        self._base_window.setAttribute(Qt.WA_AlwaysShowToolTips, True)
-        self._base_window.setWindowFlags(Qt.Widget)
-        self._base_window.setAttribute(Qt.WA_TranslucentBackground)
-        # if qtutils.is_pyside2():
-        #     self._base_window.setWindowFlags(
-        #         self.windowFlags() | Qt.Widget | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
-        # else:
-        #     self._base_window.setWindowFlags(Qt.Widget | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
-        self._base_window.setDockOptions(
-            QMainWindow.AnimatedDocks | QMainWindow.AllowNestedDocks | QMainWindow.AllowTabbedDocks)
-        window_layout = QVBoxLayout()
-        window_layout.setContentsMargins(0, 0, 0, 0)
-        window_layout.setSpacing(0)
-        self._base_window.setLayout(window_layout)
+        # self._base_window = QMainWindow()
+        # self._base_window.setParent(central_widget)
+        # self._base_window.setAttribute(Qt.WA_AlwaysShowToolTips, True)
+        # self._base_window.setWindowFlags(Qt.Widget)
+        # self._base_window.setAttribute(Qt.WA_TranslucentBackground)
+        # # if qtutils.is_pyside2():
+        # #     self._base_window.setWindowFlags(
+        # #         self.windowFlags() | Qt.Widget | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+        # # else:
+        # #     self._base_window.setWindowFlags(Qt.Widget | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+        # self._base_window.setDockOptions(
+        #     QMainWindow.AnimatedDocks | QMainWindow.AllowNestedDocks | QMainWindow.AllowTabbedDocks)
+        # window_layout = QVBoxLayout()
+        # window_layout.setContentsMargins(0, 0, 0, 0)
+        # window_layout.setSpacing(0)
+        # self._base_window.setLayout(window_layout)
         self.main_widget = WindowContents()
         self.main_layout = self.get_main_layout()
         self.main_widget.setLayout(self.main_layout)
-        self._base_window.setCentralWidget(self.main_widget)
+        # self._base_window.setCentralWidget(self.main_widget)
 
         self._central_layout.addWidget(self._top_widget)
-        self._central_layout.addWidget(self._base_window)
+        self._central_layout.addWidget(self.main_widget)
 
     # ============================================================================================================
     # SIGNALS
@@ -735,7 +737,6 @@ class MainWindow(BaseWindow, object):
         self._preference_widgets_classes = list()
         self._toolset = kwargs.get('toolset', None)
         self._transparent = kwargs.get('transparent', False)
-        self._frameless = kwargs.get('frameless', True)
         self._config = kwargs.pop('config', None)
         self._dockable = getattr(self, 'WindowDockable', False)
         self._was_docked = False
@@ -745,8 +746,9 @@ class MainWindow(BaseWindow, object):
 
         super(MainWindow, self).__init__(parent=parent, **kwargs)
 
-        self.set_frameless(self._frameless)
-        if not self._frameless:
+        frameless = kwargs.get('frameless', True)
+        self.set_frameless(frameless)
+        if not frameless:
             self.set_resizer_active(False)
             self._dragger.set_dragging_enabled(False)
             self._dragger.set_window_buttons_state(False)
@@ -775,24 +777,6 @@ class MainWindow(BaseWindow, object):
         """
 
         return self._widget
-
-    @property
-    def frameless(self):
-        """
-        Returns whether this window can be frameless or not
-        :return: bool
-        """
-
-        return self._frameless
-
-    @frameless.setter
-    def frameless(self, flag):
-        """
-        Sets whether or not this window can be frameless
-        :param flag: bool
-        """
-
-        self._frameless = flag
 
     # ============================================================================================================
     # CLASS METHODS
@@ -895,7 +879,7 @@ class MainWindow(BaseWindow, object):
         grid_layout.setVerticalSpacing(0)
         grid_layout.setContentsMargins(0, 0, 0, 0)
         grid_layout.addWidget(self._top_widget, 1, 1, 1, 1)
-        grid_layout.addWidget(self._base_window, 2, 1, 1, 1)
+        grid_layout.addWidget(self.main_widget, 2, 1, 1, 1)
         grid_layout.addWidget(self._top_left_resizer, 0, 0, 1, 1)
         grid_layout.addWidget(self._top_resizer, 0, 1, 1, 1)
         grid_layout.addWidget(self._top_right_resizer, 0, 2, 1, 1)
@@ -904,19 +888,20 @@ class MainWindow(BaseWindow, object):
         grid_layout.addWidget(self._bottom_left_resizer, 3, 0, 1, 1)
         grid_layout.addWidget(self._bottom_resizer, 3, 1, 1, 1)
         grid_layout.addWidget(self._bottom_right_resizer, 3, 2, 1, 1)
-        # grid_layout.setColumnStretch(1, 1)
-        # grid_layout.setRowStretch(2, 1)
+        grid_layout.setColumnStretch(1, 1)
+        grid_layout.setRowStretch(2, 1)
 
         self._central_layout.addLayout(grid_layout)
 
         # Shadow effect for window
         # BUG: This causes some rendering problems when using other shadow effects in child widgets of the window
+        # BUG: Also detected problems when updating wigets (tree views, web browsers, etc)
         # https://bugreports.qt.io/browse/QTBUG-35196
-        shadow_effect = QGraphicsDropShadowEffect(self)
-        shadow_effect.setBlurRadius(qtutils.dpi_scale(15))
-        shadow_effect.setColor(QColor(0, 0, 0, 150))
-        shadow_effect.setOffset(qtutils.dpi_scale(0))
-        self.setGraphicsEffect(shadow_effect)
+        # shadow_effect = QGraphicsDropShadowEffect(self)
+        # shadow_effect.setBlurRadius(qtutils.dpi_scale(15))
+        # shadow_effect.setColor(QColor(0, 0, 0, 150))
+        # shadow_effect.setOffset(qtutils.dpi_scale(0))
+        # self.setGraphicsEffect(shadow_effect)
 
         for r in self._resizers:
             r.windowResizedFinished.connect(self.windowResizedFinished)
@@ -1038,14 +1023,15 @@ class MainWindow(BaseWindow, object):
         Sets the resize directions for the resizer widget of this window
         """
 
-        self._top_resizer.set_resize_direction(ResizeDirection.Top)
-        self._bottom_resizer.set_resize_direction(ResizeDirection.Bottom)
-        self._right_resizer.set_resize_direction(ResizeDirection.Right)
-        self._left_resizer.set_resize_direction(ResizeDirection.Left)
-        self._top_left_resizer.set_resize_direction(ResizeDirection.Left | ResizeDirection.Top)
-        self._top_right_resizer.set_resize_direction(ResizeDirection.Right | ResizeDirection.Top)
-        self._bottom_left_resizer.set_resize_direction(ResizeDirection.Left | ResizeDirection.Bottom)
-        self._bottom_right_resizer.set_resize_direction(ResizeDirection.Right | ResizeDirection.Bottom)
+        self._top_resizer.set_resize_direction(resizers.ResizeDirection.Top)
+        self._bottom_resizer.set_resize_direction(resizers.ResizeDirection.Bottom)
+        self._right_resizer.set_resize_direction(resizers.ResizeDirection.Right)
+        self._left_resizer.set_resize_direction(resizers.ResizeDirection.Left)
+        self._top_left_resizer.set_resize_direction(resizers.ResizeDirection.Left | resizers.ResizeDirection.Top)
+        self._top_right_resizer.set_resize_direction(resizers.ResizeDirection.Right | resizers.ResizeDirection.Top)
+        self._bottom_left_resizer.set_resize_direction(resizers.ResizeDirection.Left | resizers.ResizeDirection.Bottom)
+        self._bottom_right_resizer.set_resize_direction(
+            resizers.ResizeDirection.Right | resizers.ResizeDirection.Bottom)
 
     def get_resizers_height(self):
         """
@@ -1080,14 +1066,14 @@ class MainWindow(BaseWindow, object):
         Internal function that setup window resizers
         """
 
-        self._top_resizer = VerticalResizer()
-        self._bottom_resizer = VerticalResizer()
-        self._right_resizer = HorizontalResizer()
-        self._left_resizer = HorizontalResizer()
-        self._top_left_resizer = CornerResizer()
-        self._top_right_resizer = CornerResizer()
-        self._bottom_left_resizer = CornerResizer()
-        self._bottom_right_resizer = CornerResizer()
+        self._top_resizer = resizers.VerticalResizer()
+        self._bottom_resizer = resizers.VerticalResizer()
+        self._right_resizer = resizers.HorizontalResizer()
+        self._left_resizer = resizers.HorizontalResizer()
+        self._top_left_resizer = resizers.CornerResizer()
+        self._top_right_resizer = resizers.CornerResizer()
+        self._bottom_left_resizer = resizers.CornerResizer()
+        self._bottom_right_resizer = resizers.CornerResizer()
 
         self._resizers = [
             self._top_resizer, self._top_right_resizer, self._right_resizer, self._bottom_right_resizer,
@@ -1606,225 +1592,6 @@ class DirectoryWindow(MainWindow, object):
 
         if not path.is_dir(directory=directory):
             folder.create_folder(name=None, directory=directory)
-
-
-class ResizeDirection:
-    Left = 1
-    Top = 2
-    Right = 4
-    Bottom = 8
-
-
-class WindowResizer(QFrame, object):
-    windowResized = Signal()
-    windowResizedStarted = Signal()
-    windowResizedFinished = Signal()
-
-    def __init__(self, parent):
-        super(WindowResizer, self).__init__(parent)
-
-        self._init()
-
-        self._direction = 0
-        self._widget_mouse_pos = None
-        self._widget_geometry = None
-        self._frameless = None
-
-        self.setStyleSheet('background: transparent;')
-
-        self.windowResizedStarted.connect(self._on_window_resize_started)
-
-    def paintEvent(self, event):
-        """
-        Overrides base QFrame paintEvent function
-        Override to make mouse events work in transparent widgets
-        :param event: QPaintEvent
-        """
-
-        painter = QPainter(self)
-        painter.fillRect(self.rect(), QColor(255, 0, 0, 1))
-        painter.end()
-
-    def leaveEvent(self, event):
-        """
-        Overrides base QFrame leaveEvent function
-        :param event: QEvent
-        """
-
-        QApplication.restoreOverrideCursor()
-
-    def mousePressEvent(self, event):
-        """
-        Overrides base QFrame mousePressEvent function
-        :param event: QEvent
-        """
-
-        self.windowResizedStarted.emit()
-
-    def mouseMoveEvent(self, event):
-        """
-        Overrides base QFrame mouseMoveEvent function
-        :param event: QEvent
-        """
-
-        self.windowResized.emit()
-
-    def mouseReleaseEvent(self, event):
-        """
-        Overrides base QFrame mouseReleaseEvent function
-        :param event: QEvent
-        """
-
-        self.windowResizedFinished.emit()
-
-    def setParent(self, parent):
-        """
-        Overrides base QFrame setParent function
-        :param event: QWidget
-        """
-
-        self._frameless = parent
-        super(WindowResizer, self).setParent(parent)
-
-    def set_resize_direction(self, direction):
-        """
-        Sets the resize direction
-
-        .. code-block:: python
-
-            setResizeDirection(ResizeDirection.Left | ResizeDireciton.Top)
-
-        :param direction: ResizeDirection
-        :return: ResizeDirection
-        :rtype: int
-        """
-        self._direction = direction
-
-    def _init(self):
-        """
-        Internal function that initializes reisizer
-        Override in custom resizers
-        """
-
-        self.windowResized.connect(self._on_window_resized)
-
-    def _on_window_resized(self):
-        """
-        Internal function that resizes the frame based on the mouse position and the current direction
-        """
-
-        pos = QCursor.pos()
-        new_geo = self.window().frameGeometry()
-
-        min_width = self.window().minimumSize().width()
-        min_height = self.window().minimumSize().height()
-
-        if self._direction & ResizeDirection.Left == ResizeDirection.Left:
-            left = new_geo.left()
-            new_geo.setLeft(pos.x() - self._widget_mouse_pos.x())
-            if new_geo.width() <= min_width:
-                new_geo.setLeft(left)
-        if self._direction & ResizeDirection.Top == ResizeDirection.Top:
-            top = new_geo.top()
-            new_geo.setTop(pos.y() - self._widget_mouse_pos.y())
-            if new_geo.height() <= min_height:
-                new_geo.setTop(top)
-        if self._direction & ResizeDirection.Right == ResizeDirection.Right:
-            new_geo.setRight(pos.x() + (self.minimumSize().width() - self._widget_mouse_pos.x()))
-        if self._direction & ResizeDirection.Bottom == ResizeDirection.Bottom:
-            new_geo.setBottom(pos.y() + (self.minimumSize().height() - self._widget_mouse_pos.y()))
-
-        x = new_geo.x()
-        y = new_geo.y()
-        w = max(new_geo.width(), min_width)
-        h = max(new_geo.height(), min_height)
-
-        self.window().setGeometry(x, y, w, h)
-
-    def _on_window_resize_started(self):
-        self._widget_mouse_pos = self.mapFromGlobal(QCursor.pos())
-        self._widget_geometry = self.window().frameGeometry()
-
-
-class CornerResizer(WindowResizer, object):
-    """
-    Resizer for window corners
-    """
-
-    def __init__(self, parent=None):
-        super(CornerResizer, self).__init__(parent)
-
-    def enterEvent(self, event):
-        """
-        Overrides base QFrame enterEvenet function
-        :param event: QEvent
-        """
-
-        if self._direction == ResizeDirection.Left | ResizeDirection.Top or \
-                self._direction == ResizeDirection.Right | ResizeDirection.Bottom:
-            QApplication.setOverrideCursor(Qt.SizeFDiagCursor)
-        elif self._direction == ResizeDirection.Right | ResizeDirection.Top or \
-                self._direction == ResizeDirection.Left | ResizeDirection.Bottom:
-            QApplication.setOverrideCursor(Qt.SizeBDiagCursor)
-
-    def _init(self):
-        """
-        Overrides base WindowResizer _int function
-        """
-
-        super(CornerResizer, self)._init()
-
-        self.setFixedSize(qtutils.size_by_dpi(QSize(10, 10)))
-
-
-class VerticalResizer(WindowResizer, object):
-    """
-    Resize for top and bottom sides of the window
-    """
-
-    def __init__(self, parent=None):
-        super(VerticalResizer, self).__init__(parent)
-
-    def enterEvent(self, event):
-        """
-        Overrides base QFrame enterEvenet function
-        :param event: QEvent
-        """
-
-        QApplication.setOverrideCursor(Qt.SizeVerCursor)
-
-    def _init(self):
-        """
-        Overrides base WindowResizer _int function
-        """
-
-        super(VerticalResizer, self)._init()
-        self.setFixedHeight(qtutils.dpi_scale(8))
-
-
-class HorizontalResizer(WindowResizer, object):
-    """
-    Resize for left and right sides of the window
-    """
-
-    def __init__(self, parent=None):
-        super(HorizontalResizer, self).__init__(parent)
-
-    def enterEvent(self, event):
-        """
-        Overrides base QFrame enterEvenet function
-        :param event: QEvent
-        """
-
-        QApplication.setOverrideCursor(Qt.SizeHorCursor)
-
-    def _init(self):
-        """
-        Overrides base WindowResizer _int function
-        """
-
-        super(HorizontalResizer, self)._init()
-        self.setFixedWidth(qtutils.dpi_scale(8))
 
 
 class DockWidget(QDockWidget, object):

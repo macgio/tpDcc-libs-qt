@@ -18,8 +18,18 @@ from Qt.QtGui import *
 
 import tpDcc as tp
 from tpDcc import register
-from tpDcc.libs.qt.core import qtutils, color, animation, theme, dragger
+from tpDcc.libs.qt.core import base, qtutils, animation, theme, dragger, resizers
 from tpDcc.libs.qt.widgets import dividers
+
+
+class DialogContents(QFrame, object):
+    """
+    Widget that defines the core contents of frameless window
+    Can be used to custom CSS for frameless windows contents
+    """
+
+    def __init__(self, parent=None):
+        super(DialogContents, self).__init__(parent=parent)
 
 
 class Dialog(QDialog, object):
@@ -27,20 +37,15 @@ class Dialog(QDialog, object):
     Class to create basic Maya docked windows
     """
 
+    dialogResizedFinished = Signal()
     dialogClosed = Signal()
 
     def __init__(self, parent=None, **kwargs):
 
-        #     # Remove previous dialogs
-        main_window = tp.Dcc.get_main_window()
-        #     if main_window:
-        #         wins = tp.Dcc.get_main_window().findChildren(QWidget, name) or list()
-        #         for w in wins:
-        #             w.close()
-        #             w.deleteLater()
-
         if parent is None:
-            parent = main_window
+            parent = tp.Dcc.get_main_window()
+
+        self._setup_resizers()
 
         super(Dialog, self).__init__(parent=parent)
 
@@ -51,7 +56,6 @@ class Dialog(QDialog, object):
         show_on_initialize = kwargs.get('show_on_initialize', True)
         self._theme = None
         self._dpi = kwargs.get('dpi', 1.0)
-        self._frameless = kwargs.get('frameless', True)
         self._fixed_size = kwargs.get('fixed_size', False)
         self._has_title = kwargs.pop('has_title', False)
         self._size = kwargs.pop('size', (200, 125))
@@ -60,15 +64,17 @@ class Dialog(QDialog, object):
         self.setObjectName(str(name))
         self.setFocusPolicy(Qt.StrongFocus)
 
-        if self._frameless:
-            self.setAttribute(Qt.WA_TranslucentBackground)
-            if qtutils.is_pyside2():
-                self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
-            else:
-                self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+        frameless = kwargs.get('frameless', True)
+        self.set_frameless(frameless)
 
         self.ui()
         self.setup_signals()
+
+        self._status_bar = QStatusBar(self)
+        self.main_layout.addWidget(self._status_bar)
+        if self._fixed_size:
+            self._status_bar.hide()
+        self._status_bar.hide()
 
         self.setWindowTitle(title)
 
@@ -81,10 +87,6 @@ class Dialog(QDialog, object):
             self.show()
 
         self.resize(width, height)
-
-    @property
-    def frameless(self):
-        return self._frameless
 
     def default_settings(self):
         """
@@ -101,11 +103,8 @@ class Dialog(QDialog, object):
 
     def load_theme(self):
         def_settings = self.default_settings()
-        def_theme_settings = def_settings.get('theme')
-        theme_settings = {
-            "accentColor": def_theme_settings['accentColor'],
-            "backgroundColor": def_theme_settings['backgroundColor']
-        }
+        theme_settings = def_settings.get('theme', dict())
+
         self.set_theme_settings(theme_settings)
 
     def set_width_height(self, width, height):
@@ -118,6 +117,42 @@ class Dialog(QDialog, object):
         x = self.geometry().x()
         y = self.geometry().y()
         self.setGeometry(x, y, width, height)
+
+    def is_frameless(self):
+        """
+        Returns whether or not frameless functionality for this window is enable or not
+        :return: bool
+        """
+
+        return self.window().windowFlags() & Qt.FramelessWindowHint == Qt.FramelessWindowHint
+
+    def set_frameless(self, flag):
+
+        window = self.window()
+
+        if flag and not self.is_frameless():
+            window.setAttribute(Qt.WA_TranslucentBackground)
+            if qtutils.is_pyside2() or qtutils.is_pyqt5():
+                window.setWindowFlags(window.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+            else:
+                window.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+            self.set_resizer_active(True)
+        elif not flag and self.is_frameless():
+            window.setAttribute(Qt.WA_TranslucentBackground)
+            if qtutils.is_pyside2() or qtutils.is_pyqt5():
+                window.setWindowFlags(window.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+            else:
+                self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+            self.set_resizer_active(False)
+
+        window.show()
+        #
+        # if self._frameless:
+        #     self.setAttribute(Qt.WA_TranslucentBackground)
+        #     if qtutils.is_pyside2():
+        #         self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
+        #     else:
+        #         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
 
     def center(self, to_cursor=False):
         """
@@ -144,40 +179,26 @@ class Dialog(QDialog, object):
         return main_layout
 
     def ui(self):
-        dlg_layout = QVBoxLayout()
-        dlg_layout.setContentsMargins(0, 0, 0, 0)
-        dlg_layout.setSpacing(0)
-        self.setLayout(dlg_layout)
 
-        self._base_layout = QVBoxLayout()
-        self._base_layout.setContentsMargins(0, 0, 0, 0)
-        self._base_layout.setSpacing(0)
-        self._base_layout.setAlignment(Qt.AlignTop)
-        base_widget = QFrame()
-        base_widget.setObjectName('mainFrame')
-        base_widget.setFrameStyle(QFrame.NoFrame)
-        base_widget.setFrameShadow(QFrame.Plain)
-        base_widget.setStyleSheet("""
-        QFrame#mainFrame
-        {
-        background-color: rgb(35, 35, 35);
-        border-radius: 10px;
-        }""")
-        base_widget.setLayout(self._base_layout)
-        dlg_layout.addWidget(base_widget)
+        self._central_layout = base.VerticalLayout(margins=(0, 0, 0, 0), spacing=0)
+        self.setLayout(self._central_layout)
+
+        self._top_widget = QWidget()
+        self._top_layout = base.VerticalLayout(margins=(0, 0, 0, 0), spacing=0)
+        self._top_widget.setLayout(self._top_layout)
+
+        for r in self._resizers:
+            r.setParent(self)
+            r.windowResizedFinished.connect(self.dialogResizedFinished)
+        self.set_resize_directions()
 
         self._dragger = dragger.DialogDragger(parent=self)
-        self._dragger.setVisible(self._frameless)
-        self._base_layout.addWidget(self._dragger)
+        self._dragger.setVisible(self.is_frameless())
+        self._top_layout.addWidget(self._dragger)
 
+        self.main_widget = DialogContents()
         self.main_layout = self.get_main_layout()
-        self._base_layout.addLayout(self.main_layout)
-
-        title_layout = QHBoxLayout()
-        title_layout.setContentsMargins(0, 0, 0, 0)
-        title_layout.setSpacing(0)
-        title_layout.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
-        self.main_layout.addLayout(title_layout)
+        self.main_widget.setLayout(self.main_layout)
 
         self.logo_view = QGraphicsView()
         self.logo_view.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -191,22 +212,49 @@ class Dialog(QDialog, object):
 
         if self._has_title and self._title_pixmap:
             self._logo_scene.addPixmap(self._title_pixmap)
-            title_layout.addWidget(self.logo_view)
+            self._top_layout.addWidget(self.logo_view)
 
         title_background_pixmap = self._get_title_pixmap()
         if self._has_title and title_background_pixmap:
             self._logo_scene.addPixmap(title_background_pixmap)
-            title_layout.addWidget(self.logo_view)
+            self._top_layout.addWidget(self.logo_view)
         else:
             self.logo_view.setVisible(False)
 
+        grid_layout = base.GridLayout()
+        grid_layout.setHorizontalSpacing(0)
+        grid_layout.setVerticalSpacing(0)
+        grid_layout.setContentsMargins(0, 0, 0, 0)
+        grid_layout.addWidget(self._top_widget, 1, 1, 1, 1)
+        grid_layout.addWidget(self.main_widget, 2, 1, 1, 1)
+        grid_layout.addWidget(self._top_left_resizer, 0, 0, 1, 1)
+        grid_layout.addWidget(self._top_resizer, 0, 1, 1, 1)
+        grid_layout.addWidget(self._top_right_resizer, 0, 2, 1, 1)
+        grid_layout.addWidget(self._left_resizer, 1, 0, 2, 1)
+        grid_layout.addWidget(self._right_resizer, 1, 2, 2, 1)
+        grid_layout.addWidget(self._bottom_left_resizer, 3, 0, 1, 1)
+        grid_layout.addWidget(self._bottom_resizer, 3, 1, 1, 1)
+        grid_layout.addWidget(self._bottom_right_resizer, 3, 2, 1, 1)
+        grid_layout.setColumnStretch(1, 1)
+        grid_layout.setRowStretch(2, 1)
+
+        # Shadow effect for dialog
+        # BUG: This causes some rendering problems when using other shadow effects in child widgets of the window
+        # BUG: Also detected problems when updating wigets (tree views, web browsers, etc)
+        # https://bugreports.qt.io/browse/QTBUG-35196
+        # shadow_effect = QGraphicsDropShadowEffect(self)
+        # shadow_effect.setBlurRadius(qtutils.dpi_scale(15))
+        # shadow_effect.setColor(QColor(0, 0, 0, 150))
+        # shadow_effect.setOffset(qtutils.dpi_scale(0))
+        # self.setGraphicsEffect(shadow_effect)
+
+        self._central_layout.addLayout(grid_layout)
+
+        for r in self._resizers:
+            r.windowResizedFinished.connect(self.dialogResizedFinished)
+
         if self._size:
             self.resize(self._size[0], self._size[1])
-
-        self._status_bar = QStatusBar(self)
-        dlg_layout.addWidget(self._status_bar)
-        if self._fixed_size:
-            self._status_bar.hide()
 
     def statusBar(self):
         """
@@ -259,7 +307,13 @@ class Dialog(QDialog, object):
         :param settings: dict
         """
 
-        new_theme = theme.Theme()
+        # TODO: We should be able to give a dialog a theme to load
+        # TODO: This will allow to setup specific themes if dialogs are launch from windows with
+        # TODO: specific themes
+
+        new_theme = tp.ResourcesMgr().theme('default')
+        if not new_theme:
+            new_theme = theme.Theme()
         new_theme.set_settings(settings)
         self.set_theme(new_theme)
 
@@ -271,6 +325,7 @@ class Dialog(QDialog, object):
         current_theme = self.theme()
         current_theme.set_dpi(self.dpi())
         stylesheet = current_theme.stylesheet()
+        self.setStyleSheet(stylesheet)
 
         all_widgets = self.main_layout.findChildren(QObject)
         for w in all_widgets:
@@ -287,7 +342,8 @@ class Dialog(QDialog, object):
 
     def resizeEvent(self, event):
         # TODO: Take the width from the QGraphicsView not hardcoded :)
-        self.logo_view.centerOn(1000, 0)
+        if hasattr(self, 'logo_view'):
+            self.logo_view.centerOn(1000, 0)
         return super(Dialog, self).resizeEvent(event)
 
     def closeEvent(self, event):
@@ -295,14 +351,93 @@ class Dialog(QDialog, object):
         event.accept()
 
     def setWindowIcon(self, icon):
-        if self._frameless:
+        if self.is_frameless() or (hasattr(self, '_dragger') and self._dragger):
             self._dragger.set_icon(icon)
         super(Dialog, self).setWindowIcon(icon)
 
     def setWindowTitle(self, title):
-        if self._frameless:
+        if self.is_frameless() or (hasattr(self, '_dragger') and self._dragger):
             self._dragger.set_title(title)
         super(Dialog, self).setWindowTitle(title)
+
+    # ============================================================================================================
+    # RESIZERS
+    # ============================================================================================================
+
+    def set_resizer_active(self, flag):
+        """
+        Sets whether resizers are enable or not
+        :param flag: bool
+        """
+
+        if flag:
+            for r in self._resizers:
+                r.show()
+        else:
+            for r in self._resizers:
+                r.hide()
+
+    def set_resize_directions(self):
+        """
+        Sets the resize directions for the resizer widget of this window
+        """
+
+        self._top_resizer.set_resize_direction(resizers.ResizeDirection.Top)
+        self._bottom_resizer.set_resize_direction(resizers.ResizeDirection.Bottom)
+        self._right_resizer.set_resize_direction(resizers.ResizeDirection.Right)
+        self._left_resizer.set_resize_direction(resizers.ResizeDirection.Left)
+        self._top_left_resizer.set_resize_direction(resizers.ResizeDirection.Left | resizers.ResizeDirection.Top)
+        self._top_right_resizer.set_resize_direction(resizers.ResizeDirection.Right | resizers.ResizeDirection.Top)
+        self._bottom_left_resizer.set_resize_direction(resizers.ResizeDirection.Left | resizers.ResizeDirection.Bottom)
+        self._bottom_right_resizer.set_resize_direction(
+            resizers.ResizeDirection.Right | resizers.ResizeDirection.Bottom)
+
+    def get_resizers_height(self):
+        """
+        Returns the total height of the vertical resizers
+        :return: float
+        """
+
+        resizers = [self._top_resizer, self._bottom_resizer]
+        total_height = 0
+        for r in resizers:
+            if not r.isHidden():
+                total_height += r.minimumSize().height()
+
+        return total_height
+
+    def get_resizers_width(self):
+        """
+        Returns the total widht of the horizontal resizers
+        :return: float
+        """
+
+        resizers = [self._left_resizer, self._right_resizer]
+        total_width = 0
+        for r in resizers:
+            if not r.isHidden():
+                total_width += r.minimumSize().width()
+
+        return total_width
+
+    def _setup_resizers(self):
+        """
+        Internal function that setup window resizers
+        """
+
+        self._top_resizer = resizers.VerticalResizer()
+        self._bottom_resizer = resizers.VerticalResizer()
+        self._right_resizer = resizers.HorizontalResizer()
+        self._left_resizer = resizers.HorizontalResizer()
+        self._top_left_resizer = resizers.CornerResizer()
+        self._top_right_resizer = resizers.CornerResizer()
+        self._bottom_left_resizer = resizers.CornerResizer()
+        self._bottom_right_resizer = resizers.CornerResizer()
+
+        self._resizers = [
+            self._top_resizer, self._top_right_resizer, self._right_resizer, self._bottom_right_resizer,
+            self._bottom_resizer, self._bottom_left_resizer, self._left_resizer, self._top_left_resizer
+        ]
 
     def _get_title_pixmap(self):
         """
