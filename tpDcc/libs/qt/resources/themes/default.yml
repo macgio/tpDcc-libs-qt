@@ -9,7 +9,7 @@ overrides:
   # Default pixels
   one_pixel: "^1"
   two_pixels: "^2"
-  threepixels: "^3"
+  three_pixels: "^3"
   four_pixels: "^4"
   five_pixels: "^5"
 
@@ -32,15 +32,11 @@ overrides:
   ## Icons
   #ICON_PRIMARY_COLOR: "C5C5C5"
   #ICON_HOVER_COLOR: "FDFDFD"
-  #
-  ## Buttons
-  #BUTTON_TEXT_COLOR: "C5C5C5"
-  #BUTTON_BACKGROUND_COLOR: "5A5A5A"
-  #BUTTON_PADDING: "^4"
-  #BUTTON_BORDER_RADIUS: "^2"
-  #BUTTON_HOVER_COLOR: "6F6F6F"
-  #BUTTON_PRESS_COLOR: "1B1B1B"
-  #
+
+  # Buttons
+  button_hover_color: "6F6F6F"
+  button_press_color: "1B1B1B"
+
   ## Checkboxes
   #CHECKBOX_SIZE: "^12"
   #CHECKBOX_BACKGROUND_COLOR: "292929"

@@ -21,6 +21,110 @@
 }
 
 /*
+ QPushButton
+*/
+
+QPushButton
+{
+    color: @text_color_inverse;
+    background-color: @background_out_color;
+    /*padding: @button_padding@unit;*/
+    border-radius: @border_radius_small@unit;
+    border-width: 0px 0px 2px 0px;
+    border: 0px 0px 0px 0px transparent;
+}
+
+QDialog
+{
+    background-color: red;
+}
+
+QPushButton:disabled
+{
+}
+
+QPushButton:hover
+{
+    background-color: @accent_color_5;
+    border-bottom: solid @accent_color_3;
+    border-width: 0px 0px 2px 0px;
+    padding-bottom: 2*DPIpx;
+}
+
+QPushButton:pressed
+{
+    background-color: @accent_color_7;
+    border-bottom: solid @accent_color_9;
+    border-width: 0px 0px 1px 0px;
+    padding-bottom: 1*DPIpx;
+}
+
+/*QPushButton:checked {*/
+/*    background-color: DISABLED_COLOR;*/
+/*    !*background-color: ACCENT_COLOR;*!*/
+/*    border-bottom: solid ACCENT_COLOR_DARKER;*/
+/*    border-width: 0px 0px 2px 0px;*/
+/*    padding-bottom: 0px;*/
+/*}*/
+
+/*
+QToolButton
+*/
+
+QToolButton{
+	color: @text_color_inverse;
+	background-color: @background_out_color;
+	spacing:4*DPIpx;
+    outline: none;
+    /*background-color: transparent;*/
+}
+
+/*
+ QLineEdit
+*/
+
+QLineEdit
+{
+     /*background-color: BACKGROUND_COLOR_DARKER;*/
+    background-color: @background_in_color;
+    color: @primary_text_color;
+    /*padding: @two_pixels@unit;*/
+    border-radius: @three_pixels@unit;
+    /*border-bottom: 0px solid rgba(255, 255, 255, 50);*/
+    selection-color: @accent_color;
+    selection-background-color: @accent_color;
+}
+
+QLineEdit:focus
+{
+	border: 0px;
+	border-bottom: @two_pixels@unit solid @accent_color;
+    background-color: @accent_color_7;
+}
+
+QLineEdit:disabled {
+    color: @disable_color;
+}
+
+/*
+QTabBar
+*/
+
+QTabBar::tab:selected
+{
+    background: #323232;
+    border-bottom: none;
+    color: @accent_color;
+    background-color: @background_color;
+}
+
+QTabBar::tab:!selected
+{
+    margin-top: 2px;
+    border-bottom: 1px solid @border_color;
+}
+
+/*
 QToolTip
 */
 
@@ -1341,7 +1445,8 @@ MetaCard
  Window Dragger
 */
 
-WindowDragger {
+WindowDragger
+{
     background-color: @window_dragger_color;
     border-top-left-radius: @window_dragger_rounded_corners@unit;
     border-top-right-radius: @window_dragger_rounded_corners@unit;
@@ -1349,22 +1454,35 @@ WindowDragger {
     border-bottom-right-radius: 0px;
 }
 
-ToolsetFrame {
+ToolsetFrame
+{
     background-color: @window_dragger_color;
 }
 
-ToolsetFrame QFrame {
+ToolsetFrame QFrame
+{
     background-color: @window_dragger_color;
 }
 
-ClippedLabel#WindowDraggerLabel {
+ClippedLabel#WindowDraggerLabel
+{
     color: @window_dragger_label_color;
     background-color: @window_dragger_color;
     font-weight: bold;
     font-size: @window_dragger_font_size@unit;
 }
 
-WindowContents {
+DialogContents
+{
+    background-color: @background_color;
+    border-top-left-radius: 0@unit;
+    border-top-right-radius: 0@unit;
+    border-bottom-left-radius: @window_rounded_corners@unit;
+    border-bottom-right-radius: @window_rounded_corners@unit;
+}
+
+WindowContents
+{
     background-color: @background_color;
     border-top-left-radius: 0@unit;
     border-top-right-radius: 0@unit;
@@ -1464,6 +1582,134 @@ DragFileButton:pressed, DragFolderButton:pressed
     border-color: @accent_color_7;
 }
 
+/*
+MenuTabBlockButton
+*/
+
+MenuTabBlockButton
+{
+    border-radius: 0;
+    padding: 2px 10px;
+    border:none;
+}
+
+MenuTabBlockButton:hover
+{
+    color: @accent_color;
+    background-color:@background_in_color;
+}
+
+MenuTabBlockButton:checked
+{
+    color: @accent_color;
+    background-color:@background_in_color;
+}
+
+/*
+MenuLineButton
+*/
+
+MenuLineButton
+{
+    border-radius: 0;
+    padding: 6px 10px;
+    border-color: transparent;
+}
+
+MenuLineButton:hover
+{
+    border-radius: 0;
+    color: @accent_color_5;
+    border: none;
+}
+
+MenuLineButton:checked
+{
+    border-radius: 0;
+    color: @accent_color;
+    border-style: solid;
+    border-color: @accent_color;
+    border-width: 0 0 2px 0;
+}
+
+/*
+BaseProgressBar
+*/
+
+BaseProgressBar::chunk
+{
+    min-height: 12px;
+    max-height: 12px;
+    border-radius: 5px;
+}
+
+BaseProgressBar[theme_status=error]::chunk
+{
+    background-color: @error_6;
+}
+
+BaseProgressBar[theme_status=success]::chunk
+{
+    background-color: @success_6;
+}
+
+BaseProgressBar[theme_status=primary]::chunk
+{
+    background-color: @accent_color;
+}
+
+/*
+BaseToast
+*/
+
+BaseToast
+{
+    background-color: @toast_color;
+}
+
+BaseToast QLabel
+{
+    color: @text_color_inverse;
+    background-color: transparent;
+}
+
+/*
+SearchFindWidget
+*/
+
+SearchFindWidget, SearchFindWidget QLabel
+{
+	font: 22*DPIpx;
+	height: 35px;
+    border: 0px;
+	padding: 0 2px;
+	color: @primary_text_color;
+	background-color: @accent_color;
+	selection-background-color: @accent_color;
+	selection-color: @accent_color;
+}
+
+SearchFindWidget QLineEdit
+{
+    padding-left: 22px;
+    border-radius: 10px;
+}
+
+SearchFindWidget QLineEdit:focus
+{
+	border: 0px;
+	border-bottom: 0px solid transparent;
+	background-color: @background_in_color;
+	selection-background-color: @accent_color;
+	selection-color: @accent_color;
+}
+
+SearchFindWidget QPushButton, SearchFindWidget QPushButton:hover
+{
+	border: 0px;
+	padding: 0 2px;
+	background-color: transparent;
+}
 
 /*!**/
 /* Stack*/
@@ -1515,46 +1761,4 @@ DragFileButton:pressed, DragFolderButton:pressed
 /*StackTitleFrame QLineEdit#disabled*/
 /*{*/
 /*    color: STACK_TITLE_DISABLED;*/
-/*}*/
-
-/*!**/
-/* Search*/
-/**!*/
-
-
-/*SearchFindWidget {*/
-/*    background-color: red;*/
-/*}*/
-/*SearchFindWidget QLineEdit {*/
-/*    background-color: BACKGROUND_COLOR_DARKER;*/
-/*}*/
-
-/*SearchWidget, SearchWidget QLabel {*/
-/*	font: 22*DPIpx;*/
-/*	height: 35px;*/
-/*	padding: 0 2px;*/
-/*	color: ACCENT_FOREGROUND_COLOR;*/
-/*	background-color: ACCENT_COLOR;*/
-/*	selection-background-color: rgb(ACCENT_FOREGROUND_COLOR_R, ACCENT_FOREGROUND_COLOR_G, ACCENT_FOREGROUND_COLOR_B, 210);*/
-/*	selection-color: ACCENT_COLOR;*/
-/*}*/
-
-/*SearchWidget:focus {*/
-/*	border: 0px;*/
-/*	border-bottom: 0px solid rgb(255, 255, 255, 0);*/
-/*	background-color: rgb(255, 255, 255, 50);*/
-/*	selection-background-color: rgb(255, 255, 255, 240);*/
-/*	selection-color: ACCENT_COLOR;*/
-/*}*/
-
-/*SearchWidget QLabel {*/
-/*	border: 0px;*/
-/*	color: FOREGROUND_COLOR;*/
-/*}*/
-
-/*SearchWidget QPushButton, SearchWidget QPushButton:hover {*/
-/*	border: 0px;*/
-/*	padding: 0 2px;*/
-/*	color: ACCENT_FOREGROUND_COLOR;*/
-/*	background-color: rgb(255, 255, 255, 0);*/
 /*}*/
