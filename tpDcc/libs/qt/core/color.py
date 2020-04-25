@@ -76,6 +76,10 @@ class Color(QColor, object):
         if triplet.startswith('#'):
             triplet = triplet[1:]
 
+        if len(triplet) == 3:
+            r, g, b = triplet[0] * 2, triplet[1] * 2, triplet[2] * 2
+            return tuple([float(int(v, 16)) for v in (r, g, b)])
+
         return _HEXDEC[triplet[0:2]], _HEXDEC[triplet[2:4]], _HEXDEC[triplet[4:6]]
 
     @classmethod

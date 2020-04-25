@@ -225,7 +225,9 @@ class SliderPanel(base.BaseWidget, object):
         parent = self.parent()
         parent_parent = parent.parent()
         dcc_win = tp.Dcc.get_main_window()
-        dcc_window = parent_parent == dcc_win or parent_parent.objectName() == dcc_win.objectName()
+        dcc_window = parent_parent == dcc_win
+        if parent_parent:
+            dcc_window = dcc_window or parent_parent.objectName() == dcc_win.objectName()
         parent_geo = parent.geometry()
         if self._position == SliderPanelPositions.LEFT:
             pos = parent_geo.topLeft() if dcc_window else parent.mapToGlobal(parent_geo.topLeft())

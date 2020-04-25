@@ -307,6 +307,7 @@ class Theme(QObject, object):
         self.window_dragger_rounded_corners = 5
         self.window_dragger_font_size = 12
         self.window_rounded_corners = 5
+        self.button_padding = 4
 
     def _init_font(self):
         """
@@ -464,14 +465,6 @@ class Theme(QObject, object):
         Returns the variables used to customize the style sheet
         :return: dict
         """
-
-    #     accent_color = self.accent_color()
-    #     accent_foreground_color = self.accent_foreground_color()
-    #     foreground_color = self.foreground_color()
-    #     background_color = self.background_color()
-    #     item_background_color = self.item_background_color()
-    #     item_background_hover_color = self.item_background_hover_color()
-
         if self.is_dark():
             darkness = 'white'
         else:

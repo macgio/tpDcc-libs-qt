@@ -1673,3 +1673,13 @@ def iterate_children(widget, skip=None, qobj_class=None):
             continue
         for grand_cihld in iterate_children(widget=child, skip=skip):
             yield grand_cihld
+
+
+def is_stackable(widget):
+    """
+    Returns whether or not given widget is stackable
+    :param widget: QWidget
+    :return: bool
+    """
+
+    return issubclass(widget, QWidget) and hasattr(widget, 'widget') and hasattr(widget, 'currentChanged')

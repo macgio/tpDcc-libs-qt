@@ -483,7 +483,7 @@ class LibraryStatusWidget(statusbar.StatusWidget, object):
 
         self.main_layout.setContentsMargins(1, 0, 0, 0)
 
-        self._progress_bar = progressbar.ProgressBar(self)
+        self._progress_bar = progressbar.FrameProgressBar(self)
         self._progress_bar.hide()
         self.main_layout.addWidget(self._progress_bar)
 
