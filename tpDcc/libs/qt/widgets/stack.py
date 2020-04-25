@@ -11,7 +11,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 
 import tpDcc
-from tpDcc.libs.qt.core import consts, qtutils, base, dpi
+from tpDcc.libs.qt.core import consts, qtutils, base, dpi, mixin
 from tpDcc.libs.qt.widgets import buttons, lineedit
 
 
@@ -153,6 +153,16 @@ class SlidingStackedWidget(QStackedWidget, object):
             pass
         self._active_state = False
         self.animFinished.emit(self._next)
+
+
+@mixin.stacked_opacity_animation_mixin
+class SlidingOpacityStackedWidget(QStackedWidget, object):
+    """
+    Custom stack widget that activates opacity animation when current stack index changes
+    """
+
+    def __init__(self, parent=None):
+        super(SlidingOpacityStackedWidget, self).__init__(parent)
 
 
 class StackItem(QFrame, object):
@@ -504,6 +514,8 @@ class StackTitleFrame(QFrame, dpi.DPIScaling):
 
         self._line_edit = lineedit.ClickLineEdit(self._title)
         self._line_edit.setObjectName('lineEdit')
+        self._line_edit.setFocusPolicy(Qt.NoFocus)
+        self._line_edit.setVisible(False)
         self._line_edit.setAttribute(Qt.WA_TransparentForMouseEvents)
         if not self._title_editable:
             self._line_edit.setReadOnly(True)
