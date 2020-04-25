@@ -27,6 +27,7 @@ Submodules
    tpDcc.libs.qt.core.pixmap
    tpDcc.libs.qt.core.preferences
    tpDcc.libs.qt.core.qtutils
+   tpDcc.libs.qt.core.resizers
    tpDcc.libs.qt.core.resource
    tpDcc.libs.qt.core.settings
    tpDcc.libs.qt.core.statusbar
