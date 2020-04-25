@@ -17,6 +17,7 @@ order = [
     'tpQtLib.core.tooltips',
     'tpQtLib.core.buttons',
     'tpQtLib.core.dragger',
+    'tpQtLib.core.resizers',
     'tpQtLib.core.dialog',
     'tpQtLib.core.window'
 ]
