@@ -14,7 +14,7 @@ from Qt.QtGui import *
 import tpDcc as tp
 from tpDcc.libs.qt.core import qtutils, mixin
 from tpDcc.libs.qt.core import base, window, theme
-from tpDcc.libs.qt.widgets import tabbars, buttons, group, dividers
+from tpDcc.libs.qt.widgets import tabbars, buttons, group, dividers, stack
 
 
 class BaseTabWidget(QTabWidget, object):
@@ -644,3 +644,103 @@ class MenuTabWidget(base.BaseWidget, object):
         """
 
         self.tool_btn_grp.add_button(data_dict, index)
+
+
+class MenuLineButton(buttons.BaseToolButton, object):
+    def __init__(self, parent=None):
+        super(MenuLineButton, self).__init__(parent=parent)
+
+        self.setCheckable(True)
+
+
+class MenuLineButtonGroup(group.BaseButtonGroup, object):
+    checkedChanged = Signal(int)
+
+    def __init__(self, parent=None):
+        super(MenuLineButtonGroup, self).__init__(parent=parent)
+
+        self.set_spacing(1)
+        self._button_group.setExclusive(True)
+        self._button_group.buttonClicked[int].connect(self.checkedChanged)
+
+    def create_button(self, data_dict):
+        new_button = MenuLineButton(parent=self)
+        if data_dict.get('image'):
+            new_button.image(data_dict.get('image'))
+        if data_dict.get('text'):
+            if data_dict.get('image') or data_dict.get('icon'):
+                new_button.text_beside_icon()
+            else:
+                new_button.text_only()
+
+        return new_button
+
+    def _get_checked(self):
+        """
+        Returns current checked button's ID
+        :return: int
+        """
+
+        return self._button_group.checkedId()
+
+    def _set_checked(self, value):
+        """
+        Sets current checked button's ID
+        :param value: int
+        """
+
+        btn = self._button_group.button(value)
+        btn.setChecked(True)
+        self.checkedChanged.emit(value)
+
+    theme_checked = Property(int, _get_checked, _set_checked, notify=checkedChanged)
+
+
+class MenuLineTabWidget(base.BaseWidget, object):
+    def __init__(self, alignment=Qt.AlignCenter, parent=None):
+        self._alignment = alignment
+        super(MenuLineTabWidget, self).__init__(parent=parent)
+
+    @property
+    def tool_button_group(self):
+        return self._tool_button_group
+
+    def get_main_layout(self):
+        main_layout = QVBoxLayout()
+        main_layout.setSpacing(0)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        return main_layout
+
+    def ui(self):
+        super(MenuLineTabWidget, self).ui()
+
+        self._tool_button_group = MenuLineButtonGroup()
+        self._bar_layout = QHBoxLayout()
+        self._bar_layout.setContentsMargins(0, 0, 0, 0)
+        if self._alignment == Qt.AlignCenter:
+            self._bar_layout.addStretch()
+            self._bar_layout.addWidget(self._tool_button_group)
+            self._bar_layout.addStretch()
+        elif self._alignment == Qt.AlignLeft:
+            self._bar_layout.addWidget(self._tool_button_group)
+            self._bar_layout.addStretch()
+        elif self._alignment == Qt.AlignRight:
+            self._bar_layout.addStretch()
+            self._bar_layout.addWidget(self._tool_button_group)
+        self._stack = stack.SlidingOpacityStackedWidget()
+        self._tool_button_group.checkedChanged.connect(self._stack.setCurrentIndex)
+        self.main_layout.addLayout(self._bar_layout)
+        self.main_layout.addWidget(dividers.Divider())
+        self.main_layout.addSpacing(5)
+        self.main_layout.addWidget(self._stack)
+
+    def add_tab(self, widget, data_dict):
+        """
+        Adds a new tab with given data
+        :param widget: QWidget
+        :param data_dict: dict
+        """
+
+        self._stack.addWidget(widget)
+        self._tool_button_group.add_button(data_dict, self._stack.count() - 1)
