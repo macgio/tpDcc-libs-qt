@@ -7,12 +7,55 @@ Module that contains implementations for different types of progress bars
 
 from __future__ import print_function, division, absolute_import
 
+from Qt.QtCore import *
 from Qt.QtWidgets import *
 
 
-class ProgressBar(QFrame, object):
+class BaseProgressBar(QProgressBar, object):
+
+    ERROR_STATUS = 'error'
+    NORMAL_STATUS = 'primary'
+    SUCCESS_STATUS = 'success'
+
+    def __init__(self, parent=None):
+        super(BaseProgressBar, self).__init__(parent)
+
+        self.setAlignment(Qt.AlignCenter)
+        self._status = BaseProgressBar.NORMAL_STATUS
+
+    def _get_status(self):
+        return self._status
+
+    def _set_status(self, value):
+        self._status = value
+        self.style().polish(self)
+
+    theme_status = Property(str, _get_status, _set_status)
+
+    def normal(self):
+        self.theme_status = BaseProgressBar.NORMAL_STATUS
+
+    def success(self):
+        self.theme_status = BaseProgressBar.SUCCESS_STATUS
+
+    def error(self):
+        self.theme_status = BaseProgressBar.ERROR_STATUS
+
+    def auto_color(self):
+        self.valueChanged.connect(self._on_update_color)
+
+        return self
+
+    def _on_update_color(self, value):
+        if value >= self.maximum():
+            self.theme_status = BaseProgressBar.SUCCESS_STATUS
+        else:
+            self.theme_status = BaseProgressBar.NORMAL_STATUS
+
+
+class FrameProgressBar(QFrame, object):
     def __init__(self, *args):
-        super(ProgressBar, self).__init__(*args)
+        super(FrameProgressBar, self).__init__(*args)
 
         layout = QVBoxLayout()
         layout.setSpacing(0)
