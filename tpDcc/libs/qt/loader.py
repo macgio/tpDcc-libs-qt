@@ -12,6 +12,9 @@ import sys
 import inspect
 import logging
 
+from Qt.QtCore import *
+from Qt.QtWidgets import *
+
 main = __import__('__main__')
 
 
@@ -94,6 +97,10 @@ def init(do_reload=False, dev=False):
 
         from tpDcc.managers import callbacks
         callbacks.CallbacksManager.initialize()
+
+    app = QApplication.instance()
+    if not app:
+        app = QApplication(sys.argv)
 
     qt_importer = importer.init_importer(importer_class=tpQtLib, do_reload=False)
     qt_importer.update_paths()
