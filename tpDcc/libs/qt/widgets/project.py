@@ -410,7 +410,7 @@ class OpenProjectWidget(QWidget, object):
         buttons_layout.addLayout(buttons_layout1)
 
         main_layout.addWidget(self.search_widget)
-        main_layout.addWidget(dividers.Divider('   PROJECTS   '))
+        main_layout.addWidget(dividers.Divider('PROJECTS', alignment=Qt.AlignCenter))
         main_layout.addWidget(self._projects_list)
         main_layout.addLayout(buttons_layout)
 
@@ -530,20 +530,14 @@ class NewProjectWidget(QWidget, object):
         self.name_line.setPlaceholderText('Project Name')
         project_line_layout.addWidget(dividers.get_horizontal_separator_widget())
         project_line_layout.addWidget(self.name_line)
-
-        buttons_layout = QHBoxLayout()
-        buttons_layout.setContentsMargins(0, 0, 0, 0)
-        buttons_layout.setSpacing(0)
-        buttons_layout.setAlignment(Qt.AlignRight)
         self.create_btn = QPushButton('Create')
-        buttons_layout.addWidget(self.create_btn)
+        project_line_layout.addSpacing(10)
+        project_line_layout.addWidget(self.create_btn)
 
         main_layout.addWidget(self.search_widget)
-        main_layout.addLayout(dividers.DividerLayout())
-        main_layout.addWidget(dividers.Divider('   TEMPLATES   '))
+        main_layout.addWidget(dividers.Divider('TEMPLATES', alignment=Qt.AlignCenter))
         main_layout.addWidget(self.templates_list)
         main_layout.addLayout(project_layout)
-        main_layout.addLayout(buttons_layout)
 
         self.templates_list.selectedTemplate.connect(self._on_selected_template)
         self.project_btn.directoryChanged.connect(self._on_directory_browsed)

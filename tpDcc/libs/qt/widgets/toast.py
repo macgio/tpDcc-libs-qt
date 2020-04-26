@@ -149,7 +149,10 @@ class BaseToast(base.BaseWidget, object):
     def _get_center_position(self, parent):
         parent_parent = parent.parent()
         dcc_win = tp.Dcc.get_main_window()
-        dcc_window = parent_parent == dcc_win or parent_parent.objectName() == dcc_win.objectName()
+        if dcc_win:
+            dcc_window = parent_parent == dcc_win or parent_parent.objectName() == dcc_win.objectName()
+        else:
+            dcc_window = None
         parent_geo = parent.geometry()
         pos = parent_geo.topLeft() if dcc_window else parent.mapToGlobal(parent_geo.topLeft())
         offset = 0
