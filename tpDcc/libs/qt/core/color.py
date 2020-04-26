@@ -54,15 +54,15 @@ class Color(QColor, object):
             r, g, b = cls.rgb_from_hex(text_color)
         else:
             try:
-                if text_color.startswith('rgb'):
-                    r, g, b, a = text_color.replace('rgb(', '').replace(')', '').split(',')
-                else:
+                if text_color.startswith('rgba'):
                     r, g, b, a = text_color.replace('rgba(', '').replace(')', '').split(',')
-            except ValueError:
-                if text_color.startswith('rgb'):
-                    r, g, b = text_color.replace('rgb(', '').replace(')', '').split(',')
                 else:
+                    r, g, b, a = text_color.replace('rgb(', '').replace(')', '').split(',')
+            except ValueError:
+                if text_color.startswith('rgba'):
                     r, g, b = text_color.replace('rgba(', '').replace(')', '').split(',')
+                else:
+                    r, g, b = text_color.replace('rgb(', '').replace(')', '').split(',')
 
         return cls(int(r), int(g), int(b), int(a))
 

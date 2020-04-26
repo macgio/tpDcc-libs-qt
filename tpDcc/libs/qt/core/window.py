@@ -86,16 +86,16 @@ class BaseWindow(QMainWindow, object):
         # Load base generic window UI
         self._base_ui()
 
-        self.load_settings(settings=win_settings)
-
-        if auto_load:
-            self.load_theme()
-
         # Load custom window UI
         self.ui()
         self.setup_signals()
 
-        self.reload_stylesheet()
+        self.load_settings(settings=win_settings)
+
+        if auto_load:
+            self.load_theme()
+        else:
+            self.reload_stylesheet()
 
     # ============================================================================================================
     # OVERRIDES
@@ -314,26 +314,9 @@ class BaseWindow(QMainWindow, object):
                 self._view_menu.addAction(i.toggleViewAction())
         self._top_layout.addWidget(self._menubar)
 
-        # self._base_window = QMainWindow()
-        # self._base_window.setParent(central_widget)
-        # self._base_window.setAttribute(Qt.WA_AlwaysShowToolTips, True)
-        # self._base_window.setWindowFlags(Qt.Widget)
-        # self._base_window.setAttribute(Qt.WA_TranslucentBackground)
-        # # if qtutils.is_pyside2():
-        # #     self._base_window.setWindowFlags(
-        # #         self.windowFlags() | Qt.Widget | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
-        # # else:
-        # #     self._base_window.setWindowFlags(Qt.Widget | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
-        # self._base_window.setDockOptions(
-        #     QMainWindow.AnimatedDocks | QMainWindow.AllowNestedDocks | QMainWindow.AllowTabbedDocks)
-        # window_layout = QVBoxLayout()
-        # window_layout.setContentsMargins(0, 0, 0, 0)
-        # window_layout.setSpacing(0)
-        # self._base_window.setLayout(window_layout)
         self.main_widget = WindowContents()
         self.main_layout = self.get_main_layout()
         self.main_widget.setLayout(self.main_layout)
-        # self._base_window.setCentralWidget(self.main_widget)
 
         self._central_layout.addWidget(self._top_widget)
         self._central_layout.addWidget(self.main_widget)
@@ -607,11 +590,12 @@ class BaseWindow(QMainWindow, object):
         stylesheet = current_theme.stylesheet()
         self.setStyleSheet(stylesheet)
 
-        all_widgets = qtutils.iterate_children(self.main_widget, qobj_class=QObject)
-        for w in all_widgets:
-            if hasattr(w, 'setStyleSheet'):
-                w.setStyleSheet(stylesheet)
-                w.update()
+        # TODO: This operation is VERY heavy. Find a better way of doing this
+        # all_widgets = qtutils.iterate_children(self.main_widget, qobj_class=QObject)
+        # for w in all_widgets:
+        #     if hasattr(w, 'setStyleSheet'):
+        #         w.setStyleSheet(stylesheet)
+        #         w.update()
 
     # ============================================================================================================
     # TOOLBAR
@@ -624,7 +608,8 @@ class BaseWindow(QMainWindow, object):
         """
 
         new_toolbar = QToolBar(name)
-        self._base_window.addToolBar(area, new_toolbar)
+        self.addToolBar(area, new_toolbar)
+
         return new_toolbar
 
     # ============================================================================================================
