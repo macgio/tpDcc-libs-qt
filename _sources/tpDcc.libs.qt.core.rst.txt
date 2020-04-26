@@ -14,6 +14,7 @@ Submodules
    tpDcc.libs.qt.core.color
    tpDcc.libs.qt.core.config
    tpDcc.libs.qt.core.consts
+   tpDcc.libs.qt.core.contexts
    tpDcc.libs.qt.core.decorators
    tpDcc.libs.qt.core.dialog
    tpDcc.libs.qt.core.dpi
