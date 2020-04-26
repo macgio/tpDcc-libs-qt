@@ -34,6 +34,11 @@ QPushButton
     border: 0px 0px 0px 0px transparent;
 }
 
+QPushButton:checked
+{
+    background-color: @accent_color;
+}
+
 QDialog
 {
     background-color: red;
@@ -107,21 +112,84 @@ QLineEdit:disabled {
 }
 
 /*
+QTabWidget
+*/
+
+QTabWidget::pane
+{
+    background-color: red;
+    border-top: 1px solid @background_out_color;
+}
+
+/*
 QTabBar
 */
 
+QTabBar, QTabBar::tab
+{
+    border: 0px;
+    background-color: @background_color;
+}
+
+QTabBar::tab {
+    color: @primary_text_color;
+    border-top: 1px solid @background_in_color;
+    border-right: 1px solid @background_in_color;
+    border-left: 1px solid @background_in_color;
+    /*border-bottom-style: none;*/
+    background-color: @background_out_color;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 3px;
+    padding-bottom: 2px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    margin-right: -1px;
+    margin-bottom: -1px;
+}
+
+
 QTabBar::tab:selected
 {
-    background: #323232;
-    border-bottom: none;
-    color: @accent_color;
+    border-bottom: 3px solid @accent_color;
+    color: @primary_text_color;
     background-color: @background_color;
+    padding-bottom: 4px;
 }
 
 QTabBar::tab:!selected
 {
-    margin-top: 2px;
     border-bottom: 1px solid @border_color;
+    border-bottom-style: solid;
+    margin-top: 4px;
+}
+
+QTabBar::tab:disabled
+{
+    border-top: 1px solid @background_in_color;
+    border-right: 1px solid @background_in_color;
+    border-left: 1px solid @background_in_color;
+    border-bottom-style: none;
+    background-color: @disable_color;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 3px;
+    padding-bottom: 2px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    margin-right: -1px;
+    margin-bottom: -1px;
+}
+
+QTabBar::tab:last
+{
+    margin-right: 0; /* the last selected tab has nothing to overlap with on the right */
+}
+
+QTabBar::tab:!selected:hover
+{
+    border-bottom: 3px solid @accent_color_5;
+    padding-bottom: 4px;
 }
 
 /*
@@ -335,6 +403,180 @@ QComboBox
 /*QComboBox > QLineEdit{*/
 /*    background-color: red;*/
 /*}*/
+
+/*
+QAbstractItemView
+*/
+
+QAbstractItemView::separator
+{
+	height: 0px;
+	padding: 0px 0px 0px 0px;
+	background-color: transparent;
+}
+
+QAbstractItemView::item:hover
+{
+    background-color: @accent_color_5;
+}
+
+/*
+QHeaderView
+*/
+
+/* style the sort indicator */
+ QHeaderView::up-arrow
+ {
+    image: url(@up_icon);
+ }
+
+QHeaderView::down-arrow
+{
+    image: url(@down_icon);
+ }
+
+QHeaderView::section
+{
+	font: 12*DPIpx;
+	height: 15*DPIpx;
+    border: @one_pixel@unit solid @background_out_color;
+	padding: @four_pixels@unit;
+	background-color: @background_color;
+}
+
+/*
+QListView
+*/
+
+/*QListView::item:selected, QListView::item:selected:active*/
+/*{*/
+/*    color: @accent_color_7;*/
+/*    background-color: @background-color;*/
+/*    border-left:2px solid @accent_color;*/
+/*    !*padding-left:2px;*!*/
+/*}*/
+
+/*QListView::item:selected:hover, QListView::item:selected:active:hover {*/
+/*    color: ACCENT_FOREGROUND_COLOR;*/
+/*    background-color: ACCENT_COLOR;*/
+/*    border-left:2px solid ACCENT_COLOR;*/
+/*    !*padding-left:2px;*!*/
+/*}*/
+
+/*!**/
+/*QTableView*/
+/* *!*/
+
+/*QTableView {*/
+/*    selection-background-color: TBL_TREE_ACTIVE_COLOR;*/
+/*    background-color: TBL_TREE_BG_COLOR;*/
+/*    alternate-background-color: TBL_TREE_ALT_COLOR;*/
+/*    gridline-color: TBL_TREE_GRID_COLOR;*/
+/*    outline: 0;*/
+/*}*/
+
+/*
+QTreeView
+ */
+
+QTreeView
+{
+    background-color: @background_color;
+    alternate-background-color: @background_in_color;
+    show-decoration-selected: 1;
+    font: 12*DPIpx;
+	color: @primary_text_color;
+    border: 0px;
+    outline: none;
+}
+
+QTreeView::item
+{
+	height: 24*DPIpx;
+	show-decoration-selected: 1; /* make the selection span the entire width of the view */
+    padding:3*DPIpx;
+}
+
+QTreeView::item:focus
+{
+	border: 0px;
+	outline: none;
+}
+
+QTreeView::item:hover
+{
+    color: @text_color_inverse;
+    background-color: @accent_color_5;
+}
+
+QTreeView::item:selected
+{
+    background-color: @accent_color;
+}
+
+/*QTreeView::branch*/
+/*{*/
+/*	height: 24*DPIpx;*/
+/*    alternate-background-color: @background_out_color;*/
+/*	show-decoration-selected: 1; !* make the selection span the entire width of the view *!*/
+/*	background-color: @background_color;*/
+/*}*/
+
+/*QTreeView::branch:hover*/
+/*{*/
+/*    background-color: @background_color;*/
+/*}*/
+
+/*QTreeView::branch:selected {*/
+/*    color: ACCENT_FOREGROUND_COLOR;*/
+/*    background-color: ACCENT_COLOR;*/
+/*    background-repeat: no-repeat;*/
+/*}*/
+
+/*QTreeView::branch::open:has-children {*/
+/*    image: url(:/icons/arrow_down);*/
+/*}*/
+
+/*QTreeView::branch::closed:has-children {*/
+/*    image: url(:/icons/arrow_right);*/
+/*}*/
+
+/*!*QTreeView::branch:has-children:!has-siblings:closed,*/
+/*!*QTreeView::branch:closed:has-children:has-siblings {*/
+/*    !*border-image: none;*/
+/*    !*image: url("RESOURCE_DIRNAME/icons/branch_closed_DARKNESS.png");*/
+/*!*}*/
+/*!*QTreeView::branch:open:has-children:!has-siblings,*/
+/*!*QTreeView::branch:open:has-children:has-siblings  {*/
+/*    !*border-image: none;*/
+/*    !*image: url("RESOURCE_DIRNAME/icons/branch_open_DARKNESS.png");*/
+/*!*}*!*/
+
+/*!*QTreeView::item:selected,*!*/
+/*!*QTreeView::item:selected:active {*!*/
+/*!*    color: ACCENT_FOREGROUND_COLOR;*!*/
+/*!*    background-color: ACCENT_COLOR_DARKER;*!*/
+/*!*    border-left:2px solid ACCENT_COLOR;*!*/
+/*!*    padding-left:2px;*!*/
+/*!*}*!*/
+
+/*!*QTreeView::item:selected:hover,*!*/
+/*!*QTreeView::item:selected:active:hover *!*/
+/*!*{*!*/
+/*!*    color: ACCENT_FOREGROUND_COLOR;*!*/
+/*!*    background-color: ACCENT_COLOR;*!*/
+/*!*    border-left:2px solid ACCENT_COLOR;*!*/
+/*!*    padding-left:2px;*!*/
+/*!*}*!*/
+
+/*!*QTreeView::item:!selected:hover {*!*/
+/*!*    background-color: ACCENT_COLOR;*!*/
+/*!*    margin-left:-3px;*!*/
+/*!*    border-left:0px;*!*/
+/*!*}*!*/
+
+
+
 
 /*
 QToolButton
@@ -1710,6 +1952,8 @@ SearchFindWidget QPushButton, SearchFindWidget QPushButton:hover
 	padding: 0 2px;
 	background-color: transparent;
 }
+
+
 
 /*!**/
 /* Stack*/
