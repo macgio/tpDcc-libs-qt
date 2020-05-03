@@ -38,7 +38,7 @@ class BaseComboBox(QComboBox, object):
         line_edit.installEventFilter(self)
 
         self.set_value('')
-        self.set_placeholder(self.tr('Please Select'))
+        self.set_placeholder('Please Select')
 
     # =================================================================================================================
     # PROPERTIES

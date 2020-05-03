@@ -29,6 +29,7 @@ class SliderPanel(base.BaseWidget, object):
     """
 
     closed = Signal()
+    closeButtonClicked = Signal()
 
     def __init__(self, title, position=SliderPanelPositions.RIGHT, closable=True, parent=None):
 
@@ -119,6 +120,7 @@ class SliderPanel(base.BaseWidget, object):
 
     def setup_signals(self):
         self._close_btn.clicked.connect(self.close)
+        self._close_btn.clicked.connect(self.closeButtonClicked.emit)
 
     def show(self):
         self._update_position()

@@ -12,8 +12,8 @@ from functools import partial
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
-from tpDcc.libs.qt.core import base, mixin, theme
-from tpDcc.libs.qt.widgets import buttons, browser
+from tpDcc.libs.qt.core import mixin, theme
+from tpDcc.libs.qt.widgets import layouts, buttons, browser
 
 
 @mixin.theme_mixin
@@ -31,7 +31,7 @@ class BaseLineEdit(QLineEdit, object):
         self._suffix_widget = None
         self._size = self.theme_default_size()
 
-        self._main_layout = base.HorizontalLayout()
+        self._main_layout = layouts.HorizontalLayout()
         self._main_layout.setContentsMargins(0, 0, 0, 0)
         self._main_layout.addStretch()
         self.setLayout(self._main_layout)

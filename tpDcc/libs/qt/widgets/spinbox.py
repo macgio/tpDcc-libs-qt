@@ -7,11 +7,14 @@ Module that contains custom Qt spinner widgets
 
 from __future__ import print_function, division, absolute_import
 
+from functools import partial
+
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
 from tpDcc.libs.qt.core import base, mixin, theme
+from tpDcc.libs.qt.widgets import lineedit, buttons
 
 
 @mixin.theme_mixin
@@ -238,7 +241,7 @@ class DragDoubleSpinBox(base.BaseNumberWidget, object):
         return spin_box
 
 
-class DragDoubleSpinBoxLine(QLineEdit, object):
+class DragDoubleSpinBoxLine(lineedit.BaseLineEdit, object):
     """
     Using middle mouse from left to right will scale the value and a little bar will show the
     percent of the current value
@@ -258,6 +261,9 @@ class DragDoubleSpinBoxLine(QLineEdit, object):
         self.setText(str(start))
 
         self._setup_validator()
+
+        theme = self.theme()
+        self._color = theme.accent_color_5 or QColor(0, 255, 0)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MiddleButton:
@@ -295,11 +301,11 @@ class DragDoubleSpinBoxLine(QLineEdit, object):
         except Exception:
             pass
         if self._sup:
-            p.fillRect(QRect(0, self.height() - 2, v * self.width(), 2), QColor(0, 255, 0))
+            p.fillRect(QRect(0, self.height() - 4, v * self.width(), 4), self._color)
         else:
             p.fillRect(
-                QRect(self.width() * 0.5, self.height() - 2, v * self.width() * 0.5, 2),
-                QColor(0, 255, 0) if v > 0 else QColor(255, 0, 0))
+                QRect(self.width() * 0.5, self.height() - 4, v * self.width() * 0.5, 4),
+                self._color if v > 0 else QColor(255, 0, 0))
         p.end()
 
     def get_validator(self):
@@ -315,6 +321,59 @@ class DragDoubleSpinBoxLine(QLineEdit, object):
     def setValue(self, new_value):
         self.setText(str(new_value))
 
-    # region Private Functions
     def _setup_validator(self):
         self.setValidator(self.get_validator())
+
+
+class DragDoubleSpinBoxLineAxis(base.BaseWidget, object):
+
+    textChanged = Signal(str)
+    valueChanged = Signal(float)
+
+    def __init__(self, axis, reset=True, start=0.0, max=10, min=-10, positive=False, parent=None):
+        self._axis = axis
+        self._reset = reset
+        self._start = start
+        self._max = max
+        self._min = min
+        self._positive = positive
+        super(DragDoubleSpinBoxLineAxis, self).__init__(parent=parent)
+
+    def get_main_layout(self):
+        main_layout = QHBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+
+        return main_layout
+
+    def ui(self):
+        super(DragDoubleSpinBoxLineAxis, self).ui()
+
+        axis_widget = QFrame()
+        axis_widget.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
+        axis_layout = QHBoxLayout()
+        axis_layout.setContentsMargins(0, 0, 0, 0)
+        axis_layout.setSpacing(0)
+        self._axis_btn = buttons.get_axis_button(axis_type=self._axis, parent=self)
+        self._line = DragDoubleSpinBoxLine(
+            start=self._start, max=self._max, min=self._min, positive=self._positive, parent=self)
+        self._reset_btn = buttons.BaseToolButton().image('reset').icon_only()
+        self._reset_btn.clicked.connect(partial(self._line.setValue, self._start))
+        self._reset_btn.setVisible(self._reset)
+        self._reset_btn.setEnabled(self._reset)
+        axis_layout.addWidget(self._axis_btn)
+        axis_layout.addWidget(self._line)
+        axis_layout.addWidget(self._reset_btn)
+        axis_widget.setLayout(axis_layout)
+
+        self.main_layout.addWidget(axis_widget)
+
+    def setup_signals(self):
+        self._line.valueChanged.connect(self.valueChanged.emit)
+        self._line.textChanged.connect(self.textChanged.emit)
+
+    def value(self):
+        return self._line.value()
+
+    def setValue(self, new_value):
+        self._line.setValue(new_value)
