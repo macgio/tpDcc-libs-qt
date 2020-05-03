@@ -231,7 +231,7 @@ class FlowToolBar(QFrame, object):
         return QSize(next_x + 3, super(FlowToolBar, self).sizeHint().height())
 
     def ui(self):
-        main_layout = base.HorizontalLayout(margins=(0, 0, 0, 0), spacing=0)
+        main_layout = layouts.HorizontalLayout(margins=(0, 0, 0, 0), spacing=0)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setAlignment(Qt.AlignTop)
         self.setLayout(main_layout)

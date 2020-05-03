@@ -126,15 +126,12 @@ class ToolsetWidget(stack.StackItem, object):
         self.set_title_text_mouse_transparent(True)
 
         self._display_mode_button = DisplayModeButton(color=self._icon_color, size=16, parent=self)
-        # self._display_mode_button.setIconSize(QSize(18, 18))
         self._display_mode_button.setFixedSize(QSize(22, 22))
         self._help_button = buttons.BaseMenuButton(parent=self)
         self._help_button.set_icon(tpDcc.ResourcesMgr().icon('help'))
-        # self._help_button.setIconSize(QSize(18, 18))
         self._help_button.setFixedSize(QSize(22, 22))
         self._settings_button = buttons.BaseMenuButton(parent=self)
         self._settings_button.set_icon(tpDcc.ResourcesMgr().icon('settings'))
-        # self._settings_button.setIconSize(QSize(18, 18))
         self._settings_button.setFixedSize(QSize(22, 22))
 
         # TODO: Disable until we implement preferences system

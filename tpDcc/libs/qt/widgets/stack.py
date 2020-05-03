@@ -12,7 +12,7 @@ from Qt.QtWidgets import *
 
 import tpDcc
 from tpDcc.libs.qt.core import consts, qtutils, base, dpi, mixin
-from tpDcc.libs.qt.widgets import buttons, lineedit
+from tpDcc.libs.qt.widgets import layouts, buttons, lineedit
 
 
 class SlidingStackedWidget(QStackedWidget, object):
@@ -222,7 +222,7 @@ class StackItem(QFrame, object):
         # theme = tpDcc.ToolsMgr().get_tool_theme('tpDcc-tools-hub')
         # border_width = qtutils.dpi_scale_divide(theme.STACK_BORDER_WIDTH)
         border_width = qtutils.dpi_scale_divide(1)
-        self.main_layout = base.VerticalLayout(
+        self.main_layout = layouts.VerticalLayout(
             margins=(border_width, border_width, border_width, border_width), spacing=0)
         self.setLayout(self.main_layout)
 
@@ -235,7 +235,7 @@ class StackItem(QFrame, object):
             self._title_frame.item_icon_button.hide()
 
         self._widget_hider = StackHiderWidget(parent=self)
-        self._contents_layout = base.VerticalLayout(spacing=0)
+        self._contents_layout = layouts.VerticalLayout(spacing=0)
         self._contents_layout.setContentsMargins(*self._contents_margins)
         self._contents_layout.setSpacing(self._contents_spacing)
         self._widget_hider.setLayout(self._contents_layout)
@@ -508,8 +508,8 @@ class StackTitleFrame(QFrame, dpi.DPIScaling):
         shift_down_icon = tpDcc.ResourcesMgr().icon('arrow_down')
 
         self.setContentsMargins(*qtutils.margins_dpi_scale(0, 0, 0, 0))
-        self._extras_layout = base.HorizontalLayout(margins=(0, 0, 0, 0), spacing=0)
-        self._horizontal_layout = base.HorizontalLayout(spacing=0)
+        self._extras_layout = layouts.HorizontalLayout(margins=(0, 0, 0, 0), spacing=0)
+        self._horizontal_layout = layouts.HorizontalLayout(spacing=0)
         self.setLayout(self._horizontal_layout)
 
         self._line_edit = lineedit.ClickLineEdit(self._title)
