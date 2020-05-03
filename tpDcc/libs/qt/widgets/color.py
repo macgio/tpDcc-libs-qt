@@ -347,7 +347,6 @@ class ColorLineEdit(QLineEdit, object):
                 bg_name = bg.name
             parent.setStyleSheet('background-color: {}; color: {}'.format(bg_name, text.name))
 
-
     def color(self):
         return self._color
 
@@ -1262,7 +1261,7 @@ class ColorSelector(ColorPreview, object):
 
     def show_panel(self):
         self._panel = panel.SliderPanel(
-            'Select Color',  parent=self._panel_parent or self.parent(), closable=True)
+            'Select Color', parent=self._panel_parent or self.parent(), closable=True)
         self.set_update_mode(self.UpdateMode.CONTINUOUS)
         self._panel.set_widget(self._color_widget)
         self._panel.closeButtonClicked.connect(self._on_close_panel)
@@ -1970,14 +1969,14 @@ class ColorDialog(QDialog, object):
 
     def set_button_mode(self, mode):
         self._button_mode = mode
-        box_buttons = QDialogButtonBox.StandardButtons
+        _buttons = QDialogButtonBox.StandardButtons
         if mode == self.ButtonMode.OK_CANCEL:
-            box_buttons = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+            _buttons = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         elif mode == self.ButtonMode.OK_APPLY_CANCEL:
-            box_buttons = QDialogButtonBox.Ok | QDialogButtonBox.Cancel | QDialogButtonBox.Apply | QDialogButtonBox.Reset
+            _buttons = QDialogButtonBox.Ok | QDialogButtonBox.Cancel | QDialogButtonBox.Apply | QDialogButtonBox.Reset
         elif mode == self.ButtonMode.CLOSE:
-            box_buttons = QDialogButtonBox.Close
-        self._button_box.setStandardButtons(box_buttons)
+            _buttons = QDialogButtonBox.Close
+        self._button_box.setStandardButtons(_buttons)
 
     def wheel_shape(self):
         return self._color_widget.selector_shape()
