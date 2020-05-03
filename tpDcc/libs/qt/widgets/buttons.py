@@ -17,7 +17,7 @@ from six import string_types
 
 import tpDcc as tp
 from tpDcc.libs.python import python
-from tpDcc.libs.qt.core import animation, icon, qtutils, mixin, theme, menu
+from tpDcc.libs.qt.core import consts, animation, icon, qtutils, mixin, theme, menu
 from tpDcc.libs.qt.widgets import tooltips
 
 # ===================================================================
@@ -1336,3 +1336,13 @@ class ColorButton(QPushButton, object):
                 self._color.redF() * 255, self._color.greenF() * 255, self._color.blueF() * 255))
 
     color = property(get_color, set_color)
+
+
+def get_axis_button(axis_type='x', parent=None):
+    axis = axis_type.lower() if axis_type else 'x'
+    axis = axis if axis in consts.AXISES else 'x'
+    axis_btn = BaseToolButton(parent=parent)
+    axis_icon = tp.ResourcesMgr().icon('{}_axis'.format(axis), color=QColor(*consts.AXISES[axis]))
+    axis_btn.setIcon(axis_icon)
+
+    return axis_btn
