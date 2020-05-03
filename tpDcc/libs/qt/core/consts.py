@@ -22,3 +22,10 @@ DEFAULT_SUB_WIDGET_SPACING = 6
 # COLORS
 DARK_BG_COLOR = tuple([93, 93, 93])
 MEDIUM_DARK_BG_COLOR = tuple([73, 73, 73])
+
+# AXISES
+AXISES = {
+    'x': [255, 0, 0],
+    'y': [0, 255, 0],
+    'z': [0, 0, 255]
+}

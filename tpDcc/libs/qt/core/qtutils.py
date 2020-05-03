@@ -1683,3 +1683,18 @@ def is_stackable(widget):
     """
 
     return issubclass(widget, QWidget) and hasattr(widget, 'widget') and hasattr(widget, 'currentChanged')
+
+
+def get_screen_color(global_pos):
+    """
+    Grabs the screen color of the given global position in the current active screen
+    :param global_pos: QPoint
+    :return: QColor
+    """
+
+    screen_num = QApplication.desktop().screenNumber(global_pos)
+    screen = QApplication.screens()[screen_num]
+    wid = QApplication.desktop().winId()
+    img = screen.grabWindow(wid, global_pos.x(), global_pos.y(), 1, 1).toImage()
+
+    return QColor(img.pixel(0, 0))

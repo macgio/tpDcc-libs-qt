@@ -251,9 +251,9 @@ class WindowDragger(QFrame, object):
         logo_button = buttons.IconMenuButton(parent=self)
         logo_button.setIconSize(QSize(24, 24))
         logo_button.setFixedSize(QSize(30, 30))
-        toggle_frameless = logo_button.addAction(
+        self._toggle_frameless = logo_button.addAction(
             'Toggle Frameless Mode', connect=self._on_toggle_frameless_mode, checkable=True)
-        toggle_frameless.setChecked(self._window.is_frameless())
+        self._toggle_frameless.setChecked(self._window.is_frameless())
         logo_button.set_menu_align(Qt.AlignLeft)
 
         return logo_button

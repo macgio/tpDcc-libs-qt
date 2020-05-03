@@ -50,7 +50,7 @@ class Theme(QObject, object):
 
     EXTENSION = 'yml'
     DEFAULT_ACCENT_COLOR = QColor(0, 175, 255)
-    DEFAULT_SIZE = 32
+    DEFAULT_SIZE = Sizes.SMALL
 
     def __init__(self, theme_file=None, accent_color=None, dark_mode=True):
         super(Theme, self).__init__()
@@ -75,7 +75,7 @@ class Theme(QObject, object):
         self._init_icons()
 
         self.unit = 'px'
-        self.default_size = self.medium
+        self.default_size = self.small
         self.text_color_inverse = '#FFF'
 
         self._load_theme_data_from_file(theme_file)
@@ -333,10 +333,13 @@ class Theme(QObject, object):
         self.radio_unchecked_icon = 'radio_button_unchecked.png'
         self.up_icon = 'collapse.png'
         self.down_icon = 'expand.png'
+        self.up_arrow_icon = 'up_arrow.png'
+        self.down_arrow_icon = 'down_arrow.png'
         self.left_icon = 'back.png'
         self.right_icon = 'next.png'
         self.calendar_icon = 'calendar.png'
         self.check_icon = 'check.png'
+        self.uncheck_icon = 'uncheck.png'
         self.circle_icon = 'circle.png'
         self.splitter_icon = 'splitter.png'
 

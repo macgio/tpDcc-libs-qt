@@ -7,17 +7,24 @@ Module that defines that extends QColor functionality
 
 from __future__ import print_function, division, absolute_import
 
+import math
 import random
 
 from Qt.QtCore import *
-from Qt.QtWidgets import *
 from Qt.QtGui import *
+
+from tpDcc.libs.python import mathlib
 
 _NUMERALS = '0123456789abcdefABCDEF'
 _HEXDEC = {v: int(v, 16) for v in (x + y for x in _NUMERALS for y in _NUMERALS)}
 
 # TODO: Change by enum
 _LOWERCASE, _UPPERCASE = 'x', 'X'
+
+REGEX_QCOLOR = r"^(?:(?:#[A-Fa-f0-9]{3})|(?:#[A-Fa-f0-9]{6})|(?:[a-zA-Z]+))$"
+REGEX_FN_RGB = r"(^rgb\s*\(\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*\)$)"
+REGEX_HEX_RGBA = r"^#[A-Fa-f0-9]{8}$"
+REGEX_FN_RGBA = r"(^rgba?\s*\(\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*\)$)"
 
 
 class Color(QColor, object):
@@ -206,112 +213,6 @@ class Color(QColor, object):
         return self.red() < 125 and self.green() < 125 and self.blue() < 125
 
 
-class ColorSwatch(QToolButton, object):
-    def __init__(self, parent=None, **kwargs):
-        super(ColorSwatch, self).__init__(parent=parent)
-
-        self.normalized = kwargs.get('normalized', True)
-        self.color = kwargs.get('color', [1.0, 1.0, 1.0])
-        self.qcolor = QColor()
-        self.index_color = None
-        self.set_color(self.color)
-
-        self.clicked.connect(self._on_open_color_picker)
-
-    def set_color(self, color):
-        """
-        Sets an RGB color value
-        :param color: list, list of RGB values
-        """
-
-        if type(color) is QColor:
-            return color
-
-        # if type(color[0]) is float:
-        self.qcolor.setRgb(*color)
-        # self.setToolTip("%.2f, %.2f, %.2f" % (color[0], color[1], color[2]))
-        # else:
-        #     self.qcolor.setRgb(*color)
-        self.setToolTip("%d, %d, %d" % (color[0], color[1], color[2]))
-        self._update()
-
-        return self.color
-
-    def get_color(self):
-        """
-        Returns the current color RGB values
-        :return: list<int, int, int>, RGB color values
-        """
-
-        return self.color
-
-    def get_rgb(self, normalized=True):
-        """
-        Returns a tuple of RGB values
-        :param normalized:  bool, True if you want to get a normalized color, False otherwise
-        :return: tuple, RGB color values
-        """
-
-        if not normalized:
-            return self.qcolor.toRgb().red(), self.qcolor.toRgb().green(), self.qcolor.toRgb().blue()
-        else:
-            return self.qcolor.toRgb().redF(), self.qcolor.toRgb().greenF(), self.qcolor.toRgb().blueF()
-
-    def _update(self):
-        """
-        Updates the widget color
-        """
-
-        self.color = self.qcolor.getRgb()[0:3]
-        self.setStyleSheet(
-            """
-            QToolButton
-            {
-                background-color: qlineargradient(
-                spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgb(%d, %d, %d), stop:1 rgb(%d, %d, %d))
-            };
-            """ % (self.color[0] * .45, self.color[1] * .45,
-                   self.color[2] * .45, self.color[0], self.color[1], self.color[2])
-        )
-
-    def _get_hsvF(self):
-        return self.qcolor.getHsvF()
-
-    def _set_hsvF(self, color):
-        """
-        Set the current color (HSV - normalized)
-        :param color: tuple<int, int, int>, tuple  of HSV values
-        """
-
-        self.qcolor.setHsvF(color[0], color[1], color[2], 255)
-
-    def _get_hsv(self):
-        return self.qcolor.getHsv()
-
-    def _set_hsv(self, color):
-        """
-        Sets teh current color (HSV)
-        :param color: tuple<int, int, int, Tuple of HSV values (normalized)
-        """
-
-        self.qcolor.setHsv(color[0], color[1], color[2], 255)
-
-    def _on_open_color_picker(self):
-
-        # THIS ONLY WORKS ON MAYA
-        from tpDcc.libs.qt.core import dialog
-
-        color_picker = dialog.ColorDialog()
-        color_picker.exec_()
-        if color_picker.color is None:
-            return
-
-        if type(color_picker.color) == int:
-            clr = dialog.ColorDialog.maya_colors[color_picker.color]
-            self.index_color = color_picker.color
-            self.set_color((clr[0] * 255, clr[1] * 255, clr[2] * 255))
-
-
 # =================================================================================================================
 
 DEFAULT_DARK_COLOR = Color(50, 50, 50, 255)
@@ -443,3 +344,127 @@ def generate_color(primary_color, index):
         _get_saturation(hsv_color, index, light),
         _get_value(hsv_color, index, light)
     )).name()
+
+
+def string_from_color(color, alpha):
+    if not alpha or color.alpha() == 255:
+        return color.name()
+    return color.name() + '{}'.format(color.alpha())
+    # color.name()+QStringLiteral("%1").arg(color.alpha(), 2, 16, QChar('0'));
+
+
+def color_from_string(string, alpha):
+    xs = string.strip()
+    regex = QRegExp(REGEX_QCOLOR)
+    match = regex.exactMatch(xs)
+    if match:
+        return QColor(xs)
+
+    regex = QRegExp(REGEX_FN_RGB)
+    match = regex.exactMatch(xs)
+    if match:
+        captured_texts = regex.capturedTexts()
+        return QColor(int(captured_texts[-3]), int(captured_texts[-2]), int(captured_texts[-1]))
+
+    if alpha:
+        regex = QRegExp(REGEX_HEX_RGBA)
+        match = regex.exactMatch(xs)
+        if match:
+            return QColor(_HEXDEC[xs[1:3]], _HEXDEC[xs[3:5]], _HEXDEC[xs[5:7]], _HEXDEC[xs[7:9]])
+
+        regex = QRegExp(REGEX_FN_RGBA)
+        match = regex.exactMatch(xs)
+        if match:
+            captured_texts = regex.capturedTexts()
+            return QColor(
+                int(captured_texts[-4]), int(captured_texts[-3]), int(captured_texts[-2]), int(captured_texts[-1]))
+
+    return QColor()
+
+
+def color_chroma_float(color):
+    max_value = max(color.redF(), max(color.greenF(), color.blueF()))
+    min_value = min(color.redF(), min(color.greenF(), color.blueF()))
+
+    return max_value - min_value
+
+
+def color_luma_float(color):
+    return 0.30 * color.redF() + 0.59 * color.greenF() + 0.11 * color.blueF()
+
+
+def color_from_lch(hue, chroma, luma, alpha=1):
+    h1 = hue * 6
+    x = chroma * (1 - abs(math.fmod(h1, 2) - 1))
+    col = QColor()
+    if 0 <= h1 < 1:
+        col = QColor.fromRgbF(chroma, x, 0)
+    elif h1 < 2:
+        col = QColor.fromRgbF(x, chroma, 0)
+    elif h1 < 3:
+        col = QColor.fromRgbF(0, chroma, x)
+    elif h1 < 4:
+        col = QColor.fromRgbF(0, x, chroma)
+    elif h1 < 5:
+        col = QColor.fromRgbF(x, 0, chroma)
+    elif h1 < 6:
+        col = QColor.fromRgbF(chroma, 0, x)
+
+    m = luma - color_luma_float(col)
+
+    return QColor.fromRgbF(
+        mathlib.clamp(col.redF() + m, 0.0, 1.0),
+        mathlib.clamp(col.greenF() + m, 0.0, 1.0),
+        mathlib.clamp(col.blueF() + m, 0.0, 1.0),
+        alpha
+    )
+
+
+def rainbow_lch(hue):
+    return color_from_lch(hue, 1, 1)
+
+
+def rainbow_hsv(hue):
+    return QColor.fromHsvF(hue, 1, 1)
+
+
+def color_lightnes_float(color):
+    return (max(color.redF(), max(
+        color.greenF(), color.blueF())) + min(color.redF(), min(color.greenF(), color.blueF()))) / 2
+
+
+def color_hsl_saturation_float(color):
+    chroma_value = color_chroma_float(color)
+    lightness_value = color_lightnes_float(color)
+    if qFuzzyCompare(lightness_value + 1, 1) or qFuzzyCompare(lightness_value + 1, 2):
+        return 0
+
+    return chroma_value / (1 - abs(2 * lightness_value - 1))
+
+
+def color_from_hsl(hue, sat, lig, alpha):
+    chroma = (1 - abs(2 * lig - 1)) * sat
+    h1 = hue * 6
+    x = chroma * (1 - abs(math.fmod(h1, 2) - 1))
+    col = QColor()
+    if 0 <= h1 < 1:
+        col = QColor.fromRgbF(chroma, x, 0)
+    elif h1 < 2:
+        col = QColor.fromRgbF(x, chroma, 0)
+    elif h1 < 3:
+        col = QColor.fromRgbF(0, chroma, x)
+    elif h1 < 4:
+        col = QColor.fromRgbF(0, x, chroma)
+    elif h1 < 5:
+        col = QColor.fromRgbF(x, 0, chroma)
+    elif h1 < 6:
+        col = QColor.fromRgbF(chroma, 0, x)
+
+    m = lig - chroma / 2
+
+    return QColor.fromRgbF(
+        mathlib.clamp(col.redF() + m, 0.0, 1.0),
+        mathlib.clamp(col.greenF() + m, 0.0, 1.0),
+        mathlib.clamp(col.blueF() + m, 0.0, 1.0),
+        alpha
+    )

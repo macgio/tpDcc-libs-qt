@@ -19,7 +19,7 @@ from Qt.QtGui import *
 import tpDcc as tp
 from tpDcc import register
 from tpDcc.libs.qt.core import base, qtutils, animation, theme, dragger, resizers
-from tpDcc.libs.qt.widgets import dividers
+from tpDcc.libs.qt.widgets import layouts, dividers
 
 
 class DialogContents(QFrame, object):
@@ -180,11 +180,11 @@ class Dialog(QDialog, object):
 
     def ui(self):
 
-        self._central_layout = base.VerticalLayout(margins=(0, 0, 0, 0), spacing=0)
+        self._central_layout = layouts.VerticalLayout(margins=(0, 0, 0, 0), spacing=0)
         self.setLayout(self._central_layout)
 
         self._top_widget = QWidget()
-        self._top_layout = base.VerticalLayout(margins=(0, 0, 0, 0), spacing=0)
+        self._top_layout = layouts.VerticalLayout(margins=(0, 0, 0, 0), spacing=0)
         self._top_widget.setLayout(self._top_layout)
 
         for r in self._resizers:
@@ -221,7 +221,7 @@ class Dialog(QDialog, object):
         else:
             self.logo_view.setVisible(False)
 
-        grid_layout = base.GridLayout()
+        grid_layout = layouts.GridLayout()
         grid_layout.setHorizontalSpacing(0)
         grid_layout.setVerticalSpacing(0)
         grid_layout.setContentsMargins(0, 0, 0, 0)

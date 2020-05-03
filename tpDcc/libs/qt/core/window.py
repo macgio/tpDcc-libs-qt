@@ -21,7 +21,8 @@ from tpDcc.libs import qt
 import tpDcc as tp
 from tpDcc import register
 from tpDcc.libs.python import path, folder
-from tpDcc.libs.qt.core import qtutils, base, animation, theme, statusbar, dragger, resizers, settings as qt_settings
+from tpDcc.libs.qt.core import qtutils, animation, theme, statusbar, dragger, resizers, settings as qt_settings
+from tpDcc.libs.qt.widgets import layouts
 
 
 class WindowContents(QFrame, object):
@@ -282,11 +283,11 @@ class BaseWindow(QMainWindow, object):
 
         central_widget = QWidget(parent=self)
         self.setCentralWidget(central_widget)
-        self._central_layout = base.VerticalLayout(margins=(0, 0, 0, 0), spacing=0)
+        self._central_layout = layouts.VerticalLayout(margins=(0, 0, 0, 0), spacing=0)
         central_widget.setLayout(self._central_layout)
 
         self._top_widget = QWidget()
-        self._top_layout = base.VerticalLayout(margins=(0, 0, 0, 0), spacing=0)
+        self._top_layout = layouts.VerticalLayout(margins=(0, 0, 0, 0), spacing=0)
         self._top_widget.setLayout(self._top_layout)
 
         # Status Bar
@@ -740,6 +741,7 @@ class MainWindow(BaseWindow, object):
         else:
             self._dragger.set_dragging_enabled(True)
             self._dragger.set_window_buttons_state(True)
+        self._dragger._toggle_frameless.setChecked(self.is_frameless())
 
         # We set the window title after UI is created
         self.setWindowTitle(kwargs.get('title', 'tpDcc'))
@@ -859,7 +861,7 @@ class MainWindow(BaseWindow, object):
             r.windowResizedFinished.connect(self.windowResizedFinished)
         self.set_resize_directions()
 
-        grid_layout = base.GridLayout()
+        grid_layout = layouts.GridLayout()
         grid_layout.setHorizontalSpacing(0)
         grid_layout.setVerticalSpacing(0)
         grid_layout.setContentsMargins(0, 0, 0, 0)
