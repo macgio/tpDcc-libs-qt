@@ -16,9 +16,9 @@ from Qt.QtGui import *
 
 import tpDcc as tp
 from tpDcc.libs import qt
-from tpDcc.libs.python import name as name_utils
-from tpDcc.libs.qt.core import base, qtutils
-from tpDcc.libs.qt.widgets import buttons, dividers, spinbox, code, directory
+from tpDcc.libs.python import python, name as name_utils
+from tpDcc.libs.qt.core import base, qtutils, mixin
+from tpDcc.libs.qt.widgets import layouts, label, buttons, dividers, spinbox, code, directory, lineedit, checkbox
 
 
 class GroupStyles(object):
@@ -28,30 +28,13 @@ class GroupStyles(object):
     Maya = 3
 
 
-class OptionObject(object):
-    def __init__(self):
-        super(OptionObject, self).__init__()
-
-    def has_options(self):
-        return False
-
-    def get_options(self):
-        return dict()
-
-    def add_option(self, name, value, group=None, option_type=None):
-        pass
-
-    def clear_options(self):
-        pass
-
-
-class OptionsWidget(base.BaseWidget, object):
+class OptionsWidget(base.BaseWidget):
 
     editModeChanged = Signal(bool)
 
     def __init__(self, option_object=None, settings=None, parent=None):
 
-        self._option_object = option_object
+        self._option_object = None
         self._settings = settings
         self._edit_mode = False
         self._current_widgets = list()
@@ -62,8 +45,12 @@ class OptionsWidget(base.BaseWidget, object):
         policy = self.sizePolicy()
         policy.setHorizontalPolicy(policy.Expanding)
         policy.setVerticalPolicy(policy.Expanding)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setContentsMargins(2, 2, 2, 2)
+        self.main_layout.setSpacing(2)
         self.setSizePolicy(policy)
+
+        if option_object:
+            self.set_option_object(option_object=option_object)
 
     def ui(self):
         super(OptionsWidget, self).ui()
@@ -74,7 +61,7 @@ class OptionsWidget(base.BaseWidget, object):
         remove_icon = tp.ResourcesMgr().icon('delete')
 
         self._edit_widget = QWidget()
-        top_layout = QHBoxLayout()
+        top_layout = layouts.HorizontalLayout()
         top_layout.setContentsMargins(0, 0, 0, 0)
         top_layout.setSpacing(2)
         self._edit_widget.setLayout(top_layout)
@@ -147,14 +134,17 @@ class OptionsWidget(base.BaseWidget, object):
 
         return self._option_object
 
-    def set_option_object(self, option_object):
+    def set_option_object(self, option_object, force_update=True):
         """
         Sets option_object linked to this widget
         :param option_object: object
+        :param force_update: bool
         """
 
         self._option_object = option_object
         self._options_list.set_option_object(option_object)
+        if option_object and force_update:
+            self.update_options()
 
     def get_option_type(self):
         """
@@ -348,13 +338,13 @@ class OptionList(QGroupBox, object):
 
     def setup_ui(self):
         self.main_layout = QVBoxLayout()
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_layout.setSpacing(0)
+        self.main_layout.setContentsMargins(5, 5, 5, 5)
+        self.main_layout.setSpacing(5)
         self.setLayout(self.main_layout)
 
         self.child_layout = QVBoxLayout()
-        self.child_layout.setContentsMargins(0, 0, 0, 0)
-        self.child_layout.setSpacing(0)
+        self.child_layout.setContentsMargins(5, 5, 5, 5)
+        self.child_layout.setSpacing(5)
         self.child_layout.setAlignment(Qt.AlignTop)
         self.main_layout.addLayout(self.child_layout)
         self.main_layout.addSpacing(30)
@@ -434,6 +424,7 @@ class OptionList(QGroupBox, object):
         Adds new title property to the group box
         :param name: str
         :param parent: QWidget
+        :param write_options: bool
         """
 
         if type(name) == bool:
@@ -450,6 +441,7 @@ class OptionList(QGroupBox, object):
         :param name: str
         :param value: bool, default value of the property
         :param parent: Option
+        :param write_options: bool
         """
 
         if type(name) == bool:
@@ -495,6 +487,25 @@ class OptionList(QGroupBox, object):
         self._handle_parenting(int_option, parent)
         self._write_options(clear=False)
 
+    def add_list(self, name='list', value=None, parent=None):
+        """
+        Adds new list property to the group box
+        :param name: str
+        :param value: list(dict, list)
+        :param parent: QWidget
+        """
+
+        if type(name) == bool:
+            name = 'list'
+
+        value = python.force_list(value)
+
+        name = self._get_unique_name(name, parent)
+        list_option = ListOption(name=name, parent=parent, main_widget=self._parent)
+        list_option.set_value(value)
+        self._handle_parenting(list_option, parent)
+        self._write_options(False)
+
     def add_dictionary(self, name='dictionary', value=[{}, []], parent=None):
         """
         Adds new dictionary property to the group box
@@ -513,7 +524,7 @@ class OptionList(QGroupBox, object):
             value = [dict, keys]
 
         name = self._get_unique_name(name, parent)
-        dict_option = DictOption(name=name)
+        dict_option = DictOption(name=name, parent=parent, main_widget=self._parent)
         dict_option.set_value(value)
         self._handle_parenting(dict_option, parent)
         self._write_options(False)
@@ -745,6 +756,7 @@ class OptionList(QGroupBox, object):
         float_icon = tp.ResourcesMgr().icon('float_1')
         bool_icon = tp.ResourcesMgr().icon('true_false')
         dict_icon = tp.ResourcesMgr().icon('dictionary')
+        list_icon = tp.ResourcesMgr().icon('list')
         group_icon = tp.ResourcesMgr().icon('group_objects')
         script_icon = tp.ResourcesMgr().icon('source_code')
         title_icon = tp.ResourcesMgr().icon('label')
@@ -765,6 +777,8 @@ class OptionList(QGroupBox, object):
         create_menu.addAction(add_float_action)
         add_bool_action = QAction(bool_icon, 'Add Bool', create_menu)
         create_menu.addAction(add_bool_action)
+        add_list_action = QAction(list_icon, 'Add List', create_menu)
+        create_menu.addAction(add_list_action)
         add_dict_action = QAction(dict_icon, 'Add Dictionary', create_menu)
         create_menu.addAction(add_dict_action)
         add_group_action = QAction(group_icon, 'Add Group', create_menu)
@@ -790,6 +804,7 @@ class OptionList(QGroupBox, object):
         add_integer_action.triggered.connect(self.add_integer)
         add_float_action.triggered.connect(self.add_float)
         add_bool_action.triggered.connect(self.add_boolean)
+        add_list_action.triggered.connect(self.add_list)
         add_dict_action.triggered.connect(self.add_dictionary)
         add_group_action.triggered.connect(self.add_group)
         add_title_action.triggered.connect(self.add_title)
@@ -905,8 +920,12 @@ class OptionList(QGroupBox, object):
             for option in options:
                 option_type = None
                 if type(option[1]) == list:
-                    value = option[1][0]
-                    option_type = option[1][1]
+                    if option[0] == 'list':
+                        value = option[1]
+                        option_type = 'list'
+                    else:
+                        value = option[1][0]
+                        option_type = option[1][1]
                 else:
                     value = option[1]
 
@@ -945,36 +964,37 @@ class OptionList(QGroupBox, object):
                         self.add_string(name, value, widget)
                     elif type(value) == float:
                         self.add_float(name, value, widget)
-                    if type(option[1]) == int:
+                    elif type(option[1]) == int:
                         self.add_integer(name, value, widget)
-                    if type(option[1]) == bool:
+                    elif type(option[1]) == bool:
                         self.add_boolean(name, value, widget)
-                    if type(option[1]) == dict:
+                    elif type(option[1]) == dict:
                         self.add_dictionary(name, [value, []], widget)
+                    elif type(option[1]) == list:
+                        self.add_list(name, value, widget)
                     elif option[1] is None:
                         self.add_title(name, widget)
-
-                if option_type == 'script':
-                    self.add_script(name, value, widget)
-                if option_type == 'dictionary':
-                    self.add_dictonary(name, value, widget)
-                if option_type == 'nonedittext':
-                    self.add_non_editable_text(name, value, widget)
-                if option_type == 'directory':
-                    self.add_directory(name, value, widget)
-                if option_type == 'file':
-                    self.add_file(name, value, widget)
-                if option_type == 'dictionary':
-                    self.add_dictionary(name, value, widget)
-
+                else:
+                    if option_type == 'script':
+                        self.add_script(name, value, widget)
+                    if option_type == 'list':
+                        self.add_list(name, value, widget)
+                    if option_type == 'dictionary':
+                        self.add_dictionary(name, value, widget)
+                    if option_type == 'nonedittext':
+                        self.add_non_editable_text(name, value, widget)
+                    if option_type == 'directory':
+                        self.add_directory(name, value, widget)
+                    if option_type == 'file':
+                        self.add_file(name, value, widget)
         except Exception:
             qt.logger.error(traceback.format_exc())
-
-        self._disable_auto_expand = False
-        self.setVisible(True)
-        self.setUpdatesEnabled(True)
-        self._supress_update = False
-        self._auto_rename = True
+        finally:
+            self._disable_auto_expand = False
+            self.setVisible(True)
+            self.setUpdatesEnabled(True)
+            self._supress_update = False
+            self._auto_rename = True
 
     def _find_list(self, widget):
         if widget.__class__ == OptionList:
@@ -1211,13 +1231,13 @@ class OptionListGroup(OptionList, object):
         self.widgetClicked.emit(self)
 
     def setup_ui(self):
-        main_group_layout = QVBoxLayout()
+        main_group_layout = layouts.VerticalLayout()
         main_group_layout.setContentsMargins(0, 0, 0, 0)
         main_group_layout.setSpacing(1)
         self.group = OptionGroup(self._name)
         self.child_layout = self.group.child_layout
 
-        self.main_layout = QVBoxLayout()
+        self.main_layout = layouts.VerticalLayout()
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setSpacing(0)
         self.main_layout.addSpacing(2)
@@ -1434,17 +1454,17 @@ class OptionGroup(QGroupBox, object):
         self.setMinimumHeight(self.close_height)
         self.background_shade = 80
 
-        self.main_layout = QVBoxLayout()
+        self.main_layout = layouts.VerticalLayout()
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setSpacing(0)
         self.setLayout(self.main_layout)
 
-        self.child_layout = QVBoxLayout()
+        self.child_layout = layouts.VerticalLayout()
         self.child_layout.setContentsMargins(0, 2, 0, 3)
         self.child_layout.setSpacing(0)
         self.child_layout.setAlignment(Qt.AlignTop)
 
-        self.header_layout = QHBoxLayout()
+        self.header_layout = layouts.HorizontalLayout()
 
         self.main_layout.addSpacing(4)
         self.main_layout.addLayout(self.child_layout)
@@ -1633,13 +1653,12 @@ class Option(base.BaseWidget, object):
 
     def __init__(self, name, parent=None, main_widget=None):
 
+        self._name = name
         self._option_object = None
+        self._parent = main_widget
 
         super(Option, self).__init__(parent=parent)
 
-        self._parent = main_widget
-
-        self._name = name
         self._original_background_color = self.palette().color(self.backgroundRole())
         self._option_type = self.get_option_type()
         self._option_widget = self.get_option_widget()
@@ -1653,7 +1672,7 @@ class Option(base.BaseWidget, object):
         self._create_context_menu()
 
     def get_main_layout(self):
-        main_layout = QHBoxLayout()
+        main_layout = layouts.HorizontalLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
         return main_layout
@@ -1797,6 +1816,8 @@ class Option(base.BaseWidget, object):
         remove_action = QAction(remove_icon, 'Remove', self._context_menu)
         self._context_menu.addAction(remove_action)
 
+        move_up_action.triggered.connect(self.move_up)
+        move_down_action.triggered.connect(self.move_down)
         rename_action.triggered.connect(self.rename)
         remove_action.triggered.connect(self.remove)
 
@@ -1806,7 +1827,7 @@ class Option(base.BaseWidget, object):
 
         self._context_menu.exec_(self.mapToGlobal(pos))
 
-    def _on_value_change(self):
+    def _on_value_changed(self):
         self.updateValues.emit(False)
 
 
@@ -1818,17 +1839,17 @@ class TitleOption(Option, object):
         self.main_layout.setAlignment(Qt.AlignCenter)
 
     def get_option_widget(self):
-        return QLabel(self._name)
+        return DividerWidget(text=self._name, alignment=Qt.AlignCenter)
 
     def get_option_type(self):
         return 'title'
 
     def get_name(self):
-        name = self._option_widget.text()
+        name = self._option_widget.get_text()
         return name
 
     def set_name(self, name):
-        self._option_widget.setText(name)
+        self._option_widget.set_text(name)
 
 
 class TextOption(Option, object):
@@ -1853,7 +1874,7 @@ class TextOption(Option, object):
         self._option_widget.set_text(value)
 
     def _setup_option_widget_value_change(self):
-        self._option_widget.textChanged.connect(self._on_value_change)
+        self._option_widget.textChanged.connect(self._on_value_changed)
 
 
 class NonEditTextOption(TextOption, object):
@@ -1892,7 +1913,7 @@ class DirectoryOption(Option, object):
         self._option_widget.set_directory(value)
 
     def _setup_option_widget_value_change(self):
-        self._option_widget.directoryChanged.connect(self._on_value_change)
+        self._option_widget.directoryChanged.connect(self._on_value_changed)
 
 
 class FileOption(Option, object):
@@ -1917,7 +1938,7 @@ class FileOption(Option, object):
         self._option_widget.set_directory(value)
 
     def _setup_option_widget_value_change(self):
-        self._option_widget.directoryChanged.connect(self._on_value_change)
+        self._option_widget.directoryChanged.connect(self._on_value_changed)
 
 
 class FloatOption(Option, object):
@@ -1938,8 +1959,7 @@ class FloatOption(Option, object):
         self._option_widget.set_value(value)
 
     def _setup_option_widget_value_change(self):
-        self._option_widget.valueChanged.connect(self._on_value_change)
-    # endregion
+        self._option_widget.valueChanged.connect(self._on_value_changed)
 
 
 class IntegerOption(FloatOption, object):
@@ -1954,15 +1974,37 @@ class IntegerOption(FloatOption, object):
         return spinbox.BaseSpinBoxNumber(self._name)
 
 
+class ListOption(Option, object):
+    def __init__(self, name, parent=None, main_widget=None):
+        super(ListOption, self).__init__(name=name, parent=parent, main_widget=main_widget)
+
+    def get_option_type(self):
+        return 'list'
+
+    def get_option_widget(self):
+        return GetListWidget(name=self._name)
+
+    def get_value(self):
+        list_value = self._option_widget.get_value()
+
+        return list_value
+
+    def set_value(self, value):
+        self._option_widget.set_value(value)
+
+    def _setup_option_widget_value_change(self):
+        self._option_widget.list_widget.listChanged.connect(self._on_value_changed)
+
+
 class DictOption(FloatOption, object):
-    def __init__(self, name):
-        super(DictOption, self).__init__(name=name)
+    def __init__(self, name, parent=None, main_widget=None):
+        super(DictOption, self).__init__(name=name, parent=parent, main_widget=main_widget)
 
     def get_option_type(self):
         return 'dictionary'
 
     def get_option_widget(self):
-        return DictWidget(name=self._name)
+        return GetDictWidget(name=self._name)
 
     def get_label(self):
         return self._option_widget.get_label()
@@ -1974,11 +2016,11 @@ class DictOption(FloatOption, object):
         return [dictionary, order]
 
     def set_value(self, dictionary_value):
-        self._option_widget.set_order(dictionary_value[0])
-        self._option_widget.set_value(dictionary_value[1])
+        self._option_widget.set_value(dictionary_value[0])
+        self._option_widget.set_order(dictionary_value[1])
 
     def _setup_option_widget_value_change(self):
-        self._option_widget.dictionary_widget.dict_changed.connect(self._on_value_changed)
+        self._option_widget.dictionary_widget.dictChanged.connect(self._on_value_changed)
 
 
 class BooleanOption(Option, object):
@@ -2000,7 +2042,7 @@ class BooleanOption(Option, object):
         self._option_widget.set_value(value)
 
     def _setup_option_widget_value_change(self):
-        self._option_widget.valueChanged.connect(self._on_value_change)
+        self._option_widget.valueChanged.connect(self._on_value_changed)
 
 
 class ScriptOption(Option, object):
@@ -2015,7 +2057,7 @@ class ScriptOption(Option, object):
         return 'script'
 
     def _setup_option_widget_value_change(self):
-        self._option_widget.textChanged.connect(self._on_value_change)
+        self._option_widget.textChanged.connect(self._on_value_changed)
 
     def get_name(self):
         name = self._option_widget.insert_button.text()
@@ -2081,7 +2123,7 @@ class ScriptOption(Option, object):
 class TextWidget(base.BaseWidget, object):
     textChanged = Signal(str)
 
-    def __init__(self, name, parent=None):
+    def __init__(self, name='', parent=None):
         self._name = name
         super(TextWidget, self).__init__(parent=parent)
 
@@ -2089,32 +2131,37 @@ class TextWidget(base.BaseWidget, object):
         self._suppress_button_command = False
 
     def get_main_layout(self):
-        main_layout = QHBoxLayout()
+        main_layout = layouts.HorizontalLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
-        main_layout.setAlignment(Qt.AlignTop)
+
         return main_layout
 
     def get_text_widget(self):
-        return QLineEdit()
+        return lineedit.BaseLineEdit()
 
-    def setup_text_widget(self):
+    def _setup_text_widget(self):
         self.text_widget.textChanged.connect(self._on_text_changed)
 
     def ui(self):
         super(TextWidget, self).ui()
 
         self.text_widget = self.get_text_widget()
-        self.text_label = QLabel(self._name)
+        self.text_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.text_label = label.BaseLabel(self._name)
         self.text_label.setAlignment(Qt.AlignLeft)
-        self.text_label.setMinimumWidth(100)
-        self.setup_text_widget()
+        self.text_label.setMinimumWidth(75)
+        self.text_label.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self._setup_text_widget()
 
         self.main_layout.addWidget(self.text_label)
         self.main_layout.addSpacing(5)
         self.main_layout.addWidget(self.text_widget)
 
-        self.insert_button = QPushButton('<')
+        if not self._name:
+            self.text_label.setVisible(False)
+
+        self.insert_button = buttons.BaseToolButton().image('back').icon_only()
         self.insert_button.setMaximumWidth(20)
         # self.insert_button.hide()
         self.main_layout.addWidget(self.insert_button)
@@ -2127,6 +2174,7 @@ class TextWidget(base.BaseWidget, object):
 
     def set_label_text(self, text):
         self.text_label.setText(text)
+        self.text_label.setVisible(bool(text))
 
     def get_text(self):
         return self.text_widget.text()
@@ -2199,13 +2247,13 @@ class TextWidget(base.BaseWidget, object):
         self.textChanged.emit(self.text_widget.text())
 
 
-class BoolWidget(base.BaseNumberWidget, object):
+class BoolWidget(spinbox.BaseNumberWidget, object):
     def __init__(self, name, parent=None):
         super(BoolWidget, self).__init__(name, parent)
         self._number_widget.stateChanged.connect(self._on_value_changed)
 
     def get_number_widget(self):
-        return QCheckBox()
+        return checkbox.BaseCheckBox()
 
     def get_value(self):
         value = self._number_widget.isChecked()
@@ -2223,22 +2271,6 @@ class BoolWidget(base.BaseNumberWidget, object):
 
     def _on_value_changed(self):
         self.valueChanged.emit(self.get_value())
-
-
-class DictWidget(base.BaseWidget, object):
-    valueChanged = Signal(object)
-
-    def __init__(self, name):
-        self._name = name
-        self._order = list()
-        super(DictWidget, self).__init__()
-
-    def ui(self):
-        super(DictWidget, self).ui()
-
-        self._label = QLabel(self._name)
-
-        self.main_layout.addWidget(self._label)
 
 
 class DirectoryWidget(base.BaseWidget, object):
@@ -2300,7 +2332,7 @@ class ScriptWidget(TextWidget, object):
         super(ScriptWidget, self).__init__(name, parent)
 
     def get_main_layout(self):
-        return QVBoxLayout()
+        return layouts.VerticalLayout()
 
     def get_text_widget(self):
         code_text = code.CodeTextEdit()
@@ -2330,3 +2362,409 @@ class ScriptWidget(TextWidget, object):
 
     def _on_text_changed(self):
         self.textChanged.emit(self.text_widget.toPlainText())
+
+
+class GetListWidget(base.BaseWidget, object):
+    valueChanged = Signal(object)
+
+    def __init__(self, name, parent=None):
+        self._name = name
+        super(GetListWidget, self).__init__(parnet=parent)
+
+    @property
+    def list_widget(self):
+        return self._list_widget
+
+    def get_main_layout(self):
+        main_layout = layouts.VerticalLayout()
+        main_layout.setSpacing(2)
+        main_layout.setContentsMargins(2, 2, 2, 2)
+
+        return main_layout
+
+    def ui(self):
+        super(GetListWidget, self).ui()
+
+        self._label = label.BaseLabel(self._name)
+        self._list_widget = ListWidget()
+
+        self.main_layout.addWidget(self._label)
+        self.main_layout.addWidget(self._list_widget)
+
+    def get_value(self):
+        return self._list_widget.get_list()
+
+    def set_value(self, value_list):
+        for value in value_list:
+            self._list_widget.add_entry(value)
+
+    def get_label_text(self):
+        return str(self._label.text())
+
+    def set_label_text(self, text):
+        self._label.setText(text)
+
+    def _on_value_changed(self, list_value):
+        self.set_value(list_value)
+
+
+class ListWidget(base.BaseWidget, object):
+    listChanged = Signal(object)
+
+    def __init__(self):
+        self._list = list()
+        self._garbage_items = list()
+        super(ListWidget, self).__init__()
+
+    def get_main_layout(self):
+        main_layout = layouts.VerticalLayout()
+        main_layout.setContentsMargins(2, 2, 2, 2)
+
+        return main_layout
+
+    def ui(self):
+        super(ListWidget, self).ui()
+
+        widget_layout = layouts.VerticalLayout()
+        btn_layout = layouts.HorizontalLayout()
+        add_btn = buttons.BaseToolButton().image('plus').icon_only()
+        add_btn.clicked.connect(self._on_add_default_entry)
+        add_btn.setMinimumWidth(25)
+        btn_layout.addStretch()
+        btn_layout.addWidget(add_btn)
+        widget_layout.addWidget(dividers.Divider())
+        widget_layout.addLayout(btn_layout)
+
+        self.main_layout.addLayout(widget_layout)
+
+    def get_list(self):
+        self._list = list()
+        child_count = self.main_layout.count()
+        if not child_count:
+            return self._list
+        for i in range(child_count):
+            widget = self.main_layout.itemAt(i).widget()
+            if not hasattr(widget, 'main_layout'):
+                continue
+            value = widget.get_value()
+            self._list.append(value)
+
+        self._garbage_items = list()
+
+        return self._list
+
+    def add_entry(self, entry_value):
+        entry = self._build_entry(entry_value)
+        count = self.main_layout.count()
+        self.main_layout.insertWidget(count - 1, entry)
+
+    def _build_entry(self, entry_name=None):
+        item_name = entry_name or 'item1'
+        index = 1
+        while item_name in self.get_list():
+            index += 1
+            item_name = 'item{}'.format(index)
+
+        entry_widget = ListItemWidget(item_name)
+        entry_widget.itemRemoved.connect(self._cleanup_garbage)
+        entry_widget.valueChanged.connect(self._on_value_changed)
+
+        return entry_widget
+
+    def _cleanup_garbage(self, widget):
+        value = widget.get_value()
+        if value in self._list:
+            self._list.remove(value)
+        widget.hide()
+        self.main_layout.removeWidget(widget)
+        widget.deleteLater()
+        self.update()
+        self.listChanged.emit(self._list)
+
+    def _on_add_default_entry(self):
+        entry = self._build_entry()
+        count = self.main_layout.count()
+        self.main_layout.insertWidget(count - 1, entry)
+        self.listChanged.emit(self.get_list())
+
+    def _on_value_changed(self):
+        self.listChanged.emit(self.get_list())
+
+
+class ListItemWidget(base.BaseWidget, object):
+
+    valueChanged = Signal(object)
+    itemRemoved = Signal(object)
+
+    def __init__(self, name=None, parent=None):
+        self._value = name
+        self._garbage = None
+        super(ListItemWidget, self).__init__(parent=parent)
+
+    def get_main_layout(self):
+        main_layout = layouts.HorizontalLayout()
+        main_layout.setAlignment(Qt.AlignLeft)
+        main_layout.setSpacing(0)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        return main_layout
+
+    def ui(self):
+        super(ListItemWidget, self).ui()
+
+        self._value_str = TextWidget()
+        self._value_str.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self._value_str.set_use_button(False)
+        if self._value is not None:
+            self._value_str.set_text(str(self._value))
+        self._value_str.set_placeholder('Set a value')
+
+        self._remove_btn = buttons.BaseToolButton().image('delete').icon_only()
+
+        self.main_layout.addWidget(self._value_str)
+        self.main_layout.addSpacing(10)
+        self.main_layout.addWidget(self._remove_btn)
+
+    def setup_signals(self):
+        self._value_str.textChanged.connect(self.valueChanged.emit)
+        self._remove_btn.clicked.connect(self._on_remove_item)
+
+    def get_value(self):
+        return self._value_str.get_text()
+
+    def _on_remove_item(self):
+        self._garbage = True
+        self.itemRemoved.emit(self)
+
+
+class GetDictWidget(base.BaseWidget, object):
+    valueChanged = Signal(object)
+
+    def __init__(self, name, parent=None):
+        self._name = name
+        self._order = list()
+        super(GetDictWidget, self).__init__(parent=parent)
+
+    @property
+    def dictionary_widget(self):
+        return self._dict_widget
+
+    def get_main_layout(self):
+        main_layout = layouts.VerticalLayout()
+        main_layout.setContentsMargins(2, 2, 2, 2)
+
+        return main_layout
+
+    def ui(self):
+        super(GetDictWidget, self).ui()
+
+        self._label = label.BaseLabel(self._name)
+        self._dict_widget = DictWidget()
+
+        self.main_layout.addWidget(self._label)
+        self.main_layout.addWidget(self._dict_widget)
+
+    def get_value(self):
+        return self._dict_widget.get_dictionary()
+
+    def set_value(self, dictionary):
+        keys = self._order
+        if not keys:
+            keys = dictionary.keys()
+            keys.sort()
+        for key in keys:
+            self._dict_widget.add_entry(key, dictionary[key])
+
+    def get_order(self):
+        self._dict_widget.get_dictionary()
+        order = self._dict_widget.order
+
+        return order
+
+    def set_order(self, order):
+        self._order = order
+
+    def get_label_text(self):
+        return str(self._label.text())
+
+    def set_label_text(self, text):
+        self._label.setText(text)
+
+    def _on_value_change(self, dictionary):
+        self.set_value(dictionary)
+
+
+class DictWidget(base.BaseWidget, object):
+    dictChanged = Signal(object)
+
+    def __init__(self):
+        self._dict = dict()
+        self._order = list()
+        self._garbage_items = list()
+        super(DictWidget, self).__init__()
+
+    @property
+    def dictionary(self):
+        return self._dict
+
+    @property
+    def order(self):
+        return self._order
+
+    def get_main_layout(self):
+        main_layout = layouts.VerticalLayout()
+        main_layout.setContentsMargins(2, 2, 2, 2)
+
+        return main_layout
+
+    def ui(self):
+        super(DictWidget, self).ui()
+
+        widget_layout = layouts.VerticalLayout()
+        btn_layout = layouts.HorizontalLayout()
+        add_btn = buttons.BaseToolButton().image('plus').icon_only()
+        add_btn.clicked.connect(self._on_add_default_entry)
+        add_btn.setMinimumWidth(25)
+        btn_layout.addStretch()
+        btn_layout.addWidget(add_btn)
+        widget_layout.addWidget(dividers.Divider())
+        widget_layout.addLayout(btn_layout)
+
+        self.main_layout.addLayout(widget_layout)
+
+    def get_dictionary(self):
+        self._order = list()
+        self._dict = dict()
+        child_count = self.main_layout.count()
+        if not child_count:
+            return self._dict
+        for i in range(child_count):
+            widget = self.main_layout.itemAt(i).widget()
+            if not hasattr(widget, 'main_layout'):
+                continue
+            item_count = widget.main_layout.count()
+            if item_count < 3:
+                continue
+            key = widget.get_entry()
+            value = widget.get_value()
+            self._order.append(key)
+            self._dict[key] = value
+
+        self._garbage_items = list()
+
+        return self._dict
+
+    def add_entry(self, entry_string, value=None):
+        entry = self._build_entry(entry_string, value)
+        count = self.main_layout.count()
+        self.main_layout.insertWidget(count - 1, entry)
+
+    def _build_entry(self, entry_name=None, value=None):
+        key_name = entry_name or 'key1'
+        index = 1
+        while key_name in self.get_dictionary().keys():
+            index += 1
+            key_name = 'key{}'.format(index)
+
+        entry_widget = DictItemWidget(key_name, value)
+        entry_widget.itemRemoved.connect(self._cleanup_garbage)
+        entry_widget.entryChanged.connect(self._on_entry_changed)
+        entry_widget.valueChanged.connect(self._on_value_changed)
+
+        return entry_widget
+
+    def _cleanup_garbage(self, widget):
+        key = widget.get_entry()
+        if key in self._dict:
+            self._dict.pop(key)
+        widget.hide()
+        self.main_layout.removeWidget(widget)
+        widget.deleteLater()
+        self.update()
+        self.dictChanged.emit(self._dict)
+
+    def _on_add_default_entry(self):
+        entry = self._build_entry()
+        count = self.main_layout.count()
+        self.main_layout.insertWidget(count - 1, entry)
+        self.dictChanged.emit(self.get_dictionary())
+
+    def _on_value_changed(self):
+        self.dictChanged.emit(self.get_dictionary())
+
+    def _on_entry_changed(self):
+        self.dictChanged.emit(self.get_dictionary())
+
+
+@mixin.theme_mixin
+class DictItemWidget(base.BaseWidget, object):
+
+    entryChanged = Signal(object)
+    valueChanged = Signal(object)
+    itemRemoved = Signal(object)
+
+    def __init__(self, name=None, value=None, parent=None):
+        self._name = name
+        self._value = value
+        self._garbage = None
+        super(DictItemWidget, self).__init__(parent=parent)
+
+    def get_main_layout(self):
+        main_layout = layouts.HorizontalLayout()
+        main_layout.setAlignment(Qt.AlignLeft)
+        main_layout.setSpacing(0)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        return main_layout
+
+    def ui(self):
+        super(DictItemWidget, self).ui()
+
+        current_theme = self.theme()
+        separator_color = current_theme.accent_color if current_theme else '#E2AC2C'
+        separator = "<span style='color:{}'> &#9656; </span>".format(separator_color)
+
+        self._entry_str = TextWidget()
+        self._entry_str.set_use_button(False)
+        if self._name is not None:
+            self._entry_str.set_text(self._name)
+        self._entry_str.set_placeholder('Set a key name')
+
+        self._value_str = TextWidget()
+        self._value_str.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self._value_str.set_use_button(False)
+        if self._value is not None:
+            self._value_str.set_text(str(self._value))
+        self._value_str.set_placeholder('Set a value')
+
+        self._remove_btn = buttons.BaseToolButton().image('delete').icon_only()
+
+        self.main_layout.addWidget(self._entry_str)
+        self.main_layout.addWidget(label.BaseLabel(separator).secondary())
+        self.main_layout.addWidget(self._value_str)
+        self.main_layout.addSpacing(10)
+        self.main_layout.addWidget(self._remove_btn)
+
+    def setup_signals(self):
+        self._entry_str.textChanged.connect(self.entryChanged.emit)
+        self._value_str.textChanged.connect(self.valueChanged.emit)
+        self._remove_btn.clicked.connect(self._on_remove_item)
+
+    def get_entry(self):
+        return self._entry_str.get_text()
+
+    def get_value(self):
+        return self._value_str.get_text()
+
+    def _on_remove_item(self):
+        self._garbage = True
+        self.itemRemoved.emit(self)
+
+
+class DividerWidget(dividers.Divider, object):
+
+    def get_label_text(self):
+        return self.get_text()
+
+    def set_label_text(self, text):
+        self.set_text(text)

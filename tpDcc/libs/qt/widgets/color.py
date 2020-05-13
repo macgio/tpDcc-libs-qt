@@ -1320,6 +1320,8 @@ class ColorSelector(ColorPreview, object):
 
     def _on_show(self):
         self._old_color = self.color()
+        self._color_widget.set_color(self.color())
+        self._color_widget.set_comparison_color(self.comparison_color())
         if self._show_mode == self.ShowMode.PANEL:
             self.show_panel()
         else:
