@@ -24,6 +24,52 @@ from tpDcc.libs.qt.widgets import grid, search, directory, dividers
 LOGGER = logging.getLogger()
 
 
+def get_project_by_name(projects_path, project_name, project_class=None):
+    """
+    Returns a project located in the given path and with the given name (if exists)
+    :param projects_path: str
+    :param project_name: str
+    :return: Project or None
+    """
+
+    if not projects_path or not os.path.isdir(projects_path):
+        qt.logger.warning('Projects Path "{}" does not exist!'.format(projects_path))
+        return None
+
+    all_projects = get_projects(projects_path, project_class=project_class)
+    for project in all_projects:
+        if project.name == project_name:
+            return project
+
+    return None
+
+
+def get_projects(projects_path, project_class=None):
+    """
+    Returns all projects located in given path
+    :param projects_path: str
+    :return: list(Project)
+    """
+
+    if not project_class:
+        project_class = Project
+
+    projects_found = list()
+
+    if not projects_path or not os.path.isdir(projects_path):
+        qt.logger.warning('Projects Path {} is not valid!'.format(projects_path))
+        return projects_found
+
+    for root, dirs, files in os.walk(projects_path):
+        if consts.PROJECTS_NAME in files:
+            new_project = project_class.create_project_from_data(
+                path.join_path(root, consts.PROJECTS_NAME))
+            if new_project is not None:
+                projects_found.append(new_project)
+
+    return projects_found
+
+
 class Project(QWidget, core_project.ProjectData):
     projectOpened = Signal(object)
     projectRemoved = Signal()
@@ -151,7 +197,7 @@ class Project(QWidget, core_project.ProjectData):
             return False
 
         project_name = self.name
-        project_path = self.project_path
+        project_path = self.path
 
         result = qtutils.get_permission(message='Are you sure you want to delete project: {}'.format(self.name),
                                         title='Deleting Project', cancel=False)
@@ -271,16 +317,9 @@ class ProjectViewer(grid.GridWidget, object):
             if self._settings.has_setting('project_directory'):
                 project_path = self._settings.get('project_directory')
 
-        if project_path:
-            if not path.is_dir(project_path):
-                tp.logger.warning('Projects Path {} is not valid!'.format(project_path))
-                return
-            for root, dirs, files in os.walk(project_path):
-                if consts.PROJECTS_NAME in files:
-                    new_project = self._project_class.create_project_from_data(
-                        path.join_path(root, consts.PROJECTS_NAME))
-                    if new_project is not None:
-                        self.add_project(new_project)
+        projects_found = get_projects(project_path, project_class=self._project_class)
+        for project_found in projects_found:
+            self.add_project(project_found)
 
     def _on_open_project(self, project):
         self.projectOpened.emit(project)
@@ -586,7 +625,7 @@ class NewProjectWidget(QWidget, object):
         new_project = self._selected_template.create_project(project_name=project_name, project_path=project_path)
         if new_project is not None:
             tp.logger.debug(
-                'Project {} created successfully on path {}'.format(new_project.name, new_project.project_path))
+                'Project {} created successfully on path {}'.format(new_project.name, new_project.path))
             self.name_line.setText('')
             self.projectCreated.emit(new_project)
             return new_project

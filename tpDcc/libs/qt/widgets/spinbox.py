@@ -14,7 +14,7 @@ from Qt.QtWidgets import *
 from Qt.QtGui import *
 
 from tpDcc.libs.qt.core import base, mixin, theme
-from tpDcc.libs.qt.widgets import lineedit, buttons
+from tpDcc.libs.qt.widgets import lineedit, buttons, label
 
 
 @mixin.theme_mixin
@@ -189,7 +189,82 @@ class BaseDoubleSpinBox(QDoubleSpinBox, object):
         return self
 
 
-class BaseSpinBoxNumber(base.BaseNumberWidget):
+class BaseNumberWidget(base.BaseWidget, object):
+    valueChanged = Signal(object)
+
+    def __init__(self, name='', parent=None):
+        self._name = name
+        super(BaseNumberWidget, self).__init__(parent)
+
+    def get_main_layout(self):
+        main_layout = QHBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+        return main_layout
+
+    def ui(self):
+        super(BaseNumberWidget, self).ui()
+
+        self._number_widget = self.get_number_widget()
+        self._number_label = label.BaseLabel(self._name, parent=self)
+        self._number_label.setAlignment(Qt.AlignLeft)
+        self._number_label.setMinimumWidth(75)
+        self._number_label.setAttribute(Qt.WA_TransparentForMouseEvents)
+        if not self._name:
+            self._number_label.hide()
+        self._value_label = label.BaseLabel('value', parent=self)
+        self._value_label.setAlignment(Qt.AlignLeft)
+        self._value_label.setMinimumWidth(75)
+        self._value_label.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self._value_label.hide()
+
+        self.main_layout.addWidget(self._number_label)
+        self.main_layout.addSpacing(5)
+        self.main_layout.addWidget(self._value_label, alignment=Qt.AlignRight)
+        self.main_layout.addWidget(self._number_widget)
+
+    def get_number_widget(self):
+        """
+        Returns the widget used to edit numeric value
+        :return: QWidget
+        """
+
+        spin_box = BaseSpinBox(parent=self)
+        spin_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        return spin_box
+
+    def get_value(self):
+        """
+        Returns the number value of the numeric widget
+        :return: variant, int || float
+        """
+
+        return self._number_widget.value()
+
+    def set_value(self, new_value):
+        """
+        Sets the value of the numeric widget
+        :param new_value: variant, int || float
+        """
+
+        if new_value:
+            self._number_widget.setValue(new_value)
+
+    def get_label_text(self):
+        return self._number_label.text()
+
+    def set_label_text(self, new_text):
+        self._number_label.setText(new_text)
+
+    def set_value_label(self, new_value):
+        self._value_label.show()
+        self._value_label.setText(str(new_value))
+
+    def _on_value_changed(self):
+        self.valueChanged.emit(self.get_value())
+
+
+class BaseSpinBoxNumber(BaseNumberWidget):
     enterPressed = Signal()
 
     def __init__(self, name='', parent=None):
@@ -231,7 +306,7 @@ class BaseDoubleNumberSpinBox(BaseSpinBoxNumber, object):
         return spin_box
 
 
-class DragDoubleSpinBox(base.BaseNumberWidget, object):
+class DragDoubleSpinBox(BaseNumberWidget, object):
     def __init__(self, name='', parent=None):
         super(DragDoubleSpinBox, self).__init__(name=name, parent=parent)
 

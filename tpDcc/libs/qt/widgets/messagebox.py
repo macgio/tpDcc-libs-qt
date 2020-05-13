@@ -50,7 +50,7 @@ def create_message_box(parent, title, text, width=None, height=None, buttons=Non
 
     mb.setStyleSheet(theme_to_apply.stylesheet())
 
-    header_color = header_color or theme_to_apply.accent_color().to_string() or "rgb(50, 150, 200)"
+    header_color = header_color or theme_to_apply.accent_color or "rgb(50, 150, 200)"
     mb.set_header_color(header_color)
     mb.setWindowTitle(title)
     mb.set_title_text(title)
