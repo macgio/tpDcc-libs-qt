@@ -2473,9 +2473,9 @@ class BaseItem(LibraryItem, object):
         #     shutil.copy(icon_path, path + '/' + base_name)
 
         if icon_path:
-            shutil.copyfile(icon_path, path+'/thumbnail.jpg')
+            shutil.copyfile(icon_path, path + '/thumbnail.jpg')
         if sequence_path:
-            shutil.move(sequence_path, path+'/sequence')
+            shutil.move(sequence_path, path + '/sequence')
 
         objects = objects or list()
         self.transfer_object().add(objects)
