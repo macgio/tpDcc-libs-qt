@@ -15,6 +15,7 @@ import shutil
 import locale
 import getpass
 import logging
+from copy import deepcopy
 from collections import OrderedDict, Mapping
 
 import six
@@ -144,19 +145,22 @@ class TransferObject(object):
     DEFAULT_DATA = {'metadata': {}, 'objects': {}}
 
     @classmethod
-    def from_path(cls, path, force_cration=False):
+    def from_path(cls, path, force_creation=False):
         """
         Returns a new transfer instance for the given path
         :param path: str
+        :param force_creation: bool
         :return: TransferObject
         """
 
         t = cls()
         t.set_path(path)
 
-        if not os.path.isfile(path) and force_cration:
+        if not os.path.isfile(path) or force_creation:
             filename = os.path.basename(path)
             filedir = os.path.dirname(path)
+            if not os.path.isdir(filedir):
+                os.makedirs(filedir)
             fileio.create_file(filename, filedir)
 
         t.read()
@@ -181,7 +185,7 @@ class TransferObject(object):
     @staticmethod
     def read_json(path):
         """
-        Reeads the given JSON path
+        Reads the given JSON path
         :param path: str
         :return: dict
         """
@@ -196,7 +200,7 @@ class TransferObject(object):
     def __init__(self):
         self._path = None
         self._namespaces = None
-        self._data = self.DEFAULT_DATA
+        self._data = deepcopy(self.DEFAULT_DATA)
 
     @abc.abstractmethod
     def load(self, *args, **kwargs):

@@ -12,7 +12,6 @@ import math
 import shutil
 import tempfile
 import traceback
-
 from datetime import datetime
 from functools import partial
 
@@ -1104,9 +1103,11 @@ class LibraryItem(QTreeWidgetItem, object):
         :param kwargs:
         :return:
         """
+
         path = path or self.path()
         if path and not path.endswith(self.Extension):
-            path += self.Extension
+            extension = self.Extension if self.Extension.startswith('.') else '.{}'.format(self.Extension)
+            path += extension
 
         self.set_path(path)
 
@@ -1116,7 +1117,7 @@ class LibraryItem(QTreeWidgetItem, object):
         if os.path.exists(path):
             self.show_already_existing_dialog()
 
-        temp_path = os.path.join(tempfile.mkdtemp(), self.name())
+        temp_path = tempfile.mkdtemp()
         if not os.path.isdir(temp_path):
             os.mkdir(temp_path)
         valid_save = self.write(temp_path, *args, **kwargs)
@@ -1124,20 +1125,30 @@ class LibraryItem(QTreeWidgetItem, object):
             qt.logger.warning('Item {} not saved!'.format(path))
             if self.library_window():
                 self.library_window().show_warning_message('Item {} not saved!'.format(path))
-            return
+            if os.path.isdir(temp_path):
+                folder_utils.delete_folder(temp_path)
+            return False
 
         new_path = os.path.join(os.path.dirname(path), self.name())
-        shutil.move(temp_path, new_path)
+        if not os.path.isdir(new_path):
+            shutil.move(temp_path, new_path)
+        else:
+            folder_utils.move_folder(temp_path, new_path, only_contents=True)
+            folder_utils.delete_folder(temp_path)
+
         self.set_path(new_path)
         self.save_item_data()
-        if self.library_window():
-            self.library_window().select_items([self])
 
         comment = kwargs.get('comment', None)
         self.save_version(new_path, comment)
 
+        if self.library_window():
+            self.library_window().select_items([self])
+
         self.saved.emit(self)
         qt.logger.debug('Item Saved: {}'.format(self.path()))
+
+        return True
 
     def save_version(self, path, comment):
         """
@@ -2425,18 +2436,51 @@ class BaseItem(LibraryItem, object):
         self.transfer_object().load(objects=objects, namespaces=namespaces, **kwargs)
         qt.logger.debug('Loaded: {}'.format(self.transfer_path()))
 
-    def write(self, path, objects, icon_path='', **options):
+        return True
+
+    def save(self, path=None, *args, **kwargs):
+        """
+        Saves current item
+        :param path:
+        :param args:
+        :param kwargs:
+        :return:
+        """
+
+        valid_save = super(BaseItem, self).save(path=path, *args, **kwargs)
+        if not valid_save:
+            transfer_path = self.transfer_path()
+            if os.path.isfile(transfer_path):
+                folder_utils.delete_folder(os.path.dirname(transfer_path))
+            return False
+
+        return True
+
+    def write(self, path, objects, icon_path='', sequence_path='', **options):
         """
         Writes all the given object data to the given path on disk
+        This function just setup the basic setup prior or doing the write, overrides
+        this function in custom items to implement the write functionality
         :param path: str
         :param objects: list(str)
         :param icon_path: str
+        :param sequence_path: str
         :param options: dict
         """
 
+        # if icon_path:
+        #     base_name = os.path.basename(icon_path)
+        #     shutil.copy(icon_path, path + '/' + base_name)
+
         if icon_path:
-            base_name = os.path.basename(icon_path)
-            shutil.copy(icon_path, path + '/' + base_name)
+            shutil.copyfile(icon_path, path+'/thumbnail.jpg')
+        if sequence_path:
+            shutil.move(sequence_path, path+'/sequence')
+
+        objects = objects or list()
+        self.transfer_object().add(objects)
+
+        return True
 
     def load_validator(self, **options):
         """
@@ -2664,7 +2708,8 @@ class BaseItem(LibraryItem, object):
 
         if not self._transfer_object:
             path = self.transfer_path()
-            self._transfer_object = self.transfer_class().from_path(path)
+            force_creation = bool(os.path.isfile(path))
+            self._transfer_object = self.transfer_class().from_path(path, force_creation=force_creation)
 
         return self._transfer_object
 
@@ -2674,9 +2719,11 @@ class BaseItem(LibraryItem, object):
         :return: str or None
         """
 
-        return self.transfer_object().metadata().get('user', 'Unknown')
+        transfer_object = self.transfer_object()
+        if not transfer_object:
+            return 'Unknown'
 
-        # return self.transfer_object().metadata().get('user', '')
+        return transfer_object.metadata().get('user', 'Unknown')
 
     def description(self):
         """
@@ -2684,7 +2731,11 @@ class BaseItem(LibraryItem, object):
         :return: str
         """
 
-        return self.transfer_object().metadata().get('description', '')
+        transfer_object = self.transfer_object()
+        if not transfer_object:
+            return ''
+
+        return transfer_object.metadata().get('description', '')
 
     def object_count(self):
         """
@@ -2692,7 +2743,11 @@ class BaseItem(LibraryItem, object):
         :return: int
         """
 
-        return self.transfer_object().count()
+        transfer_object = self.transfer_object()
+        if not transfer_object:
+            return 0
+
+        return transfer_object.count()
 
     # ============================================================================================================
     # SCENE

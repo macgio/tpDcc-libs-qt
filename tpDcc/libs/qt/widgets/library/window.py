@@ -10,6 +10,7 @@ from __future__ import print_function, division, absolute_import
 import os
 import re
 import time
+import operator
 from functools import partial
 
 from Qt.QtCore import *
@@ -521,14 +522,16 @@ class LibraryWindow(window.BaseWindow, object):
 
         library = self.library()
         library.set_path(path)
-        if not os.path.exists(library.data_path()):
-            library.sync()
+
+        # if not os.path.exists(library.data_path()):
+        #     library.sync()
+        self.sync(force_start=True, force_searh=True)
 
         if self.stack.currentIndex() != 0:
             self.stack.slide_in_index(0)
 
         self.refresh()
-        self.library().search()
+        # self.library().search()
         self.update_preview_widget()
 
     def set_create_widget(self, create_widget):
@@ -1549,7 +1552,7 @@ class LibraryWindow(window.BaseWindow, object):
         self.reload_stylesheet()
 
     @show_wait_cursor_decorator
-    def sync(self, force_start=False):
+    def sync(self, force_start=False, force_searh=False):
         """
         Sync any data that might be out of date with the model
         """
@@ -1565,6 +1568,10 @@ class LibraryWindow(window.BaseWindow, object):
                 progress_bar.close()
             else:
                 animation.fade_out_widget(progress_bar, duration=500, on_finished=progress_bar.close)
+
+            if force_searh and self.library():
+                self.library().set_dirty(True)
+                self.library().search()
 
         progress_bar = self.status_widget().progress_bar()
         if self.PROGRESS_BAR_VISIBLE:
@@ -1862,10 +1869,7 @@ class LibraryWindow(window.BaseWindow, object):
         menu.setIcon(item_icon)
         menu.setTitle('New')
 
-        def _key(cls):
-            return cls.MenuOrder
-
-        for cls in sorted(self.manager().registered_items(), key=_key):
+        for cls in sorted(self.manager().registered_items(), key=operator.attrgetter('MenuOrder')):
             action = cls.create_action(menu, self)
             if action:
                 action_icon = icon.Icon(action.icon())
@@ -2057,7 +2061,7 @@ class LibraryWindow(window.BaseWindow, object):
         context menu action
         """
 
-        self.sync()
+        self.sync(force_searh=True)
 
     def _on_show_new_menu(self):
         """

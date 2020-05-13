@@ -78,7 +78,7 @@ class LibraryListView(mixin.LibraryViewWidgetMixin, QListView):
         mixin.LibraryViewWidgetMixin.mousePressEvent(self, event)
         if event.isAccepted():
             QListView.mousePressEvent(self, event)
-            self.viewer().tree_widget().setItemSelected(item, True)
+            # self.viewer().tree_widget().setItemSelected(item, True)
 
         self.endDrag()
         self._drag_start_pos = event.pos()

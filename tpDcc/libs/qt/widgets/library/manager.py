@@ -456,7 +456,7 @@ class LibraryDataFolder(fileio.FileManager, object):
         if not self.settings:
             self._load_folder()
 
-        # self.settings.set_directory(folder_path, 'data.json')
+        self.settings.set_directory(folder_path, 'data.json')
 
     def _set_default_settings(self):
         """
