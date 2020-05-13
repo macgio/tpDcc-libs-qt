@@ -382,7 +382,7 @@ QSpinBox
 QAbstractSpinBox
 {
     spacing: 4px;
-    /*border: 1px solid @border_color;*/
+    border: 1px solid @border_color;
     /*border-radius: 3px;*/
     color: @primary_text_color;
     background-color:@background_in_color;

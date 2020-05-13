@@ -28,7 +28,7 @@ def init(do_reload=False, dev=False):
     from tpDcc.libs.qt import register
     from tpDcc.libs.python import importer
 
-    logger = create_logger()
+    logger = create_logger(dev=dev)
 
     class tpQtLib(importer.Importer, object):
         def __init__(self, *args, **kwargs):
@@ -118,13 +118,17 @@ def init(do_reload=False, dev=False):
     register_resources()
 
 
-def create_logger():
+def create_logger(dev=False):
     """
     Returns logger of current module
     """
 
     logging.config.fileConfig(get_logging_config(), disable_existing_loggers=False)
     logger = logging.getLogger('tpDcc-libs-qt')
+    if dev:
+        logger.setLevel(logging.DEBUG)
+        for handler in logger.handlers:
+            handler.setLevel(logging.DEBUG)
 
     return logger
 
