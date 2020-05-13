@@ -328,7 +328,8 @@ class ImageSequence(QObject, object):
         """
 
         self._paused = True
-        self._timer.stop()
+        if self._timer:
+            self._timer.stop()
 
     def resume(self):
         """
@@ -337,14 +338,16 @@ class ImageSequence(QObject, object):
 
         if self._paused:
             self._paused = False
-            self._timer.start()
+            if self._timer:
+                self._timer.start()
 
     def stop(self):
         """
         Stop the image sequence
         """
 
-        self._timer.stop()
+        if self._timer:
+            self._timer.stop()
 
     def reset(self):
         """
