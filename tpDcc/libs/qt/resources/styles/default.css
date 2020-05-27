@@ -14,7 +14,7 @@
 * {
     font-family: @font_family;
     color: @primary_text_color;
-    background-color: @background_color;
+    /*background-color: @background_color;*/
     font-size: @default_font_size@unit;
     selection-color: @text_color_inverse;
     selection-background-color: @accent_color;
@@ -41,11 +41,6 @@ QLabel:disabled
 QCheckBox {
     background-color: transparent;
 }
-
-/*QCheckBox::indicator {*/
-/*    width: CHECKBOX_SIZEpx;*/
-/*    height: CHECKBOX_SIZEpx;*/
-/*}*/
 
 QCheckBox::indicator:checked
 {
@@ -248,6 +243,34 @@ QToolTip
 }
 
 /*
+QSplitter
+*/
+
+QSplitter::handle
+{
+    background-color: @border_color;
+    image: url(@splitter_icon);
+}
+
+QSplitter::handle:horizontal
+{
+    width: 2px;
+}
+
+QSplitter::handle:vertical
+{
+    height: 2px;
+}
+
+QMainWindow::separator
+{
+    background-color: @border_color;
+    width: 3px;
+    border: none;
+}
+
+
+/*
 QScrollBar
 */
 
@@ -353,26 +376,6 @@ QScrollBar::down-arrow:vertical
 QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical
 {
     background: none;
-}
-
-/*
-QSplitter
-*/
-
-QSplitter::handle
-{
-    background-color: @border_color;
-    image: url(@splitter_icon);
-}
-
-QSplitter::handle:horizontal
-{
-    width: 2px;
-}
-
-QSplitter::handle:vertical
-{
-    height: 2px;
 }
 
 /*
@@ -493,7 +496,7 @@ QHeaderView::down-arrow
 QHeaderView::section
 {
 	font: 12*DPIpx;
-	height: 15*DPIpx;
+	/*height: 18*DPIpx;*/
     border: @one_pixel@unit solid @background_out_color;
 	padding: @four_pixels@unit;
 	background-color: @background_color;
@@ -518,9 +521,14 @@ QListView
 /*    !*padding-left:2px;*!*/
 /*}*/
 
-/*!**/
-/*QTableView*/
-/* *!*/
+/*
+QTableView
+ */
+
+QTableWidget
+{
+    background-color: @background_color;
+}
 
 /*QTableView {*/
 /*    selection-background-color: TBL_TREE_ACTIVE_COLOR;*/
@@ -692,7 +700,7 @@ QToolBar
 
 /*
  --------------------------------------------------------------------------
- tpDcc
+ tpDcc Widgets
  --------------------------------------------------------------------------
 */
 
@@ -885,6 +893,26 @@ QAbstractSpinBox[theme_size="@huge"]::down-arrow
     image: url(@down_icon);
     width: 14px;
     height: 14px;
+}
+
+/*
+QWidget
+*/
+
+QWidget#topWindowWidget
+{
+    border-top-left-radius: @window_dragger_rounded_corners@unit;
+    border-top-right-radius: @window_dragger_rounded_corners@unit;
+    background-color: red;
+}
+
+/*
+BaseWidget
+*/
+
+BaseWidget *
+{
+    background-color: @background_color;
 }
 
 /*
@@ -1858,54 +1886,6 @@ MetaCard
     background-color: @background_in_color;
 }
 
-/*
- Window Dragger
-*/
-
-WindowDragger
-{
-    background-color: @window_dragger_color;
-    border-top-left-radius: @window_dragger_rounded_corners@unit;
-    border-top-right-radius: @window_dragger_rounded_corners@unit;
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
-}
-
-ToolsetFrame
-{
-    background-color: @window_dragger_color;
-}
-
-ToolsetFrame QFrame
-{
-    background-color: @window_dragger_color;
-}
-
-ClippedLabel#WindowDraggerLabel
-{
-    color: @window_dragger_label_color;
-    background-color: @window_dragger_color;
-    font-weight: bold;
-    font-size: @window_dragger_font_size@unit;
-}
-
-DialogContents
-{
-    background-color: @background_color;
-    border-top-left-radius: 0@unit;
-    border-top-right-radius: 0@unit;
-    border-bottom-left-radius: @window_rounded_corners@unit;
-    border-bottom-right-radius: @window_rounded_corners@unit;
-}
-
-WindowContents
-{
-    background-color: @background_color;
-    border-top-left-radius: 0@unit;
-    border-top-right-radius: 0@unit;
-    border-bottom-left-radius: @window_rounded_corners@unit;
-    border-bottom-right-radius: @window_rounded_corners@unit;
-}
 
 /*
 BaseLineEdit
@@ -2129,8 +2109,6 @@ SearchFindWidget QPushButton, SearchFindWidget QPushButton:hover
 	background-color: transparent;
 }
 
-
-
 /*!**/
 /* Stack*/
 /**!*/
@@ -2182,3 +2160,52 @@ SearchFindWidget QPushButton, SearchFindWidget QPushButton:hover
 /*{*/
 /*    color: STACK_TITLE_DISABLED;*/
 /*}*/
+
+/*
+ Window Dragger
+*/
+
+WindowDragger
+{
+    background-color: @window_dragger_color;
+    border-top-left-radius: @window_dragger_rounded_corners@unit;
+    border-top-right-radius: @window_dragger_rounded_corners@unit;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+ToolsetFrame
+{
+    background-color: @window_dragger_color;
+}
+
+ToolsetFrame QFrame
+{
+    background-color: @window_dragger_color;
+}
+
+ClippedLabel#WindowDraggerLabel
+{
+    color: @window_dragger_label_color;
+    background-color: @window_dragger_color;
+    font-weight: bold;
+    font-size: @window_dragger_font_size@unit;
+}
+
+DialogContents
+{
+    background-color: @background_color;
+    border-top-left-radius: 0@unit;
+    border-top-right-radius: 0@unit;
+    border-bottom-left-radius: @window_rounded_corners@unit;
+    border-bottom-right-radius: @window_rounded_corners@unit;
+}
+
+WindowContents
+{
+    background-color: @background_color;
+    border-top-left-radius: 0@unit;
+    border-top-right-radius: 0@unit;
+    border-bottom-left-radius: @window_rounded_corners@unit;
+    border-bottom-right-radius: @window_rounded_corners@unit;
+}
