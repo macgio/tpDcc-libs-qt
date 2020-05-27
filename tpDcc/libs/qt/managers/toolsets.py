@@ -61,10 +61,10 @@ class ToolsetsManager(object):
     # TOOLSETS
     # ============================================================================================================
 
-    def load_registered_toolsets(self, package_name, tools_to_load, dev=True, do_reload=False, tools_manager=None):
-        self._load_registered_paths_toolsets(package_name=package_name, do_reload=do_reload)
+    def load_registered_toolsets(self, package_name, tools_to_load, tools_manager=None):
+        self._load_registered_paths_toolsets(package_name=package_name)
         self._load_package_toolsets(
-            package_name=package_name, tools_to_load=tools_to_load, dev=dev, do_reload=do_reload)
+            package_name=package_name, tools_to_load=tools_to_load)
 
         tools_mgr = tools_manager or tpDcc.ToolsMgr
 
@@ -273,7 +273,7 @@ class ToolsetsManager(object):
     # INTERNAL
     # ============================================================================================================
 
-    def _load_registered_paths_toolsets(self, package_name, do_reload=False):
+    def _load_registered_paths_toolsets(self, package_name):
         """
         Loads all toolsets found in registered paths
         """
@@ -313,9 +313,9 @@ class ToolsetsManager(object):
         for pkg_name, registered_paths in self._registered_paths.items():
             if package_name != pkg_name:
                 continue
-            self._manager.register_paths(registered_paths, package_name=pkg_name, do_reload=do_reload)
+            self._manager.register_paths(registered_paths, package_name=pkg_name)
 
-    def _load_package_toolsets(self, package_name, tools_to_load, dev=True, do_reload=False):
+    def _load_package_toolsets(self, package_name, tools_to_load):
         """
         Loads all toolsets available in given package
         :param package_name: str
@@ -344,7 +344,7 @@ class ToolsetsManager(object):
 
         # Find toolset widgets are located
         if tools_paths_to_load:
-            self._manager.register_paths(tools_paths_to_load, package_name=package_name, do_reload=do_reload)
+            self._manager.register_paths(tools_paths_to_load, package_name=package_name)
 
 
 @decorators.Singleton
