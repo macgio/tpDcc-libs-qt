@@ -21,8 +21,8 @@ class Avatar(QLabel, object):
     Widget that can be used to represent users or objects
     """
 
-    def __init__(self, parent=None, flags=0):
-        super(Avatar, self).__init__(parent, flags)
+    def __init__(self, parent=None):
+        super(Avatar, self).__init__(parent)
 
         self._default_pixmap = tpDcc.ResourcesMgr().pixmap('user')
         self._pixmap = self._default_pixmap

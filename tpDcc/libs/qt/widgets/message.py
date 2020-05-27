@@ -26,14 +26,14 @@ class MessageTypes(object):
 
 
 @mixin.theme_mixin
-@mixin.property_mixin
+# @mixin.property_mixin
 class BaseMessage(base.BaseWidget, object):
-    def __init__(self, text='', parent=None, flags=0):
+    def __init__(self, text='', parent=None):
 
         self._type = None
         self._text = ''
 
-        super(BaseMessage, self).__init__(parent, flags=flags)
+        super(BaseMessage, self).__init__(parent)
 
         self.setAttribute(Qt.WA_StyledBackground)
 

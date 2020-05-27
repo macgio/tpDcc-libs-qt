@@ -15,7 +15,7 @@ from tpDcc.libs.qt.core import mixin, formatters, theme
 
 @mixin.theme_mixin
 @mixin.cursor_mixin
-@mixin.property_mixin
+# @mixin.property_mixin
 class BaseComboBox(QComboBox, object):
 
     valueChanged = Signal(list)
@@ -68,18 +68,18 @@ class BaseComboBox(QComboBox, object):
     # OVERRIDES
     # =================================================================================================================
 
-    def eventFilter(self, widget, event):
-        """
-        Overrides base eventFilter function
-        :param widget:
-        :param event:
-        :return:
-        """
-
-        if widget is self.lineEdit():
-            if event.type() == QEvent.MouseButtonPress:
-                self.showPopup()
-        return super(BaseComboBox, self).eventFilter(widget, event)
+    # def eventFilter(self, widget, event):
+    #     """
+    #     Overrides base eventFilter function
+    #     :param widget:
+    #     :param event:
+    #     :return:
+    #     """
+    #
+    #     if widget is self.lineEdit():
+    #         if event.type() == QEvent.MouseButtonPress:
+    #             self.showPopup()
+    #     return super(BaseComboBox, self).eventFilter(widget, event)
 
     def setView(self, *args, **kwargs):
         """

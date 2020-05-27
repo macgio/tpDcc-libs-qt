@@ -28,8 +28,8 @@ class BaseLabel(QLabel, object):
         WARNING = 'warning'
         DANGER = 'danger'
 
-    def __init__(self, text='', parent=None, flags=0):
-        super(BaseLabel, self).__init__(text, parent, flags)
+    def __init__(self, text='', parent=None):
+        super(BaseLabel, self).__init__(text, parent)
 
         self._actual_text = text
         self._underline = False

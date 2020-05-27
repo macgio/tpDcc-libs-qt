@@ -1272,11 +1272,12 @@ class ColorSelector(ColorPreview, object):
         self._dialog = ColorDialog(color_widget=self._color_widget, parent=self)
         if self._dialog_modality:
             self._dialog.setWindowModality(self._dialog_modality)
+        self._dialog.setWindowTitle('Select Color')
         self._dialog.set_button_mode(ColorDialog.ButtonMode.OK_CANCEL)
         self._dialog.set_color(self.color())
         self._connect_dialog(self._dialog)
         self._dialog.rejected.connect(self._on_rejected_dialog)
-        self._dialog.show()
+        self._dialog.exec_()
 
     def _connect_panel(self):
         if self._update_mode == self.UpdateMode.CONTINUOUS:

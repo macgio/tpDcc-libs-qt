@@ -722,6 +722,9 @@ class ExpanderWidget(QScrollArea, object):
     # ====================================================================================
 
     def eventFilter(self, obj, event):
+        if not event:
+            return False
+
         if event.type() == QEvent.MouseButtonPress:
             self.mousePressEvent(event)
             return True

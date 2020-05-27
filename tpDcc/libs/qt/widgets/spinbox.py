@@ -18,7 +18,7 @@ from tpDcc.libs.qt.widgets import lineedit, buttons, label
 
 
 @mixin.theme_mixin
-@mixin.cursor_mixin
+# @mixin.cursor_mixin
 class BaseSpinBox(QSpinBox, object):
     def __init__(self, parent=None):
         super(BaseSpinBox, self).__init__(parent=parent)
@@ -207,13 +207,13 @@ class BaseNumberWidget(base.BaseWidget, object):
 
         self._number_widget = self.get_number_widget()
         self._number_label = label.BaseLabel(self._name, parent=self)
-        self._number_label.setAlignment(Qt.AlignLeft)
+        self._number_label.setAlignment(Qt.AlignRight)
         self._number_label.setMinimumWidth(75)
         self._number_label.setAttribute(Qt.WA_TransparentForMouseEvents)
         if not self._name:
             self._number_label.hide()
         self._value_label = label.BaseLabel('value', parent=self)
-        self._value_label.setAlignment(Qt.AlignLeft)
+        self._value_label.setAlignment(Qt.AlignRight)
         self._value_label.setMinimumWidth(75)
         self._value_label.setAttribute(Qt.WA_TransparentForMouseEvents)
         self._value_label.hide()
@@ -429,21 +429,21 @@ class DragDoubleSpinBoxLineAxis(base.BaseWidget, object):
         axis_layout = QHBoxLayout()
         axis_layout.setContentsMargins(0, 0, 0, 0)
         axis_layout.setSpacing(0)
+        axis_widget.setLayout(axis_layout)
         self._axis_btn = buttons.get_axis_button(axis_type=self._axis, parent=self)
         self._line = DragDoubleSpinBoxLine(
             start=self._start, max=self._max, min=self._min, positive=self._positive, parent=self)
-        self._reset_btn = buttons.BaseToolButton().image('reset').icon_only()
-        self._reset_btn.clicked.connect(partial(self._line.setValue, self._start))
+        self._reset_btn = buttons.BaseToolButton(parent=self).image('reset').icon_only()
         self._reset_btn.setVisible(self._reset)
         self._reset_btn.setEnabled(self._reset)
         axis_layout.addWidget(self._axis_btn)
         axis_layout.addWidget(self._line)
         axis_layout.addWidget(self._reset_btn)
-        axis_widget.setLayout(axis_layout)
 
         self.main_layout.addWidget(axis_widget)
 
     def setup_signals(self):
+        self._reset_btn.clicked.connect(partial(self._line.setValue, self._start))
         self._line.valueChanged.connect(self.valueChanged.emit)
         self._line.textChanged.connect(self.textChanged.emit)
 

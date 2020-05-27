@@ -31,7 +31,6 @@ class EditableAddButton(QPushButton, object):
         self.setText('+')
         self.setFixedSize(20, 20)
 
-    # region Override Functions
     # def event(self, evt):
     #     if isinstance(evt, QHelpEvent):
     #         pos = evt.pos()
@@ -40,7 +39,6 @@ class EditableAddButton(QPushButton, object):
     #         else:
     #             QToolTip.hideText()
     #     return super(EditableAddButton, self).event(evt)
-    # endregion
 
 
 class EditableTabBar(QTabBar, object):
@@ -116,9 +114,7 @@ class EditableTabBar(QTabBar, object):
             old_name = self.tabText(index)
             self.setTabText(index, self._editor.text())
             self.tabRenamed.emit(index, self.tabText(index), old_name)
-    # endregion
 
-    # region Override Functions
     def sizeHint(self):
         """
         Return the size of the tab bar with increased width for the add tab button
@@ -203,7 +199,6 @@ class TearOffTabBar(QTabBar, object):
         self._drag_dropped_pos = QPoint()
         self._drag_start_pos = QPoint()
 
-    # region Override Functions
     def mousePressEvent(self, event):
         """
         Override the behaviour when the mouse is pressed
@@ -330,17 +325,18 @@ class TearOffTabBar(QTabBar, object):
             self.setCursor(Qt.ArrowCursor)
         super(TearOffTabBar, self).keyReleaseEvent(event)
 
-    def event(self, event):
-        """
-        Override so we can emit the tearOff signal
-        """
-
-        if event.type() == QEvent.MouseButtonRelease:
-            # self.tabDetached.emit(self._select_tab_index, event.globalPos())
-
-            self._select_tab_index = -1
-            self.setCursor(Qt.ArrowCursor)
-        return QTabBar.event(self, event)
+    # TODO: This was causing to break Maya in some ocassions (specailly after reloading). CHECK WHY!!!!
+    # def event(self, event):
+    #     """
+    #     Override so we can emit the tearOff signal
+    #     """
+    #
+    #     if event.type() == QEvent.MouseButtonRelease:
+    #         # self.tabDetached.emit(self._select_tab_index, event.globalPos())
+    #
+    #         self._select_tab_index = -1
+    #         self.setCursor(Qt.ArrowCursor)
+    #     return QTabBar.event(self, event)
 
 
 class EditableTearOffTabBar(TearOffTabBar, object):

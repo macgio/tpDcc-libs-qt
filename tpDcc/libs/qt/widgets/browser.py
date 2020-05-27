@@ -330,7 +330,7 @@ class ClickSaveFileToolButton(buttons.BaseToolButton, object):
         self.path = value
 
 
-@mixin.property_mixin
+# @mixin.property_mixin
 class ClickBrowserFolderToolButton(buttons.BaseToolButton, object):
     folderChanged = Signal(str)
     foldersChanged = Signal(list)
@@ -562,7 +562,7 @@ class DragFileButton(buttons.BaseToolButton, object):
 
 
 @mixin.cursor_mixin
-@mixin.property_mixin
+# @mixin.property_mixin
 class DragFolderButton(buttons.BaseToolButton, object):
     folderChanged = Signal(str)
     foldersChanged = Signal(list)
