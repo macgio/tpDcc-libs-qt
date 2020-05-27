@@ -49,7 +49,6 @@ class LibraryItem(QTreeWidgetItem, object):
     DataRole = consts.ITEM_DEFAULT_DATA_ROLE
 
     ThreadPool = QThreadPool()
-    DefaultThumbnailPath = tp.ResourcesMgr().get('icons', 'thumbnail.png')
 
     MAX_ICON_SIZE = consts.ITEM_DEFAULT_MAX_ICON_SIZE
     DEFAULT_FONT_SIZE = consts.ITEM_DEFAULT_FONT_SIZE
@@ -70,11 +69,12 @@ class LibraryItem(QTreeWidgetItem, object):
 
     MenuName = consts.ITEM_DEFAULT_MENU_NAME
     MenuOrder = consts.ITEM_DEFAULT_MENU_ORDER
-    MenuIconPath = consts.ITEM_DEFAULT_MENU_ICON_PATH
+    MenuIconName = consts.ITEM_DEFAULT_MENU_ICON
 
     RegisterOrder = 10
-    TypeIconPath = ''
+    TypeIconName = ''
     DisplayInSidebar = False
+    DefaultThumbnailName = 'thumbnail.png'
     CreateWidgetClass = savewidget.SaveWidget
     PreviewWidgetClass = loadwidget.LoadWidget
 
@@ -131,6 +131,9 @@ class LibraryItem(QTreeWidgetItem, object):
         self._modal = None
         self._library = None
         self._library_window = None
+        self._type_icon_path = tp.ResourcesMgr().get('icons', self.TypeIconName)
+        self._menu_icon_path = tp.ResourcesMgr().get('icons', self.MenuIconName)
+        self._default_thumbnail_path = tp.ResourcesMgr().get('icons', self.DefaultThumbnailName)
 
         super(LibraryItem, self).__init__(*args)
 
@@ -177,7 +180,7 @@ class LibraryItem(QTreeWidgetItem, object):
         """
 
         if cls.MenuName:
-            action_icon = QIcon(cls.MenuIconPath)
+            action_icon = tp.ResourcesMgr().icon(cls.MenuIconName)
             callback = partial(cls.show_create_widget, library_window)
             action = QAction(action_icon, cls.MenuName, menu)
             action.triggered.connect(callback)
@@ -1046,7 +1049,7 @@ class LibraryItem(QTreeWidgetItem, object):
         :return: str
         """
 
-        return self.TypeIconPath
+        return self._type_icon_path
 
     def thumbnail_path(self):
         """
@@ -1055,7 +1058,7 @@ class LibraryItem(QTreeWidgetItem, object):
         """
 
         if not self.path():
-            return self.DefaultThumbnailPath
+            return self._default_thumbnail_path
 
         thumbnail_path = self.path() + '/thumbnail.jpg'
         if os.path.exists(thumbnail_path):
@@ -1065,7 +1068,7 @@ class LibraryItem(QTreeWidgetItem, object):
         if os.path.exists(thumbnail_path):
             return thumbnail_path
 
-        return self.DefaultThumbnailPath
+        return self._default_thumbnail_path
 
     """
     ##########################################################################################
@@ -1530,7 +1533,7 @@ class LibraryItem(QTreeWidgetItem, object):
         Returns the default thumbnail path
         :return: str
         """
-        return self.DefaultThumbnailPath
+        return self._default_thumbnail_path
 
     def default_thumbnail_icon(self):
         """
@@ -2280,9 +2283,14 @@ class LibraryFolderItem(LibraryItem, object):
 
     MenuName = 'Folder'
     MenuOrder = 1
-    MenuIconPath = tp.ResourcesMgr().get('icons', 'color', 'folder.png')
-    DefaultThumbnailPath = tp.ResourcesMgr().get('icons', 'folder.png')
-    TrashIconPath = tp.ResourcesMgr().get('icons', 'trash.png')
+    MenuIconName = 'folder.png'
+    DefaultThumbnailName = 'folder.png'
+    TrashIconName = 'trash.png'
+
+    def __init__(self, path='', library=None, library_window=None, *args):
+        self._trash_icon_path = tp.ResourcesMgr().get('icons', self.TrashIconName)
+
+        super(LibraryFolderItem, self).__init__(path=path, library=library, library_window=library_window, *args)
 
     @classmethod
     def match(cls, path):
@@ -2389,7 +2397,7 @@ class LibraryFolderItem(LibraryItem, object):
 
         data = super(LibraryFolderItem, self).item_data()
         if data.get('path').endswith('Trash'):
-            data['iconPath'] = self.TrashIconPath
+            data['iconPath'] = self._trash_icon_path
 
         return data
 

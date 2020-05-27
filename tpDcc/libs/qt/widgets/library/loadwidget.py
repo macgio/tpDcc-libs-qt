@@ -301,7 +301,7 @@ class LoadWidget(base.BaseWidget, object):
         self._item = item
 
         self._title_lbl.setText(item.MenuName)
-        self._icon_lbl.setPixmap(QPixmap(item.TypeIconPath))
+        self._icon_lbl.setPixmap(QPixmap(item.type_icon_path()))
 
         info_widget = formwidget.FormWidget(self)
         info_widget.set_schema(item.info())

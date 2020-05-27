@@ -180,7 +180,7 @@ class SaveWidget(base.BaseWidget, object):
 
         self._item = item
         self._title_lbl.setText(item.MenuName)
-        self._icon_lbl.setPixmap(QPixmap(item.TypeIconPath))
+        self._icon_lbl.setPixmap(QPixmap(item.type_icon_path()))
         schema = item.save_schema()
         if schema:
             options_widget = formwidget.FormWidget(self)
