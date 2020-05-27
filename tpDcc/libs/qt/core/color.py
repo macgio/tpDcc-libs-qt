@@ -339,11 +339,12 @@ def generate_color(primary_color, index):
     light = index <= 6
     hsv_color = Color(primary_color) if isinstance(primary_color, basestring) else primary_color
     index = light_color_count + 1 - index if light else index - light_color_count - 1
-    return Color(QColor.fromHsvF(
+
+    return Color.fromHsvF(
         _get_hue(hsv_color, index, light),
         _get_saturation(hsv_color, index, light),
         _get_value(hsv_color, index, light)
-    )).name()
+    ).name()
 
 
 def string_from_color(color, alpha):

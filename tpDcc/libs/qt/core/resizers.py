@@ -36,7 +36,7 @@ class WindowResizer(QFrame, object):
         self._widget_geometry = None
         self._frameless = None
 
-        self.setStyleSheet('background: transparent;')
+        self.setAttribute(Qt.WA_TranslucentBackground)
 
         self.windowResizedStarted.connect(self._on_window_resize_started)
 
@@ -48,7 +48,7 @@ class WindowResizer(QFrame, object):
         """
 
         painter = QPainter(self)
-        painter.fillRect(self.rect(), QColor(255, 0, 0, 1))
+        painter.fillRect(self.rect(), QColor(255, 255, 255, 1))
         painter.end()
 
     def leaveEvent(self, event):
@@ -180,7 +180,7 @@ class CornerResizer(WindowResizer, object):
 
         super(CornerResizer, self)._init()
 
-        self.setFixedSize(qtutils.size_by_dpi(QSize(10, 10)))
+        self.setFixedSize(qtutils.size_by_dpi(QSize(5, 5)))
 
 
 class VerticalResizer(WindowResizer, object):
@@ -205,7 +205,7 @@ class VerticalResizer(WindowResizer, object):
         """
 
         super(VerticalResizer, self)._init()
-        self.setFixedHeight(qtutils.dpi_scale(8))
+        self.setFixedHeight(qtutils.dpi_scale(4))
 
 
 class HorizontalResizer(WindowResizer, object):
@@ -230,4 +230,4 @@ class HorizontalResizer(WindowResizer, object):
         """
 
         super(HorizontalResizer, self)._init()
-        self.setFixedWidth(qtutils.dpi_scale(8))
+        self.setFixedWidth(qtutils.dpi_scale(4))

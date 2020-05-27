@@ -14,7 +14,6 @@ from tpDcc.libs.qt.core import qtutils, mixin, theme
 
 
 @mixin.theme_mixin
-@mixin.cursor_mixin
 class BaseWidget(QWidget, object):
     """
     Base class for all QWidgets based items

@@ -15,7 +15,7 @@ from tpDcc.libs.qt.core import mixin, qtutils, formatters
 
 
 @mixin.theme_mixin
-@mixin.property_mixin
+# @mixin.property_mixin
 class BaseMenu(QMenu, object):
 
     valueChanged = Signal(list)

@@ -287,6 +287,7 @@ class BaseWindow(QMainWindow, object):
         central_widget.setLayout(self._central_layout)
 
         self._top_widget = QWidget()
+        self._top_widget.setObjectName('topWindowWidget')
         self._top_layout = layouts.VerticalLayout(margins=(0, 0, 0, 0), spacing=0)
         self._top_widget.setLayout(self._top_layout)
 
@@ -864,6 +865,7 @@ class MainWindow(BaseWindow, object):
         grid_layout = layouts.GridLayout()
         grid_layout.setHorizontalSpacing(0)
         grid_layout.setVerticalSpacing(0)
+        grid_layout.setSpacing(0)
         grid_layout.setContentsMargins(0, 0, 0, 0)
         grid_layout.addWidget(self._top_widget, 1, 1, 1, 1)
         grid_layout.addWidget(self.main_widget, 2, 1, 1, 1)
@@ -928,6 +930,21 @@ class MainWindow(BaseWindow, object):
     # ============================================================================================================
     # BASE
     # ============================================================================================================
+
+    def tick(self, delta_seconds, *args, **kwargs):
+        """
+        Function that is called taking into account DCC delta seconds
+        NOTE: This function MUST be override if necessary in each DCC, by default it does nothing
+        :param delta_seconds: float
+        :param args:
+        :param kwargs:
+        :return:
+        """
+
+        # TODO: We can use QTimers to setup a tick and use QApplication event loop
+        # TODO: I do not want to force the creation of a QTimer, so for now we implement this for each DCC
+
+        pass
 
     def exists(self):
         """
