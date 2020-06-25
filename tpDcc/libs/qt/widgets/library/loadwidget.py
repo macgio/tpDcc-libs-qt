@@ -19,20 +19,43 @@ from tpDcc.libs.qt.widgets import formwidget, dividers, history
 from tpDcc.libs.qt.widgets.library import widgets
 
 
-class LoadWidget(base.BaseWidget, object):
+class BaseLoadWidget(base.BaseWidget, object):
+    def __init__(self, item, parent=None):
+        super(BaseLoadWidget, self).__init__(parent=parent)
+
+        self._item = None
+
+        self.setObjectName('Load')
+        self.set_item(item)
+
+    def item(self):
+        """
+        Returns the library item to load
+        :return: LibraryItem
+        """
+
+        return self._item
+
+    def set_item(self, item):
+        """
+        Sets the library item to load
+        :param item: LibraryItem
+        """
+
+        self._item = item
+
+
+class LoadWidget(BaseLoadWidget, object):
 
     HISTORY_WIDGET = history.HistoryFileWidget
 
     def __init__(self, item, parent=None):
-        super(LoadWidget, self).__init__(parent=parent)
+        super(LoadWidget, self).__init__(item, parent=parent)
 
-        self._item = None
         self._icon_path = ''
         self._script_job = None
         self._options_widget = None
 
-        self.setObjectName('Load')
-        self.set_item(item)
         self.load_settings()
 
         self.create_sequence_widget()
@@ -246,6 +269,23 @@ class LoadWidget(base.BaseWidget, object):
 
         self.update_thumbnail_size()
 
+    def set_item(self, item):
+        """
+        Sets the library item to load
+        :param item: LibraryItem
+        """
+
+        super(LoadWidget, self).set_item(item)
+
+        self._title_lbl.setText(item.MenuName)
+        self._icon_lbl.setPixmap(QPixmap(item.type_icon_path()))
+
+        info_widget = formwidget.FormWidget(self)
+        info_widget.set_schema(item.info())
+        self._info_frame.layout().addWidget(info_widget)
+
+        self.update_history()
+
     def load_btn(self):
         """
         Returns button that loads the data
@@ -283,31 +323,6 @@ class LoadWidget(base.BaseWidget, object):
         self._thumbnail_btn.setIcon(icon)
         self._thumbnail_btn.setIconSize(QSize(200, 200))
         self._thumbnail_btn.setText('')
-
-    def item(self):
-        """
-        Returns the library item to load
-        :return: LibraryItem
-        """
-
-        return self._item
-
-    def set_item(self, item):
-        """
-        Sets the library item to load
-        :param item: LibraryItem
-        """
-
-        self._item = item
-
-        self._title_lbl.setText(item.MenuName)
-        self._icon_lbl.setPixmap(QPixmap(item.type_icon_path()))
-
-        info_widget = formwidget.FormWidget(self)
-        info_widget.set_schema(item.info())
-        self._info_frame.layout().addWidget(info_widget)
-
-        self.update_history()
 
     def update_history(self):
         """

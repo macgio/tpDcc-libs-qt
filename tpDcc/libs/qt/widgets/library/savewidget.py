@@ -18,41 +18,30 @@ from Qt.QtGui import *
 import tpDcc as tp
 from tpDcc.libs import qt
 from tpDcc.libs.qt.core import base, qtutils
-from tpDcc.libs.qt.widgets import directory, formwidget, messagebox
+from tpDcc.libs.qt.widgets import layouts, buttons, directory, formwidget, messagebox, dividers
 from tpDcc.libs.qt.widgets.library import widgets
 
 if tp.is_maya():
     from tpDcc.dccs.maya.ui import thumbnail
 
 
-class SaveWidget(base.BaseWidget, object):
+class BaseSaveWidget(base.BaseWidget, object):
     def __init__(self, item, settings, temp_path=None, parent=None):
 
         self._item = None
-        self._script_job = None
-        self._options_widget = None
-        self._sequence_path = None
-        self._icon_path = ''
         self._settings = settings
         self._temp_path = temp_path
+        self._options_widget = None
 
-        super(SaveWidget, self).__init__(parent=parent)
+        super(BaseSaveWidget, self).__init__(parent=parent)
 
         self.setObjectName('LibrarySaveWidget')
         self.set_item(item)
-        self.create_sequence_widget()
-        self.update_thumbnail_size()
-
-        try:
-            self._on_selection_changed()
-            # self.set_script_job_enabled(True)
-        except NameError as e:
-            qt.logger.error('{} | {}'.format(e, traceback.format_exc()))
 
     def ui(self):
-        super(SaveWidget, self).ui()
+        super(BaseSaveWidget, self).ui()
 
-        title_layout = QHBoxLayout()
+        title_layout = layouts.HorizontalLayout()
         title_layout.setContentsMargins(2, 2, 0, 0)
         title_layout.setSpacing(2)
         self._icon_lbl = QLabel()
@@ -63,38 +52,23 @@ class SaveWidget(base.BaseWidget, object):
         title_layout.addWidget(self._icon_lbl)
         title_layout.addWidget(self._title_lbl)
 
-        model_panel_layout = QHBoxLayout()
-        model_panel_layout.setContentsMargins(0, 0, 0, 0)
-        model_panel_layout.setSpacing(0)
-        thumbnail_layout = QVBoxLayout()
-        thumbnail_layout.setContentsMargins(0, 0, 0, 0)
-        thumbnail_layout.setSpacing(0)
-        self._thumbnail_frame = QFrame()
-        self._thumbnail_frame.setMinimumSize(QSize(50, 50))
-        self._thumbnail_frame.setMaximumSize(QSize(150, 150))
-        self._thumbnail_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self._thumbnail_frame.setFrameShape(QFrame.NoFrame)
-        self._thumbnail_frame.setFrameShadow(QFrame.Plain)
-        self._thumbnail_frame.setLineWidth(0)
-        self._thumbnail_frame.setLayout(thumbnail_layout)
-        model_panel_layout.addWidget(self._thumbnail_frame)
-        self._thumbnail_btn = QPushButton()
-        self._thumbnail_btn.setMinimumSize(QSize(0, 0))
-        self._thumbnail_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self._thumbnail_btn.setMaximumSize(QSize(150, 150))
-        self._thumbnail_btn.setToolTip('Take snapshot')
-        self._thumbnail_btn.setStyleSheet(
-            'color: rgb(40, 40, 40);border: 0px solid rgb(0, 0, 0, 150);background-color: rgb(254, 255, 230, 200);')
-        self._thumbnail_btn.setIcon(tp.ResourcesMgr().icon('thumbnail'))
-        self._thumbnail_btn.setToolTip("""
-        Click to capture a thumbnail from the current viewport.\n
-        CTRL + Click to show the capture window for better framing
-        """)
-        thumbnail_layout.addWidget(self._thumbnail_btn)
-
         self._folder_widget = directory.SelectFolder('Folder', use_app_browser=True)
 
-        self._options_layout = QVBoxLayout()
+        buttons_layout = layouts.HorizontalLayout()
+        buttons_layout.setContentsMargins(4, 4, 4, 4)
+        buttons_layout.setSpacing(4)
+        buttons_frame = QFrame()
+        buttons_frame.setFrameShape(QFrame.NoFrame)
+        buttons_frame.setFrameShadow(QFrame.Plain)
+        buttons_frame.setLayout(buttons_layout)
+        buttons_layout.addSpacerItem(QSpacerItem(10, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
+        self.save_btn = buttons.BaseButton('Save')
+        self.cancel_btn = buttons.BaseButton('Cancel')
+        buttons_layout.addWidget(self.save_btn, parent=self)
+        buttons_layout.addWidget(self.cancel_btn, parent=self)
+        buttons_layout.addSpacerItem(QSpacerItem(10, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
+
+        self._options_layout = layouts.VerticalLayout()
         self._options_layout.setContentsMargins(0, 0, 0, 0)
         self._options_layout.setSpacing(2)
         self._options_frame = QFrame()
@@ -103,38 +77,21 @@ class SaveWidget(base.BaseWidget, object):
         self._options_frame.setLineWidth(0)
         self._options_frame.setLayout(self._options_layout)
 
-        buttons_layout = QHBoxLayout()
-        buttons_layout.setContentsMargins(4, 4, 4, 4)
-        buttons_layout.setSpacing(4)
-        buttons_frame = QFrame()
-        buttons_frame.setFrameShape(QFrame.NoFrame)
-        buttons_frame.setFrameShadow(QFrame.Plain)
-        buttons_frame.setLayout(buttons_layout)
-        buttons_layout.addSpacerItem(QSpacerItem(10, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
-        self.save_btn = QPushButton('Save')
-        self.cancel_btn = QPushButton('Cancel')
-        buttons_layout.addWidget(self.save_btn)
-        buttons_layout.addWidget(self.cancel_btn)
-        buttons_layout.addSpacerItem(QSpacerItem(10, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
+        self._extra_layout = layouts.VerticalLayout()
+        self._extra_layout.setContentsMargins(0, 0, 0, 0)
+        self._extra_layout.setSpacing(2)
 
         self.main_layout.addLayout(title_layout)
-        self.main_layout.addLayout(model_panel_layout)
         self.main_layout.addWidget(self._folder_widget)
-        self.main_layout.addWidget(self._options_frame)
+        self._extra_layout.addWidget(self._options_frame)
+        self.main_layout.addWidget(dividers.Divider())
+        self.main_layout.addLayout(self._extra_layout)
+        self.main_layout.addWidget(dividers.Divider())
         self.main_layout.addWidget(buttons_frame)
 
     def setup_signals(self):
-        self._thumbnail_btn.clicked.connect(self._on_thumbnail_capture)
         self.save_btn.clicked.connect(self._on_save)
         self.cancel_btn.clicked.connect(self._on_cancel)
-
-    def resizeEvent(self, event):
-        """
-        Overrides base QWidget resizeEvent function
-        :param event: QResizeEvent
-        """
-
-        self.update_thumbnail_size()
 
     def settings(self):
         """
@@ -152,18 +109,6 @@ class SaveWidget(base.BaseWidget, object):
 
         self._settings = settings
 
-    def default_values(self):
-        """
-        Returns all the default values for the save fields
-        :return: dict
-        """
-
-        values = dict()
-        for option in self.item().save_schema():
-            values[option.get('name')] = option.get('default')
-
-        return values
-
     def item(self):
         """
         Returns the library item to be created
@@ -174,11 +119,12 @@ class SaveWidget(base.BaseWidget, object):
 
     def set_item(self, item):
         """
-        Setes the base item to be created
+        Sets the base item to be created
         :param item: LibraryItem
         """
 
         self._item = item
+
         self._title_lbl.setText(item.MenuName)
         self._icon_lbl.setPixmap(QPixmap(item.type_icon_path()))
         schema = item.save_schema()
@@ -193,6 +139,22 @@ class SaveWidget(base.BaseWidget, object):
             options_widget.validate()
         else:
             self._options_frame.setVisible(False)
+
+    def library_window(self):
+        """
+        Returns library widget window for the item
+        :return: LibraryWindow
+        """
+
+        return self._item.library_window()
+
+    def set_library_window(self, library_window):
+        """
+        Sets the library widget for the item
+        :param library_window: LibraryWindow
+        """
+
+        self._item.set_library_window(library_window)
 
     def name(self):
         """
@@ -234,6 +196,172 @@ class SaveWidget(base.BaseWidget, object):
 
         self._folder_widget.folder_line.setText(path)
 
+    def default_values(self):
+        """
+        Returns all the default values for the save fields
+        :return: dict
+        """
+
+        values = dict()
+        for option in self.item().save_schema():
+            values[option.get('name')] = option.get('default')
+
+        return values
+
+    def save_settings(self):
+        """
+        Saves the current state of the widget to disk
+        """
+
+        state = self._options_widget.options_state()
+        self.settings().set(self.item().__class__.__name__, {'SaveOptions': state})
+
+    def load_settings(self):
+        """
+        Returns the settings object for saving the state of the widget
+        """
+
+        option_settings = self.settings().get(self.item().__class__.__name__, {})
+        options = option_settings.get('SaveOptions', dict())
+        values = self.default_values()
+        if options:
+            for option in self.item().save_schema():
+                name = option.get('name')
+                persistent = option.get('persistent')
+                if not persistent and name in options:
+                    options[name] = values[name]
+            self._options_widget.set_state_from_options(options)
+
+    def save(self, path, icon_path, objects=None):
+        """
+        Saves the item with the given objects to the given disk location path
+        :param path: list(str)
+        :param icon_path: str
+        :param objects: str
+        """
+
+        item = self.item()
+        options = self._options_widget.values()
+
+        item.save(path=path, objects=objects, icon_path=icon_path, **options)
+
+        self.close()
+
+    def _save(self):
+        if not self.library_window():
+            return
+
+        try:
+            path = self.folder_path()
+            options = self._options_widget.values()
+            name = options.get('name')
+            objects = tp.Dcc.selected_nodes(full_path=True) or list()
+            if not path:
+                raise Exception('No folder selected. Please select a destination folder')
+            if not name:
+                raise Exception('No name specified. Please set a name before saving')
+
+            if not os.path.exists(self.icon_path()):
+                btn = self.show_thumbnail_capture_dialog()
+                if btn == QDialogButtonBox.Cancel:
+                    return
+
+            path += '/{}'.format(name)
+            icon_path = self.icon_path()
+
+            self.save(path=path, icon_path=icon_path, objects=objects)
+
+        except Exception as e:
+            messagebox.MessageBox.critical(self.library_window(), 'Error while saving', str(e))
+            qt.logger.error(traceback.format_exc())
+            raise
+
+        self.library_window().stack.slide_in_index(0)
+
+    def _on_options_changed(self):
+        """
+        Internal callback function that is called when an option value changes
+        """
+
+        self.save_settings()
+
+    def _on_save(self):
+        if not self.library_window():
+            return
+
+        self._save()
+
+        self.library_window().stack.slide_in_index(0)
+
+    def _on_cancel(self):
+        self.close()
+        self.library_window().stack.slide_in_index(0)
+
+
+class SaveWidget(BaseSaveWidget, object):
+    def __init__(self, item, settings, temp_path=None, parent=None):
+
+        self._script_job = None
+        self._sequence_path = None
+        self._icon_path = ''
+
+        super(SaveWidget, self).__init__(item=item, settings=settings, temp_path=temp_path, parent=parent)
+
+        self.create_sequence_widget()
+        self.update_thumbnail_size()
+
+        try:
+            self._on_selection_changed()
+            # self.set_script_job_enabled(True)
+        except NameError as e:
+            qt.logger.error('{} | {}'.format(e, traceback.format_exc()))
+
+    def ui(self):
+        super(SaveWidget, self).ui()
+
+        model_panel_layout = layouts.HorizontalLayout()
+        model_panel_layout.setContentsMargins(0, 0, 0, 0)
+        model_panel_layout.setSpacing(0)
+        thumbnail_layout = layouts.VerticalLayout()
+        thumbnail_layout.setContentsMargins(0, 0, 0, 0)
+        thumbnail_layout.setSpacing(0)
+        self._thumbnail_frame = QFrame()
+        self._thumbnail_frame.setMinimumSize(QSize(50, 50))
+        self._thumbnail_frame.setMaximumSize(QSize(150, 150))
+        self._thumbnail_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self._thumbnail_frame.setFrameShape(QFrame.NoFrame)
+        self._thumbnail_frame.setFrameShadow(QFrame.Plain)
+        self._thumbnail_frame.setLineWidth(0)
+        self._thumbnail_frame.setLayout(thumbnail_layout)
+        model_panel_layout.addWidget(self._thumbnail_frame)
+        self._thumbnail_btn = QPushButton()
+        self._thumbnail_btn.setMinimumSize(QSize(0, 0))
+        self._thumbnail_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self._thumbnail_btn.setMaximumSize(QSize(150, 150))
+        self._thumbnail_btn.setToolTip('Take snapshot')
+        self._thumbnail_btn.setStyleSheet(
+            'color: rgb(40, 40, 40);border: 0px solid rgb(0, 0, 0, 150);background-color: rgb(254, 255, 230, 200);')
+        self._thumbnail_btn.setIcon(tp.ResourcesMgr().icon('thumbnail'))
+        self._thumbnail_btn.setToolTip("""
+        Click to capture a thumbnail from the current viewport.\n
+        CTRL + Click to show the capture window for better framing
+        """)
+        thumbnail_layout.addWidget(self._thumbnail_btn)
+
+        self._extra_layout.addLayout(model_panel_layout)
+
+    def setup_signals(self):
+        super(SaveWidget, self).setup_signals()
+        self._thumbnail_btn.clicked.connect(self._on_thumbnail_capture)
+
+    def resizeEvent(self, event):
+        """
+        Overrides base QWidget resizeEvent function
+        :param event: QResizeEvent
+        """
+
+        self.update_thumbnail_size()
+
     def icon_path(self):
         """
         Returns the icon path to be used for the thumbnail
@@ -251,22 +379,6 @@ class SaveWidget(base.BaseWidget, object):
         self._thumbnail_btn.setIcon(icon)
         self._thumbnail_btn.setIconSize(QSize(200, 200))
         self._thumbnail_btn.setText('')
-
-    def library_window(self):
-        """
-        Returns library widget window for the item
-        :return: LibraryWindow
-        """
-
-        return self._item.library_window()
-
-    def set_library_window(self, library_window):
-        """
-        Sets the library widget for the item
-        :param library_window: LibraryWindow
-        """
-
-        self._item.set_library_window(library_window)
 
     def sequence_path(self):
         """
@@ -344,30 +456,6 @@ class SaveWidget(base.BaseWidget, object):
 
         if sequence:
             self.set_sequence_path(source)
-
-    def save_settings(self):
-        """
-        Saves the current state of the widget to disk
-        """
-
-        state = self._options_widget.options_state()
-        self.settings().set(self.item().__class__.__name__, {'SaveOptions': state})
-
-    def load_settings(self):
-        """
-        Returns the settings object for saving the state of the widget
-        """
-
-        option_settings = self.settings().get(self.item().__class__.__name__, {})
-        options = option_settings.get('SaveOptions', dict())
-        values = self.default_values()
-        if options:
-            for option in self.item().save_schema():
-                name = option.get('name')
-                persistent = option.get('persistent')
-                if not persistent and name in options:
-                    options[name] = values[name]
-            self._options_widget.set_state_from_options(options)
 
     def update_thumbnail_size(self):
         """
@@ -507,45 +595,3 @@ class SaveWidget(base.BaseWidget, object):
         file_dialog = QFileDialog(self, caption='Open Image', filter='Image Files (*.png *.jpg)')
         file_dialog.fileSelected.connect(self.set_thumbnail)
         file_dialog.exec_()
-
-    def _on_options_changed(self):
-        """
-        Internal callback function that is called when an option value changes
-        """
-
-        self.save_settings()
-
-    def _on_save(self):
-        if not self.library_window():
-            return
-
-        try:
-            path = self.folder_path()
-            options = self._options_widget.values()
-            name = options.get('name')
-            objects = tp.Dcc.selected_nodes(full_path=True) or list()
-            if not path:
-                raise Exception('No folder selected. Please select a destination folder')
-            if not name:
-                raise Exception('No name specified. Please set a name before saving')
-
-            if not os.path.exists(self.icon_path()):
-                btn = self.show_thumbnail_capture_dialog()
-                if btn == QDialogButtonBox.Cancel:
-                    return
-
-            path += '/{}'.format(name)
-            icon_path = self.icon_path()
-
-            self.save(path=path, icon_path=icon_path, objects=objects)
-
-        except Exception as e:
-            messagebox.MessageBox.critical(self.library_window(), 'Error while saving', str(e))
-            qt.logger.error(traceback.format_exc())
-            raise
-
-        self.library_window().stack.slide_in_index(0)
-
-    def _on_cancel(self):
-        self.close()
-        self.library_window().stack.slide_in_index(0)
