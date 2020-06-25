@@ -38,7 +38,8 @@ QLabel:disabled
  QCheckBox
 */
 
-QCheckBox {
+QCheckBox
+{
     background-color: transparent;
 }
 
@@ -64,6 +65,15 @@ QCheckBox:disabled
 {
     background: @disable_color;
 }
+
+/*
+QRadioButton
+*/
+
+/*QRadioButton*/
+/*{*/
+/*    background-color: transparent;*/
+/*}*/
 
 /*
  QPushButton
@@ -903,7 +913,7 @@ QWidget#topWindowWidget
 {
     border-top-left-radius: @window_dragger_rounded_corners@unit;
     border-top-right-radius: @window_dragger_rounded_corners@unit;
-    background-color: red;
+    background-color: @window_dragger_color;
 }
 
 /*
