@@ -183,6 +183,8 @@ class BaseButtonGroup(base.BaseWidget, object):
         else:
             self._button_group.addButton(new_btn, index)
 
+        new_btn.setChecked(True)
+
         self.main_layout.insertWidget(self.main_layout.count(), new_btn)
 
         return new_btn

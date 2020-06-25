@@ -174,7 +174,6 @@ class TearOffTabWidget(BaseTabWidget, object):
     undoOpen = Signal()
     undoClose = Signal()
 
-    # def __init__(self, item, window, menu_window, parent=None):
     def __init__(self, parent=None):
         super(TearOffTabWidget, self).__init__(parent=parent)
 

@@ -55,6 +55,7 @@ class ToolsetWidget(stack.StackItem, object):
         self._settings_button = None
         self._widgets = list()
         self._attacher = None
+        self._dev = kwargs.get('dev', False)
         title = self.CONFIG.data.get('label', '') if self.CONFIG else ''
         collapsable = kwargs.get('collapsable', True)
         show_item_icon = kwargs.get('show_item_icon', True)
@@ -76,6 +77,10 @@ class ToolsetWidget(stack.StackItem, object):
     @property
     def attacher(self):
         return self._attacher
+
+    @property
+    def dev(self):
+        return self._dev
 
     # =================================================================================================================
     # TO OVERRIDE

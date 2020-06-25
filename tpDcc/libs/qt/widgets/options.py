@@ -18,7 +18,8 @@ import tpDcc as tp
 from tpDcc.libs import qt
 from tpDcc.libs.python import python, name as name_utils
 from tpDcc.libs.qt.core import base, qtutils, mixin
-from tpDcc.libs.qt.widgets import layouts, label, buttons, dividers, spinbox, code, directory, lineedit, checkbox
+from tpDcc.libs.qt.widgets import layouts, label, buttons, dividers, spinbox, code, directory, lineedit
+from tpDcc.libs.qt.widgets import checkbox, combobox
 from tpDcc.libs.qt.widgets import color
 
 
@@ -351,6 +352,26 @@ class OptionList(QGroupBox, object):
         self._handle_parenting(color_option, parent)
         self._write_options(clear=False)
 
+    def add_combo(self, name='combo', value=None, parent=None):
+        """
+        Adds new color property to the group box
+        :param name: str
+        :param value: list
+        :param parent: QWidget
+        """
+
+        if value is None:
+            value = [[], []]
+
+        if not isinstance(value[0], list):
+            value = [value, []]
+
+        name = self._get_unique_name(name, parent)
+        combo_option = ComboOption(name=name, parent=parent, main_widget=self._parent)
+        combo_option.set_value(value)
+        self._handle_parenting(combo_option, parent)
+        self._write_options(clear=False)
+
     def add_script(self, name='script', value='', parent=None):
         """
         Adds new script property to the group box
@@ -673,8 +694,8 @@ class OptionList(QGroupBox, object):
         if not options:
             return
 
-        self.setHidden(True)
-        self.setUpdatesEnabled(False)
+        # self.setHidden(True)
+        # self.setUpdatesEnabled(False)
         self._supress_update = True
         self._disable_auto_expand = True
         self._auto_rename = False
@@ -742,26 +763,28 @@ class OptionList(QGroupBox, object):
                 else:
                     if option_type == 'script':
                         self.add_script(name, value, widget)
-                    if option_type == 'list':
+                    elif option_type == 'list':
                         self.add_list(name, value, widget)
-                    if option_type == 'dictionary':
+                    elif option_type == 'dictionary':
                         self.add_dictionary(name, value, widget)
-                    if option_type == 'nonedittext':
+                    elif option_type == 'nonedittext':
                         self.add_non_editable_text(name, value, widget)
-                    if option_type == 'directory':
+                    elif option_type == 'directory':
                         self.add_directory(name, value, widget)
-                    if option_type == 'file':
+                    elif option_type == 'file':
                         self.add_file(name, value, widget)
-                    if option_type == 'color':
+                    elif option_type == 'color':
                         self.add_color(name, value, widget)
+                    elif option_type == 'combo':
+                        self.add_combo(name, value, widget)
                     else:
                         self.add_custom(option_type, name, value, widget)
         except Exception:
             qt.logger.error(traceback.format_exc())
         finally:
             self._disable_auto_expand = False
-            self.setVisible(True)
-            self.setUpdatesEnabled(True)
+            # self.setVisible(True)
+            # self.setUpdatesEnabled(True)
             self._supress_update = False
             self._auto_rename = True
 
@@ -962,7 +985,6 @@ class OptionList(QGroupBox, object):
         widget_to_copy = self._parent.is_widget_to_copy()
         if widget_to_copy.task_option_type == 'group':
             widget_to_copy.copy_to(self)
-    # endregion
 
 
 class OptionsWidget(base.BaseWidget):
@@ -1137,9 +1159,8 @@ class OptionsWidget(base.BaseWidget):
         Function that updates the current options of the selected task
         """
 
-        self._options_list.clear_widgets()
-
         if not self._option_object:
+            self._options_list.clear_widgets()
             qt.logger.warning('Impossible to update options because option object is not defined!')
             return
 
@@ -1711,7 +1732,6 @@ class Option(base.BaseWidget, object):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self._on_item_menu)
         self._context_menu = None
-        self._create_context_menu()
 
     def get_main_layout(self):
         main_layout = layouts.HorizontalLayout()
@@ -1866,6 +1886,9 @@ class Option(base.BaseWidget, object):
     def _on_item_menu(self, pos):
         if not self._parent or not self._parent.is_edit_mode():
             return
+
+        if not self._context_menu:
+            self._create_context_menu()
 
         self._context_menu.exec_(self.mapToGlobal(pos))
 
@@ -2171,6 +2194,33 @@ class ColorOption(Option, object):
 
     def get_option_widget(self):
         return GetColorWidget(name=self._name)
+
+    def get_name(self):
+        name = self._option_widget.get_name()
+        return name
+
+    def set_name(self, name):
+        self._option_widget.set_name(name)
+
+    def get_value(self):
+        return self._option_widget.get_value()
+
+    def set_value(self, value):
+        self._option_widget.set_value(value)
+
+    def _setup_option_widget_value_change(self):
+        self._option_widget.valueChanged.connect(self._on_value_changed)
+
+
+class ComboOption(Option, object):
+    def __init__(self, name, parent, main_widget):
+        super(ComboOption, self).__init__(name=name, parent=parent, main_widget=main_widget)
+
+    def get_option_type(self):
+        return 'combo'
+
+    def get_option_widget(self):
+        return ComboWidget(name=self._name)
 
     def get_name(self):
         name = self._option_widget.get_name()
@@ -2888,3 +2938,54 @@ class GetColorWidget(base.BaseWidget, object):
 
     def setup_signals(self):
         self._color_widget.colorChanged.connect(self.valueChanged.emit)
+
+
+class ComboWidget(base.BaseWidget, object):
+    valueChanged = Signal(object)
+
+    def __init__(self, name, parent=None):
+        self._name = name
+        super(ComboWidget, self).__init__(parent=parent)
+
+    def get_main_layout(self):
+        main_layout = layouts.HorizontalLayout()
+        main_layout.setSpacing(2)
+        main_layout.setContentsMargins(2, 2, 2, 2)
+
+        return main_layout
+
+    def ui(self):
+        super(ComboWidget, self).ui()
+
+        self._label = label.BaseLabel(self._name)
+        self._label.setAlignment(Qt.AlignRight)
+        self._label.setMinimumWidth(75)
+        self._label.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self._combo_widget = combobox.BaseComboBox()
+        self._combo_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.main_layout.addWidget(self._label)
+        self.main_layout.addWidget(self._combo_widget)
+
+    def get_value(self):
+        items_text = [self._combo_widget.itemText(i) for i in range(self._combo_widget.count())]
+        return [items_text, [self._combo_widget.currentIndex(), self._combo_widget.currentText()]]
+
+    def set_value(self, value):
+        items = value[0]
+        current_list = value[1] if len(value) > 1 else None
+        for value in items:
+            self._combo_widget.addItem(value)
+        if current_list:
+            index = current_list[0]
+            if index >= 0:
+                self._combo_widget.setCurrentIndex(index)
+
+    def get_name(self):
+        return self._label.text()
+
+    def set_name(self, value):
+        self._label.setText(value)
+
+    def setup_signals(self):
+        self._combo_widget.currentIndexChanged.connect(self.valueChanged.emit)

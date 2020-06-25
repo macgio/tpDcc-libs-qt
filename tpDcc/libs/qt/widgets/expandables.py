@@ -11,8 +11,8 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
+import tpDcc as tp
 from tpDcc.libs.python import python
-
 from tpDcc.libs.qt.core import base
 from tpDcc.libs.qt.widgets import dividers
 
@@ -674,7 +674,7 @@ class ExpanderWidget(QScrollArea, object):
     def __init__(self, parent=None):
         super(ExpanderWidget, self).__init__(parent=parent)
 
-        self._rolloutStyle = ExpanderStyles.Rounded
+        self._rolloutStyle = ExpanderStyles.Maya if tp.is_maya() else ExpanderStyles.Rounded
         self._dragDropMode = ExpanderDragDropModes.NoDragDrop
         self._scrolling = False
         self._scrollInitY = 0
