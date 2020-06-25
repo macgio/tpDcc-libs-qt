@@ -26,21 +26,26 @@ def theme_mixin(cls):
 
     def my__init__(self, *args, **kwargs):
         original_init__(self, *args, **kwargs)
-        current_theme = self.theme()
-        if current_theme:
-            self.setStyleSheet(current_theme.stylesheet())
+
+        # TODO: This is SUPER slow. We cannot use it deliberately. We should add some kind of class variable
+        # TODO: to enable disable this functionality in a by wigdet level. By default, disable.
+
+        # current_theme = self.theme()
+        # if current_theme:
+        #     self.setStyleSheet(current_theme.stylesheet())
 
     def polish(self):
         self.style().polish(self)
 
     def theme(self):
         found_theme = None
-        top_widget = self
-        while top_widget.parentWidget():
-            top_widget = top_widget.parentWidget()
-            if hasattr(top_widget, 'theme') and callable(getattr(top_widget, 'theme')):
-                found_theme = top_widget.theme()
-                break
+
+        # top_widget = self
+        # while top_widget.parentWidget():
+        #     top_widget = top_widget.parentWidget()
+        #     if hasattr(top_widget, 'theme') and callable(getattr(top_widget, 'theme')):
+        #         found_theme = top_widget.theme()
+        #         break
 
         if not found_theme:
             found_theme = core_theme.Theme()
