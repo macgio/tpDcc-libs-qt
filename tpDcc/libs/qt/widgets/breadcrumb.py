@@ -81,6 +81,7 @@ class BreadcrumbWidget(base.BaseWidget, object):
             self.main_layout.removeWidget(sep)
             sep.setVisible(False)
             sep.deleteLater()
+        python.clear_list(self._separators)
 
         for index, data_dict in enumerate(data_list):
             self.add_item(data_dict, index)
