@@ -51,7 +51,7 @@ if QT_AVAILABLE:
             PYSIDEUIC_AVAILABLE = False
         from PySide2.QtCore import QMetaObject
         from PySide2.QtUiTools import QUiLoader
-    else:
+    elif __binding__ == 'PySide':
         try:
             import shiboken
         except ImportError:
@@ -75,6 +75,9 @@ if QT_AVAILABLE:
                 from tpDcc.libs.qt.externals.pysideutils.QtUiTools import QUiLoader
             except ImportError:
                 UILOADER_AVAILABLE = False
+    else:
+        UILOADER_AVAILABLE = False
+        PYSIDEUIC_AVAILABLE = False
 
 import tpDcc
 from tpDcc.libs import qt

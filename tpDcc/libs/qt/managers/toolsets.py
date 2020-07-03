@@ -339,8 +339,9 @@ class ToolsetsManager(object):
             if tool_name not in paths_to_register:
                 paths_to_register[tool_name] = list()
 
-            if pkg_loader.filename not in tools_paths_to_load:
-                tools_paths_to_load.append(pkg_loader.filename)
+            package_filename = pkg_loader.filename if python.is_python2() else os.path.dirname(pkg_loader.path)
+            if package_filename not in tools_paths_to_load:
+                tools_paths_to_load.append(package_filename)
 
         # Find toolset widgets are located
         if tools_paths_to_load:
