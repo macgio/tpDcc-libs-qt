@@ -115,5 +115,5 @@ class HistoryFileWidget(base.DirectoryWidget, object):
 
     def set_data_class(self, data_class_instance):
         self._data_class = data_class_instance
-        if self.directory:
-            self._data_class.set_directory(self.directory)
+        if self._directory:
+            self._data_class.set_directory(self._directory)

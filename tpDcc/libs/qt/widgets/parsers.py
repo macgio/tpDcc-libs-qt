@@ -5,12 +5,16 @@
 Module that contains implementation for custom PySide/PyQt windows
 """
 
-from HTMLParser import HTMLParser
-
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
+from tpDcc.libs.python import python
 from tpDcc.libs.qt.widgets import gif
+
+if python.is_python2():
+    from HTMLParser import HTMLParser
+else:
+    from html.parser import HTMLParser
 
 
 class WidgetsFromTextParser(HTMLParser, object):

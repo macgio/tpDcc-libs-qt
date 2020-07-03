@@ -402,7 +402,7 @@ class SelectFile(base.DirectoryWidget, object):
             '{0}:'.format(self._label_text))
         self._file_line = FolderEditLine()
         self._file_line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        if os.path.exists(self._directory):
+        if self._directory and os.path.exists(self._directory):
             self._file_line.setText(self._directory)
 
         if self._use_icon:
