@@ -17,9 +17,17 @@ from Qt.QtGui import *
 
 import tpDcc as tp
 from tpDcc.libs import qt
-from tpDcc.libs.python import python, name as name_utils
+from tpDcc.libs.python import name as name_utils
 from tpDcc.libs.qt.core import qtutils
 from tpDcc.libs.qt.widgets import layouts
+from tpDcc.libs.qt.widgets.options import factory
+
+
+class GroupStyles(object):
+    Boxed = 0
+    Rounded = 1
+    Square = 2
+    Maya = 3
 
 
 class OptionList(QGroupBox, object):
@@ -140,264 +148,6 @@ class OptionList(QGroupBox, object):
         self._has_first_group = True
 
         return group
-
-    def add_custom(self, option_type, name, value=None, parent=None, **kwargs):
-        """
-        Function that is called when a custom widget is added (is not a default one)
-        :param option_type: str
-        :param name: str
-        :param value:
-        :param parent:
-        """
-
-        pass
-
-    def add_title(self, name='title', parent=None):
-        """
-        Adds new title property to the group box
-        :param name: str
-        :param parent: QWidget
-        :param write_options: bool
-        """
-
-        if type(name) == bool:
-            name = 'title'
-
-        name = self._get_unique_name(name, parent)
-        title = TitleOption(name=name, parent=parent, main_widget=self._parent)
-        self._handle_parenting(title, parent)
-        self._write_options(clear=False)
-
-    def add_boolean(self, name='boolean', value=False, parent=None):
-        """
-        Adds new boolean property to the group box
-        :param name: str
-        :param value: bool, default value of the property
-        :param parent: Option
-        :param write_options: bool
-        """
-
-        if type(name) == bool:
-            name = 'boolean'
-
-        name = self._get_unique_name(name, parent)
-        bool_option = BooleanOption(name=name, parent=parent, main_widget=self._parent)
-        bool_option.set_value(value)
-        self._handle_parenting(bool_option, parent)
-        self._write_options(clear=False)
-
-    def add_float(self, name='float', value=0.0, parent=None):
-        """
-        Adds new float property to the group box
-        :param name: str
-        :param value: float, default value of the property
-        :param parent: Option
-        """
-
-        if type(name) == bool:
-            name = 'float'
-
-        name = self._get_unique_name(name, parent)
-        float_option = FloatOption(name=name, parent=parent, main_widget=self._parent)
-        float_option.set_value(value)
-        self._handle_parenting(float_option, parent)
-        self._write_options(clear=False)
-
-    def add_integer(self, name='integer', value=0.0, parent=None):
-        """
-        Adds new integer property to the group box
-        :param name: str
-        :param value: int, default value of the property
-        :param parent: QWidget
-        """
-
-        if type(name) == bool:
-            name = 'integer'
-
-        name = self._get_unique_name(name, parent)
-        int_option = IntegerOption(name=name, parent=parent, main_widget=self._parent)
-        int_option.set_value(value)
-        self._handle_parenting(int_option, parent)
-        self._write_options(clear=False)
-
-    def add_list(self, name='list', value=None, parent=None):
-        """
-        Adds new list property to the group box
-        :param name: str
-        :param value: list(dict, list)
-        :param parent: QWidget
-        """
-
-        if type(name) == bool:
-            name = 'list'
-
-        value = python.force_list(value)
-
-        name = self._get_unique_name(name, parent)
-        list_option = ListOption(name=name, parent=parent, main_widget=self._parent)
-        list_option.set_value(value)
-        self._handle_parenting(list_option, parent)
-        self._write_options(False)
-
-    def add_dictionary(self, name='dictionary', value=[{}, []], parent=None):
-        """
-        Adds new dictionary property to the group box
-        :param name: str
-        :param value: list(dict, list)
-        :param parent: QWidget
-        """
-
-        if type(name) == bool:
-            name = 'dictionary'
-
-        if type(value) == type(dict):
-            keys = dict.keys()
-            if keys:
-                keys.sort()
-            value = [dict, keys]
-
-        name = self._get_unique_name(name, parent)
-        dict_option = DictOption(name=name, parent=parent, main_widget=self._parent)
-        dict_option.set_value(value)
-        self._handle_parenting(dict_option, parent)
-        self._write_options(False)
-
-    def add_string(self, name='string', value='', parent=None):
-        """
-        Adds new string property to the group box
-        :param name: str
-        :param value: str, default value of the property
-        :param parent: QWidget
-        """
-
-        if type(name) == bool:
-            name = 'string'
-
-        name = self._get_unique_name(name, parent)
-        string_option = TextOption(name=name, parent=parent, main_widget=self._parent)
-        string_option.set_value(value)
-        self._handle_parenting(string_option, parent)
-        self._write_options(clear=False)
-
-    def add_directory(self, name='directory', value='', parent=None):
-        """
-        Adds new directory property to the group box
-        :param name: str
-        :param value: str, default value of the property
-        :param parent: QWidget
-        """
-
-        if type(name) == bool:
-            name = 'directory'
-
-        name = self._get_unique_name(name, parent)
-        directory_option = DirectoryOption(name=name, parent=parent, main_widget=self._parent)
-        directory_option.set_value(value)
-        self._handle_parenting(directory_option, parent)
-        self._write_options(clear=False)
-
-    def add_file(self, name='file', value='', parent=None):
-        """
-        Adds new file property to the group box
-        :param name: str
-        :param value: str, default value of the property
-        :param parent: QWidget
-        """
-
-        if type(name) == bool:
-            name = 'file'
-
-        name = self._get_unique_name(name, parent)
-        file_option = FileOption(name=name, parent=parent, main_widget=self._parent)
-        file_option.set_value(value)
-        self._handle_parenting(file_option, parent)
-        self._write_options(clear=False)
-
-    def add_non_editable_text(self, name='string', value='', parent=None):
-        """
-        Adds new non editable string property to the group box
-        :param name: str
-        :param value: str, default value of the property
-        :param parent: QWidget
-        """
-
-        name = self._get_unique_name(name, parent)
-        string_option = NonEditTextOption(name=name, parent=parent, main_widget=self._parent)
-        string_option.set_value(value)
-        self._handle_parenting(string_option, parent)
-        self._write_options(clear=False)
-
-    def add_color(self, name='color', value=None, parent=None):
-        """
-        Adds new color property to the group box
-        :param name: str
-        :param value: list
-        :param parent: QWidget
-        """
-
-        if value is None:
-            value = [1.0, 1.0, 1.0, 1.0]
-
-        name = self._get_unique_name(name, parent)
-        color_option = ColorOption(name=name, parent=parent, main_widget=self._parent)
-        color_option.set_value(value)
-        self._handle_parenting(color_option, parent)
-        self._write_options(clear=False)
-
-    def add_vector3_float(self, name='vector3f', value=None, parent=None):
-        """
-        Adds new vector3 property to the group box
-        :param name: str
-        :param value: list
-        :param parent: QWidget
-        """
-
-        if value is None:
-            value = [0.0, 0.0, 0.0]
-
-        name = self._get_unique_name(name, parent)
-        color_option = Vector3FloatOption(name=name, parent=parent, main_widget=self._parent)
-        color_option.set_value(value)
-        self._handle_parenting(color_option, parent)
-        self._write_options(clear=False)
-
-    def add_combo(self, name='combo', value=None, parent=None):
-        """
-        Adds new color property to the group box
-        :param name: str
-        :param value: list
-        :param parent: QWidget
-        """
-
-        if value is None:
-            value = [[], []]
-
-        if not isinstance(value[0], list):
-            value = [value, []]
-
-        name = self._get_unique_name(name, parent)
-        combo_option = ComboOption(name=name, parent=parent, main_widget=self._parent)
-        combo_option.set_value(value)
-        self._handle_parenting(combo_option, parent)
-        self._write_options(clear=False)
-
-    def add_script(self, name='script', value='', parent=None):
-        """
-        Adds new script property to the group box
-        :param name: str
-        :param value: bool, default value of the property
-        :param parent: QWidget
-        """
-
-        if type(name) == bool:
-            name = 'script'
-
-        name = self._get_unique_name(name, parent)
-        button = ScriptOption(name=name, parent=parent, main_widget=self._parent)
-        button.set_option_object(self._option_object)
-        button.set_value(value)
-        self._handle_parenting(button, parent)
-        self._write_options(False)
 
     def update_current_widget(self, widget=None):
         """
@@ -532,7 +282,6 @@ class OptionList(QGroupBox, object):
         self.editModeChanged.emit(flag)
 
     def _create_context_menu(self):
-        from tpDcc.libs.qt.widgets.options import factory
 
         self._context_menu = QMenu()
         self._context_menu.setTearOffEnabled(True)
@@ -592,24 +341,56 @@ class OptionList(QGroupBox, object):
         clear_action = QAction(clear_icon, 'Clear', self._context_menu)
         self._context_menu.addAction(clear_action)
 
-        factory_inst = factory.OptionsFactorySingleton()
-
-        add_string_action.triggered.connect(partial(factory_inst.add_option, 'string'))
-        add_directory_action.triggered.connect(partial(factory_inst.add_option, 'directory'))
-        add_file_action.triggered.connect(partial(factory_inst.add_option, 'file'))
-        add_integer_action.triggered.connect(partial(factory_inst.add_option, 'integer'))
-        add_float_action.triggered.connect(partial(factory_inst.add_option, 'float'))
-        add_bool_action.triggered.connect(partial(factory_inst.add_option, 'bool'))
-        add_list_action.triggered.connect(partial(factory_inst.add_option, 'list'))
-        add_dict_action.triggered.connect(partial(factory_inst.add_option, 'dict'))
-        add_group_action.triggered.connect(partial(factory_inst.add_option, 'group'))
-        add_title_action.triggered.connect(partial(factory_inst.add_option, 'title'))
-        add_color_action.triggered.connect(partial(factory_inst.add_option, 'color'))
-        add_vector3f_action.triggered.connect(partial(factory_inst.add_option, 'vector3f'))
-        add_script_action.triggered.connect(partial(factory_inst.add_option, 'script'))
-        clear_action.triggered.connect(_clear_action)
+        add_string_action.triggered.connect(partial(self._add_option, 'string'))
+        add_directory_action.triggered.connect(partial(self._add_option, 'directory'))
+        add_file_action.triggered.connect(partial(self._add_option, 'file'))
+        add_integer_action.triggered.connect(partial(self._add_option, 'integer'))
+        add_float_action.triggered.connect(partial(self._add_option, 'float'))
+        add_bool_action.triggered.connect(partial(self._add_option, 'boolean'))
+        add_list_action.triggered.connect(partial(self._add_option, 'list'))
+        add_dict_action.triggered.connect(partial(self._add_option, 'dictionary'))
+        add_group_action.triggered.connect(self.add_group)
+        add_title_action.triggered.connect(partial(self._add_option, 'title'))
+        add_color_action.triggered.connect(partial(self._add_option, 'color'))
+        add_vector3f_action.triggered.connect(partial(self._add_option, 'vector3f'))
+        add_script_action.triggered.connect(partial(self._add_option, 'script'))
+        clear_action.triggered.connect(self._clear_action)
 
         return create_menu
+
+    def _add_option(self, option_type, name=None, value=None, parent=None):
+        if option_type is None:
+            return
+
+        if option_type == 'group':
+            new_option = self.add_group('group')
+        else:
+            option_object = self.get_option_object()
+            name = self._get_unique_name(name or option_type, parent=parent)
+            new_option = factory.OptionsFactorySingleton().add_option(
+                option_type, name=name, value=value, parent=parent,
+                main_widget=self._parent, option_object=option_object)
+            if new_option:
+                self._handle_parenting(new_option, parent=parent)
+                self._write_options(clear=False)
+            else:
+                qt.logger.warning('Option of type "{}" is not supported!'.format(option_type))
+
+        return new_option
+
+    def _get_unique_name(self, name, parent=None):
+        """
+        Internal function that returns unique name for the new group
+        :param name: str
+        :param parent: QWidget
+        :return: str
+        """
+
+        found = self._get_widget_names(parent)
+        while name in found:
+            name = name_utils.increment_last_number(name)
+
+        return name
 
     def _get_widget_names(self, parent=None):
         """
@@ -710,8 +491,6 @@ class OptionList(QGroupBox, object):
         if not options:
             return
 
-        # self.setHidden(True)
-        # self.setUpdatesEnabled(False)
         self._supress_update = True
         self._disable_auto_expand = True
         self._auto_rename = False
@@ -720,12 +499,14 @@ class OptionList(QGroupBox, object):
             for option in options:
                 option_type = None
                 if type(option[1]) == list:
-                    if option[0] == 'list':
-                        value = option[1]
-                        option_type = 'list'
-                    else:
-                        value = option[1][0]
-                        option_type = option[1][1]
+                    # if option[0] == 'list':
+                    #     value = option[1]
+                    #     option_type = 'list'
+                    # else:
+                    #     value = option[1][0]
+                    #     option_type = option[1][1]
+                    value = option[1][0]
+                    option_type = option[1][1]
                 else:
                     value = option[1]
 
@@ -761,42 +542,21 @@ class OptionList(QGroupBox, object):
 
                 if not option_type and not is_group:
                     if type(value) == unicode or type(value) == str:
-                        self.add_string(name, value, widget)
+                        self._add_option('string', name, value, widget)
                     elif type(value) == float:
-                        self.add_float(name, value, widget)
+                        self._add_option('float', name, value, widget)
                     elif type(option[1]) == int:
-                        self.add_integer(name, value, widget)
+                        self._add_option('integer', name, value, widget)
                     elif type(option[1]) == bool:
-                        self.add_boolean(name, value, widget)
+                        self._add_option('boolean', name, value, widget)
                     elif type(option[1]) == dict:
-                        self.add_dictionary(name, [value, []], widget)
+                        self._add_option('dictionary', name, [value, []], widget)
                     elif type(option[1]) == list:
-                        self.add_list(name, value, widget)
+                        self._add_option('list', name, value, widget)
                     elif option[1] is None:
-                        self.add_title(name, widget)
-                    else:
-                        self.add_custom(name, value, widget)
+                        self._add_option('title', name, parent=widget)
                 else:
-                    if option_type == 'script':
-                        self.add_script(name, value, widget)
-                    elif option_type == 'list':
-                        self.add_list(name, value, widget)
-                    elif option_type == 'dictionary':
-                        self.add_dictionary(name, value, widget)
-                    elif option_type == 'nonedittext':
-                        self.add_non_editable_text(name, value, widget)
-                    elif option_type == 'directory':
-                        self.add_directory(name, value, widget)
-                    elif option_type == 'file':
-                        self.add_file(name, value, widget)
-                    elif option_type == 'color':
-                        self.add_color(name, value, widget)
-                    elif option_type == 'vector3f':
-                        self.add_vector3_float(name, value, widget)
-                    elif option_type == 'combo':
-                        self.add_combo(name, value, widget)
-                    else:
-                        self.add_custom(option_type, name, value, widget)
+                    self._add_option(option_type, name, value, widget)
         except Exception:
             qt.logger.error(traceback.format_exc())
         finally:
@@ -902,7 +662,6 @@ class OptionList(QGroupBox, object):
                 widget_type = widget.get_option_type()
                 name = self._get_path(widget)
                 value = widget.get_value()
-
                 self._option_object.add_option(name, value, None, widget_type)
 
         self.valueChanged.emit()
@@ -1232,3 +991,225 @@ class OptionListGroup(OptionList, object):
 
     def _on_expand_updated(self, value):
         self.updateValues.emit(False)
+
+
+class OptionGroup(QGroupBox, object):
+    expand = Signal(bool)
+
+    def __init__(self, name, parent=None):
+        super(OptionGroup, self).__init__(parent)
+
+        if tp.is_maya():
+            if tp.Dcc.get_version() < 2016:
+                # self.setFrameStyle(self.Panel | self.Raised)
+                palette = self.palette()
+                palette.setColor(self.backgroundRole(), QColor(80, 80, 80))
+                self.setAutoFillBackground(True)
+                self.setPalette(palette)
+            # else:
+            #     self.setFrameStyle(self.NoFrame)
+
+        if tp.Dcc.get_name() == tp.Dccs.Maya:
+            self._rollout_style = GroupStyles.Maya
+        else:
+            self._rollout_style = GroupStyles.Square
+
+        self._expanded = True
+        self._clicked = False
+        self._collapsible = True
+
+        self.close_height = 28
+        self.setMinimumHeight(self.close_height)
+        self.background_shade = 80
+
+        self.main_layout = layouts.VerticalLayout()
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
+        self.setLayout(self.main_layout)
+
+        self.child_layout = layouts.VerticalLayout()
+        self.child_layout.setContentsMargins(0, 2, 0, 3)
+        self.child_layout.setSpacing(0)
+        self.child_layout.setAlignment(Qt.AlignTop)
+
+        self.header_layout = layouts.HorizontalLayout()
+
+        self.main_layout.addSpacing(4)
+        self.main_layout.addLayout(self.child_layout)
+
+        self.setObjectName(name)
+        self.setTitle(name)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton and self._expand_collapse_rect().contains(event.pos()):
+            self._clicked = True
+            event.accept()
+        else:
+            event.ignore()
+
+    def mouseReleaseEvent(self, event):
+        if self._clicked and self._expand_collapse_rect().contains(event.pos()):
+            self.toggle_collapsed()
+            self.expand.emit(False)
+            event.accept()
+        else:
+            event.ignore()
+        self._clicked = False
+
+    def mouseMoveEvent(self, event):
+        event.ignore()
+
+    def paintEvent(self, event):
+        painter = QPainter()
+        painter.begin(self)
+        painter.setRenderHint(painter.Antialiasing)
+        font = painter.font()
+        font.setBold(True)
+        painter.setFont(font)
+        x = self.rect().x()
+        y = self.rect().y()
+        w = self.rect().width() - 1
+        h = self.rect().height() - 1
+        r = 8
+        if self._rollout_style == GroupStyles.Rounded:
+            painter.drawText(x + 33, y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
+            self._draw_triangle(painter, x, y)
+            pen = QPen(self.palette().color(QPalette.Light))
+            pen.setWidthF(0.6)
+            painter.setPen(pen)
+            painter.drawRoundedRect(x + 1, y + 1, w - 1, h - 1, r, r)
+            pen.setColor(self.palette().color(QPalette.Shadow))
+            painter.setPen(pen)
+            painter.drawRoundedRect(x, y, w - 1, h - 1, r, r)
+        if self._rollout_style == GroupStyles.Square:
+            painter.drawText(x + 33, y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
+            self._draw_triangle(painter, x, y)
+            pen = QPen(self.palette().color(QPalette.Light))
+            pen.setWidthF(0.6)
+            painter.setPen(pen)
+            painter.drawRect(x + 1, y + 1, w - 1, h - 1)
+            pen.setColor(self.palette().color(QPalette.Shadow))
+            painter.setPen(pen)
+            painter.drawRect(x, y, w - 1, h - 1)
+        if self._rollout_style == GroupStyles.Maya:
+            # painter.drawText(
+            # x + (45 if self.dragDropMode() == ExpanderDragDropModes.InternalMove else 25),
+            # y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
+            painter.drawText(x + 25, y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
+            painter.setRenderHint(QPainter.Antialiasing, False)
+            self._draw_triangle(painter, x, y)
+            header_height = 20
+            header_rect = QRect(x + 1, y + 1, w - 1, header_height)
+            header_rect_shadow = QRect(x - 1, y - 1, w + 1, header_height + 2)
+            pen = QPen(self.palette().color(QPalette.Light))
+            pen.setWidthF(0.4)
+            painter.setPen(pen)
+            painter.drawRect(header_rect)
+            painter.fillRect(header_rect, QColor(255, 255, 255, 18))
+            pen.setColor(self.palette().color(QPalette.Dark))
+            painter.setPen(pen)
+            painter.drawRect(header_rect_shadow)
+            if not self.is_collapsed():
+                pen = QPen(self.palette().color(QPalette.Dark))
+                pen.setWidthF(0.8)
+                painter.setPen(pen)
+                offSet = header_height + 3
+                body_rect = QRect(x, y + offSet, w, h - offSet)
+                body_rect_shadow = QRect(x + 1, y + offSet, w + 1, h - offSet + 1)
+                painter.drawRect(body_rect)
+                pen.setColor(self.palette().color(QPalette.Light))
+                pen.setWidthF(0.4)
+                painter.setPen(pen)
+                painter.drawRect(body_rect_shadow)
+        elif self._rollout_style == GroupStyles.Boxed:
+            if self.isCollapsed():
+                arect = QRect(x + 1, y + 9, w - 1, 4)
+                brect = QRect(x, y + 8, w - 1, 4)
+                text = '+'
+            else:
+                arect = QRect(x + 1, y + 9, w - 1, h - 9)
+                brect = QRect(x, y + 8, w - 1, h - 9)
+                text = '-'
+            pen = QPen(self.palette().color(QPalette.Light))
+            pen.setWidthF(0.6)
+            painter.setPen(pen)
+            painter.drawRect(arect)
+            pen.setColor(self.palette().color(QPalette.Shadow))
+            painter.setPen(pen)
+            painter.drawRect(brect)
+            painter.setRenderHint(painter.Antialiasing, False)
+            painter.setBrush(self.palette().color(QPalette.Window).darker(120))
+            painter.drawRect(x + 10, y + 1, w - 20, 16)
+            painter.drawText(x + 16, y + 1, w - 32, 16, Qt.AlignLeft | Qt.AlignVCenter, text)
+            painter.drawText(x + 10, y + 1, w - 20, 16, Qt.AlignCenter, self.title())
+        # if self.dragDropMode():
+        #     rect = self.dragDropRect()
+        #     l = rect.left()
+        #     r = rect.right()
+        #     cy = rect.center().y()
+        #     pen = QPen(self.palette().color(self.isCollapsed() and QPalette.Shadow or QPalette.Mid))
+        #     painter.setPen(pen)
+        #     for y in (cy - 3, cy, cy + 3):
+        #         painter.drawLine(l, y, r, y)
+        painter.end()
+
+    def is_collapsible(self):
+        return self._collapsible
+
+    def is_collapsed(self):
+        return not self._expanded
+
+    def set_collapsed(self, state):
+        if self.is_collapsible():
+            self._expanded = not state
+            if state:
+                self.setMinimumHeight(22)
+                self.setMaximumHeight(22)
+            else:
+                self.setMinimumHeight(0)
+                self.setMaximumHeight(1000000)
+
+    def toggle_collapsed(self):
+        self.set_collapsed(not self.is_collapsed())
+
+    def expand_group(self):
+        self.set_collapsed(False)
+
+    def collapse_group(self):
+        self.set_collapsed(True)
+
+    def set_inset_dark(self):
+        value = self.background_shade
+        value -= 15
+        if tp.Dcc.get_name() == tp.Dccs.Maya:
+            if tp.Dcc.get_version() < 2016:
+                self.setFrameStyle(self.Panel | self.Sunken)
+
+        palette = self.palette()
+        palette.setColor(self.backgroundRole(), QColor(value, value, value))
+        self.setAutoFillBackground(True)
+        self.setPalette(palette)
+
+    def _draw_triangle(self, painter, x, y):
+        if self._rollout_style == GroupStyles.Maya:
+            brush = QBrush(QColor(255, 0, 0, 160), Qt.SolidPattern)
+        else:
+            brush = QBrush(QColor(255, 255, 255, 160), Qt.SolidPattern)
+        if not self.is_collapsed():
+            tl, tr, tp = QPoint(x + 9, y + 8), QPoint(x + 19, y + 8), QPoint(x + 14, y + 13)
+            points = [tl, tr, tp]
+            triangle = QPolygon(points)
+        else:
+            tl, tr, tp = QPoint(x + 11, y + 5), QPoint(x + 16, y + 10), QPoint(x + 11, y + 15)
+            points = [tl, tr, tp]
+            triangle = QPolygon(points)
+        current_pen = painter.pen()
+        current_brush = painter.brush()
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(brush)
+        painter.drawPolygon(triangle)
+        painter.setPen(current_pen)
+        painter.setBrush(current_brush)
+
+    def _expand_collapse_rect(self):
+        return QRect(0, 0, self.width(), 20)
