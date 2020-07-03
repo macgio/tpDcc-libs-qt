@@ -8,7 +8,6 @@ Module that contains generic functionality when dealing with projects
 from __future__ import print_function, division, absolute_import
 
 import os
-import logging
 
 from Qt.QtCore import *
 from Qt.QtWidgets import *
@@ -21,14 +20,13 @@ from tpDcc.core import project as core_project
 from tpDcc.core import consts
 from tpDcc.libs.qt.widgets import grid, search, directory, dividers
 
-LOGGER = logging.getLogger()
-
 
 def get_project_by_name(projects_path, project_name, project_class=None):
     """
     Returns a project located in the given path and with the given name (if exists)
     :param projects_path: str
     :param project_name: str
+    :param project_class: cls
     :return: Project or None
     """
 
@@ -48,6 +46,7 @@ def get_projects(projects_path, project_class=None):
     """
     Returns all projects located in given path
     :param projects_path: str
+    :param project_class: cls
     :return: list(Project)
     """
 
@@ -70,15 +69,15 @@ def get_projects(projects_path, project_class=None):
     return projects_found
 
 
-class Project(QWidget, core_project.ProjectData):
+class Project(QWidget):
     projectOpened = Signal(object)
     projectRemoved = Signal()
     projectImageChanged = Signal(str)
 
-    def __init__(self, name, project_path, settings=None, options=None, parent=None):
-        core_project.ProjectData.__init__(self, name=name, project_path=project_path,
-                                          settings=settings, options=options)
-        QWidget.__init__(self, parent=parent)
+    def __init__(self, project_data, parent=None):
+        super(Project, self).__init__(parent)
+
+        self._project_data = project_data
 
         self.setMaximumWidth(160)
         self.setMaximumHeight(200)
@@ -107,6 +106,73 @@ class Project(QWidget, core_project.ProjectData):
         widget_layout.addWidget(project_lbl)
 
         self.setup_signals()
+
+    # ============================================================================================================
+    # PROPERTIES
+    # ============================================================================================================
+
+    @property
+    def name(self):
+        return self._project_data.name
+
+    @property
+    def path(self):
+        return self._project_data.path
+
+    @property
+    def full_path(self):
+        return self._project_data.full_path
+
+    @property
+    def settings(self):
+        return self._project_data.settings
+
+    @property
+    def project_data(self):
+        return self._project_data
+
+    # ============================================================================================================
+    # CLASS FUNCTIONS
+    # ============================================================================================================
+
+    @classmethod
+    def create_project_from_data(cls, project_data_path):
+        """
+        Creates a new project using a project data JSON file
+        :param project_data_path: str, path where project JSON data file is located
+        :return: Project
+        """
+
+        if project_data_path is None or not path.is_file(project_data_path):
+            tp.logger.warning('Project Data Path {} is not valid!'.format(project_data_path))
+            return None
+
+        project_data = settings.JSONSettings()
+        project_options = settings.JSONSettings()
+        project_dir = path.get_dirname(project_data_path)
+        project_name = path.get_basename(project_data_path)
+        project_data.set_directory(project_dir, project_name)
+        project_options.set_directory(project_dir, 'options.json')
+        if not project_data or not project_data.has_settings():
+            qt.logger.warning('No valid project data found on Project Data File: {}'.format(project_data_path))
+
+        project_name = project_data.get('name')
+        project_path = path.get_dirname(path.get_dirname(project_data_path))
+        project_image = project_data.get('image')
+
+        qt.logger.debug('New Project found [{}]: {}'.format(project_name, project_path))
+        project_data = core_project.ProjectData(
+            name=project_name, project_path=project_path, settings=project_data, options=project_options)
+
+        new_project = cls(project_data=project_data)
+        if project_image:
+            new_project.set_image(project_image)
+
+        return new_project
+
+    # ============================================================================================================
+    # OVERRIDES
+    # ============================================================================================================
 
     def contextMenuEvent(self, event):
         menu = QMenu(self)
@@ -139,37 +205,9 @@ class Project(QWidget, core_project.ProjectData):
     def setup_signals(self):
         self.project_btn.clicked.connect(self._on_open_project)
 
-    @classmethod
-    def create_project_from_data(cls, project_data_path):
-        """
-        Creates a new project using a project data JSON file
-        :param project_data_path: str, path where project JSON data file is located
-        :return: Project
-        """
-
-        if project_data_path is None or not path.is_file(project_data_path):
-            tp.logger.warning('Project Data Path {} is not valid!'.format(project_data_path))
-            return None
-
-        project_data = settings.JSONSettings()
-        project_options = settings.JSONSettings()
-        project_dir = path.get_dirname(project_data_path)
-        project_name = path.get_basename(project_data_path)
-        project_data.set_directory(project_dir, project_name)
-        project_options.set_directory(project_dir, 'options.json')
-        if not project_data or not project_data.has_settings():
-            LOGGER.warning('No valid project data found on Project Data File: {}'.format(project_data_path))
-
-        project_name = project_data.get('name')
-        project_path = path.get_dirname(path.get_dirname(project_data_path))
-        project_image = project_data.get('image')
-
-        LOGGER.debug('New Project found [{}]: {}'.format(project_name, project_path))
-        new_project = cls(name=project_name, project_path=project_path, settings=project_data, options=project_options)
-        if project_image:
-            new_project.set_image(project_image)
-
-        return new_project
+    # ============================================================================================================
+    # BASE
+    # ============================================================================================================
 
     def open(self):
         """
@@ -193,11 +231,11 @@ class Project(QWidget, core_project.ProjectData):
         from tpDcc.libs.qt.core import qtutils
 
         if not path.is_dir(self.full_path):
-            LOGGER.warning('Impossible to remove Project Path: {}'.format(self.full_path))
+            qt.logger.warning('Impossible to remove Project Path: {}'.format(self.full_path))
             return False
 
-        project_name = self.name
-        project_path = self.path
+        project_name = self.project_data.name
+        project_path = self.project_data.path
 
         result = qtutils.get_permission(message='Are you sure you want to delete project: {}'.format(self.name),
                                         title='Deleting Project', cancel=False)
@@ -228,31 +266,65 @@ class Project(QWidget, core_project.ProjectData):
         """
 
         return [os.path.join(self.full_path, 'nodes'), os.path.join(self.full_path, 'components')]
-    # endregion
 
-    # region Private Functions
+    def get_options(self):
+        """
+        Returns all options contained in the project
+        :return: str
+        """
+
+        return self._project_data.get_options()
+
+    def get_project_image(self):
+        """
+        Returns the image used by the project
+        :return: QPixmap
+        """
+
+        return self._project_data.get_project_image()
+
+    # ============================================================================================================
+    # CALLBACKS
+    # ============================================================================================================
+
     def _on_open_project(self):
-        LOGGER.debug('Loading project "{}" ...'.format(self.full_path))
+        """
+        Internal callback function that is called when a project is opened
+        """
+
+        qt.logger.debug('Loading project "{}" ...'.format(self.full_path))
         self.projectOpened.emit(self)
 
     def _on_remove_project(self):
+        """
+        Internal callback function that is called when a project is removed
+        """
+
         valid_remove = self.remove()
         if valid_remove:
             self.projectRemoved.emit()
 
     def _on_open_in_browser(self):
+        """
+        Internal callback function that is called when a project is browsed
+        """
+
         fileio.open_browser(self.full_path)
 
     def _on_set_project_image(self):
+        """
+        Internal callback function that is called when project image is set
+        """
+
         image_file = tp.Dcc.select_file_dialog(
             title='Select Project Image File',
             pattern="PNG Files (*.png)")
 
         if image_file is None or not path.is_file(image_file):
-            LOGGER.warning('Selected Image "{}" is not valid!'.format(image_file))
+            qt.logger.warning('Selected Image "{}" is not valid!'.format(image_file))
             return
 
-        valid_change = self.set_project_image(image_file)
+        valid_change = self._project_data.set_project_image(image_file)
 
         if valid_change:
             self.projectImageChanged.emit(image_file)
@@ -275,8 +347,6 @@ class ProjectViewer(grid.GridWidget, object):
         self.setSelectionMode(QAbstractItemView.NoSelection)
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.setFocusPolicy(Qt.NoFocus)
-
-        # self.update_projects()
 
     def set_settings(self, settings):
         """
@@ -337,7 +407,7 @@ class ProjectWidget(QWidget, object):
 
     projectOpened = Signal(object)
 
-    def __init__(self, parent=None):
+    def __init__(self, settings=None, parent=None):
         super(ProjectWidget, self).__init__(parent=parent)
 
         self._settings = None
@@ -358,6 +428,8 @@ class ProjectWidget(QWidget, object):
         self._open_project.projectOpened.connect(self._on_project_opened)
         self._new_project.projectCreated.connect(self._on_project_created)
         self._tab_widget.currentChanged.connect(self._on_tab_changed)
+
+        self.set_settings(settings)
 
     def set_settings(self, settings):
         """
@@ -490,9 +562,7 @@ class OpenProjectWidget(QWidget, object):
 
     def update_projects(self, project_path=None):
         self._projects_list.update_projects(project_path=project_path)
-    # endregion
 
-    # region Private Functions
     def _update_ui(self, project_path=None):
         """
         Update UI based on the stored settings if exists
@@ -650,8 +720,14 @@ class TemplateData(object):
             qt.logger.warning('Impossible to create because project class is not defined!')
             return None
 
-        new_project = self.PROJECT_CLASS(name=project_name, project_path=project_path)
-        new_project.create_project()
+        project_data = settings.JSONSettings()
+        project_options = settings.JSONSettings()
+        qt.logger.debug('New Project found [{}]: {}'.format(project_name, project_path))
+        project_data = core_project.ProjectData(
+            name=project_name, project_path=project_path, settings=project_data, options=project_options)
+        project_data.create_project()
+
+        new_project = self.PROJECT_CLASS(project_data=project_data)
 
         return new_project
 
@@ -691,18 +767,14 @@ class Template(QWidget):
 
         self.setup_signals()
 
-    # region To Override Functions
     def setup_signals(self):
         self.project_btn.toggled.connect(self._on_selected_template)
 
     def get_icon(self):
         return tp.ResourcesMgr().icon(name='project', extension='png')
-    # endregion
 
-    # region Private Functions
     def _on_selected_template(self, template):
         self.templateChecked.emit(self)
-    # endregion
 
 
 class BlankTemplateData(TemplateData, object):
@@ -717,8 +789,8 @@ class BlankTemplateData(TemplateData, object):
     def create_project(self, project_name, project_path):
         new_project = super(
             BlankTemplateData, self).create_project(project_name=project_name, project_path=project_path)
-        new_project.create_folder(consts.DATA_FOLDER)
-        new_project.create_folder(consts.CODE_FOLDER)
+        new_project.project_data.create_folder(consts.DATA_FOLDER)
+        new_project.project_data.create_folder(consts.CODE_FOLDER)
         return new_project
 
 
@@ -753,16 +825,18 @@ class TemplatesViewer(grid.GridWidget, object):
             return
 
         template_widget.PROJECT_CLASS = self._project_class
+        template_widget.templateChecked.connect(self._on_template_selected)
 
         row, col = self.first_empty_cell()
         self.addWidget(row, col, template_widget)
         self.resizeRowsToContents()
 
+    def clear_templates(self):
+        self.clear()
+
     def _init_standard_templates(self):
         for template in self.STANDARD_TEMPLATES:
             new_template = template()
-            new_template.PROJECT_CLASS = self._project_class
-            new_template.templateChecked.connect(self._on_template_selected)
             self.add_template(new_template)
 
     def _on_template_selected(self, template):

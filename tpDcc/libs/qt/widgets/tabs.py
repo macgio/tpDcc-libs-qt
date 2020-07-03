@@ -44,8 +44,8 @@ class BaseTabWidget(QTabWidget, object):
 
         if self._show_close_message:
             can_close = qtutils.get_permission(
-                message='Save graph before closing it?',
-                cancel=self._show_can_cancel, title='Closing Graph', parent=self)
+                message='Save before closing tab?',
+                cancel=self._show_can_cancel, title='Closing tab', parent=self)
             if can_close is None:
                 return
             elif can_close:
