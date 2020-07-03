@@ -231,9 +231,13 @@ class DirectoryWidget(BaseWidget, object):
     """
 
     def __init__(self, parent=None, **kwargs):
-        self.directory = None
-        self.last_directory = None
+        self._directory = None
+        self._last_directory = None
         super(DirectoryWidget, self).__init__(parent=parent, **kwargs)
+
+    @property
+    def directory(self):
+        return self._directory
 
     def set_directory(self, directory):
         """
@@ -241,8 +245,8 @@ class DirectoryWidget(BaseWidget, object):
         :param directory: str, new directory of the widget
         """
 
-        self.last_directory = self.directory
-        self.directory = directory
+        self._last_directory = self._directory
+        self._directory = directory
 
 
 class PlaceholderWidget(QWidget, object):
