@@ -12,5 +12,7 @@ Qt.py
 aenum
 scandir
 pathlib2
-pysvg
+pysvg;python_version < '3'
+pysvg-py3;python_version >= '3'
+python-json-logger
 singledispatch;python_version < '3.4'
