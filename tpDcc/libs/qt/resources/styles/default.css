@@ -279,6 +279,33 @@ QMainWindow::separator
     border: none;
 }
 
+/*
+QMenuBar
+*/
+
+QMenuBar
+{
+    background-color: @background_color;
+}
+
+QMenuBar::item
+{
+    background-color: @background_in_color;
+}
+
+QMenuBar::item:selected
+{
+    background-color: @accent_color;
+}
+
+/*
+QMenu
+*/
+
+QMenu::item:selected
+{
+    background-color: @accent_color;
+}
 
 /*
 QScrollBar
@@ -468,9 +495,9 @@ QComboBox
     background-color: @background_in_color;
 }
 
-QComboBox > QLineEdit{
-    background-color: red;
-}
+/*QComboBox > QLineEdit{*/
+/*    background-color: red;*/
+/*}*/
 
 /*
 QAbstractItemView

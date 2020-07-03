@@ -18,7 +18,6 @@ import tpDcc
 @contextlib.contextmanager
 def application():
     app = QApplication.instance()
-
     if not app:
         app = QApplication(sys.argv)
         yield app
