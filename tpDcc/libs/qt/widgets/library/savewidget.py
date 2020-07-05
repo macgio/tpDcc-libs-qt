@@ -18,11 +18,8 @@ from Qt.QtGui import *
 import tpDcc as tp
 from tpDcc.libs import qt
 from tpDcc.libs.qt.core import base, qtutils
-from tpDcc.libs.qt.widgets import layouts, buttons, directory, formwidget, messagebox, dividers
+from tpDcc.libs.qt.widgets import layouts, buttons, directory, formwidget, messagebox, dividers, snapshot
 from tpDcc.libs.qt.widgets.library import widgets
-
-if tp.is_maya():
-    from tpDcc.dccs.maya.ui import thumbnail
 
 
 class BaseSaveWidget(base.BaseWidget, object):
@@ -515,9 +512,6 @@ class SaveWidget(BaseSaveWidget, object):
         :param show: bool
         """
 
-        if not tp.is_maya():
-            return
-
         options = self._options_widget.values()
         start_frame, end_frame = options.get('frameRange', [None, None])
         step = options.get('byFrame', 1)
@@ -530,15 +524,16 @@ class SaveWidget(BaseSaveWidget, object):
         self._temp_path = os.path.join(self._temp_path, 'thumbnail.jpg')
 
         try:
-            thumbnail.ThumbnailCaptureDialog.thumbnail_capture(
-                path=self._temp_path,
-                show=show,
-                start_frame=start_frame,
-                end_frame=end_frame,
-                step=step,
-                clear_cache=False,
-                captured=self._on_thumbnail_captured
-            )
+            snapshot.SnapshotWindow(path=self._temp_path, on_save=self._on_thumbnail_captured)
+            # thumbnail.ThumbnailCaptureDialog.thumbnail_capture(
+            #     path=self._temp_path,
+            #     show=show,
+            #     start_frame=start_frame,
+            #     end_frame=end_frame,
+            #     step=step,
+            #     clear_cache=False,
+            #     captured=self._on_thumbnail_captured
+            # )
         except Exception as e:
             messagebox.MessageBox.critical(self.library_window(), 'Error while capturing thumbnail', str(e))
             qt.logger.error(traceback.format_exc())
