@@ -37,6 +37,8 @@ class WindowDragger(QFrame, object):
         self._mouse_press_pos = None
         self._mouse_move_pos = None
         self._dragging_threshold = 5
+        self._minimize_enabled = True
+        self._maximize_enabled = True
         self._on_close = on_close
 
         self.setObjectName('titleFrame')
@@ -173,6 +175,14 @@ class WindowDragger(QFrame, object):
 
         # self._lbl_icon.setPixmap(icon.pixmap(icon.actualSize(QSize(24, 24))))
 
+    def set_height(self, value):
+        """
+        Sets the size of the dragger and updates icon
+        :param value: float
+        """
+
+        self.setFixedHeight(qtutils.dpi_scale(value))
+
     def set_title(self, title):
         """
         Sets the title of the window dragger
@@ -189,6 +199,38 @@ class WindowDragger(QFrame, object):
 
         self._dragging_enabled = flag
 
+    def set_minimize_enabled(self, flag):
+        """
+        Sets whether dragger shows minimize button or not
+        :param flag: bool
+        """
+
+        self._minimize_enabled = flag
+        self._button_minimized.setVisible(flag)
+
+    def set_maximized_enabled(self, flag):
+        """
+        Sets whether dragger shows maximize button or not
+        :param flag: bool
+        """
+
+        self._maximize_enabled = flag
+        self._button_maximized.setVisible(flag)
+
+    def show_logo(self):
+        """
+        Shows window logo
+        """
+
+        self._logo_button.setVisible(True)
+
+    def hide_logo(self):
+        """
+        Hides window logo
+        """
+
+        self._logo_button.setVisible(False)
+
     def set_window_buttons_state(self, state):
         """
         Sets the state of the dragger buttons
@@ -197,9 +239,23 @@ class WindowDragger(QFrame, object):
         """
 
         self._lock_window_operations = not state
-        for btn in [self._button_closed, self._button_minimized, self._button_maximized]:
-            btn.setEnabled(state)
-            btn.setVisible(state)
+        self._button_closed.setEnabled(state)
+        self._button_closed.setVisible(state)
+
+        if self._maximize_enabled:
+            self._button_maximized.setEnabled(state)
+            self._button_maximized.setVisible(state)
+        else:
+            self._button_maximized.setEnabled(False)
+            self._button_maximized.setVisible(False)
+
+        if self._minimize_enabled:
+            self._button_minimized.setEnabled(state)
+            self._button_minimized.setVisible(state)
+        else:
+            self._button_minimized.setEnabled(False)
+            self._button_minimized.setVisible(False)
+
         if not state:
             self._button_restored.setEnabled(state)
             self._button_restored.setVisible(state)

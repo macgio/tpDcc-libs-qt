@@ -1701,3 +1701,45 @@ def get_screen_color(global_pos):
     img = screen.grabWindow(wid, global_pos.x(), global_pos.y(), 1, 1).toImage()
 
     return QColor(img.pixel(0, 0))
+
+
+def set_vertical_size_policy(widget, policy):
+    """
+    Sets the vertical policy of the given widget
+    :param widget: QtWidgets.QWidget
+    :param policy: QtWidgets.QSizePolicy, new polity to apply to vertical policy
+    """
+
+    size_policy = widget.sizePolicy()
+    size_policy.setVerticalPolicy(policy)
+    widget.setSizePolicy(size_policy)
+
+
+def set_horizontal_size_policy(widget, policy):
+    """
+    Sets the horizontal policy of the given widget
+    :param widget: QtWidgets.QWidget
+    :param policy: QtWidgets.QSizePolicy, new polity to apply to horizontal policy
+    """
+
+    size_policy = widget.sizePolicy()
+    size_policy.setHorizontalPolicy(policy)
+    widget.setSizePolicy(size_policy)
+
+
+def set_size_hint(widget, size):
+    """
+    Sets the size hint of the given widget (using a monkey-patch approach)
+    :param widget: QtWidgets.QWidget
+    :param size: QtCore.QSize
+    """
+
+    widget.sizeHint = lambda: size
+
+
+def process_ui_events():
+    """
+    Processes all events currently in the application events queue
+    """
+
+    QApplication.processEvents()
