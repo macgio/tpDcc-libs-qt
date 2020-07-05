@@ -11,6 +11,7 @@ from functools import partial
 
 from Qt.QtCore import *
 from Qt.QtWidgets import *
+from Qt.QtGui import *
 
 from tpDcc.libs.qt.core import mixin, theme
 from tpDcc.libs.qt.widgets import layouts, buttons, browser
@@ -24,7 +25,7 @@ class BaseLineEdit(QLineEdit, object):
 
     delayTextChanged = Signal(str)
 
-    def __init__(self, text='', parent=None):
+    def __init__(self, text='', input_mode=None, parent=None):
         super(BaseLineEdit, self).__init__(text, parent)
 
         self._prefix_widget = None
@@ -38,6 +39,11 @@ class BaseLineEdit(QLineEdit, object):
 
         self.setProperty('history', self.property('text'))
         self.setTextMargins(2, 0, 2, 0)
+
+        if input_mode == 'float':
+            self.setValidator(QDoubleValidator())
+        elif input_mode == 'int':
+            self.setValidator(QIntValidator())
 
         self._delay_timer = QTimer()
         self._delay_timer.setInterval(500)
