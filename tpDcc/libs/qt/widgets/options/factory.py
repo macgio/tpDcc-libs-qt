@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Module that contains factory class to create tpRigToolkit options
+Module that contains factory class to create options
 """
 
 from __future__ import print_function, division, absolute_import
@@ -30,7 +30,7 @@ class OptionsFactory(object):
             new_option = self._add_list(name=name, parent=parent, value=value, main_widget=main_widget)
         elif option_type == 'dictionary':
             new_option = self._add_dictionary(name=name, parent=parent, value=value, main_widget=main_widget)
-        elif option_type == 'string':
+        elif option_type in ['string', 'text']:
             new_option = self._add_string(name=name, parent=parent, value=value, main_widget=main_widget)
         elif option_type == 'directory':
             new_option = self._add_directory(name=name, parent=parent, value=value, main_widget=main_widget)

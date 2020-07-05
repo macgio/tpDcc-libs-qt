@@ -34,6 +34,8 @@ class OptionList(QGroupBox, object):
     editModeChanged = Signal(bool)
     valueChanged = Signal()
 
+    FACTORY_CLASS = factory.OptionsFactorySingleton
+
     def __init__(self, parent=None, option_object=None):
         super(OptionList, self).__init__(parent)
         self._option_object = option_object
@@ -367,7 +369,7 @@ class OptionList(QGroupBox, object):
         else:
             option_object = self.get_option_object()
             name = self._get_unique_name(name or option_type, parent=parent)
-            new_option = factory.OptionsFactorySingleton().add_option(
+            new_option = self.FACTORY_CLASS().add_option(
                 option_type, name=name, value=value, parent=parent,
                 main_widget=self._parent, option_object=option_object)
             if new_option:
@@ -377,6 +379,9 @@ class OptionList(QGroupBox, object):
                 qt.logger.warning('Option of type "{}" is not supported!'.format(option_type))
 
         return new_option
+
+    def _add_custom_option(self, optiontype, name=None, value=None, parent=None):
+        pass
 
     def _get_unique_name(self, name, parent=None):
         """
@@ -499,14 +504,14 @@ class OptionList(QGroupBox, object):
             for option in options:
                 option_type = None
                 if type(option[1]) == list:
-                    # if option[0] == 'list':
-                    #     value = option[1]
-                    #     option_type = 'list'
-                    # else:
-                    #     value = option[1][0]
-                    #     option_type = option[1][1]
-                    value = option[1][0]
-                    option_type = option[1][1]
+                    if option[0] == 'list':
+                        value = option[1]
+                        option_type = 'list'
+                    else:
+                        value = option[1][0]
+                        option_type = option[1][1]
+                    # value = option[1][0]
+                    # option_type = option[1][1]
                 else:
                     value = option[1]
 
@@ -542,21 +547,24 @@ class OptionList(QGroupBox, object):
 
                 if not option_type and not is_group:
                     if type(value) == unicode or type(value) == str:
-                        self._add_option('string', name, value, widget)
+                        option_type = 'string'
                     elif type(value) == float:
-                        self._add_option('float', name, value, widget)
+                        option_type = 'float'
                     elif type(option[1]) == int:
-                        self._add_option('integer', name, value, widget)
+                        option_type = 'integer'
                     elif type(option[1]) == bool:
-                        self._add_option('boolean', name, value, widget)
+                        option_type = 'boolean'
                     elif type(option[1]) == dict:
-                        self._add_option('dictionary', name, [value, []], widget)
+                        option_type = 'dictionary'
                     elif type(option[1]) == list:
-                        self._add_option('list', name, value, widget)
+                        option_type = 'list'
                     elif option[1] is None:
-                        self._add_option('title', name, parent=widget)
-                else:
+                        option_type = 'title'
+
+                new_option = self._add_custom_option(option_type, name, value, widget)
+                if not new_option:
                     self._add_option(option_type, name, value, widget)
+
         except Exception:
             qt.logger.error(traceback.format_exc())
         finally:

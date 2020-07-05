@@ -216,6 +216,53 @@ class Project(QWidget):
 
         self._on_open_project()
 
+    def add_option(self, name, value, group=None, option_type=None):
+        """
+        Adds a new option to the options file
+        :param name: str, name of the option
+        :param value: variant, value of the option
+        :param group: variant, str || None, group of the option (optional)
+        :param option_type: variant, str || None, option type (optional)
+        """
+
+        if not self._project_data:
+            return
+
+        self._project_data.add_option(name, value, group=group, option_type=option_type)
+
+    def get_option(self, name, group=None, default=None):
+        """
+        Returns option by name and group
+        :param name: str, name of the option we want to retrieve
+        :param group: variant, str || None, group of the option (optional)
+        :return: variant
+        """
+
+        if not self._project_data:
+            return
+
+        return self._project_data.get_option(name, group=group, default=default)
+
+    def reload_options(self):
+        """
+        Reload settings
+        """
+
+        if not self._project_data:
+            return
+
+        self._project_data.reload_options()
+
+    def clear_options(self):
+        """
+        Clears all the options
+        """
+
+        if not self._project_data:
+            return
+
+        self._project_data.clear_options()
+
     def set_image(self, encoded_image):
 
         from tpDcc.libs.qt.core import image
