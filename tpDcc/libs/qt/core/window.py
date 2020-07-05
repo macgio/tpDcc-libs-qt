@@ -21,7 +21,7 @@ from tpDcc.libs import qt
 import tpDcc as tp
 from tpDcc import register
 from tpDcc.libs.python import path, folder
-from tpDcc.libs.qt.core import qtutils, animation, theme, statusbar, dragger, resizers, settings as qt_settings
+from tpDcc.libs.qt.core import mixin, qtutils, animation, theme, statusbar, dragger, resizers, settings as qt_settings
 from tpDcc.libs.qt.widgets import layouts
 
 
@@ -35,6 +35,7 @@ class WindowContents(QFrame, object):
         super(WindowContents, self).__init__(parent=parent)
 
 
+@mixin.theme_mixin
 class BaseWindow(QMainWindow, object):
 
     closed = Signal()
@@ -51,6 +52,7 @@ class BaseWindow(QMainWindow, object):
         self._theme = None
         self._docks = list()
         self._toolbars = dict()
+        self._menubar = None
         self._dpi = kwargs.get('dpi', 1.0)
         self._fixed_size = kwargs.get('fixed_size', False)
         self._init_width = kwargs.get('width', 600)
@@ -68,14 +70,14 @@ class BaseWindow(QMainWindow, object):
         prefs_settings = kwargs.pop('preferences_settings', None)
         auto_load = kwargs.get('auto_load', True)
 
+        super(BaseWindow, self).__init__(parent)
+
         if not hasattr(self, 'WindowId'):
             if window_id:
                 self.WindowId = window_id
             else:
                 self._force_disable_saving = True
                 self.WindowId = str(uuid.uuid4())
-
-        super(BaseWindow, self).__init__(parent)
 
         self.setObjectName(str(self.WindowId))
         self.setWindowTitle(kwargs.get('title', self.WindowName))
@@ -159,7 +161,7 @@ class BaseWindow(QMainWindow, object):
         Forces Qt application to update GUI between calculations
         """
 
-        QApplication.processEvents()
+        qtutils.process_ui_events()
 
     def center(self, width=None, height=None):
         """
@@ -217,7 +219,7 @@ class BaseWindow(QMainWindow, object):
         :param msecs: int
         """
 
-        self._status_bar.show_ok_message(message=message, msecs=msecs)
+        self._self._status_bar.show_ok_message(message=message, msecs=msecs)
 
     def show_info_message(self, message, msecs=None):
         """
@@ -300,7 +302,7 @@ class BaseWindow(QMainWindow, object):
         # self.statusBar().setVisible(self._show_status_bar)
 
         # MenuBar
-        self._menubar = QMenuBar()
+        self._menubar = QMenuBar(self)
         if self._init_menubar:
             self._has_main_menu = True
             self._file_menu = self.menuBar().addMenu('File')
@@ -725,7 +727,6 @@ class MainWindow(BaseWindow, object):
         self._toolset = kwargs.get('toolset', None)
         self._transparent = kwargs.get('transparent', False)
         self._config = kwargs.pop('config', None)
-        self._dockable = getattr(self, 'WindowDockable', False)
         self._was_docked = False
         self._window_loaded = False
         self._window_closed = False
@@ -733,10 +734,11 @@ class MainWindow(BaseWindow, object):
 
         super(MainWindow, self).__init__(parent=parent, **kwargs)
 
+        self._dockable = getattr(self, 'WindowDockable', False)
         frameless = kwargs.get('frameless', True)
         self.set_frameless(frameless)
         if not frameless:
-            self.set_resizer_active(False)
+            self.set_resizers_active(False)
             self._dragger.set_dragging_enabled(False)
             self._dragger.set_window_buttons_state(False)
         else:
@@ -994,14 +996,14 @@ class MainWindow(BaseWindow, object):
             else:
                 window.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
                 window.setWindowFlags(window.windowFlags() ^ Qt.WindowMinMaxButtonsHint)
-            self.set_resizer_active(True)
+            self.set_resizers_active(True)
         elif not flag and self.is_frameless():
             window.setAttribute(Qt.WA_TranslucentBackground)
             if qtutils.is_pyside2() or qtutils.is_pyqt5():
                 window.setWindowFlags(window.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
             else:
                 self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
-            self.set_resizer_active(False)
+            self.set_resizers_active(False)
 
         window.show()
 
@@ -1009,7 +1011,7 @@ class MainWindow(BaseWindow, object):
     # RESIZERS
     # ============================================================================================================
 
-    def set_resizer_active(self, flag):
+    def set_resizers_active(self, flag):
         """
         Sets whether resizers are enable or not
         :param flag: bool
@@ -1021,6 +1023,23 @@ class MainWindow(BaseWindow, object):
         else:
             for r in self._resizers:
                 r.hide()
+
+    def set_resizers_enabled(self, flag, resizers_to_edit=resizers.Resizers.All):
+        """
+        Enabled or disable window resizers
+        :param flag: bool
+        :param resizers_to_edit:
+        """
+
+        resizers_to_enable = list()
+        if resizers_to_edit & resizers.Resizers.Corners == resizers.Resizers.Corners:
+            resizers_to_enable += self.get_corner_resizers()
+        if resizers_to_edit & resizers.Resizers.Vertical == resizers.Resizers.Vertical:
+            resizers_to_enable += self.get_vertical_resizers()
+        if resizers_to_edit & resizers.Resizers.Horizontal == resizers.Resizers.Horizontal:
+            resizers_to_enable += self.get_horizontal_resizers()
+
+        [resizer.setEnabled(flag) for resizer in resizers_to_enable]
 
     def set_resize_directions(self):
         """
@@ -1064,6 +1083,30 @@ class MainWindow(BaseWindow, object):
                 total_width += r.minimumSize().width()
 
         return total_width
+
+    def get_horizontal_resizers(self):
+        """
+        Returns all horizontal resizers
+        :return: list
+        """
+
+        return [self._left_resizer, self._right_resizer]
+
+    def get_vertical_resizers(self):
+        """
+        Returns all vertical resizers
+        :return: list
+        """
+
+        return [self._top_resizer, self._bottom_resizer]
+
+    def get_corner_resizers(self):
+        """
+        Returns all corner resizers
+        :return: list
+        """
+
+        return [self._top_left_resizer, self._top_right_resizer, self._bottom_left_resizer, self._bottom_right_resizer]
 
     def _setup_resizers(self):
         """

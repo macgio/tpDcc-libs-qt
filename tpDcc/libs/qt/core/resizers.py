@@ -21,6 +21,13 @@ class ResizeDirection:
     Bottom = 8
 
 
+class Resizers:
+    Vertical = 1
+    Horizontal = 2
+    Corners = 4
+    All = Vertical | Horizontal | Corners
+
+
 class WindowResizer(QFrame, object):
     windowResized = Signal()
     windowResizedStarted = Signal()
