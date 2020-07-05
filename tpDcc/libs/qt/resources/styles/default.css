@@ -958,11 +958,11 @@ BaseLabel
 
 BaseLabel
 {
-    padding: 2px;
+    /*padding: 2px;*/
     background-color: transparent;
-    font-size: @font_size_base@unit;
+    /*font-size: @font_size_base@unit;*/
     color: @primary_text_color;
-    font-weight: 400;
+    /*font-weight: 400;*/
 }
 
 BaseLabel[theme_level="1"]
@@ -2245,4 +2245,9 @@ WindowContents
     border-top-right-radius: 0@unit;
     border-bottom-left-radius: @window_rounded_corners@unit;
     border-bottom-right-radius: @window_rounded_corners@unit;
+}
+
+SnapshotFrame
+{
+    background-color: @background_color;
 }
