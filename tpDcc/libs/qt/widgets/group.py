@@ -11,7 +11,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-from tpDcc.libs.python import decorators
+from tpDcc.libs.python import decorators, python
 from tpDcc.libs.qt.core import qtutils, base, theme
 from tpDcc.libs.qt.widgets import buttons
 
@@ -153,7 +153,7 @@ class BaseButtonGroup(base.BaseWidget, object):
         :return: new added button
         """
 
-        if isinstance(data_dict, (str, unicode)):
+        if python.is_string(data_dict):
             data_dict = {'text': data_dict}
         elif isinstance(data_dict, QIcon):
             data_dict = {'icon': data_dict}
@@ -183,7 +183,8 @@ class BaseButtonGroup(base.BaseWidget, object):
         else:
             self._button_group.addButton(new_btn, index)
 
-        new_btn.setChecked(True)
+        if self.main_layout.count() == 0:
+            new_btn.setChecked(True)
 
         self.main_layout.insertWidget(self.main_layout.count(), new_btn)
 

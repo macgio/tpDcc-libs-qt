@@ -54,13 +54,13 @@ class SliderPanel(base.BaseWidget, object):
         self._pos_anim.setTargetObject(self)
         self._pos_anim.setEasingCurve(QEasingCurve.OutCubic)
         self._pos_anim.setDuration(300)
-        self._pos_anim.setPropertyName('pos')
+        self._pos_anim.setPropertyName(b'pos')
 
         self._opacity_anim = QPropertyAnimation()
         self._opacity_anim.setTargetObject(self)
         self._opacity_anim.setDuration(300)
         self._opacity_anim.setEasingCurve(QEasingCurve.OutCubic)
-        self._opacity_anim.setPropertyName('windowOpacity')
+        self._opacity_anim.setPropertyName(b'windowOpacity')
         self._opacity_anim.setStartValue(0.0)
         self._opacity_anim.setEndValue(1.0)
 
@@ -228,7 +228,7 @@ class SliderPanel(base.BaseWidget, object):
         parent_parent = parent.parent()
         dcc_win = tp.Dcc.get_main_window()
         dcc_window = parent_parent == dcc_win
-        if parent_parent:
+        if parent_parent and dcc_win:
             dcc_window = dcc_window or parent_parent.objectName() == dcc_win.objectName()
         parent_geo = parent.geometry()
         if self._position == SliderPanelPositions.LEFT:

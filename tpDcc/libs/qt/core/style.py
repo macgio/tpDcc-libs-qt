@@ -11,7 +11,7 @@ import os
 import re
 
 import tpDcc
-from tpDcc.libs.python import color
+from tpDcc.libs.python import color, python
 from tpDcc.libs.qt.core import qtutils
 
 
@@ -77,7 +77,10 @@ class StyleSheet(object):
 
         if options:
             keys = options.keys()
-            keys.sort(key=len, reverse=True)
+            if python.is_python2():
+                keys.sort(key=len, reverse=True)
+            else:
+                keys = sorted(keys, key=len, reverse=True)
             for key in keys:
                 key_value = options[key]
                 str_key_value = str(key_value)
