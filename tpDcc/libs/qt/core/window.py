@@ -19,7 +19,6 @@ import appdirs
 
 from tpDcc.libs import qt
 import tpDcc as tp
-from tpDcc import register
 from tpDcc.libs.python import path, folder
 from tpDcc.libs.qt.core import mixin, qtutils, animation, theme, statusbar, dragger, resizers, settings as qt_settings
 from tpDcc.libs.qt.widgets import layouts
@@ -594,7 +593,7 @@ class BaseWindow(QMainWindow, object):
         stylesheet = current_theme.stylesheet()
         self.setStyleSheet(stylesheet)
 
-        # TODO: This operation is VERY heavy. Find a better way of doing this
+        # # TODO: This operation is VERY heavy. Find a better way of doing this
         # all_widgets = qtutils.iterate_children(self.main_widget, qobj_class=QObject)
         # for w in all_widgets:
         #     if hasattr(w, 'setStyleSheet'):
@@ -1666,6 +1665,3 @@ class DockWindowContainer(DockWidget, object):
         if self.widget():
             self.widget().close()
         super(DockWindowContainer, self).closeEvent(event)
-
-
-register.register_class('Window', MainWindow)

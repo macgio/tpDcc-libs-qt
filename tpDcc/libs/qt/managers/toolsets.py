@@ -9,7 +9,6 @@ import os
 from collections import OrderedDict
 
 import tpDcc
-from tpDcc import register
 from tpDcc.core import plugin
 from tpDcc.libs.python import python, decorators, folder, yamlio, color
 from tpDcc.libs.qt.widgets import toolset
@@ -356,6 +355,3 @@ class ToolsetsManagerSingleton(ToolsetsManager, object):
 
     def __init__(self):
         ToolsetsManager.__init__(self)
-
-
-register.register_class('ToolsetsMgr', ToolsetsManagerSingleton)

@@ -13,6 +13,9 @@ import inspect
 import logging
 
 from Qt.QtWidgets import *
+from tpDcc.libs.qt import register
+from tpDcc.libs.qt.core import window, dialog
+from tpDcc.libs.qt.managers import inputs as inputs_manager, toolsets as toolsets_manager
 
 # =================================================================================
 
@@ -29,8 +32,7 @@ def init(dev=False):
     :param dev: bool, Whether artellapipe is initialized in dev mode or not
     """
 
-    from tpDcc.libs.qt import register
-    from tpDcc.libs.python import importer
+    from tpDcc import register as dcc_register
 
     if dev:
         register.cleanup()
@@ -38,6 +40,17 @@ def init(dev=False):
     logger = create_logger(dev=dev)
 
     register.register_class('logger', logger)
+
+    # NOTE: We register all classes using tpDcc register (not tpDcc.libs.qt one).
+    # We do it in this way to access those classes easily
+    dcc_register.register_class('Window', window.MainWindow)
+    dcc_register.register_class('Dialog', dialog.Dialog)
+    dcc_register.register_class('OpenFileDialog', dialog.OpenFileDialog)
+    dcc_register.register_class('SaveFileDialog', dialog.SaveFileDialog)
+    dcc_register.register_class('SelectFolderDialog', dialog.SelectFolderDialog)
+    dcc_register.register_class('NativeDialog', dialog.NativeDialog)
+    dcc_register.register_class('InputsMgr', inputs_manager.InputsManagerSingleton)
+    dcc_register.register_class('ToolsetsMgr', toolsets_manager.ToolsetsManagerSingleton)
 
     def init_dcc():
         """
@@ -78,8 +91,8 @@ def init(dev=False):
     update_paths()
     register_resources()
 
-    skip_modules = ['{}.{}'.format(PACKAGE, name) for name in ['loader', 'externals']]
-    importer.init_importer(package=PACKAGE, skip_modules=skip_modules)
+    # skip_modules = ['{}.{}'.format(PACKAGE, name) for name in ['loader', 'externals']]
+    # importer.init_importer(package=PACKAGE, skip_modules=skip_modules)
 
     init_dcc()
 
