@@ -14,7 +14,7 @@ from Qt.QtGui import *
 from Qt.QtWidgets import *
 
 import tpDcc as tp
-from tpDcc.libs.python import mathlib
+from tpDcc.libs.python import mathlib, color as core_color
 from tpDcc.libs.qt.core import qtutils, color, mixin
 
 FLOAT_SLIDER_DRAG_STEPS = [100.0, 10.0, 1.0, 0.1, 0.01, 0.001]
@@ -488,6 +488,7 @@ class DraggerSlider(QDoubleSpinBox, object):
         self.setValue(self.value() + step)
 
 
+@mixin.theme_mixin
 class HoudiniDoubleSlider(QWidget, object):
     """
     Slider that encapsulates a DoubleSlider and Houdini draggers linked together
@@ -509,6 +510,14 @@ class HoudiniDoubleSlider(QWidget, object):
         self._value = 0.0
         self._label = None
         self._style_type = style
+
+        theme = self.theme()
+        if theme:
+            theme_color = theme.accent_color
+            if core_color.string_is_hex(theme_color):
+                theme_color = core_color.hex_to_rgb(theme_color)
+                main_color = QColor(*theme_color).getRgb()
+
         self._main_color = main_color or QColor(215, 128, 26).getRgb()
 
         self.setMaximumHeight(h)
@@ -531,7 +540,7 @@ class HoudiniDoubleSlider(QWidget, object):
         if self._type == 'float':
             self._slider = DoubleSlider(parent=self, default_value=default_value, slider_range=slider_range,
                                         dragger_steps=dragger_steps)
-        elif self._type == 'int':
+        else:
             self._slider = Slider(parent=self, slider_range=slider_range)
             self._slider.valueIncremented.connect(self._on_increment_value)
         self._slider.setContentsMargins(0, 0, 0, 0)
@@ -603,9 +612,8 @@ class HoudiniDoubleSlider(QWidget, object):
     def show_slider(self):
         self._slider.show()
 
-    def set_Range(self, minimum_value, maximum_value):
-        self.setMinimum(minimum_value)
-        self.setMaximum(maximum_value)
+    def set_range(self, minimum_value, maximum_value):
+        self._input.setRange(minimum_value, maximum_value)
 
     def _on_increment_value(self, step):
         if step == 0.0:

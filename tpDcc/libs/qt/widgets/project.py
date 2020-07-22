@@ -216,6 +216,19 @@ class Project(QWidget):
 
         self._on_open_project()
 
+    def has_option(self, name, group=None):
+        """
+        Returns whether the current object has given option or not
+        :param name: str, name of the option
+        :param group: variant, str || None, group of the option (optional)
+        :return: bool
+        """
+
+        if not self._project_data:
+            return False
+
+        return self._project_data.has_option(name=name, group=group)
+
     def add_option(self, name, value, group=None, option_type=None):
         """
         Adds a new option to the options file

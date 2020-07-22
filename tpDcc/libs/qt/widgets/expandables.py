@@ -213,36 +213,36 @@ class ExpandableFrame(QWidget, object):
     def __init__(self, title='', parent=None):
         super(ExpandableFrame, self).__init__(parent=parent)
 
-        self._isCollapsed = True
-        self._titleFrame = None
+        self._is_collapsed = True
+        self._title_frame = None
         self._content = None
-        self._contentLayout = None
+        self._content_layout = None
 
         # ==================================================================
 
-        mainLayout = QVBoxLayout(self)
+        main_layout = QVBoxLayout(self)
         self._content = QWidget()
-        self._contentLayout = QVBoxLayout()
-        self._content.setLayout(self._contentLayout)
-        self._content.setVisible(not self._isCollapsed)
+        self._content_layout = QVBoxLayout()
+        self._content.setLayout(self._content_layout)
+        self._content.setVisible(not self._is_collapsed)
 
         # ==================================================================
 
-        self._titleFrame = TitleFrame(title=title, collapsed=self._isCollapsed)
+        self._title_frame = TitleFrame(title=title, collapsed=self._is_collapsed)
 
-        mainLayout.addWidget(self._titleFrame)
-        mainLayout.addWidget(self._content)
+        main_layout.addWidget(self._title_frame)
+        main_layout.addWidget(self._content)
 
         # === SIGNALS === #
-        QObject.connect(self._titleFrame, SIGNAL('clicked()'), self.toggleCollapsed)
+        QObject.connect(self._title_frame, SIGNAL('clicked()'), self.toggleCollapsed)
 
     def addWidget(self, widget):
-        self._contentLayout.addWidget(widget)
+        self._content_layout.addWidget(widget)
 
     def toggleCollapsed(self):
-        self._content.setVisible(self._isCollapsed)
-        self._isCollapsed = not self._isCollapsed
-        self._titleFrame._arrow.setArrow(self._isCollapsed)
+        self._content.setVisible(self._is_collapsed)
+        self._is_collapsed = not self._is_collapsed
+        self._title_frame._arrow.setArrow(self._is_collapsed)
 
 
 class ExpandableGroup(QGroupBox, object):
@@ -495,7 +495,7 @@ class ExpanderItem(QGroupBox, object):
             painter.drawText(x + 33, y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
             self.__drawTriangle(painter, x, y)
             pen = QPen(self.palette().color(QPalette.Light))
-            pen.setWidthF(0.6)
+            pen.setWidthF(0.2)
             painter.setPen(pen)
             painter.drawRect(x + 1, y + 1, w - 1, h - 1)
             pen.setColor(self.palette().color(QPalette.Shadow))
@@ -507,29 +507,29 @@ class ExpanderItem(QGroupBox, object):
                 y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
             painter.setRenderHint(QPainter.Antialiasing, False)
             self.__drawTriangle(painter, x, y)
-            headerHeight = 20
-            headerRect = QRect(x + 1, y + 1, w - 1, headerHeight)
-            headerRectShadow = QRect(x - 1, y - 1, w + 1, headerHeight + 2)
+            header_height = 20
+            header_rect = QRect(x + 1, y + 1, w - 1, header_height)
+            header_rect_shadow = QRect(x - 1, y - 1, w + 1, header_height + 2)
             pen = QPen(self.palette().color(QPalette.Light))
             pen.setWidthF(0.4)
             painter.setPen(pen)
-            painter.drawRect(headerRect)
-            painter.fillRect(headerRect, QColor(255, 255, 255, 18))
+            painter.drawRect(header_rect)
+            painter.fillRect(header_rect, QColor(255, 255, 255, 18))
             pen.setColor(self.palette().color(QPalette.Dark))
             painter.setPen(pen)
-            painter.drawRect(headerRectShadow)
+            painter.drawRect(header_rect_shadow)
             if not self.isCollapsed():
                 pen = QPen(self.palette().color(QPalette.Dark))
                 pen.setWidthF(0.8)
                 painter.setPen(pen)
-                offSet = headerHeight + 3
-                bodyRect = QRect(x, y + offSet, w, h - offSet)
-                bodyRectShadow = QRect(x + 1, y + offSet, w + 1, h - offSet + 1)
-                painter.drawRect(bodyRect)
+                offSet = header_height + 3
+                body_rect = QRect(x, y + offSet, w, h - offSet)
+                body_rect_shadow = QRect(x + 1, y + offSet, w + 1, h - offSet + 1)
+                painter.drawRect(body_rect)
                 pen.setColor(self.palette().color(QPalette.Light))
                 pen.setWidthF(0.4)
                 painter.setPen(pen)
-                painter.drawRect(bodyRectShadow)
+                painter.drawRect(body_rect_shadow)
         elif self._rolloutStyle == ExpanderStyles.Boxed:
             if self.isCollapsed():
                 arect = QRect(x + 1, y + 9, w - 1, 4)
@@ -674,7 +674,7 @@ class ExpanderWidget(QScrollArea, object):
     def __init__(self, parent=None):
         super(ExpanderWidget, self).__init__(parent=parent)
 
-        self._rolloutStyle = ExpanderStyles.Maya if tp.is_maya() else ExpanderStyles.Rounded
+        self._rolloutStyle = ExpanderStyles.Maya if tp.is_maya() else ExpanderStyles.Square
         self._dragDropMode = ExpanderDragDropModes.NoDragDrop
         self._scrolling = False
         self._scrollInitY = 0
@@ -778,10 +778,10 @@ class ExpanderWidget(QScrollArea, object):
     def rolloutStyle(self):
         return self._rolloutStyle
 
-    def setRolloutStyle(self, rolloutStyle):
+    def set_rollout_style(self, rolloutStyle):
         self._rolloutStyle = rolloutStyle
         for item in self.findChildren(ExpanderItem):
-            item.setRolloutStyle(self._rolloutStyle)
+            item.set_rollout_style(self._rolloutStyle)
 
     def itemClass(self):
         return self._itemClass

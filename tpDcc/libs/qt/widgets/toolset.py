@@ -53,9 +53,12 @@ class ToolsetWidget(stack.StackItem, object):
         self._display_mode_button = None
         self._help_button = None
         self._settings_button = None
+        self._connect_button = None
         self._widgets = list()
         self._attacher = None
+        self._client = None
         self._dev = kwargs.get('dev', False)
+        self._supported_dccs = self.CONFIG.get('supported_dccs', dict()) if self.CONFIG else dict()
         title = self.CONFIG.data.get('label', '') if self.CONFIG else ''
         collapsable = kwargs.get('collapsable', True)
         show_item_icon = kwargs.get('show_item_icon', True)
@@ -132,6 +135,10 @@ class ToolsetWidget(stack.StackItem, object):
 
         self._display_mode_button = DisplayModeButton(color=self._icon_color, size=16, parent=self)
         self._display_mode_button.setFixedSize(QSize(22, 22))
+        self._connect_button = buttons.BaseToolButton(parent=self).image('connect').icon_only()
+        self._connect_button.setFixedSize(QSize(22, 22))
+        self._connect_button.setEnabled(False)
+        self._connect_button.setToolTip('No connected to any DCC')
         self._help_button = buttons.BaseMenuButton(parent=self)
         self._help_button.set_icon(tpDcc.ResourcesMgr().icon('help'))
         self._help_button.setFixedSize(QSize(22, 22))
@@ -140,16 +147,19 @@ class ToolsetWidget(stack.StackItem, object):
         self._settings_button.setFixedSize(QSize(22, 22))
 
         # TODO: Disable until we implement preferences system
-        self._settings_button.setVisible(False)
+        # self._settings_button.setVisible(False)
 
         # We call if after setting all buttons
         self.set_icon_color(self._icon_color)
 
         self.visual_update(collapse=True)
 
+        self._dccs_menu = QMenu(self)
+
         display_button_pos = 7
         self._title_frame.horizontal_layout.insertWidget(display_button_pos - 1, self._help_button)
         self._title_frame.horizontal_layout.insertWidget(display_button_pos - 2, self._settings_button)
+        self._title_frame.horizontal_layout.insertWidget(0, self._connect_button)
         self._title_frame.horizontal_layout.insertWidget(display_button_pos, self._display_mode_button)
         self._title_frame.horizontal_layout.setSpacing(0)
         self._title_frame.horizontal_layout.setContentsMargins(0, 0, 0, 0)
@@ -404,6 +414,60 @@ class ToolsetWidget(stack.StackItem, object):
     def _stop_selection_callback(self):
         print('Stop Selection Callbacks ...')
 
+    def _reset_connect_button(self):
+        self._connect_button.setEnabled(False)
+        self._connect_button.setToolTip('No connected to any DCC')
+
+    def _update_client(self):
+        if not self._client:
+            return
+
+        valid_connect = self._client.connect()
+        if not valid_connect:
+            self._reset_connect_button()
+            return False
+
+        success, dcc_exe = self._client.update_paths()
+        if not success:
+            tpDcc.logger.warning('Error while connecting to Dcc: update paths ...')
+            self._reset_connect_button()
+            return False
+
+        success = self._client.update_dcc_paths(dcc_exe)
+        if not success:
+            tpDcc.logger.warning('Error while connecting to Dcc: update dcc paths ...')
+            self._reset_connect_button()
+            return False
+
+        success = self._client.init_dcc()
+        if not success:
+            tpDcc.logger.warning('Error while connecting to Dcc: init dcc ...')
+            self._reset_connect_button()
+            return False
+
+        dcc_name, dcc_version = self._client.get_dcc_info()
+        if not dcc_name or not dcc_version:
+            tpDcc.logger.warning(
+                'Error while connecting to Dcc: get dcc info ... ({}, {})'.format(dcc_name, dcc_version))
+            self._reset_connect_button()
+            return False
+
+        if dcc_name not in self._supported_dccs:
+            tpDcc.logger.warning('Connected DCC {} ({}) is not supported!'.format(dcc_name, dcc_version))
+            self._reset_connect_button()
+            return False
+
+        supported_versions = self._supported_dccs[dcc_name]
+        if not dcc_version in supported_versions:
+            tpDcc.logger.warning('Connected DCC {} is supported but version {} is not!'.format(dcc_name, dcc_version))
+            self._reset_connect_button()
+            return False
+
+        self._connect_button.setEnabled(True)
+        self._connect_button.setToolTip('Connected to: {} ({})'.format(dcc_name, dcc_version))
+
+        return True
+
     # =================================================================================================================
     # CALLBACKS
     # =================================================================================================================
@@ -426,21 +490,21 @@ class ToolsetWidget(stack.StackItem, object):
         self._stop_selection_callback()
 
     def _on_show_preferences_dialog(self):
-
-        from tpDcc.libs.qt.widgets import lightbox
-        from tpDcc.libs.qt.core import preferences
-        self._lightbox = lightbox.Lightbox(self)
-        self._lightbox.closed.connect(self._on_close_lightbox)
-        self._preferences_window = preferences.PreferencesWidget(settings=self.preferences_settings())
-        self._preferences_window.setFixedHeight(500)
-        self._preferences_window.closed.connect(self._on_close_preferences_window)
-        self._lightbox.set_widget(self._preferences_window)
-        for pref_widget in self._preference_widgets_classes:
-            pref_widget = pref_widget()
-            self._preferences_window.add_category(pref_widget.CATEGORY, pref_widget)
-        self._theme_widget = self._setup_theme_preferences()
-        self._preferences_window.add_category(self._theme_widget.CATEGORY, self._theme_widget)
-        self._lightbox.show()
+        tpDcc.logger.info('Preferences functionality not implemented yet!')
+        # from tpDcc.libs.qt.widgets import lightbox
+        # from tpDcc.libs.qt.core import preferences
+        # self._lightbox = lightbox.Lightbox(self)
+        # self._lightbox.closed.connect(self._on_close_lightbox)
+        # self._preferences_window = preferences.PreferencesWidget(settings=self.preferences_settings())
+        # self._preferences_window.setFixedHeight(500)
+        # self._preferences_window.closed.connect(self._on_close_preferences_window)
+        # self._lightbox.set_widget(self._preferences_window)
+        # for pref_widget in self._preference_widgets_classes:
+        #     pref_widget = pref_widget()
+        #     self._preferences_window.add_category(pref_widget.CATEGORY, pref_widget)
+        # self._theme_widget = self._setup_theme_preferences()
+        # self._preferences_window.add_category(self._theme_widget.CATEGORY, self._theme_widget)
+        # self._lightbox.show()
 
     def _on_close_preferences_window(self, save_widget=False):
         self._on_close_lightbox(save_widget)
@@ -453,6 +517,10 @@ class ToolsetWidget(stack.StackItem, object):
             self._settings_accepted(**self._theme_widget._dlg._form_widget.default_values())
         else:
             self._settings_accepted(**self._theme_widget._dlg._form_widget.values())
+
+    def _on_dcc_disconnected(self):
+        self._connect_button.setEnabled(False)
+        self._connect_button.setToolTip('No connected to any DCC')
 
 
 class ToolsetDisplays(object):

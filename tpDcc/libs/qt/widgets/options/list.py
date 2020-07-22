@@ -59,6 +59,7 @@ class GetListWidget(base.BaseWidget, object):
         super(GetListWidget, self).ui()
 
         self._label = label.BaseLabel(self._name)
+        self._label.setAttribute(Qt.WA_TransparentForMouseEvents)
         self._list_widget = self.get_list_widget()
 
         self.main_layout.addWidget(self._label)

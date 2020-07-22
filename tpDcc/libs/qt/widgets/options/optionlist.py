@@ -45,14 +45,15 @@ class OptionList(QGroupBox, object):
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self._on_item_menu)
-        self._context_menu = None
-        self._create_context_menu()
+        self._context_menu = QMenu()
+        self._context_menu.setTearOffEnabled(True)
+        self._create_context_menu(self._context_menu, parent=self)
 
         self._has_first_group = False
         self._disable_auto_expand = False
         self._supress_update = False
         self._central_list = self
-        self._itemClass = OptionListGroup
+        self._option_group_class = OptionListGroup
         self._auto_rename = False
 
         self.setup_ui()
@@ -122,7 +123,7 @@ class OptionList(QGroupBox, object):
         if not hasattr(parent, 'child_layout'):
             return
 
-        if parent.__class__ == OptionList:
+        if parent.__class__.__name__.endswith('OptionList'):
             return parent
 
         return parent
@@ -140,9 +141,11 @@ class OptionList(QGroupBox, object):
 
         name = self._get_unique_name(name, parent)
         option_object = self.get_option_object()
-        group = OptionListGroup(name=name, option_object=option_object, parent=self._parent)
+        self._option_group_class.FACTORY_CLASS = self.FACTORY_CLASS
+        group = self._option_group_class(name=name, option_object=option_object, parent=self._parent)
+        self._create_group_context_menu(group, group._context_menu)
         group.set_expanded(value)
-        if self.__class__ == OptionListGroup or parent.__class__ == OptionListGroup:
+        if self.__class__.__name__.endswith('OptionListGroup') or parent.__class__.__name__.endswith('OptionListGroup'):
             if tp.is_maya():
                 group.group.set_inset_dark()
         self._handle_parenting(group, parent)
@@ -283,10 +286,7 @@ class OptionList(QGroupBox, object):
 
         self.editModeChanged.emit(flag)
 
-    def _create_context_menu(self):
-
-        self._context_menu = QMenu()
-        self._context_menu.setTearOffEnabled(True)
+    def _create_context_menu(self, menu, parent):
 
         plus_icon = tp.ResourcesMgr().icon('plus')
         string_icon = tp.ResourcesMgr().icon('rename')
@@ -305,7 +305,7 @@ class OptionList(QGroupBox, object):
         copy_icon = tp.ResourcesMgr().icon('copy')
         paste_icon = tp.ResourcesMgr().icon('paste')
 
-        create_menu = self._context_menu.addMenu(plus_icon, 'Add Options')
+        create_menu = menu.addMenu(plus_icon, 'Add Options')
         add_string_action = QAction(string_icon, 'Add String', create_menu)
         create_menu.addAction(add_string_action)
         add_directory_action = QAction(directory_icon, 'Add Directory', create_menu)
@@ -332,33 +332,51 @@ class OptionList(QGroupBox, object):
         create_menu.addAction(add_color_action)
         add_vector3f_action = QAction(color_icon, 'Add Vector 3 float', create_menu)
         create_menu.addAction(add_vector3f_action)
-        self._context_menu.addSeparator()
-        self.copy_action = QAction(copy_icon, 'Copy', self._context_menu)
-        self._context_menu.addAction(self.copy_action)
-        self.copy_action.setVisible(False)
-        self.paste_action = QAction(paste_icon, 'Paste', self._context_menu)
-        self._context_menu.addAction(self.paste_action)
-        self.paste_action.setVisible(False)
-        self._context_menu.addSeparator()
-        clear_action = QAction(clear_icon, 'Clear', self._context_menu)
-        self._context_menu.addAction(clear_action)
+        menu.addSeparator()
+        parent.copy_action = QAction(copy_icon, 'Copy', menu)
+        menu.addAction(parent.copy_action)
+        parent.copy_action.setVisible(False)
+        parent.paste_action = QAction(paste_icon, 'Paste', menu)
+        menu.addAction(parent.paste_action)
+        parent.paste_action.setVisible(False)
+        menu.addSeparator()
+        clear_action = QAction(clear_icon, 'Clear', menu)
+        menu.addAction(clear_action)
 
-        add_string_action.triggered.connect(partial(self._add_option, 'string'))
-        add_directory_action.triggered.connect(partial(self._add_option, 'directory'))
-        add_file_action.triggered.connect(partial(self._add_option, 'file'))
-        add_integer_action.triggered.connect(partial(self._add_option, 'integer'))
-        add_float_action.triggered.connect(partial(self._add_option, 'float'))
-        add_bool_action.triggered.connect(partial(self._add_option, 'boolean'))
-        add_list_action.triggered.connect(partial(self._add_option, 'list'))
-        add_dict_action.triggered.connect(partial(self._add_option, 'dictionary'))
-        add_group_action.triggered.connect(self.add_group)
-        add_title_action.triggered.connect(partial(self._add_option, 'title'))
-        add_color_action.triggered.connect(partial(self._add_option, 'color'))
-        add_vector3f_action.triggered.connect(partial(self._add_option, 'vector3f'))
-        add_script_action.triggered.connect(partial(self._add_option, 'script'))
-        clear_action.triggered.connect(self._clear_action)
+        add_string_action.triggered.connect(partial(parent._add_option, 'string'))
+        add_directory_action.triggered.connect(partial(parent._add_option, 'directory'))
+        add_file_action.triggered.connect(partial(parent._add_option, 'file'))
+        add_integer_action.triggered.connect(partial(parent._add_option, 'integer'))
+        add_float_action.triggered.connect(partial(parent._add_option, 'float'))
+        add_bool_action.triggered.connect(partial(parent._add_option, 'boolean'))
+        add_list_action.triggered.connect(partial(parent._add_option, 'list'))
+        add_dict_action.triggered.connect(partial(parent._add_option, 'dictionary'))
+        add_group_action.triggered.connect(parent.add_group)
+        add_title_action.triggered.connect(partial(parent._add_option, 'title'))
+        add_color_action.triggered.connect(partial(parent._add_option, 'color'))
+        add_vector3f_action.triggered.connect(partial(parent._add_option, 'vector3f'))
+        add_script_action.triggered.connect(partial(parent._add_option, 'script'))
+        clear_action.triggered.connect(parent._clear_action)
 
         return create_menu
+
+    def _create_group_context_menu(self, group, menu):
+        self._create_context_menu(menu=menu, parent=group)
+
+        group.copy_action.setVisible(False)
+
+        string_icon = tp.ResourcesMgr().icon('rename')
+        remove_icon = tp.ResourcesMgr().icon('trash')
+
+        rename_action = QAction(string_icon, 'Rename', menu)
+        menu.addAction(rename_action)
+        remove_action = QAction(remove_icon, 'Remove', menu)
+        menu.addAction(remove_action)
+
+        rename_action.triggered.connect(group.rename)
+        remove_action.triggered.connect(group.remove)
+
+        return menu
 
     def _add_option(self, option_type, name=None, value=None, parent=None):
         if option_type is None:
@@ -468,7 +486,8 @@ class OptionList(QGroupBox, object):
         if parent:
             sub_parent = parent
             while sub_parent:
-                if issubclass(sub_parent.__class__, OptionList) and not sub_parent.__class__ == OptionListGroup:
+                if issubclass(sub_parent.__class__, OptionList) and not \
+                        sub_parent.__class__.__name__.endswith('OptionListGroup'):
                     break
                 name = sub_parent.get_name()
                 parents.append(name)
@@ -545,25 +564,26 @@ class OptionList(QGroupBox, object):
                         self.add_group(group_name, value, group_widget)
                         widget = self._find_group_widget(after_search_group)
 
-                if not option_type and not is_group:
-                    if type(value) == unicode or type(value) == str:
-                        option_type = 'string'
-                    elif type(value) == float:
-                        option_type = 'float'
-                    elif type(option[1]) == int:
-                        option_type = 'integer'
-                    elif type(option[1]) == bool:
-                        option_type = 'boolean'
-                    elif type(option[1]) == dict:
-                        option_type = 'dictionary'
-                    elif type(option[1]) == list:
-                        option_type = 'list'
-                    elif option[1] is None:
-                        option_type = 'title'
+                if not is_group:
+                    if not option_type:
+                        if type(value) == unicode or type(value) == str:
+                            option_type = 'string'
+                        elif type(value) == float:
+                            option_type = 'float'
+                        elif type(option[1]) == int:
+                            option_type = 'integer'
+                        elif type(option[1]) == bool:
+                            option_type = 'boolean'
+                        elif type(option[1]) == dict:
+                            option_type = 'dictionary'
+                        elif type(option[1]) == list:
+                            option_type = 'list'
+                        elif option[1] is None:
+                            option_type = 'title'
 
-                new_option = self._add_custom_option(option_type, name, value, widget)
-                if not new_option:
-                    self._add_option(option_type, name, value, widget)
+                    new_option = self._add_custom_option(option_type, name, value, widget)
+                    if not new_option:
+                        self._add_option(option_type, name, value, widget)
 
         except Exception:
             qt.logger.error(traceback.format_exc())
@@ -575,14 +595,14 @@ class OptionList(QGroupBox, object):
             self._auto_rename = True
 
     def _find_list(self, widget):
-        if widget.__class__ == OptionList:
+        if widget.__class__.__name__.endswith('OptionList'):
             return widget
 
         parent = widget.get_parent()
         if not parent:
             return
 
-        while parent.__class__ != OptionList:
+        while not parent.__class__.__name__.endswith('OptionList'):
             parent = parent.get_parent()
 
         return parent
@@ -784,7 +804,6 @@ class OptionListGroup(OptionList, object):
         self._original_background_color = self.palette().color(self.backgroundRole())
         self._option_type = self.get_option_type()
         self.supress_select = False
-        self.copy_action.setVisible(False)
         self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
 
     def mousePressEvent(self, event):
@@ -822,23 +841,8 @@ class OptionListGroup(OptionList, object):
 
         self.group.expand.connect(self._on_expand_updated)
 
-    def _create_context_menu(self):
-        """
-        Internal function that creates context menu of the group
-        """
-
-        super(OptionListGroup, self)._create_context_menu()
-
-        string_icon = tp.ResourcesMgr().icon('rename')
-        remove_icon = tp.ResourcesMgr().icon('trash')
-
-        rename_action = QAction(string_icon, 'Rename', self._context_menu)
-        self._context_menu.addAction(rename_action)
-        remove_action = QAction(remove_icon, 'Remove', self._context_menu)
-        self._context_menu.addAction(remove_action)
-
-        rename_action.triggered.connect(self.rename)
-        remove_action.triggered.connect(self.remove)
+    def _create_context_menu(self, menu, parent):
+        pass
 
     def get_name(self):
         """
