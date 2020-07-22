@@ -214,4 +214,3 @@ class ListItemWidget(base.BaseWidget, object):
     def _on_remove_item(self):
         self._garbage = True
         self.itemRemoved.emit(self)
-

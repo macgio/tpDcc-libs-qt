@@ -264,7 +264,8 @@ class SnapshotWindow(tpDcc.Window, object):
         self._keep_aspect = not self._keep_aspect
         if self._keep_aspect:
             self._aspect_link_button.setIcon(self._link_icon)
-            self.window().resize(self.window().height() + self._get_width_offset(), self.window().height() + self._get_height_offset())
+            self.window().resize(
+                self.window().height() + self._get_width_offset(), self.window().height() + self._get_height_offset())
             self._update_widgets()
         else:
             self._aspect_link_button.setIcon(self._unlink_icon)

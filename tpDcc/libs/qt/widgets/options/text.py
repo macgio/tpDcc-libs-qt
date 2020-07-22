@@ -180,4 +180,3 @@ class TextWidget(base.BaseWidget, object):
 
     def _on_text_changed(self):
         self.textChanged.emit(self.text_widget.text())
-

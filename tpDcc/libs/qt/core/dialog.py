@@ -1102,6 +1102,3 @@ class NativeDialog(object):
         """
 
         raise NotImplementedError('select_folder() function is not implemented')
-
-
-

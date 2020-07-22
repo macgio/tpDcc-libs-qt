@@ -458,7 +458,7 @@ class ToolsetWidget(stack.StackItem, object):
             return False
 
         supported_versions = self._supported_dccs[dcc_name]
-        if not dcc_version in supported_versions:
+        if dcc_version not in supported_versions:
             tpDcc.logger.warning('Connected DCC {} is supported but version {} is not!'.format(dcc_name, dcc_version))
             self._reset_connect_button()
             return False
