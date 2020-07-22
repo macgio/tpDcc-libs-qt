@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.snapshot module
+=====================================
+
+.. automodule:: tpDcc.libs.qt.widgets.snapshot
+   :members:
+   :undoc-members:
+   :show-inheritance:

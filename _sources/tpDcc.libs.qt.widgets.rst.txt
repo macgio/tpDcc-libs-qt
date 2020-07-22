@@ -8,6 +8,7 @@ Subpackages
    :maxdepth: 4
 
    tpDcc.libs.qt.widgets.library
+   tpDcc.libs.qt.widgets.options
 
 Submodules
 ----------
@@ -60,7 +61,6 @@ Submodules
    tpDcc.libs.qt.widgets.messagebox
    tpDcc.libs.qt.widgets.messagehandler
    tpDcc.libs.qt.widgets.models
-   tpDcc.libs.qt.widgets.options
    tpDcc.libs.qt.widgets.overlay
    tpDcc.libs.qt.widgets.page
    tpDcc.libs.qt.widgets.panel
@@ -69,6 +69,7 @@ Submodules
    tpDcc.libs.qt.widgets.project
    tpDcc.libs.qt.widgets.search
    tpDcc.libs.qt.widgets.sliders
+   tpDcc.libs.qt.widgets.snapshot
    tpDcc.libs.qt.widgets.spinbox
    tpDcc.libs.qt.widgets.splitter
    tpDcc.libs.qt.widgets.stack

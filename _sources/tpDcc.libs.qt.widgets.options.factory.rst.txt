@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.options.factory module
+============================================
+
+.. automodule:: tpDcc.libs.qt.widgets.options.factory
+   :members:
+   :undoc-members:
+   :show-inheritance:

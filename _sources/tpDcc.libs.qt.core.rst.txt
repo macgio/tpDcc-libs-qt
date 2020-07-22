@@ -12,6 +12,7 @@ Submodules
    tpDcc.libs.qt.core.base
    tpDcc.libs.qt.core.cache
    tpDcc.libs.qt.core.color
+   tpDcc.libs.qt.core.completer
    tpDcc.libs.qt.core.config
    tpDcc.libs.qt.core.consts
    tpDcc.libs.qt.core.contexts

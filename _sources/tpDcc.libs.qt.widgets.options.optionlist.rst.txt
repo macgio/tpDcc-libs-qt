@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.options.optionlist module
+===============================================
+
+.. automodule:: tpDcc.libs.qt.widgets.options.optionlist
+   :members:
+   :undoc-members:
+   :show-inheritance:

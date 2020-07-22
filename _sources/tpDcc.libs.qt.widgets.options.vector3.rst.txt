@@ -1,0 +1,7 @@
+tpDcc.libs.qt.widgets.options.vector3 module
+============================================
+
+.. automodule:: tpDcc.libs.qt.widgets.options.vector3
+   :members:
+   :undoc-members:
+   :show-inheritance:
