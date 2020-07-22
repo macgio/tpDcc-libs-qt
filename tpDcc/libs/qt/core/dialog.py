@@ -17,8 +17,7 @@ from Qt.QtWidgets import *
 from Qt.QtGui import *
 
 import tpDcc as tp
-from tpDcc import register
-from tpDcc.libs.qt.core import base, qtutils, animation, theme, dragger, resizers
+from tpDcc.libs.qt.core import qtutils, animation, theme, dragger, resizers
 from tpDcc.libs.qt.widgets import layouts, dividers
 
 
@@ -45,9 +44,9 @@ class Dialog(QDialog, object):
         if parent is None:
             parent = tp.Dcc.get_main_window()
 
-        self._setup_resizers()
-
         super(Dialog, self).__init__(parent=parent)
+
+        self._setup_resizers()
 
         title = kwargs.get('title', '')
         name = kwargs.get('name', title or self.__class__.__name__)
@@ -145,7 +144,7 @@ class Dialog(QDialog, object):
                 self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
             self.set_resizer_active(False)
 
-        window.show()
+        # window.show()
         #
         # if self._frameless:
         #     self.setAttribute(Qt.WA_TranslucentBackground)
@@ -425,14 +424,14 @@ class Dialog(QDialog, object):
         Internal function that setup window resizers
         """
 
-        self._top_resizer = resizers.VerticalResizer()
-        self._bottom_resizer = resizers.VerticalResizer()
-        self._right_resizer = resizers.HorizontalResizer()
-        self._left_resizer = resizers.HorizontalResizer()
-        self._top_left_resizer = resizers.CornerResizer()
-        self._top_right_resizer = resizers.CornerResizer()
-        self._bottom_left_resizer = resizers.CornerResizer()
-        self._bottom_right_resizer = resizers.CornerResizer()
+        self._top_resizer = resizers.VerticalResizer(parent=self)
+        self._bottom_resizer = resizers.VerticalResizer(parent=self)
+        self._right_resizer = resizers.HorizontalResizer(parent=self)
+        self._left_resizer = resizers.HorizontalResizer(parent=self)
+        self._top_left_resizer = resizers.CornerResizer(parent=self)
+        self._top_right_resizer = resizers.CornerResizer(parent=self)
+        self._bottom_left_resizer = resizers.CornerResizer(parent=self)
+        self._bottom_right_resizer = resizers.CornerResizer(parent=self)
 
         self._resizers = [
             self._top_resizer, self._top_right_resizer, self._right_resizer, self._bottom_right_resizer,
@@ -1105,8 +1104,4 @@ class NativeDialog(object):
         raise NotImplementedError('select_folder() function is not implemented')
 
 
-register.register_class('Dialog', Dialog)
-register.register_class('OpenFileDialog', OpenFileDialog)
-register.register_class('SaveFileDialog', SaveFileDialog)
-register.register_class('SelectFolderDialog', SelectFolderDialog)
-register.register_class('NativeDialog', NativeDialog)
+

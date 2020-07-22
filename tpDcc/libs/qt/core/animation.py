@@ -177,7 +177,7 @@ def fade_window(start=0, end=1, duration=300, object=None, on_finished=None):
 
     anim_curve = QEasingCurve()
     anim_curve.setType(QEasingCurve.OutQuint)
-    animation = QPropertyAnimation(object, 'windowOpacity', object)
+    animation = QPropertyAnimation(object, b'windowOpacity', object)
     animation.setEasingCurve(anim_curve)
     animation.setDuration(duration)
     animation.setStartValue(start)

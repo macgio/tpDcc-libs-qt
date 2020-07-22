@@ -7,7 +7,10 @@ Utility module that contains functions related with formatters
 
 from __future__ import print_function, division, absolute_import
 
-from singledispatch import singledispatch
+try:
+    from functools import singledispatch
+except ImportError:
+    from singledispatch import singledispatch
 
 
 def apply_formatter(formatter, *args, **kwargs):
