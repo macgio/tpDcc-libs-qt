@@ -8,7 +8,6 @@ Subpackages
    :maxdepth: 4
 
    tpDcc.libs.qt.core
-   tpDcc.libs.qt.externals
    tpDcc.libs.qt.managers
    tpDcc.libs.qt.resources
    tpDcc.libs.qt.widgets
