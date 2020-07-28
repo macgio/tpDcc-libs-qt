@@ -856,7 +856,7 @@ class ColorWheel(QWidget, object):
         self.wheelWidthChanged.emit(width)
 
     def _setup(self):
-        background_value = self.palette().background().color().valueF()
+        background_value = self.palette().window().color().valueF()
         self._background_is_dark = background_value < 0.5
 
     def _init_buffer(self, size):
