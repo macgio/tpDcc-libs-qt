@@ -7,7 +7,6 @@ before_install:
 - pip install sphinx
 - pip install sphinx_rtd_theme
 install:
-- pip install -r requirements.txt
 - python setup.py install
 script:
 - find . -name \*.py -exec pycodestyle --exclude */externals/*,*/resources/* --max-line-length=120 --ignore=E402 {} +

@@ -15,11 +15,6 @@ from tpDcc.libs import qt
 from tpDcc.libs.python import fileio, folder, settings, osplatform, path as path_utils
 from tpDcc.libs.qt.widgets.library import items
 
-try:
-    from tpDcc.libs.python.externals.scandir import walk
-except ImportError:
-    from os import walk
-
 
 class LibraryManager(object):
     """
@@ -224,7 +219,7 @@ class LibraryManager(object):
         max_depth = depth
         start_depth = path.count(os.path.sep)
 
-        for root, dirs, files in walk(path, followlinks=True):
+        for root, dirs, files in os.walk(path, followlinks=True):
             files.extend(dirs)
             for filename in files:
                 remove = False

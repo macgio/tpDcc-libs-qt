@@ -18,7 +18,11 @@ from Qt.QtCore import *
 from Qt.QtGui import *
 from Qt.QtSvg import *
 
-from pysvg import parser
+PSVG_AVAILABLE = True
+try:
+    from pysvg import parser
+except ImportError:
+    PSVG_AVAILABLE = False
 
 _COMMANDS = set('MmZzLlHhVvCcSsQqTtAa')
 _COMMAND_RE = re.compile('([MmZzLlHhVvCcSsQqTtAa])')
@@ -577,10 +581,13 @@ class SvgParser(object):
         :return: SVG object
         """
 
-        try:
-            svg_obj = parser.parse(svg_path)
-        except Exception as exc:
-            raise Exception('{} | SVG file "{}" is not valid!'.format(exc, svg_path))
+        if PSVG_AVAILABLE:
+            try:
+                svg_obj = parser.parse(svg_path)
+            except Exception as exc:
+                raise Exception('{} | SVG file "{}" is not valid!'.format(exc, svg_path))
+        else:
+            raise Exception('PSV module dependency is not available!')
 
         return svg_obj
 
