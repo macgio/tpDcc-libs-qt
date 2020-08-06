@@ -15,8 +15,6 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-import appdirs
-
 from tpDcc.libs import qt
 import tpDcc as tp
 from tpDcc.libs.python import path, folder
@@ -476,7 +474,7 @@ class BaseWindow(QMainWindow, object):
         :return: str
         """
 
-        return path.clean_path(os.path.join(appdirs.user_data_dir(), self.WindowId))
+        return path.clean_path(os.path.join(path.get_user_data_dir(), self.WindowId))
 
     def get_settings_file(self):
         """
