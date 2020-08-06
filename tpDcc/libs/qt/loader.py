@@ -58,25 +58,30 @@ def init(dev=False):
         """
 
         dcc_loaded = False
-        if 'cmds' in main.__dict__:
-            from tpDcc.dccs.maya import loader as dcc_loader
-            dcc_loaded = True
-        elif 'MaxPlus' in main.__dict__:
-            from tpDcc.dccs.max import loader as dcc_loader
-            dcc_loaded = True
-        elif 'hou' in main.__dict__:
-            from tpDcc.dccs.houdini import loader as dcc_loader
-            dcc_loaded = True
-        elif 'nuke' in main.__dict__:
-            from tpDcc.dccs.nuke import loader as dcc_loader
-            dcc_loaded = True
-        else:
-            try:
-                import unreal
-                from tpDcc.dccs.unreal import loader as dcc_loader
+        try:
+            if 'cmds' in main.__dict__:
+                from tpDcc.dccs.maya import loader as dcc_loader
                 dcc_loaded = True
-            except Exception as exc:
-                pass
+            elif 'MaxPlus' in main.__dict__:
+                from tpDcc.dccs.max import loader as dcc_loader
+                dcc_loaded = True
+            elif 'hou' in main.__dict__:
+                from tpDcc.dccs.houdini import loader as dcc_loader
+                dcc_loaded = True
+            elif 'nuke' in main.__dict__:
+                from tpDcc.dccs.nuke import loader as dcc_loader
+                dcc_loaded = True
+            else:
+                try:
+                    import unreal
+                    from tpDcc.dccs.unreal import loader as dcc_loader
+                    dcc_loaded = True
+                except Exception as exc:
+                    pass
+        except ImportError:
+            logger.warning('Impossible to setup DCC. DCC not found. Abstract one will be used.')
+        except Exception as exc:
+            logger.warning('Error while setting DCC: {}. Abstract one will be used.'.format(exc))
 
         if dcc_loaded:
             dcc_loader.init_ui()
@@ -84,7 +89,6 @@ def init(dev=False):
             global Dcc
             from tpDcc.core import dcc
             Dcc = dcc.UnknownDCC
-            logger.warning('No DCC found, using abstract one!')
 
     app = QApplication.instance() or QApplication(sys.argv)
 
