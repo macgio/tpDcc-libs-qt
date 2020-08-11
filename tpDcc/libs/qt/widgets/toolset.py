@@ -89,6 +89,14 @@ class ToolsetWidget(stack.StackItem, object):
     # TO OVERRIDE
     # =================================================================================================================
 
+    def setup_client(self):
+        """
+        Function that is called to setup the client of the application
+        Override in specific toolset widgets
+        """
+
+        pass
+
     def pre_content_setup(self):
         """
         Function that is called before toolset contents are created
@@ -427,23 +435,25 @@ class ToolsetWidget(stack.StackItem, object):
             self._reset_connect_button()
             return False
 
-        success, dcc_exe = self._client.update_paths()
-        if not success:
-            tpDcc.logger.warning('Error while connecting to Dcc: update paths ...')
-            self._reset_connect_button()
-            return False
+        if tpDcc.is_standalone():
 
-        success = self._client.update_dcc_paths(dcc_exe)
-        if not success:
-            tpDcc.logger.warning('Error while connecting to Dcc: update dcc paths ...')
-            self._reset_connect_button()
-            return False
+            success, dcc_exe = self._client.update_paths()
+            if not success:
+                tpDcc.logger.warning('Error while connecting to Dcc: update paths ...')
+                self._reset_connect_button()
+                return False
 
-        success = self._client.init_dcc()
-        if not success:
-            tpDcc.logger.warning('Error while connecting to Dcc: init dcc ...')
-            self._reset_connect_button()
-            return False
+            success = self._client.update_dcc_paths(dcc_exe)
+            if not success:
+                tpDcc.logger.warning('Error while connecting to Dcc: update dcc paths ...')
+                self._reset_connect_button()
+                return False
+
+            success = self._client.init_dcc()
+            if not success:
+                tpDcc.logger.warning('Error while connecting to Dcc: init dcc ...')
+                self._reset_connect_button()
+                return False
 
         dcc_name, dcc_version = self._client.get_dcc_info()
         if not dcc_name or not dcc_version:
@@ -465,6 +475,9 @@ class ToolsetWidget(stack.StackItem, object):
 
         self._connect_button.setEnabled(True)
         self._connect_button.setToolTip('Connected to: {} ({})'.format(dcc_name, dcc_version))
+
+        if not tpDcc.is_standalone():
+            self._connect_button.setVisible(False)
 
         return True
 
