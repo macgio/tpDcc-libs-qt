@@ -159,23 +159,23 @@ class ToolsetsManager(object):
         :return:
         """
 
-        tolset_widgets = list()
+        toolset_widgets = list()
 
         if package_name and package_name not in self._toolsets:
             return
 
         if package_name:
-            tolset_widgets = self._toolsets[package_name].values()
+            toolset_widgets = self._toolsets[package_name].values()
         else:
             for package_name, toolsets in self._toolsets.items():
                 for toolset in toolsets:
                     for toolset_id, toolset_widget in toolset.items():
-                        tolset_widgets.append(toolset_widget)
+                        toolset_widgets.append(toolset_widget)
 
         if sort:
-            tolset_widgets.sort(key=lambda toolset: toolset.CONFIG.get('name'))
+            toolset_widgets.sort(key=lambda toolset: toolset.CONFIG.get('name'))
 
-        return tolset_widgets
+        return toolset_widgets
 
     def toolset_color(self, toolset_id, package_name=None):
         """
@@ -205,6 +205,34 @@ class ToolsetsManager(object):
             tpDcc.logger.warning(
                 'ToolSet "{}" not found in any toolset group. Impossible to retrieve color!'.format(toolset_id))
             return 255, 255, 255
+
+    def toolset_menu(self, toolset_type=None, package_name=None):
+        """
+        Returns the menu data of the given toolset
+        :param toolset_type: str
+        :param package_name: str
+        :return: list(list)
+        """
+
+        if not package_name:
+            package_name = toolset_type.replace('.', '-').split('-')[0]
+
+        toolset_menus = list()
+
+        if self._toolset_groups and package_name in self._toolset_groups:
+            for pkg_name, toolset_groups in self._toolset_groups.items():
+                if package_name != pkg_name:
+                    continue
+                for toolset_group in toolset_groups:
+                    if toolset_type:
+                        if toolset_group['type'] != toolset_type:
+                            continue
+                    toolset_menus.append(toolset_group.get('menu', list()))
+        else:
+            tpDcc.logger.warning(
+                'Toolset "{}" not found in any toolset group. Impossible to retrieve menu data!'.format(toolset_type))
+
+        return toolset_menus
 
     def group_types(self):
         found_group_types = list()
