@@ -533,7 +533,7 @@ class Theme(QObject, object):
     #
         overrides = self._overrides or dict()
         options.update(overrides)
-    #
+
         return options
 
     def stylesheet_file(self):

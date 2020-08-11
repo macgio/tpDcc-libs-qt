@@ -79,9 +79,13 @@ class BaseWindow(QMainWindow, object):
         self.setObjectName(str(self.WindowId))
         self.setWindowTitle(kwargs.get('title', self.WindowName))
         self.setWindowIcon(kwargs.get('icon', tp.ResourcesMgr().icon('tpdcc')))
+        # self.setFocusPolicy(Qt.ClickFocus)
+        self.setMouseTracking(True)
 
         self.resize(self._init_width, self._init_height)
         self.center(self._init_width, self._init_height)
+
+        self.setProperty('tool', self)
 
         # Load base generic window UI
         self._base_ui()
@@ -255,9 +259,9 @@ class BaseWindow(QMainWindow, object):
         :return: QLayout
         """
 
-        main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(2, 2, 2, 2)
-        main_layout.setSpacing(2)
+        main_layout = layouts.VerticalLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
 
         return main_layout
 
@@ -280,12 +284,12 @@ class BaseWindow(QMainWindow, object):
 
         # Central Widget
 
-        central_widget = QWidget(parent=self)
-        self.setCentralWidget(central_widget)
+        self._central_widget = QWidget(self)
+        self.setCentralWidget(self._central_widget)
         self._central_layout = layouts.VerticalLayout(margins=(0, 0, 0, 0), spacing=0)
-        central_widget.setLayout(self._central_layout)
+        self._central_widget.setLayout(self._central_layout)
 
-        self._top_widget = QWidget()
+        self._top_widget = QWidget(self)
         self._top_widget.setObjectName('topWindowWidget')
         self._top_layout = layouts.VerticalLayout(margins=(0, 0, 0, 0), spacing=0)
         self._top_widget.setLayout(self._top_layout)
@@ -315,7 +319,7 @@ class BaseWindow(QMainWindow, object):
                 self._view_menu.addAction(i.toggleViewAction())
         self._top_layout.addWidget(self._menubar)
 
-        self.main_widget = WindowContents()
+        self.main_widget = WindowContents(self)
         self.main_layout = self.get_main_layout()
         self.main_widget.setLayout(self.main_layout)
 
@@ -591,13 +595,6 @@ class BaseWindow(QMainWindow, object):
         stylesheet = current_theme.stylesheet()
         self.setStyleSheet(stylesheet)
 
-        # # TODO: This operation is VERY heavy. Find a better way of doing this
-        # all_widgets = qtutils.iterate_children(self.main_widget, qobj_class=QObject)
-        # for w in all_widgets:
-        #     if hasattr(w, 'setStyleSheet'):
-        #         w.setStyleSheet(stylesheet)
-        #         w.update()
-
     # ============================================================================================================
     # TOOLBAR
     # ============================================================================================================
@@ -861,11 +858,7 @@ class MainWindow(BaseWindow, object):
             r.windowResizedFinished.connect(self.windowResizedFinished)
         self.set_resize_directions()
 
-        grid_layout = layouts.GridLayout()
-        grid_layout.setHorizontalSpacing(0)
-        grid_layout.setVerticalSpacing(0)
-        grid_layout.setSpacing(0)
-        grid_layout.setContentsMargins(0, 0, 0, 0)
+        grid_layout = layouts.GridLayout(spacing=0, vertical_spacing=0, horizontal_spacing=0)
         grid_layout.addWidget(self._top_widget, 1, 1, 1, 1)
         grid_layout.addWidget(self.main_widget, 2, 1, 1, 1)
         grid_layout.addWidget(self._top_left_resizer, 0, 0, 1, 1)
@@ -1003,6 +996,19 @@ class MainWindow(BaseWindow, object):
             self.set_resizers_active(False)
 
         window.show()
+
+    # ============================================================================================================
+    # DRAGGER
+    # ============================================================================================================
+
+    def set_window_buttons_state(self, state, show_close_button=False):
+        """
+        Sets the state of the dragger buttons
+        :param state: bool
+        :param show_close_button: bool
+        """
+
+        self._dragger.set_window_buttons_state(state, show_close_button)
 
     # ============================================================================================================
     # RESIZERS
@@ -1204,7 +1210,7 @@ class MainWindow(BaseWindow, object):
         if not self.dockable():
             return False
 
-        raise NotImplementedError('docked function is not implemented!')
+        return False
 
     def is_floating(self):
         """
@@ -1439,7 +1445,6 @@ class DockWindow(QMainWindow, object):
 
             self.setWidget(window)
 
-        # region Override Functions
         def setWidget(self, widget):
             """
             Sets the window instance of the dockable main window
@@ -1456,9 +1461,6 @@ class DockWindow(QMainWindow, object):
                 widget.setParent(self)
                 widget.windowTitleChanged.connect(self._window_title_changed)
 
-        # endregion
-
-        # region Private Functions
         def _visibility_changed(self, state):
             """
             Process QDockWidget's visibilityChanged signal
@@ -1507,7 +1509,11 @@ class DockWindow(QMainWindow, object):
         :return: QLayout
         """
 
-        return QVBoxLayout()
+        main_layout = layouts.VerticalLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(2)
+
+        return main_layout
 
     def ui(self):
         """

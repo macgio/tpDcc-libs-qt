@@ -14,9 +14,25 @@ from Qt.QtWidgets import *
 from Qt.QtGui import *
 
 import tpDcc
-from tpDcc.libs.python import color
+from tpDcc.libs.python import python, color
 from tpDcc.libs.qt.core import qtutils
 from tpDcc.libs.qt.widgets import stack, buttons
+
+
+class ToolsetPropertiesDict(python.ObjectDict, object):
+
+    def update(self, others, convert_dict=False):
+        """
+        Updates dicts found in the item as well
+        :param others: dict, dictionary to update this object with
+        :param convert_dict: bool, Convert the dictionaries in others items to ToolsetPropertyDict
+        """
+
+        if convert_dict:
+            for k, d in others.items():
+                others[k] = ToolsetPropertiesDict(**d) if type(d) == dict else others[k]
+
+        super(ToolsetPropertiesDict, self).update(others)
 
 
 class ToolsetWidget(stack.StackItem, object):
@@ -25,7 +41,7 @@ class ToolsetWidget(stack.StackItem, object):
     CONFIG = None
     EXTENSION = 'toolset'
 
-    StartLargets = -1
+    StartLargest = -1
     StartSmallest = 0
 
     displaySwitched = Signal()
@@ -59,6 +75,7 @@ class ToolsetWidget(stack.StackItem, object):
         self._client = None
         self._dev = kwargs.get('dev', False)
         self._supported_dccs = self.CONFIG.get('supported_dccs', dict()) if self.CONFIG else dict()
+        self._properties = self._setup_properties()
         title = self.CONFIG.data.get('label', '') if self.CONFIG else ''
         collapsable = kwargs.get('collapsable', True)
         show_item_icon = kwargs.get('show_item_icon', True)
@@ -85,9 +102,21 @@ class ToolsetWidget(stack.StackItem, object):
     def dev(self):
         return self._dev
 
+    @property
+    def properties(self):
+        return self._properties
+
     # =================================================================================================================
     # TO OVERRIDE
     # =================================================================================================================
+
+    def initialize_properties(self):
+        """
+        Initializes properties of the toolset widget
+        :return: list
+        """
+
+        return list()
 
     def setup_client(self):
         """
@@ -258,6 +287,15 @@ class ToolsetWidget(stack.StackItem, object):
 
         return self._stacked_widget.count()
 
+    def item_at(self, index):
+        """
+        Returns widget located in given index of the toolset stack
+        :param index: int
+        :return: QWidget or None
+        """
+
+        return self._stacked_widget.widget(index)
+
     def add_stacked_widget(self, widget):
         """
         Adds a new widget to the stack
@@ -271,6 +309,7 @@ class ToolsetWidget(stack.StackItem, object):
 
         self._widgets.append(widget)
         widget.setProperty('color', self._icon_color)
+        widget.setParent(self._widget_hider)
         self._stacked_widget.addWidget(widget)
 
     def visual_update(self, collapse=True):
@@ -418,6 +457,17 @@ class ToolsetWidget(stack.StackItem, object):
     # =================================================================================================================
     # INTERNAL
     # =================================================================================================================
+
+    def _setup_properties(self, properties=None):
+
+        tool_props = properties or self.initialize_properties()
+        instance_props = ToolsetPropertiesDict()
+        for prop in tool_props:
+            instance_props[prop['name']] = ToolsetPropertiesDict(**prop)
+            if 'default' not in instance_props[p['name']]:
+                instance_props[prop['name']].default = instance_props[prop['name']].value
+
+        return instance_props
 
     def _stop_selection_callback(self):
         print('Stop Selection Callbacks ...')

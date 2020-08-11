@@ -28,6 +28,8 @@ class WindowDragger(QFrame, object):
 
     DEFAULT_LOGO_ICON_SIZE = 22
 
+    doubleClicked = Signal()
+
     def __init__(self, window=None, on_close=None):
         super(WindowDragger, self).__init__(window)
 
@@ -44,6 +46,62 @@ class WindowDragger(QFrame, object):
         self.setObjectName('titleFrame')
 
         self.ui()
+
+    # =================================================================================================================
+    # PROPERTIES
+    # =================================================================================================================
+
+    @property
+    def contents_layout(self):
+        return self._contents_layout
+
+    @property
+    def corner_contents_layout(self):
+        return self._corner_contents_layout
+
+    # =================================================================================================================
+    # OVERRIDES
+    # =================================================================================================================
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton and self._dragging_enabled:
+            self._mouse_press_pos = event.globalPos()
+            self._mouse_move_pos = event.globalPos() - self._window.pos()
+        super(WindowDragger, self).mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() & Qt.LeftButton:
+            global_pos = event.globalPos()
+            if self._mouse_press_pos and self._dragging_enabled:
+                moved = global_pos - self._mouse_press_pos
+                if moved.manhattanLength() > self._dragging_threshold:
+                    diff = global_pos - self._mouse_move_pos
+                    self._window.move(diff)
+                    self._mouse_move_pos = global_pos - self._window.pos()
+        super(WindowDragger, self).mouseMoveEvent(event)
+
+    def mouseDoubleClickEvent(self, event):
+        if self._lock_window_operations:
+            return
+        if self._button_maximized.isVisible():
+            self._on_maximize_window()
+        else:
+            self._on_restore_window()
+        super(WindowDragger, self).mouseDoubleClickEvent(event)
+        self.doubleClicked.emit()
+
+    def mouseReleaseEvent(self, event):
+        if self._mouse_press_pos is not None:
+            if event.button() == Qt.LeftButton and self._dragging_enabled:
+                moved = event.globalPos() - self._mouse_press_pos
+                if moved.manhattanLength() > self._dragging_threshold:
+                    event.ignore()
+                self._mouse_press_pos = None
+        super(WindowDragger, self).mouseReleaseEvent(event)
+
+    # =================================================================================================================
+    # BASE
+    # =================================================================================================================
 
     def ui(self):
 
@@ -111,60 +169,20 @@ class WindowDragger(QFrame, object):
         self._button_restored.clicked.connect(self._on_restore_window)
         self._button_closed.clicked.connect(self._on_close_window)
 
-    @property
-    def contents_layout(self):
-        return self._contents_layout
-
-    @property
-    def corner_contents_layout(self):
-        return self._corner_contents_layout
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton and self._dragging_enabled:
-            self._mouse_press_pos = event.globalPos()
-            self._mouse_move_pos = event.globalPos() - self._window.pos()
-        super(WindowDragger, self).mousePressEvent(event)
-
-    def mouseMoveEvent(self, event):
-        if event.buttons() & Qt.LeftButton:
-            global_pos = event.globalPos()
-            if self._mouse_press_pos and self._dragging_enabled:
-                moved = global_pos - self._mouse_press_pos
-                if moved.manhattanLength() > self._dragging_threshold:
-                    diff = global_pos - self._mouse_move_pos
-                    self._window.move(diff)
-                    self._mouse_move_pos = global_pos - self._window.pos()
-        super(WindowDragger, self).mouseMoveEvent(event)
-
-    def mouseDoubleClickEvent(self, event):
-        if self._lock_window_operations:
-            return
-        if self._button_maximized.isVisible():
-            self._on_maximize_window()
-        else:
-            self._on_restore_window()
-
-    def mouseReleaseEvent(self, event):
-        if self._mouse_press_pos is not None:
-            if event.button() == Qt.LeftButton and self._dragging_enabled:
-                moved = event.globalPos() - self._mouse_press_pos
-                if moved.manhattanLength() > self._dragging_threshold:
-                    event.ignore()
-                self._mouse_press_pos = None
-        super(WindowDragger, self).mouseReleaseEvent(event)
-
-    def set_icon(self, icon, highlight_color=None):
+    def set_icon(self, icon=None, highlight=False):
         """
         Sets the icon of the window dragger
         :param icon: QIcon
+        :param highlight: bool
         """
 
+        icon = icon or self._window.windowIcon()
         if not icon or icon.isNull():
-            return
+            icon = tpDcc.ResourcesMgr().icon('tpDcc')
 
         size = self.DEFAULT_LOGO_ICON_SIZE
 
-        if highlight_color is not None:
+        if highlight:
             self._logo_button.set_icon(
                 [icon], colors=[None], tint_composition=QPainter.CompositionMode_Plus, size=size,
                 icon_scaling=[1], color_offset=0, grayscale=True)
@@ -231,16 +249,16 @@ class WindowDragger(QFrame, object):
 
         self._logo_button.setVisible(False)
 
-    def set_window_buttons_state(self, state):
+    def set_window_buttons_state(self, state, show_close_button=False):
         """
         Sets the state of the dragger buttons
-        :param enabled: bool
-        :param visible: bool
+        :param state: bool
+        :param show_close_button: bool
         """
 
         self._lock_window_operations = not state
-        self._button_closed.setEnabled(state)
-        self._button_closed.setVisible(state)
+        self._button_closed.setEnabled(state or show_close_button)
+        self._button_closed.setVisible(state or show_close_button)
 
         if self._maximize_enabled:
             self._button_maximized.setEnabled(state)

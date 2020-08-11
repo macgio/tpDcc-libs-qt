@@ -38,17 +38,7 @@ def theme_mixin(cls):
         self.style().polish(self)
 
     def theme(self):
-        found_theme = None
-
-        # top_widget = self
-        # while top_widget.parentWidget():
-        #     top_widget = top_widget.parentWidget()
-        #     if hasattr(top_widget, 'theme') and callable(getattr(top_widget, 'theme')):
-        #         found_theme = top_widget.theme()
-        #         break
-
-        if not found_theme:
-            found_theme = core_theme.Theme()
+        found_theme = self._theme if hasattr(self, '_theme') else core_theme.Theme()
 
         return found_theme
 

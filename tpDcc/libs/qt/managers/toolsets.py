@@ -109,7 +109,8 @@ class ToolsetsManager(object):
                 break
 
         if not toolset_found:
-            raise KeyError('"Toolset "{}" not found in package: "{}".'.format(toolset_id, package_name))
+            tpDcc.logger.warning('Toolset "{}" not found in package: "{}".'.format(toolset_id, package_name))
+            return None
 
         if as_dict:
             return toolset_found
@@ -148,8 +149,15 @@ class ToolsetsManager(object):
         :return: list(ToolsetWidget)
         """
 
+        toolsets_found = list()
         toolset_ids = self.toolset_ids(group_type, package_name=package_name)
-        return [self.toolset(toolset_id, package_name=package_name, as_dict=as_dict) for toolset_id in toolset_ids]
+        for toolset_id in toolset_ids:
+            new_toolset = self.toolset(toolset_id, package_name=package_name, as_dict=as_dict)
+            if not new_toolset:
+                continue
+            toolsets_found.append(new_toolset)
+
+        return toolsets_found
 
     def toolset_widgets(self, package_name=None, sort=True):
         """

@@ -39,11 +39,9 @@ class Dialog(QDialog, object):
     dialogResizedFinished = Signal()
     dialogClosed = Signal()
 
-    def __init__(self, parent=None, **kwargs):
+    def __init__(self, **kwargs):
 
-        if parent is None:
-            parent = tp.Dcc.get_main_window()
-
+        parent = kwargs.get('parent', tp.Dcc.get_main_window())
         super(Dialog, self).__init__(parent=parent)
 
         self._setup_resizers()

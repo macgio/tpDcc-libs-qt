@@ -30,6 +30,7 @@ class StyleSheet(object):
 
         stylesheet = cls()
         data = stylesheet.read(path)
+        data = StyleSheet.include_paths(path, data)
         data = StyleSheet.format(data, **kwargs)
         stylesheet.set_data(data)
 
@@ -65,8 +66,34 @@ class StyleSheet(object):
 
         return data
 
-    @staticmethod
-    def format(data=None, options=None, dpi=1, **kwargs):
+    @classmethod
+    def include_paths(cls, file_path, data):
+        if not file_path or not os.path.isfile(file_path):
+            return data
+
+        file_dir = os.path.dirname(file_path)
+        included_data = list()
+        for line in data.split('\n'):
+            if not line.startswith('#include '):
+                included_data.append(line)
+                continue
+            file_name_to_include = line.replace('#include ', '').replace('\r', '')
+            file_to_include = os.path.abspath(os.path.join(file_dir, file_name_to_include))
+            if not os.path.isfile(file_to_include):
+                continue
+
+            load_data = cls.read(file_to_include)
+            new_data = cls.include_paths(file_to_include, load_data)
+
+            if new_data:
+                included_data.append('\n/*Included from: {}*/'.format(file_to_include))
+            for load_line in new_data.split('\n'):
+                included_data.append(load_line)
+
+        return '\n'.join(included_data)
+
+    @classmethod
+    def format(cls, data=None, options=None, dpi=1, **kwargs):
         """
         Returns style with proper format
         :param data: str

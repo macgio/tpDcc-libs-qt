@@ -9,9 +9,8 @@ from __future__ import print_function, division, absolute_import
 
 from Qt.QtCore import *
 from Qt.QtWidgets import *
-from Qt.QtGui import *
 
-from tpDcc.libs.qt.widgets import label
+from tpDcc.libs.qt.widgets import label, layouts
 
 
 class Divider(QWidget, object):
@@ -22,13 +21,11 @@ class Divider(QWidget, object):
         Qt.AlignRight: 80
     }
 
-    def __init__(self, text=None, shadow=True, color=(150, 150, 150),
-                 orientation=Qt.Horizontal, alignment=Qt.AlignLeft, parent=None):
+    def __init__(self, text=None, shadow=True, orientation=Qt.Horizontal, alignment=Qt.AlignLeft, parent=None):
         """
         Basic standard splitter with optional text
         :param str text: Optional text to include as title in the splitter
         :param bool shadow: True if you want a shadow above the splitter
-        :param tuple(int) color: Color of the slitter's text
         :param Qt.Orientation orientation: Orientation of the splitter
         :param Qt.Align alignment: Alignment of the splitter
         :param QWidget parent: Parent of the splitter
@@ -39,37 +36,13 @@ class Divider(QWidget, object):
         self._orient = orientation
         self._text = None
 
-        main_color = 'rgba(%s, %s, %s, 255)' % color
-        shadow_color = 'rgba(45, 45, 45, 255)'
-
-        # bottom_border = ''
-        # if shadow:
-        #     bottom_border = 'border-bottom:1px solid %s;' % shadow_color
-        #
-        # style_sheet = "border:0px solid rgba(0,0,0,0); \
-        #                  background-color: %s; \
-        #                  line-height: 1px; \
-        #                  %s" % (main_color, bottom_border)
-
-        font = QFont()
-        if shadow:
-            font.setBold(True)
-        self._text_width = QFontMetrics(font)
-        width = self._text_width.width(text) + 6
-
-        main_layout = QHBoxLayout()
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
+        main_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
         self.setLayout(main_layout)
 
         self._label = label.BaseLabel().secondary()
-        # self._label.setFont(font)
-        # self._label.setMaximumWidth(width)
 
         first_line = QFrame()
         self._second_line = QFrame()
-        # first_line.setStyleSheet(style_sheet)
-        # self._second_line.setStyleSheet(style_sheet)
 
         main_layout.addWidget(first_line)
         main_layout.addWidget(self._label)
@@ -154,21 +127,16 @@ class Divider(QWidget, object):
             self._label.setVisible(bool(text))
             self._second_line.setVisible(bool(text))
 
-        # width = self._text_width.width(text) + 6
-        # self._label.setMaximumWidth(width)
 
-
-class DividerLayout(QHBoxLayout, object):
+class DividerLayout(layouts.HorizontalLayout, object):
     """
     Basic splitter to separate layouts
     """
 
     def __init__(self):
-        super(DividerLayout, self).__init__()
+        super(DividerLayout, self).__init__(margins=(40, 2, 40, 2))
 
-        self.setContentsMargins(40, 2, 40, 2)
-
-        splitter = Divider(shadow=False, color=(60, 60, 60))
+        splitter = Divider(shadow=False)
         splitter.setFixedHeight(2)
 
         self.addWidget(splitter)
@@ -177,10 +145,8 @@ class DividerLayout(QHBoxLayout, object):
 def get_horizontal_separator_widget(max_height=30):
 
     v_div_w = QWidget()
-    v_div_l = QVBoxLayout()
+    v_div_l = layouts.VerticalLayout(spacing=0, margins=(5, 5, 5, 5))
     v_div_l.setAlignment(Qt.AlignLeft)
-    v_div_l.setContentsMargins(5, 5, 5, 5)
-    v_div_l.setSpacing(0)
     v_div_w.setLayout(v_div_l)
     v_div = QFrame()
     v_div.setMaximumHeight(max_height)

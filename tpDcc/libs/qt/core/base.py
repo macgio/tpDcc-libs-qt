@@ -11,6 +11,7 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 
 from tpDcc.libs.qt.core import qtutils, mixin, theme
+from tpDcc.libs.qt.widgets import layouts
 
 
 @mixin.theme_mixin
@@ -80,11 +81,7 @@ class BaseWidget(QWidget, object):
         :return: QLayout
         """
 
-        layout = QVBoxLayout()
-        layout.setContentsMargins(2, 2, 2, 2)
-        layout.setSpacing(2)
-        layout.setAlignment(Qt.AlignTop)
-        return layout
+        return layouts.VerticalLayout(spacing=2, margins=(2, 2, 2, 2))
 
     def ui(self):
         """
@@ -94,7 +91,7 @@ class BaseWidget(QWidget, object):
 
         self.main_layout = self.get_main_layout()
         if self._use_scrollbar:
-            layout = QVBoxLayout()
+            layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
             self.setLayout(layout)
             central_widget = QWidget()
             central_widget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
@@ -195,9 +192,7 @@ class ContainerWidget(QWidget, object):
     def __init__(self, parent=None):
         super(ContainerWidget, self).__init__(parent)
 
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0), parent=self)
         self.setLayout(layout)
 
         self.containedWidget = None
