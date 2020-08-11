@@ -1,8 +1,13 @@
 /*
  --------------------------------------------------------------------------
- Default Style
+ ToolBar Base Style
  --------------------------------------------------------------------------
 */
 
-#include base/base.css
-#include tpdcc/tpdcc.css
+QToolBar
+{
+    border: 0px;
+    background-color: @background_color;
+    color: @primary_text_color;
+    spacing:4*DPIpx;
+}

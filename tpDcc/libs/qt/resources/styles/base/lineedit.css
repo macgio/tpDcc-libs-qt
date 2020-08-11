@@ -6,23 +6,23 @@
 
 QLineEdit
 {
-     /*background-color: BACKGROUND_COLOR_DARKER;*/
     background-color: @background_in_color;
-    /*color: @primary_text_color;*/
-    /*padding: @two_pixels@unit;*/
-    /*border-radius: @three_pixels@unit;*/
-    /*border-bottom: 0px solid rgba(255, 255, 255, 50);*/
-    /*selection-color: @accent_color;*/
-    /*selection-background-color: @accent_color;*/
+    color: @primary_text_color;
+    padding: @two_pixels@unit;
+    border-radius: @three_pixels@unit;
+    border-bottom: 0px solid rgba(255, 255, 255, 50);
+    selection-color: @accent_color_4;
+    selection-background-color: @mask_color;
 }
 
-/*QLineEdit:focus*/
-/*{*/
-/*	border: 0px;*/
-/*	border-bottom: @two_pixels@unit solid @accent_color;*/
-/*    background-color: @accent_color_7;*/
-/*}*/
+QLineEdit:focus
+{
+	border: 0px;
+	border-bottom: @one_pixel@unit solid @accent_color;
+    background-color: @mask_color;
+}
 
-/*QLineEdit:disabled {*/
-/*    color: @disable_color;*/
-/*}*/
+QLineEdit:disabled
+{
+    color: @disable_color;
+}

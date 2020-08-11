@@ -67,6 +67,6 @@ QTabBar::tab:last
 
 QTabBar::tab:!selected:hover
 {
-    border-bottom: 3px solid @accent_color_5;
+    border-bottom: 2px solid @accent_color_5;
     padding-bottom: 4px;
 }

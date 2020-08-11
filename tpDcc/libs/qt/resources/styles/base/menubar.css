@@ -1,19 +1,20 @@
 /*
  --------------------------------------------------------------------------
- MenuTab Default Style
+ MenuBar Base Style
  --------------------------------------------------------------------------
 */
 
-MenuTabWidget::pane
+QMenuBar
 {
-    /* The tab widget frame */
-    border: 1px solid @border_color;
-    border-radius: 3px;
-    top: -1px;
     background-color: @background_color;
 }
 
-MenuTabWidget::tab-bar
+QMenuBar::item
 {
-    padding: 5px;
+    background-color: @background_in_color;
+}
+
+QMenuBar::item:selected
+{
+    background-color: @accent_color;
 }

@@ -1,0 +1,23 @@
+/*
+ --------------------------------------------------------------------------
+ Splitter Base Style
+ --------------------------------------------------------------------------
+*/
+
+QSplitter::handle
+{
+    background-color: @border_color;
+    image: url(@splitter_icon);
+}
+
+QSplitter::handle:horizontal
+{
+    width: 2px;
+}
+
+QSplitter::handle:vertical
+{
+    height: 2px;
+}
+
+QMai

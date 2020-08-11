@@ -1,8 +1,10 @@
 /*
  --------------------------------------------------------------------------
- Default Style
+ Menu Base Style
  --------------------------------------------------------------------------
 */
 
-#include base/base.css
-#include tpdcc/tpdcc.css
+QMenu::item:selected
+{
+    background-color: @accent_color;
+}

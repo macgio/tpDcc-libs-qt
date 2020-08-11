@@ -1,8 +1,10 @@
 /*
  --------------------------------------------------------------------------
- Default Style
+ Snapshot Default Style
  --------------------------------------------------------------------------
 */
 
-#include base/base.css
-#include tpdcc/tpdcc.css
+SnapshotFrame
+{
+    background-color: @background_color;
+}

@@ -1,8 +1,12 @@
 /*
  --------------------------------------------------------------------------
- Default Style
+ MainWindow Base Style
  --------------------------------------------------------------------------
 */
 
-#include base/base.css
-#include tpdcc/tpdcc.css
+QMainWindow::separator
+{
+    background-color: @border_color;
+    width: 3px;
+    border: none;
+}

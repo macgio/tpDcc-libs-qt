@@ -1,0 +1,18 @@
+/*
+ --------------------------------------------------------------------------
+ ToolButton Base Style
+ --------------------------------------------------------------------------
+*/
+
+QToolButton
+{
+	color: @text_color_inverse;
+	spacing:4*DPIpx;
+    outline: none;
+    background-color: transparent;
+}
+
+QToolButton:hover
+{
+    background-color: @background_out_color;
+}

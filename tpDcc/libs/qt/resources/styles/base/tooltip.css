@@ -1,8 +1,11 @@
 /*
  --------------------------------------------------------------------------
- Default Style
+ Tooltip Base Style
  --------------------------------------------------------------------------
 */
 
-#include base/base.css
-#include tpdcc/tpdcc.css
+QToolTip
+{
+    border: none;
+    background-color: @background_selected_color;
+}

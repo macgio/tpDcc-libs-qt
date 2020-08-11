@@ -1,8 +1,10 @@
 /*
  --------------------------------------------------------------------------
- Default Style
+ RadioButton Base Style
  --------------------------------------------------------------------------
 */
 
-#include base/base.css
-#include tpdcc/tpdcc.css
+QRadioButton
+{
+    background-color: transparent;
+}

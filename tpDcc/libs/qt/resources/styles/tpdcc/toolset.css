@@ -1,0 +1,44 @@
+/*
+ --------------------------------------------------------------------------
+ Toolset Default Style
+ --------------------------------------------------------------------------
+*/
+
+ToolsetsTreeWidget
+{
+    padding: 0px;
+    margin: 0px;
+    border: 0px solid transparent;
+    background-color: transparent;
+}
+
+ToolsetsTreeWidget::item
+{
+    padding: 0px;
+    margin: 0px;
+    background-color: @toolset_border_deselect;
+    border: 0px solid transparent;
+}
+
+ToolsetsTreeWidget::item:selected
+{
+    padding: 0px;
+    margin: 0px;
+}
+
+ToolsetsTreeWidget::item:!selected:hover
+{
+    padding: 0px;
+    margin: 0px;
+    background-color: @tooolset_border_hover;
+}
+
+ToolsetFrame
+{
+    background-color: @window_dragger_color;
+}
+
+ToolsetFrame QFrame
+{
+    background-color: @window_dragger_color;
+}

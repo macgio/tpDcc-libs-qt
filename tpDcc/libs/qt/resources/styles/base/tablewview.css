@@ -1,0 +1,14 @@
+/*
+ --------------------------------------------------------------------------
+ TableView Base Style
+ --------------------------------------------------------------------------
+*/
+
+/*QTableView */
+/*{*/
+/*    selection-background-color: TBL_TREE_ACTIVE_COLOR;*/
+/*    background-color: TBL_TREE_BG_COLOR;*/
+/*    alternate-background-color: TBL_TREE_ALT_COLOR;*/
+/*    gridline-color: TBL_TREE_GRID_COLOR;*/
+/*    outline: 0;*/
+/*}*/

@@ -4,10 +4,16 @@
  --------------------------------------------------------------------------
 */
 
+#include dialog.css
+#include window.css
+#include widget.css
 #include label.css
 #include button.css
 #include menubutton.css
 #include radiobutton.css
+#include dragbutton.css
+#include menutabbutton.css
+#include menulinebutton.css
 #include menu.css
 #include lineedit.css
 #include combobox.css
@@ -22,3 +28,8 @@
 #include card.css
 #include toast.css
 #include searchfind.css
+#include menutab.css
+#include dragger.css
+#include stack.css
+#include toolset.css
+#include snapshot.css

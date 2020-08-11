@@ -1,0 +1,49 @@
+/*
+ --------------------------------------------------------------------------
+ Stack Default Style
+ --------------------------------------------------------------------------
+*/
+
+/*StackItem .QToolButton{*/
+/*    background-color: transparent;*/
+/*    border-color: transparent;*/
+/*}*/
+
+StackItem QLineEdit
+{
+    background-color: transparent;
+}
+
+StackTitleFrame {
+    background-color: @stack_item_background_color;
+    border-radius: @one_pixel@unit;
+}
+
+/*StackTitleFrame:hover {*/
+/*    background-color: @hover_background_color;*/
+/*    border: 0px solid transparent;*/
+/*}*/
+
+StackTitleFrame#selected {
+    background-color: red;
+    border-radius: @one_pixel@unit;
+}
+
+/*StackTitleFrame QLineEdit*/
+/*{*/
+/*    background-color: transparent;*/
+/*}*/
+
+/*StackTitleFrame QLineEdit:focus {*/
+/*    background-color: transparent;*/
+/*}*/
+
+
+/*StackTitleFrame QLineEdit:disabled {*/
+/*    color: transparent;*/
+/*}*/
+
+/*StackTitleFrame QLineEdit#disabled*/
+/*{*/
+/*    color: STACK_TITLE_DISABLED;*/
+/*}*/

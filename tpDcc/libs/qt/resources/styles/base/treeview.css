@@ -1,0 +1,89 @@
+/*
+ --------------------------------------------------------------------------
+ TreeView Base Style
+ --------------------------------------------------------------------------
+*/
+
+QTreeView
+{
+    background-color: @background_color;
+    alternate-background-color: @background_in_color;
+    show-decoration-selected: 1;
+    font: 12*DPIpx;
+	color: @primary_text_color;
+    border: 0px;
+    outline: none;
+}
+
+QTreeView::item
+{
+	/*height: 24*DPIpx;*/
+	show-decoration-selected: 1; /* make the selection span the entire width of the view */
+    /*padding:3*DPIpx;*/
+}
+
+QTreeView::item:focus
+{
+	border: 0px;
+	outline: none;
+}
+
+QTreeView::item:hover
+{
+    color: @text_color_inverse;
+    background-color: @accent_color_5;
+}
+
+QTreeView::item:selected
+{
+    background-color: @accent_color;
+}
+
+QTreeView::branch
+{
+    background-color: @background_color;
+}
+
+QTreeView::branch::open:has-children
+{
+    image: url(@down_icon);
+}
+
+QTreeView::branch::closed:has-children
+{
+    image: url(@right_icon);
+}
+
+/*!*QTreeView::branch:has-children:!has-siblings:closed,*/
+/*!*QTreeView::branch:closed:has-children:has-siblings {*/
+/*    !*border-image: none;*/
+/*    !*image: url("RESOURCE_DIRNAME/icons/branch_closed_DARKNESS.png");*/
+/*!*}*/
+/*!*QTreeView::branch:open:has-children:!has-siblings,*/
+/*!*QTreeView::branch:open:has-children:has-siblings  {*/
+/*    !*border-image: none;*/
+/*    !*image: url("RESOURCE_DIRNAME/icons/branch_open_DARKNESS.png");*/
+/*!*}*!*/
+
+/*!*QTreeView::item:selected,*!*/
+/*!*QTreeView::item:selected:active {*!*/
+/*!*    color: ACCENT_FOREGROUND_COLOR;*!*/
+/*!*    background-color: ACCENT_COLOR_DARKER;*!*/
+/*!*    border-left:2px solid ACCENT_COLOR;*!*/
+/*!*    padding-left:2px;*!*/
+/*!*}*!*/
+
+/*!*QTreeView::item:selected:hover,*!*/
+/*!*QTreeView::item:selected:active:hover *!*/
+/*!*{*!*/
+/*!*    color: ACCENT_FOREGROUND_COLOR;*!*/
+/*!*    background-color: ACCENT_COLOR;*!*/
+/*!*    border-left:2px solid ACCENT_COLOR;*!*/
+/*!*    padding-left:2px;*!*/
+/*!*}*!*/
+
+/*!*QTreeView::item:!selected:hover {*!*/
+/*!*    background-color: ACCENT_COLOR;*!*/
+/*!*    margin-left:-3px;*!*/
+/*!*    border-left:0px;*!*/
+/*!*}*!*/

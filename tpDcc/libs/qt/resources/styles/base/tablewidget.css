@@ -1,8 +1,10 @@
 /*
  --------------------------------------------------------------------------
- Default Style
+ TableWidget Base Style
  --------------------------------------------------------------------------
 */
 
-#include base/base.css
-#include tpdcc/tpdcc.css
+QTableWidget
+{
+    background-color: @background_color;
+}

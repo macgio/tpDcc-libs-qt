@@ -1,0 +1,72 @@
+/*
+ --------------------------------------------------------------------------
+ SpinBox Base Style
+ --------------------------------------------------------------------------
+*/
+
+QAbstractSpinBox
+{
+    spacing: 4px;
+    border: 1px solid @border_color;
+    /*border-radius: 3px;*/
+    color: @primary_text_color;
+    background-color:@background_in_color;
+    selection-background-color: @accent_color;
+    padding: 0 4px;
+}
+
+QAbstractSpinBox:focus
+{
+    border: 1px solid @accent_color;
+}
+
+QAbstractSpinBox::up-button
+{
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    margin-top: 1px;
+    margin-right: 1px;
+    border-left: 1px solid @border_color;
+    border-bottom: 1px solid @border_color;
+    background: @background_out_color;
+    /*image: url(@up_icon);*/
+}
+
+QAbstractSpinBox::down-button
+{
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    margin-bottom: 1px;
+    margin-right: 1px;
+    border-left: 1px solid @border_color;
+    border-top: 1px solid @border_color;
+    background: @background_out_color;
+}
+
+QAbstractSpinBox::up-button:hover,
+QAbstractSpinBox::down-button:hover
+{
+    border-left: 1px solid @accent_color;
+}
+
+QAbstractSpinBox::up-arrow
+{
+    image: url(@up_arrow_icon);
+    width: 12px;
+    height: 12px;
+}
+
+QAbstractSpinBox::down-arrow
+{
+    image: url(@down_arrow_icon);
+    width: 12px;
+    height: 12px;
+}
+
+QAbstractSpinBox::up-arrow:disabled,
+QAbstractSpinBox::up-arrow:off,
+QAbstractSpinBox::down-arrow:disabled
+QAbstractSpinBox::down-arrow:off
+{
+    background-color: @disable_color;
+}

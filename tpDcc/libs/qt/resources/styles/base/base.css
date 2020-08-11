@@ -13,6 +13,28 @@
     /*selection-background-color: red;*/
 }
 
+#include sizes.css
 #include label.css
 #include checkbox.css
 #include lineedit.css
+#include radiobutton.css
+#include pushbutton.css
+#include toolbutton.css
+#include tab.css
+#include tabbar.css
+#include tooltip.css
+#include window.css
+#include splitter.css
+#include tablewidget.css
+#include toolbar.css
+#include menubar.css
+#include menu.css
+#include scrollbar.css
+#include spinbox.css
+#include combobox.css
+#include calendar.css
+#include itemview.css
+#include headerview.css
+#include listview.css
+#include tableview.css
+#include treeview.css
