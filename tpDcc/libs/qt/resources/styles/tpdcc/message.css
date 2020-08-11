@@ -1,0 +1,43 @@
+/*
+ --------------------------------------------------------------------------
+ Message Default Style
+ --------------------------------------------------------------------------
+*/
+
+PopupMessage
+{
+    padding: 2px;
+    border: 1px solid @border_color;
+    border-radius: 2px;
+    background-color: @background_color;
+}
+
+BaseMessage
+{
+    border: 1px solid @border_color;
+    border-radius: 4px;
+}
+
+BaseMessage[theme_type=info]
+{
+    border-color: @info_3;
+    background-color: @info_1;
+}
+
+BaseMessage[theme_type=success]
+{
+    border-color: @success_3;
+    background-color: @success_1;
+}
+
+BaseMessage[theme_type=warning]
+{
+    border-color: @warning_3;
+    background-color: @warning_1;
+}
+
+BaseMessage[theme_type=error]
+{
+    border-color: @error_3;
+    background-color: @error_1;
+}

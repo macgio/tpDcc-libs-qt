@@ -1,0 +1,26 @@
+/*
+ --------------------------------------------------------------------------
+ LineEdit Default Style
+ --------------------------------------------------------------------------
+*/
+
+BaseLineEdit
+{
+    border: 1px solid @border_color;
+    background-color: @background_in_color;
+}
+
+BaseLineEdit:focus
+{
+    border: 1px solid @accent_color;
+}
+
+BaseLineEdit[theme_type=error]
+{
+    color: @error_5;
+}
+
+BaseLineEdit[theme_type=error]:focus
+{
+    border: 1px solid @error_5;
+}
