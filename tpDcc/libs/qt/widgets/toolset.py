@@ -207,6 +207,9 @@ class ToolsetWidget(stack.StackItem, object):
         font.setBold(True)
         self.setFont(font)
 
+        if not tpDcc.is_standalone():
+            self._connect_button.setVisible(False)
+
     def setup_signals(self):
         super(ToolsetWidget, self).setup_signals()
 
@@ -472,9 +475,19 @@ class ToolsetWidget(stack.StackItem, object):
     def _stop_selection_callback(self):
         print('Stop Selection Callbacks ...')
 
-    def _reset_connect_button(self):
+    def _reset_connect_button(self, text='No connected to any DCC', severity='warning'):
         self._connect_button.setEnabled(False)
-        self._connect_button.setToolTip('No connected to any DCC')
+        self._connect_button.setToolTip(str(text))
+
+        if severity == 'warning':
+            tpDcc.logger.warning(text)
+            self._connect_button.setStyleSheet('background-color: #bc3030')
+        elif severity == 'error':
+            tpDcc.logger.error(text)
+            self._connect_button.setStyleSheet('background-color: #e4c019')
+        else:
+            tpDcc.logger.info(text)
+            self._connect_button.setStyleSheet('')
 
     def _update_client(self):
         if not self._client:
@@ -489,42 +502,42 @@ class ToolsetWidget(stack.StackItem, object):
 
             success, dcc_exe = self._client.update_paths()
             if not success:
-                tpDcc.logger.warning('Error while connecting to Dcc: update paths ...')
-                self._reset_connect_button()
+                self._reset_connect_button('Error while connecting to Dcc: update paths ...', severity='error')
                 return False
 
             success = self._client.update_dcc_paths(dcc_exe)
             if not success:
-                tpDcc.logger.warning('Error while connecting to Dcc: update dcc paths ...')
-                self._reset_connect_button()
+                self._reset_connect_button('Error while connecting to Dcc: update dcc paths ...', severity='error')
                 return False
 
             success = self._client.init_dcc()
             if not success:
-                tpDcc.logger.warning('Error while connecting to Dcc: init dcc ...')
-                self._reset_connect_button()
+                self._reset_connect_button('Error while connecting to Dcc: init dcc ...', severity='error')
                 return False
 
         dcc_name, dcc_version = self._client.get_dcc_info()
         if not dcc_name or not dcc_version:
-            tpDcc.logger.warning(
-                'Error while connecting to Dcc: get dcc info ... ({}, {})'.format(dcc_name, dcc_version))
-            self._reset_connect_button()
+            self._reset_connect_button(
+                'Error while connecting to Dcc: get dcc info ... ({}, {})'.format(dcc_name, dcc_version),
+                severity='error')
             return False
 
         if dcc_name not in self._supported_dccs:
-            tpDcc.logger.warning('Connected DCC {} ({}) is not supported!'.format(dcc_name, dcc_version))
-            self._reset_connect_button()
+            self._reset_connect_button(
+                'Connected DCC {} ({}) is not supported!'.format(dcc_name, dcc_version), severity='warning')
             return False
 
         supported_versions = self._supported_dccs[dcc_name]
         if dcc_version not in supported_versions:
-            tpDcc.logger.warning('Connected DCC {} is supported but version {} is not!'.format(dcc_name, dcc_version))
-            self._reset_connect_button()
+            self._reset_connect_button(
+                'Connected DCC {} is supported but version {} is not!'.format(dcc_name, dcc_version),
+                severity='warning')
             return False
 
         self._connect_button.setEnabled(True)
-        self._connect_button.setToolTip('Connected to: {} ({})'.format(dcc_name, dcc_version))
+        msg = 'Connected to: {} ({})'.format(dcc_name, dcc_version)
+        self._connect_button.setToolTip(msg)
+        tpDcc.logger.info(msg)
 
         if not tpDcc.is_standalone():
             self._connect_button.setVisible(False)
