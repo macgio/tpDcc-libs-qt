@@ -12,8 +12,6 @@ import os
 from Qt.QtCore import *
 from Qt.QtGui import *
 
-from six import string_types
-
 import tpDcc
 from tpDcc.libs import qt
 from tpDcc.libs.python import yamlio, color, python
@@ -86,7 +84,7 @@ class Theme(QObject, object):
             return super(Theme, self).__getattribute__(item)
 
         option_value = options[item]
-        if isinstance(option_value, string_types):
+        if python.is_string(option_value):
             if option_value.startswith('^'):
                 return qtutils.dpi_scale(int(option_value[1:]))
             if color.string_is_hex(option_value):

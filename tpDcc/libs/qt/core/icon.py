@@ -125,6 +125,8 @@ class Icon(QIcon, object):
 
         if isinstance(new_color, str):
             new_color = color.Color.from_string(new_color)
+        elif isinstance(new_color, (list, tuple)):
+            new_color = color.Color(*new_color)
 
         icon = self
         size = size or icon.availableSizes()[0]

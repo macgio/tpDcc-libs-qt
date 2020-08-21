@@ -13,8 +13,6 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 from Qt.QtGui import *
 
-from six import string_types
-
 import tpDcc as tp
 from tpDcc.libs.python import python
 from tpDcc.libs.qt.core import consts, animation, icon, qtutils, mixin, theme, menu
@@ -1140,7 +1138,7 @@ class BaseMenuButton(QPushButton, ButtonIcons):
             if isinstance(action_icon, QIcon):
                 new_action.setIcon(action_icon)
                 new_action.setIconText(icon_text or '')
-            elif isinstance(action_icon, string_types):
+            elif python.is_string(action_icon):
                 new_action.setIconText(action_icon or icon_text or None)
                 action_icon = tp.ResourcesMgr().icon(action_icon)
                 new_action.setIcon(

@@ -192,7 +192,7 @@ class ContainerWidget(QWidget, object):
     def __init__(self, parent=None):
         super(ContainerWidget, self).__init__(parent)
 
-        layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0), parent=self)
+        layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
         self.setLayout(layout)
 
         self.containedWidget = None

@@ -142,13 +142,13 @@ class DividerLayout(layouts.HorizontalLayout, object):
         self.addWidget(splitter)
 
 
-def get_horizontal_separator_widget(max_height=30):
+def get_horizontal_separator_widget(max_height=30, parent=None):
 
-    v_div_w = QWidget()
+    v_div_w = QWidget(parent=parent)
     v_div_l = layouts.VerticalLayout(spacing=0, margins=(5, 5, 5, 5))
     v_div_l.setAlignment(Qt.AlignLeft)
     v_div_w.setLayout(v_div_l)
-    v_div = QFrame()
+    v_div = QFrame(parent=v_div_w)
     v_div.setMaximumHeight(max_height)
     v_div.setFrameShape(QFrame.VLine)
     v_div.setFrameShadow(QFrame.Sunken)
