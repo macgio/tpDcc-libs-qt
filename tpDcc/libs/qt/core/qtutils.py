@@ -1771,5 +1771,3 @@ def center_widget_on_screen(widget):
     center_point = QApplication.desktop().screenGeometry(screen).center()
     frame_geo.moveCenter(center_point)
     widget.move(frame_geo.topLeft())
-
-
