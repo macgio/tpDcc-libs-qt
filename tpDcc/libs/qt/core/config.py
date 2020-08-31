@@ -21,7 +21,7 @@ import metayaml
 import tpDcc as tp
 from tpDcc.libs.python import decorators, python
 
-LOGGER = logging.getLogger()
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class ConfigurationAttribute(dict, object):
