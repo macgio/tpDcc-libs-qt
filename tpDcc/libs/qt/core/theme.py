@@ -190,6 +190,7 @@ class Theme(QObject, object):
         self.background_selected_color = '#292929'
         self.background_in_color = '#3A3A3A'
         self.background_out_color = '#494949'
+        self.sub_background_color = '#2f2f2f'
         self.mask_color = self._fade_color(self.background_color, '90%')
         self.toast_color = '#555555'
         self.title_color = "#FFFFFF"
@@ -214,6 +215,7 @@ class Theme(QObject, object):
         self.background_selected_color = '#BFBFBF'
         self.background_in_color = '#FFFFFF'
         self.background_out_color = '#EEEEEE'
+        self.sub_background_color = '#f4f4f5'
         self.mask_color = self._fade_color(self.background_color, '90%')
         self.toast_color = '#333333'
         self.title_color = "#262626"
