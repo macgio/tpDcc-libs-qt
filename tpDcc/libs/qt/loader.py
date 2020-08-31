@@ -43,12 +43,12 @@ def init(dev=False):
 
     # NOTE: We register all classes using tpDcc register (not tpDcc.libs.qt one).
     # We do it in this way to access those classes easily
-    dcc_register.register_class('Window', window.MainWindow)
-    dcc_register.register_class('Dialog', dialog.Dialog)
-    dcc_register.register_class('OpenFileDialog', dialog.OpenFileDialog)
-    dcc_register.register_class('SaveFileDialog', dialog.SaveFileDialog)
-    dcc_register.register_class('SelectFolderDialog', dialog.SelectFolderDialog)
-    dcc_register.register_class('NativeDialog', dialog.NativeDialog)
+    dcc_register.register_class('Window', window.MainWindow, is_unique=True)
+    dcc_register.register_class('Dialog', dialog.Dialog, is_unique=True)
+    dcc_register.register_class('OpenFileDialog', dialog.OpenFileDialog, is_unique=True)
+    dcc_register.register_class('SaveFileDialog', dialog.SaveFileDialog, is_unique=True)
+    dcc_register.register_class('SelectFolderDialog', dialog.SelectFolderDialog, is_unique=True)
+    dcc_register.register_class('NativeDialog', dialog.NativeDialog, is_unique=True)
     dcc_register.register_class('InputsMgr', inputs_manager.InputsManagerSingleton)
     dcc_register.register_class('ToolsetsMgr', toolsets_manager.ToolsetsManagerSingleton)
 
@@ -84,7 +84,8 @@ def init(dev=False):
             logger.warning('Error while setting DCC: {}. Abstract one will be used.'.format(exc))
 
         if dcc_loaded:
-            dcc_loader.init_ui()
+            if hasattr(dcc_loader, 'init_ui') and callable(dcc_loaded.init_ui):
+                dcc_loader.init_ui()
         if not dcc_loaded:
             global Dcc
             from tpDcc.core import dcc
