@@ -7,7 +7,7 @@
 BaseLineEdit
 {
     border: 1px solid @border_color;
-    background-color: @background_in_color;
+    background-color: @background_out_color;
 }
 
 BaseLineEdit:focus

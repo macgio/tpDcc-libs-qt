@@ -9,10 +9,11 @@
 /*    border-color: transparent;*/
 /*}*/
 
-StackItem QLineEdit
-{
-    background-color: transparent;
-}
+/*This is not valid because affects all QLineEdits*/
+/*StackItem QLineEdit*/
+/*{*/
+/*    background-color: transparent;*/
+/*}*/
 
 StackTitleFrame {
     background-color: @stack_item_background_color;

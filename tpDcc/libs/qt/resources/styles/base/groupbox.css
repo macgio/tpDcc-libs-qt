@@ -1,11 +1,12 @@
 /*
  --------------------------------------------------------------------------
- Tabs Base Style
+ GroupBox Base Style
  --------------------------------------------------------------------------
 */
 
-QTabWidget::pane
-{
+/*This breaks expandables group box, ignore groupbox inside expandables*/
+QGroupBox {
     background-color: @sub_background_color;
-    border-top: 1px solid @background_out_color;
+    /*border: 1px solid;*/
+    /*border-radius: 4px;*/
 }

@@ -7,7 +7,7 @@
 * {
     font-family: @font_family;
     color: @primary_text_color;
-    background-color: @background_color;
+    background-color: transparent;
     font-size: @default_font_size@unit;
     selection-color: @text_color_inverse;
     /*selection-background-color: red;*/
@@ -32,6 +32,7 @@
 #include scrollbar.css
 #include spinbox.css
 #include combobox.css
+#include groupbox.css
 #include calendar.css
 #include itemview.css
 #include headerview.css
