@@ -1743,3 +1743,33 @@ def process_ui_events():
     """
 
     QApplication.processEvents()
+
+
+def get_main_qt_window():
+    """
+    Returns QWidget representing the top most window
+    :return: QWidget
+    """
+
+    parent = QApplication.activeWindow()
+    grand_parent = parent
+    while grand_parent is not None:
+        parent = grand_parent
+        grand_parent = parent.parent()
+
+    return parent
+
+
+def center_widget_on_screen(widget):
+    """
+    Centers a given QWidget on the active screen
+    :param widget: QWidget
+    """
+
+    frame_geo = widget.frameGeometry()
+    screen = QApplication.desktop().screenNumber(QApplication.desktop().cursor().pos())
+    center_point = QApplication.desktop().screenGeometry(screen).center()
+    frame_geo.moveCenter(center_point)
+    widget.move(frame_geo.topLeft())
+
+
