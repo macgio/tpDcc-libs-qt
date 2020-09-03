@@ -17,7 +17,7 @@ import tpDcc as tp
 from tpDcc.libs import qt
 from tpDcc.libs.python import path
 from tpDcc.libs.qt.core import base, qtutils
-from tpDcc.libs.qt.widgets import buttons
+from tpDcc.libs.qt.widgets import layouts, buttons, lineedit, label
 
 
 class FileListWidget(QListWidget, object):
@@ -121,7 +121,7 @@ class FileListWidget(QListWidget, object):
     # endregion
 
 
-class FolderEditLine(QLineEdit, object):
+class FolderEditLine(lineedit.BaseLineEdit, object):
     """
     Custom QLineEdit with drag and drop behaviour for files and folders
     """
@@ -171,9 +171,7 @@ class SelectFolderButton(QWidget, object):
         self._directory = directory
         self.settings = None
 
-        main_layout = QHBoxLayout()
-        main_layout.setContentsMargins(2, 2, 2, 2)
-        main_layout.setSpacing(2)
+        main_layout = layouts.HorizontalLayout(spacing=2, margins=(2, 2, 2, 2))
         self.setLayout(main_layout)
 
         folder_icon = tp.ResourcesMgr().icon('folder')
@@ -247,9 +245,7 @@ class SelectFolder(QWidget, object):
         self._label_text = label_text
         self._directory = directory
 
-        main_layout = QHBoxLayout()
-        main_layout.setContentsMargins(2, 2, 2, 2)
-        main_layout.setSpacing(2)
+        main_layout = layouts.HorizontalLayout(spacing=2, margins=(2, 2, 2, 2))
         self.setLayout(main_layout)
 
         self._folder_label = QLabel(
@@ -389,17 +385,14 @@ class SelectFile(base.DirectoryWidget, object):
         return self._folder_btn
 
     def get_main_layout(self):
-        main_layout = QHBoxLayout()
-        main_layout.setContentsMargins(2, 2, 2, 2)
-        main_layout.setSpacing(2)
-
+        main_layout = layouts.HorizontalLayout(spacing=2, margins=(2, 2, 2, 2))
         return main_layout
 
     def ui(self):
         super(SelectFile, self).ui()
 
-        self._file_label = QLabel('{0}'.format(self._label_text)) if self._label_text == '' else QLabel(
-            '{0}:'.format(self._label_text))
+        self._file_label = QLabel('{0}'.format(self._label_text)) if self._label_text == '' else label.BaseLabel(
+            '{0}:'.format(self._label_text), parent=self)
         self._file_line = FolderEditLine()
         self._file_line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         if self._directory and os.path.exists(self._directory):
@@ -522,16 +515,16 @@ class GetDirectoryWidget(base.DirectoryWidget, object):
         super(GetDirectoryWidget, self).ui()
 
         self._directory_widget = QWidget()
-        directory_layout = QHBoxLayout()
+        directory_layout = layouts.HorizontalLayout()
         self._directory_widget.setLayout(directory_layout)
         self.main_layout.addWidget(self._directory_widget)
 
-        self._directory_lbl = QLabel('directory')
+        self._directory_lbl = label.BaseLabel('directory', parent=self)
         self._directory_lbl.setMinimumWidth(60)
         self._directory_lbl.setMaximumWidth(100)
-        self._directory_edit = QLineEdit()
+        self._directory_edit = lineedit.BaseLineEdit(parent=self)
         self._directory_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self._directory_browse_btn = QPushButton('browse')
+        self._directory_browse_btn = buttons.BaseButton('browse', parent=self)
 
         directory_layout.addWidget(self._directory_lbl)
         directory_layout.addWidget(self._directory_edit)
@@ -587,7 +580,7 @@ class GetDirectoryWidget(base.DirectoryWidget, object):
             self.set_error(True)
 
         if not text:
-            self._directory_edit.setPalette(QLineEdit().palette())
+            self._directory_edit.setPalette(lineedit.BaseLineEdit().palette())
 
         self.directoryChanged.emit(directory)
 

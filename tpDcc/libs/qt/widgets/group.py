@@ -13,18 +13,19 @@ from Qt.QtGui import *
 
 from tpDcc.libs.python import decorators, python
 from tpDcc.libs.qt.core import qtutils, base, theme
-from tpDcc.libs.qt.widgets import buttons
+from tpDcc.libs.qt.widgets import layouts, buttons
 
 
 class BaseGroup(QGroupBox, object):
-    def __init__(self, name='', parent=None):
+    def __init__(self, name='', parent=None, layout_spacing=2, layout_orientation=Qt.Vertical):
         super(BaseGroup, self).__init__(parent)
 
         self.setTitle(name)
 
-        self.main_layout = QVBoxLayout()
-        self.main_layout.setContentsMargins(2, 2, 2, 2)
-        self.main_layout.setSpacing(2)
+        if layout_orientation == Qt.Horizontal:
+            self.main_layout = layouts.HorizontalLayout(spacing=layout_spacing, margins=(2, 2, 2, 2))
+        else:
+            self.main_layout = layouts.VerticalLayout(spacing=layout_spacing, margins=(2, 2, 2, 2))
         self.main_layout.setAlignment(Qt.AlignCenter)
         self.setLayout(self.main_layout)
 
@@ -52,6 +53,30 @@ class BaseGroup(QGroupBox, object):
         """
 
         self.setTitle(new_title)
+
+    def addWidget(self, widget):
+        """
+        Adds a a new widget to the group box layout
+        NOTE: We do not follow the nomenclature to make the call similar to Qt
+        :param widget: QWidget
+        """
+
+        if not widget:
+            return
+
+        self.main_layout.addWidget(widget)
+
+    def addLayout(self, layout):
+        """
+        Adds a a new layout to the group box layout
+        NOTE: We do not follow the nomenclature to make the call similar to Qt
+        :param widget: QLayout
+        """
+
+        if not layout:
+            return
+
+        self.main_layout.addLayout(layout)
 
 
 class CollapsableGroup(BaseGroup, object):

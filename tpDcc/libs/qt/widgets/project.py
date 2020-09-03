@@ -18,7 +18,7 @@ from tpDcc.libs import qt
 from tpDcc.libs.python import path, settings, folder, fileio
 from tpDcc.core import project as core_project
 from tpDcc.core import consts
-from tpDcc.libs.qt.widgets import grid, search, directory, dividers
+from tpDcc.libs.qt.widgets import layouts, grid, search, directory, dividers, buttons, label, tabs, lineedit
 
 
 def get_project_by_name(projects_path, project_name, project_class=None):
@@ -82,14 +82,10 @@ class Project(QWidget):
         self.setMaximumWidth(160)
         self.setMaximumHeight(200)
 
-        self.main_layout = QVBoxLayout()
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_layout.setSpacing(0)
+        self.main_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         self.setLayout(self.main_layout)
 
-        widget_layout = QVBoxLayout()
-        widget_layout.setContentsMargins(0, 0, 0, 0)
-        widget_layout.setSpacing(0)
+        widget_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         main_frame = QFrame()
         main_frame.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
         main_frame.setLineWidth(1)
@@ -99,7 +95,7 @@ class Project(QWidget):
         self.project_btn = QPushButton('', self)
         self.project_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.project_btn.setIconSize(QSize(120, 120))
-        project_lbl = QLabel(self.name)
+        project_lbl = label.BaseLabel(self.name, parent=self)
         project_lbl.setStyleSheet('background-color:rgba(0, 0, 0, 150);')
         project_lbl.setAlignment(Qt.AlignCenter)
         widget_layout.addWidget(self.project_btn)
@@ -473,12 +469,10 @@ class ProjectWidget(QWidget, object):
         self._settings = None
         self._history = None
 
-        main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(2, 2, 2, 2)
-        main_layout.setSpacing(2)
+        main_layout = layouts.VerticalLayout(spacing=2, margins=(2, 2, 2, 2))
         self.setLayout(main_layout)
 
-        self._tab_widget = QTabWidget()
+        self._tab_widget = tabs.BaseTabWidget(parent=self)
         self._open_project = OpenProjectWidget(project_class=self.PROJECT_CLASS)
         self._new_project = NewProjectWidget(project_class=self.PROJECT_CLASS)
         self._tab_widget.addTab(self._open_project, 'Projects')
@@ -555,9 +549,7 @@ class OpenProjectWidget(QWidget, object):
 
         self._settings = None
 
-        main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(2)
+        main_layout = layouts.VerticalLayout(spacing=2, margins=(0, 0, 0, 0))
         self.setLayout(main_layout)
 
         self.search_widget = search.SearchFindWidget()
@@ -566,14 +558,10 @@ class OpenProjectWidget(QWidget, object):
         self._projects_list = ProjectViewer(project_class=project_class)
         self._projects_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        buttons_layout = QHBoxLayout()
-        buttons_layout.setContentsMargins(0, 0, 0, 0)
-        buttons_layout.setSpacing(0)
+        buttons_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
         buttons_layout.setAlignment(Qt.AlignCenter)
 
-        buttons_layout1 = QHBoxLayout()
-        buttons_layout1.setContentsMargins(0, 0, 0, 0)
-        buttons_layout1.setSpacing(0)
+        buttons_layout1 = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
         buttons_layout1.setAlignment(Qt.AlignLeft)
         self.browse_widget = directory.SelectFolder(label_text='Projects Path', use_app_browser=True, use_icon=True)
         buttons_layout1.addWidget(self.browse_widget)
@@ -670,9 +658,7 @@ class NewProjectWidget(QWidget, object):
         self._settings = None
         self._selected_template = None
 
-        main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
+        main_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         self.setLayout(main_layout)
 
         self.search_widget = search.SearchFindWidget()
@@ -681,25 +667,21 @@ class NewProjectWidget(QWidget, object):
         self.templates_list = TemplatesViewer(project_class=project_class)
         self.templates_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        project_layout = QHBoxLayout()
-        project_layout.setContentsMargins(0, 0, 0, 0)
-        project_layout.setSpacing(1)
+        project_layout = layouts.HorizontalLayout(spacing=1, margins=(0, 0, 0, 0))
 
-        project_line_layout = QHBoxLayout()
-        project_line_layout.setContentsMargins(0, 0, 0, 0)
-        project_line_layout.setSpacing(0)
+        project_line_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
         project_layout.addLayout(project_line_layout)
-        self.project_line = QLineEdit()
+        self.project_line = lineedit.BaseLineEdit(parent=self)
         self.project_line.setPlaceholderText('Project Path')
         self.project_line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.project_btn = directory.SelectFolderButton(text='...', use_app_browser=True)
         project_line_layout.addWidget(self.project_line)
         project_line_layout.addWidget(self.project_btn)
-        self.name_line = QLineEdit()
+        self.name_line = lineedit.BaseLineEdit(parent=self)
         self.name_line.setPlaceholderText('Project Name')
         project_line_layout.addWidget(dividers.get_horizontal_separator_widget())
         project_line_layout.addWidget(self.name_line)
-        self.create_btn = QPushButton('Create')
+        self.create_btn = buttons.BaseButton('Create', parent=self)
         project_line_layout.addSpacing(10)
         project_line_layout.addWidget(self.create_btn)
 
@@ -801,14 +783,10 @@ class Template(QWidget):
         self.setMaximumWidth(160)
         self.setMaximumHeight(200)
 
-        main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(5, 5, 5, 5)
-        main_layout.setSpacing(0)
+        main_layout = layouts.VerticalLayout(spacing=0, margins=(5, 5, 5, 5))
         self.setLayout(main_layout)
 
-        widget_layout = QVBoxLayout()
-        widget_layout.setContentsMargins(2, 2, 2, 2)
-        widget_layout.setSpacing(0)
+        widget_layout = layouts.VerticalLayout(spacing=0, margins=(2, 2, 2, 2))
         main_frame = QFrame()
         main_frame.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
         main_frame.setLineWidth(1)
@@ -819,7 +797,7 @@ class Template(QWidget):
         self.project_btn.setCheckable(True)
         self.project_btn.setIcon(self.get_icon())
         self.project_btn.setIconSize(QSize(120, 120))
-        project_lbl = QLabel(self.name)
+        project_lbl = label.BaseLabel(self.name, parent=self)
         project_lbl.setStyleSheet('background-color:rgba(0, 0, 0, 150);')
         project_lbl.setAlignment(Qt.AlignCenter)
         widget_layout.addWidget(self.project_btn)
