@@ -1336,10 +1336,13 @@ class ColorButton(QPushButton, object):
     color = property(get_color, set_color)
 
 
-def get_axis_button(axis_type='x', parent=None):
+def get_axis_button(axis_type='x', parent=None, as_tool_button=True):
     axis = axis_type.lower() if axis_type else 'x'
     axis = axis if axis in consts.AXISES else 'x'
-    axis_btn = BaseToolButton(parent=parent)
+    if as_tool_button:
+        axis_btn = BaseToolButton(parent=parent)
+    else:
+        axis_btn = BaseButton(parent=parent)
     axis_icon = tp.ResourcesMgr().icon('{}_axis'.format(axis), color=QColor(*consts.AXISES[axis]))
     axis_btn.setIcon(axis_icon)
 
