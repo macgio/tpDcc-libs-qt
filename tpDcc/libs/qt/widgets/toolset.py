@@ -229,6 +229,16 @@ class ToolsetWidget(stack.StackItem, object):
     # BASE
     # =================================================================================================================
 
+    def initialize(self):
+        self.setup_client()
+        self.pre_content_setup()
+        toolset_contents = self.contents()
+        for toolset_widget in toolset_contents:
+            self.add_stacked_widget(toolset_widget)
+        self.post_content_setup()
+        self.update_display_button()
+        self.expand()
+
     def set_attacher(self, attacher):
         """
         Sets attacher of this toolset
