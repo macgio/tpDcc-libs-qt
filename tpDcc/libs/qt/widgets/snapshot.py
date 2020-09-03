@@ -221,6 +221,10 @@ class SnapshotWindow(tpDcc.Window, object):
                 return
             image_type = file_ext
 
+        if image_type.startswith('.'):
+            image_type = image_type[1:]
+        image_type = image_type.upper()
+
         saved = self._snapshot_pixmap.save(file_path, image_type)
         self._last_saved_location = file_path
         self.saved.emit(file_path if saved else None)
