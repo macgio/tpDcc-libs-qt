@@ -517,8 +517,13 @@ def write(path, data):
         os.makedirs(dirname)
 
     if os.path.exists(tmp):
-        msg = 'The path is locked for writing and cannot be accessed {}'.format(tmp)
-        raise IOError(msg)
+        try:
+            os.remove(tmp)
+        except Exception:
+            pass
+        if os.path.exists(tmp):
+            msg = 'The path is locked for writing and cannot be accessed {}'.format(tmp)
+            raise IOError(msg)
 
     try:
         with open(tmp, 'w') as f:
@@ -535,7 +540,10 @@ def write(path, data):
             os.remove(bak)
     except Exception:
         if os.path.exists(tmp):
-            os.remove(tmp)
+            try:
+                os.remove(tmp)
+            except Exception:
+                pass
         if not os.path.exists(path) and os.path.exists(bak):
             os.rename(bak, path)
 
