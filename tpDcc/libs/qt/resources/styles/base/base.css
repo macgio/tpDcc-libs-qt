@@ -7,7 +7,7 @@
 * {
     font-family: @font_family;
     color: @primary_text_color;
-    background-color: transparent;
+    /*background-color: transparent;*/
     font-size: @default_font_size@unit;
     selection-color: @text_color_inverse;
     /*selection-background-color: red;*/
@@ -15,6 +15,7 @@
 
 #include sizes.css
 #include label.css
+#include frame.css
 #include checkbox.css
 #include lineedit.css
 #include radiobutton.css
