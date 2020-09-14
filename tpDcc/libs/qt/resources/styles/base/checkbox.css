@@ -29,5 +29,5 @@ QCheckBox::indicator:disabled
 
 QCheckBox:disabled
 {
-    background: @disable_color;
+    color:@disable_color;
 }
