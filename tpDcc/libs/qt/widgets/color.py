@@ -874,6 +874,8 @@ class ColorWheel(QWidget, object):
         self._inner_selector = QImage(self._inner_selector_buffer, size.width(), size.height(), QImage.Format_RGB32)
 
     def _set_color(self, color):
+        if isinstance(color, (tuple, list)):
+            color = QColor(*color)
         if self._color_space == self.WheelColorSpace.COLOR_HSV:
             self._hue = max(0.0, color.hsvHueF())
             self._sat = color.hsvSaturationF()
@@ -1100,6 +1102,8 @@ class ColorPreview(QWidget, object):
         return self._col
 
     def set_color(self, color):
+        if isinstance(color, (tuple, list)):
+            color = QColor(*color)
         self._col = color
         self.update()
         self.colorChanged.emit(color)
@@ -1170,6 +1174,8 @@ class ColorSelector(ColorPreview, object):
     updateModeChanged = Signal(int)
     showModeChanged = Signal(int)
     dialogModalityChanged = Signal(Qt.WindowModality)
+    acceptedColor = Signal(object)
+    closedColor = Signal(object)
 
     class UpdateMode(object):
         CONFIRM = 0         # Update color only after the dialog has been accepted
@@ -1191,6 +1197,7 @@ class ColorSelector(ColorPreview, object):
         self._panel = None
         self._show_mode = None
         self._panel_parent = parent
+        self._reset_on_close = True
 
         self.set_update_mode(self.UpdateMode.CONTINUOUS)
         self.set_show_mode(self.ShowMode.PANEL)
@@ -1238,6 +1245,9 @@ class ColorSelector(ColorPreview, object):
         self._dialog_modality = modality
         self.dialogModalityChanged.emit(modality)
 
+    def set_reset_on_close(self, flag):
+        self._reset_on_close = flag
+
     def wheel_shape(self):
         return self._color_widget.wheel_shape()
 
@@ -1264,7 +1274,8 @@ class ColorSelector(ColorPreview, object):
             'Select Color', parent=self._panel_parent or self.parent(), closable=True)
         self.set_update_mode(self.UpdateMode.CONTINUOUS)
         self._panel.set_widget(self._color_widget)
-        self._panel.closeButtonClicked.connect(self._on_close_panel)
+        self._panel.closed.connect(self._on_close_panel)
+        # self._panel.closeButtonClicked.connect(self._on_close_panel)
         self._connect_panel()
         self._panel.show()
 
@@ -1306,14 +1317,17 @@ class ColorSelector(ColorPreview, object):
             self._old_color = color
 
     def _on_close_panel(self):
-        self.set_color(self._old_color)
-        self._color_widget.set_color(self._old_color)
+        if self._reset_on_close:
+            self.set_color(self._old_color)
+            self._color_widget.set_color(self._old_color)
         self._panel = None
+        self.closedColor.emit(self.color())
 
     def _on_accepted_dialog(self):
         self.set_color(self._dialog.color())
         self._old_color = self.color()
         self._dialog = None
+        self.acceptedColor.emit(self.color())
 
     def _on_rejected_dialog(self):
         self.set_color(self._old_color)
@@ -1854,6 +1868,8 @@ class ColorDialogWidget(base.BaseWidget, object):
         self._color_wheel.set_rotating_selector(flag)
 
     def _set_color(self, color):
+        if isinstance(color, (tuple, list)):
+            color = QColor(*color)
         self._color_wheel.set_color(color)
         self._color = color
         blocked = self.signalsBlocked()
