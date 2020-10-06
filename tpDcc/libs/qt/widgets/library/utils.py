@@ -159,8 +159,12 @@ class TransferObject(object):
         if not os.path.isfile(path) or force_creation:
             filename = os.path.basename(path)
             filedir = os.path.dirname(path)
-            if not os.path.isdir(filedir):
-                os.makedirs(filedir)
+            if os.path.isfile(filedir):
+                # This happens when we open files not created with library tools
+                return t
+            else:
+                if not os.path.isdir(filedir):
+                    os.makedirs(filedir)
             fileio.create_file(filename, filedir)
 
         t.read()
@@ -373,7 +377,10 @@ class TransferObject(object):
         """
 
         path = path or self.path()
-        data = self.read_json(path)
+        try:
+            data = self.read_json(path)
+        except Exception:
+            data = dict()
         self.set_data(data)
 
     def dump(self, data=None):

@@ -180,7 +180,8 @@ class LibraryItem(QTreeWidgetItem, object):
         """
 
         if cls.MenuName:
-            action_icon = tp.ResourcesMgr().icon(cls.MenuIconName)
+            icon_name = os.path.splitext(cls.MenuIconName)[0] if cls.MenuIconName else QIcon()
+            action_icon = tp.ResourcesMgr().icon(icon_name)
             callback = partial(cls.show_create_widget, library_window)
             action = QAction(action_icon, cls.MenuName, menu)
             action.triggered.connect(callback)
@@ -2284,6 +2285,7 @@ class LibraryFolderItem(LibraryItem, object):
     MenuName = 'Folder'
     MenuOrder = 1
     MenuIconName = 'folder.png'
+    TypeIconPath = 'folder.png'
     DefaultThumbnailName = 'folder.png'
     TrashIconName = 'trash.png'
 
