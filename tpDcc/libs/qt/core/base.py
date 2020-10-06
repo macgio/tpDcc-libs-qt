@@ -173,15 +173,36 @@ class BaseWidget(QWidget, object):
         return self
 
 
+@mixin.theme_mixin
 class BaseFrame(QFrame, object):
     mouseReleased = Signal(object)
 
     def __init__(self, *args, **kwargs):
         super(BaseFrame, self).__init__(*args, **kwargs)
 
+        self.ui()
+
     def mouseReleaseEvent(self, event):
         self.mouseReleased.emit(event)
         return super(BaseFrame, self).mouseReleaseEvent(event)
+
+    def get_main_layout(self):
+        """
+        Function that generates the main layout used by the widget
+        Override if necessary on new widgets
+        :return: QLayout
+        """
+
+        return layouts.VerticalLayout(spacing=2, margins=(2, 2, 2, 2))
+
+    def ui(self):
+        """
+        Function that sets up the ui of the widget
+        Override it on new widgets (but always call super)
+        """
+
+        self.main_layout = self.get_main_layout()
+        self.setLayout(self.main_layout)
 
 
 class ContainerWidget(QWidget, object):
