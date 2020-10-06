@@ -1353,6 +1353,9 @@ class EditFileTreeWidget(base.DirectoryWidget, object):
             if not checked_children:
                 children = list()
                 continue
+            children = new_children
+            if checked_children:
+                levels.append(checked_children)
 
         tree_item.setExpanded(expand_state)
         levels.reverse()

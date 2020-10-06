@@ -340,6 +340,10 @@ class DragDoubleSpinBoxLine(lineedit.BaseLineEdit, object):
         theme = self.theme()
         self._color = theme.accent_color_5 or QColor(0, 255, 0)
 
+    @property
+    def default(self):
+        return self._default
+
     def mousePressEvent(self, event):
         if event.button() == Qt.MiddleButton:
             self._click = True
@@ -385,6 +389,9 @@ class DragDoubleSpinBoxLine(lineedit.BaseLineEdit, object):
 
     def get_validator(self):
         return QDoubleValidator()
+
+    def set_default(self, default):
+        self._default = default
 
     def value(self):
         try:
@@ -443,7 +450,7 @@ class DragDoubleSpinBoxLineAxis(base.BaseWidget, object):
         self.main_layout.addWidget(axis_widget)
 
     def setup_signals(self):
-        self._reset_btn.clicked.connect(partial(self._line.setValue, self._start))
+        self._reset_btn.clicked.connect(self._on_reset)
         self._line.valueChanged.connect(self.valueChanged.emit)
         self._line.textChanged.connect(self.textChanged.emit)
 
@@ -452,3 +459,9 @@ class DragDoubleSpinBoxLineAxis(base.BaseWidget, object):
 
     def setValue(self, new_value):
         self._line.setValue(new_value)
+
+    def set_default(self, default):
+        self._line.set_default(default)
+
+    def _on_reset(self):
+        self._line.setValue(str(self._line.default))

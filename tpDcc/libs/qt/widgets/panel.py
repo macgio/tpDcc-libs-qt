@@ -133,6 +133,7 @@ class SliderPanel(base.BaseWidget, object):
             self._is_first_close = False
             self._close_timer.stop()
             self._fade_out()
+            self.closed.emit()
             event.ignore()
         else:
             event.accept()

@@ -235,10 +235,9 @@ class StackItem(QFrame, object):
             self._title_frame.item_icon_button.hide()
 
         self._widget_hider = StackHiderWidget(parent=self)
-        self._contents_layout = layouts.VerticalLayout(spacing=0)
+        self._contents_layout = self._widget_hider.main_layout
         self._contents_layout.setContentsMargins(*self._contents_margins)
         self._contents_layout.setSpacing(self._contents_spacing)
-        self._widget_hider.setLayout(self._contents_layout)
         self._widget_hider.setContentsMargins(0, 0, 0, 0)
         self._widget_hider.setHidden(self._collapsed)
         self._widget_hider.setObjectName('stackbody')
