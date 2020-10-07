@@ -84,7 +84,7 @@ def init(dev=False):
             logger.warning('Error while setting DCC: {}. Abstract one will be used.'.format(exc))
 
         if dcc_loaded:
-            if hasattr(dcc_loader, 'init_ui') and callable(dcc_loaded.init_ui):
+            if hasattr(dcc_loader, 'init_ui') and callable(dcc_loader.init_ui):
                 dcc_loader.init_ui()
         if not dcc_loaded:
             global Dcc
