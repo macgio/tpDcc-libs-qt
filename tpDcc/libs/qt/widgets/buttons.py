@@ -965,7 +965,11 @@ class BaseMenuButton(QPushButton, ButtonIcons):
         self.middleClicked.connect(partial(self._on_context_menu, Qt.MidButton))
         self.rightClicked.connect(partial(self._on_context_menu, Qt.RightButton))
 
-        self._double_click_interval = QApplication.instance().doubleClickInterval()     # default is 500
+        app = QApplication.instance()
+        if app and hasattr(app, 'doubleClickInterval') and callable(app.doubleClickInterval):
+            self._double_click_interval = QApplication.instance().doubleClickInterval()
+        else:
+            self._double_click_interval = 500
         self._double_click_enabled = double_click_enabled
 
     @property
