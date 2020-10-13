@@ -28,8 +28,7 @@ main = __import__('__main__')
 def init(dev=False):
     """
     Initializes module
-    :param do_reload: bool, Whether to reload modules or not
-    :param dev: bool, Whether artellapipe is initialized in dev mode or not
+    :param dev: bool, Whether tpDcc-libs-qt is initialized in dev mode or not
     """
 
     from tpDcc import register as dcc_register

@@ -9,7 +9,7 @@ import os
 from collections import OrderedDict
 
 import tpDcc
-from tpDcc.core import plugin
+from tpDcc.managers import plugins
 from tpDcc.libs.python import python, decorators, folder, yamlio, color
 from tpDcc.libs.qt.widgets import toolset
 
@@ -19,12 +19,9 @@ else:
     import importlib as loader
 
 
-class ToolsetsPluginsManager(plugin.PluginsManager, object):
-
-    INTERFACE = toolset.ToolsetWidget
-
+class ToolsetsPluginsManager(plugins.PluginsManager, object):
     def __init__(self):
-        super(ToolsetsPluginsManager, self).__init__()
+        super(ToolsetsPluginsManager, self).__init__(interface=toolset.ToolsetWidget)
 
 
 class ToolsetsManager(object):
@@ -67,21 +64,19 @@ class ToolsetsManager(object):
 
         tools_mgr = tools_manager or tpDcc.ToolsMgr
 
-        for pkg_name, toolset_data in self._manager.plugins.items():
-            if package_name != pkg_name:
-                continue
-            if package_name not in self._toolsets:
-                self._toolsets[package_name] = list()
-            for tool_set in toolset_data.values():
-                if tool_set.ID not in self._toolsets[package_name]:
-                    toolset_config = tools_mgr().get_tool_config(tool_set.ID, package_name=package_name)
-                    if not toolset_config:
-                        tpDcc.logger.warning(
-                            'No valid configuration file found for toolset: "{}" in package: "{}"'.format(
-                                tool_set.ID, package_name))
-                        continue
-                    tool_set.CONFIG = toolset_config
-                    self._toolsets[package_name].append({tool_set.ID: tool_set})
+        if package_name not in self._toolsets:
+            self._toolsets[package_name] = list()
+        toolset_data = self._manager.get_plugins(package_name)
+        for tool_set in toolset_data.values():
+            if tool_set.ID not in self._toolsets[package_name]:
+                toolset_config = tools_mgr().get_tool_config(tool_set.ID, package_name=package_name)
+                if not toolset_config:
+                    tpDcc.logger.warning(
+                        'No valid configuration file found for toolset: "{}" in package: "{}"'.format(
+                            tool_set.ID, package_name))
+                    continue
+                tool_set.CONFIG = toolset_config
+                self._toolsets[package_name].append({tool_set.ID: tool_set})
 
         return True
 

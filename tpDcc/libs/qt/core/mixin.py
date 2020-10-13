@@ -98,12 +98,12 @@ def cursor_mixin(cls):
 
     def _new_enter_event(self, *args, **kwargs):
         old_enter_event(self, *args, **kwargs)
-        QApplication.setOverrideCursor(Qt.PointingHandCursor if self.isEnabled() else Qt.ForbiddenCursor)
+        # QApplication.setOverrideCursor(Qt.PointingHandCursor if self.isEnabled() else Qt.ForbiddenCursor)
         return super(cls, self).enterEvent(*args, **kwargs)
 
     def _new_leave_event(self, *args, **kwargs):
         old_leave_event(self, *args, **kwargs)
-        QApplication.restoreOverrideCursor()
+        # QApplication.restoreOverrideCursor()
         return super(cls, self).leaveEvent(*args, **kwargs)
 
     setattr(cls, 'enterEvent', _new_enter_event)
