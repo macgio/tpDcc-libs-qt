@@ -7,8 +7,10 @@ Module that defines that implements different types of actions
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt
+from Qt.QtWidgets import QSizePolicy, QFrame, QLabel, QCheckBox, QSlider, QWidgetAction
+
+from tpDcc.libs.qt.widgets import layouts
 
 
 class SeparatorLine(QFrame, object):
@@ -71,7 +73,7 @@ class SeparatorAction(QWidgetAction, object):
         """
 
         action_widget = self.widget()
-        action_layout = QHBoxLayout(action_widget)
+        action_layout = layouts.HorizontalLayout(margins=(0, 0, 0, 0), parent=action_widget)
         action_layout.setContentsMargins(0, 0, 0, 0)
         action_layout.addWidget(self.label())
         action_layout.addWidget(self.line())
@@ -108,8 +110,7 @@ class LabelAction(QWidgetAction, object):
             image: url(none.png)
         }
         """)
-        action_layout = QHBoxLayout(widget)
-        action_layout.setContentsMargins(0, 0, 0, 0)
+        action_layout = layouts.HorizontalLayout(margins=(0, 0, 0, 0), parent=widget)
         action_layout.addWidget(label, stretch=1)
         widget.setLayout(action_layout)
 
@@ -174,7 +175,7 @@ class SliderAction(QWidgetAction):
 
         action_widget = self.widget()
 
-        action_layout = QHBoxLayout(action_widget)
+        action_layout = layouts.HorizontalLayout(margins=(0, 0, 0, 0), parent=action_widget)
         action_layout.setContentsMargins(0, 0, 0, 0)
         action_layout.addWidget(self.label())
         action_layout.addWidget(self.slider())

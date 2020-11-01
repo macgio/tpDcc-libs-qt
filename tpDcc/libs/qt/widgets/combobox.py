@@ -7,14 +7,14 @@ Module that contains implementation for custom combo boxes
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Signal, Property, QPoint, QEvent
+from Qt.QtWidgets import QSizePolicy, QComboBox
 
 from tpDcc.libs.qt.core import mixin, formatters, theme
 
 
 @mixin.theme_mixin
-@mixin.cursor_mixin
+# @mixin.cursor_mixin
 # @mixin.property_mixin
 class BaseComboBox(QComboBox, object):
 
@@ -68,18 +68,18 @@ class BaseComboBox(QComboBox, object):
     # OVERRIDES
     # =================================================================================================================
 
-    # def eventFilter(self, widget, event):
-    #     """
-    #     Overrides base eventFilter function
-    #     :param widget:
-    #     :param event:
-    #     :return:
-    #     """
-    #
-    #     if widget is self.lineEdit():
-    #         if event.type() == QEvent.MouseButtonPress:
-    #             self.showPopup()
-    #     return super(BaseComboBox, self).eventFilter(widget, event)
+    def eventFilter(self, widget, event):
+        """
+        Overrides base eventFilter function
+        :param widget:
+        :param event:
+        :return:
+        """
+
+        if widget is self.lineEdit():
+            if event.type() == QEvent.MouseButtonPress:
+                self.showPopup()
+        return super(BaseComboBox, self).eventFilter(widget, event)
 
     def setView(self, *args, **kwargs):
         """

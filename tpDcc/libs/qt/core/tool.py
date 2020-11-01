@@ -7,11 +7,11 @@ Module that contains classes to create editor tools inside Qt apps
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt, QSize, QEvent
+from Qt.QtWidgets import QWidget, QDockWidget, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QToolButton, QMenu
 
-import tpDcc
 from tpDcc.core import tool
+from tpDcc.managers import resources
 
 
 class ShelfTool(tool.DccTool, object):
@@ -20,7 +20,7 @@ class ShelfTool(tool.DccTool, object):
 
     @staticmethod
     def icon():
-        return tpDcc.ResourcesMgr().resource.icon('home')
+        return resources.icon('home')
 
     def context_menu_builder(self):
         return None
@@ -99,11 +99,11 @@ class DockTitleBar(QWidget, object):
         self._button_size = QSize(14, 14)
 
         self._dock_btn = QToolButton(self)
-        self._dock_btn.setIcon(tpDcc.ResourcesMgr().icon('restore_window', theme='color'))
+        self._dock_btn.setIcon(resources.icon('restore_window', theme='color'))
         self._dock_btn.setMaximumSize(self._button_size)
         self._dock_btn.setAutoRaise(True)
         self._close_btn = QToolButton(self)
-        self._close_btn.setIcon(tpDcc.ResourcesMgr().icon('close_window', theme='color'))
+        self._close_btn.setIcon(resources.icon('close_window', theme='color'))
         self._close_btn.setMaximumSize(self._button_size)
         self._close_btn.setAutoRaise(True)
 

@@ -6,10 +6,10 @@ Module that contains implementation for DCC toolsets
 """
 
 import os
+import logging
 from collections import OrderedDict
 
-import tpDcc
-from tpDcc.managers import plugins
+from tpDcc.managers import plugins, tools
 from tpDcc.libs.python import python, decorators, folder, yamlio, color
 from tpDcc.libs.qt.widgets import toolset
 
@@ -18,12 +18,10 @@ if python.is_python2():
 else:
     import importlib as loader
 
-
-class ToolsetsPluginsManager(plugins.PluginsManager, object):
-    def __init__(self):
-        super(ToolsetsPluginsManager, self).__init__(interface=toolset.ToolsetWidget)
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
+@decorators.add_metaclass(decorators.Singleton)
 class ToolsetsManager(object):
     def __init__(self,):
         super(ToolsetsManager, self).__init__()
@@ -32,7 +30,7 @@ class ToolsetsManager(object):
         self._toolset_groups = dict()
         self._registered_paths = dict()
 
-        self._manager = ToolsetsPluginsManager()
+        self._manager = plugins.PluginsManager(interface=toolset.ToolsetWidget)
 
     @property
     def toolset_groups(self):
@@ -62,7 +60,7 @@ class ToolsetsManager(object):
         self._load_package_toolsets(
             package_name=package_name, tools_to_load=tools_to_load)
 
-        tools_mgr = tools_manager or tpDcc.ToolsMgr
+        tools_mgr = tools_manager or tools.ToolsManager
 
         if package_name not in self._toolsets:
             self._toolsets[package_name] = list()
@@ -71,7 +69,7 @@ class ToolsetsManager(object):
             if tool_set.ID not in self._toolsets[package_name]:
                 toolset_config = tools_mgr().get_tool_config(tool_set.ID, package_name=package_name)
                 if not toolset_config:
-                    tpDcc.logger.warning(
+                    LOGGER.warning(
                         'No valid configuration file found for toolset: "{}" in package: "{}"'.format(
                             tool_set.ID, package_name))
                     continue
@@ -94,7 +92,7 @@ class ToolsetsManager(object):
 
         package_toolsets = self._toolsets.get(package_name)
         if not package_toolsets:
-            tpDcc.logger.warning('No toolsets found in package: {}!'.format(package_name))
+            LOGGER.warning('No toolsets found in package: {}!'.format(package_name))
             return None
 
         toolset_found = None
@@ -104,7 +102,7 @@ class ToolsetsManager(object):
                 break
 
         if not toolset_found:
-            tpDcc.logger.warning('Toolset "{}" not found in package: "{}".'.format(toolset_id, package_name))
+            LOGGER.warning('Toolset "{}" not found in package: "{}".'.format(toolset_id, package_name))
             return None
 
         if as_dict:
@@ -171,12 +169,12 @@ class ToolsetsManager(object):
             toolset_widgets = self._toolsets[package_name].values()
         else:
             for package_name, toolsets in self._toolsets.items():
-                for toolset in toolsets:
-                    for toolset_id, toolset_widget in toolset.items():
+                for toolset_found in toolsets:
+                    for toolset_id, toolset_widget in toolset_found.items():
                         toolset_widgets.append(toolset_widget)
 
         if sort:
-            toolset_widgets.sort(key=lambda toolset: toolset.CONFIG.get('name'))
+            toolset_widgets.sort(key=lambda toolset_widget_found: toolset_widget_found.CONFIG.get('name'))
 
         return toolset_widgets
 
@@ -205,7 +203,7 @@ class ToolsetsManager(object):
                         hue_shift = toolset_group['hue_shift'] * (index + 1)
                         return tuple(color.hue_shift(group_color, hue_shift))
         else:
-            tpDcc.logger.warning(
+            LOGGER.warning(
                 'ToolSet "{}" not found in any toolset group. Impossible to retrieve color!'.format(toolset_id))
             return 255, 255, 255
 
@@ -232,7 +230,7 @@ class ToolsetsManager(object):
                             continue
                     toolset_menus.append(toolset_group.get('menu', list()))
         else:
-            tpDcc.logger.warning(
+            LOGGER.warning(
                 'Toolset "{}" not found in any toolset group. Impossible to retrieve menu data!'.format(toolset_type))
 
         return toolset_menus
@@ -263,6 +261,7 @@ class ToolsetsManager(object):
         """
         Returns color by group type
         :param group_type: str
+        :param package_name: str
         :return: str
         """
 
@@ -323,7 +322,7 @@ class ToolsetsManager(object):
                     try:
                         toolset_data = yamlio.read_file(pth, maintain_order=True)
                     except Exception:
-                        tpDcc.logger.warning('Impossible to read toolset data from: "{}!'.format(pth))
+                        LOGGER.warning('Impossible to read toolset data from: "{}!'.format(pth))
                         continue
                     if pkg_name not in self._toolset_groups:
                         self._toolset_groups[pkg_name] = list()
@@ -349,8 +348,7 @@ class ToolsetsManager(object):
         """
         Loads all toolsets available in given package
         :param package_name: str
-        :param tools_to_load: lsit
-        :param dev: bool
+        :param tools_to_load: list
         """
 
         if not tools_to_load:
@@ -376,13 +374,3 @@ class ToolsetsManager(object):
         # Find toolset widgets are located
         if tools_paths_to_load:
             self._manager.register_paths(tools_paths_to_load, package_name=package_name)
-
-
-@decorators.Singleton
-class ToolsetsManagerSingleton(ToolsetsManager, object):
-    """
-    Singleton class that holds preferences manager instance
-    """
-
-    def __init__(self):
-        ToolsetsManager.__init__(self)

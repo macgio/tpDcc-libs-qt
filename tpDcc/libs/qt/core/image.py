@@ -18,13 +18,12 @@ try:
 except ImportError:
     import urllib
 
-from Qt.QtCore import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QByteArray, QRunnable, QObject, QTimer
+from Qt.QtGui import QImage, QPixmap, QBitmap, QIcon, QColor, QPainter
 
-from tpDcc.libs import qt
 from tpDcc.libs.python import python, path as path_utils
 
-LOGGER = logging.getLogger()
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 ImageFormats = {
     QImage.Format_Mono: 'L',                            # Mono
@@ -249,7 +248,7 @@ class ImageWorker(QRunnable, object):
                 image = QImage(str(self._path))
                 self.signals.triggered.emit(image)
         except Exception as e:
-            qt.logger.error('Cannot load thumbnail image!')
+            LOGGER.error('Cannot load thumbnail image!')
 
 
 class ImageSequence(QObject, object):

@@ -10,8 +10,8 @@ from __future__ import print_function, division, absolute_import
 import logging
 import traceback
 
-from Qt.QtCore import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt
+from Qt.QtGui import QKeySequence
 
 from tpDcc.libs.python import python
 if python.is_python2():
@@ -19,7 +19,7 @@ if python.is_python2():
 else:
     from enum import Enum
 
-LOGGER = logging.getLogger()
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class InputActionType(Enum):

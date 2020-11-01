@@ -7,12 +7,12 @@ Module that contains functions related with Qt drop behaviour
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, QPoint, QRect, QRectF, QLineF, QSizeF
+from Qt.QtWidgets import QBoxLayout, QWidget, QFrame, QLabel
+from Qt.QtGui import QCursor, QPixmap, QColor, QPalette, QPainter, QBrush, QLinearGradient
 
 from tpDcc.libs.qt.core import qtutils
-
+from tpDcc.libs.qt.widgets import layouts
 
 class DropArea(object):
     InvalidDropArea = 0
@@ -277,9 +277,7 @@ class DropOverlayCross(QWidget, object):
         self.setWindowTitle('DropOverlayCross')
         self.setAttribute(Qt.WA_TranslucentBackground)
 
-        self._grid = QGridLayout()
-        self._grid.setContentsMargins(0, 0, 0, 0)
-        self._grid.setSpacing(0)
+        self._grid = layouts.GridLayout(spacing=0, margins=(0, 0, 0, 0))
 
         bl1 = QBoxLayout(QBoxLayout.TopToBottom)
         bl1.setContentsMargins(0, 0, 0, 0)

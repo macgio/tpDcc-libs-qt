@@ -10,30 +10,26 @@ from __future__ import print_function, division, absolute_import
 import os
 import math
 import shutil
+import logging
 import tempfile
 import traceback
 from datetime import datetime
 from functools import partial
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QObject, QRect, QSize, QThreadPool, QUrl
+from Qt.QtWidgets import QApplication, QTreeWidgetItem, QAction, QFileDialog, QMessageBox, QDialogButtonBox, QTreeWidget
+from Qt.QtWidgets import QStyle
+from Qt.QtGui import QFontMetrics, QPixmap, QIcon, QColor, QPen, QBrush, QMovie
 
-import tpDcc as tp
+from tpDcc import dcc
+from tpDcc.managers import resources
 from tpDcc.core import consts as dcc_consts
-
-from tpDcc.libs.python import decorators, timedate, fileio, path as path_utils, folder as folder_utils
-
-from tpDcc.libs import qt
-from tpDcc.libs.qt.core import image, qtutils
+from tpDcc.libs.qt.core import image, qtutils, decorators as qt_decorators
 from tpDcc.libs.qt.widgets import messagebox
 from tpDcc.libs.qt.widgets.library import consts, savewidget, loadwidget, exceptions, utils
+from tpDcc.libs.python import decorators, timedate, fileio, path as path_utils, folder as folder_utils
 
-if tp.is_maya():
-    from tpDcc.dccs.maya.core import decorators as maya_decorators
-    show_wait_cursor_decorator = maya_decorators.show_wait_cursor
-else:
-    show_wait_cursor_decorator = decorators.empty_decorator
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class GlobalSignals(QObject, object):
@@ -131,9 +127,9 @@ class LibraryItem(QTreeWidgetItem, object):
         self._modal = None
         self._library = None
         self._library_window = None
-        self._type_icon_path = tp.ResourcesMgr().get('icons', self.TypeIconName)
-        self._menu_icon_path = tp.ResourcesMgr().get('icons', self.MenuIconName)
-        self._default_thumbnail_path = tp.ResourcesMgr().get('icons', self.DefaultThumbnailName)
+        self._type_icon_path = resources.get('icons', self.TypeIconName)
+        self._menu_icon_path = resources.get('icons', self.MenuIconName)
+        self._default_thumbnail_path = resources.get('icons', self.DefaultThumbnailName)
 
         super(LibraryItem, self).__init__(*args)
 
@@ -181,7 +177,7 @@ class LibraryItem(QTreeWidgetItem, object):
 
         if cls.MenuName:
             icon_name = os.path.splitext(cls.MenuIconName)[0] if cls.MenuIconName else QIcon()
-            action_icon = tp.ResourcesMgr().icon(icon_name)
+            action_icon = resources.icon(icon_name)
             callback = partial(cls.show_create_widget, library_window)
             action = QAction(action_icon, cls.MenuName, menu)
             action.triggered.connect(callback)
@@ -306,7 +302,7 @@ class LibraryItem(QTreeWidgetItem, object):
         if isinstance(icon, (str, unicode)):
             if not os.path.exists(icon):
                 color = color or QColor(255, 255, 255, 20)
-                icon = tp.ResourcesMgr().icon('image', color=color)
+                icon = resources.icon('image', color=color)
             else:
                 icon = QIcon(icon)
         if isinstance(column, (str, unicode)):
@@ -451,7 +447,7 @@ class LibraryItem(QTreeWidgetItem, object):
 
         library = self.library()
         if not library:
-            qt.logger.error('Impossible to rename item because library is not defined!')
+            LOGGER.error('Impossible to rename item because library is not defined!')
             return
 
         source = self.path()
@@ -1094,11 +1090,11 @@ class LibraryItem(QTreeWidgetItem, object):
         :param kwargs: dict
         """
 
-        qt.logger.debug('Loading "{}"'.format(self.name()))
-        qt.logger.debug('Loading kwargs {}'.format(kwargs))
+        LOGGER.debug('Loading "{}"'.format(self.name()))
+        LOGGER.debug('Loading kwargs {}'.format(kwargs))
         self.loaded.emit(self)
 
-    @show_wait_cursor_decorator
+    @qt_decorators.show_wait_cursor
     def save(self, path=None, *args, **kwargs):
         """
         Saves current item
@@ -1115,7 +1111,7 @@ class LibraryItem(QTreeWidgetItem, object):
 
         self.set_path(path)
 
-        qt.logger.debug('Item Saving: {}'.format(path))
+        LOGGER.debug('Item Saving: {}'.format(path))
         self.saving.emit(self)
 
         if os.path.exists(path):
@@ -1126,7 +1122,7 @@ class LibraryItem(QTreeWidgetItem, object):
             os.mkdir(temp_path)
         valid_save = self.write(temp_path, *args, **kwargs)
         if not valid_save:
-            qt.logger.warning('Item {} not saved!'.format(path))
+            LOGGER.warning('Item {} not saved!'.format(path))
             if self.library_window():
                 self.library_window().show_warning_message('Item {} not saved!'.format(path))
             if os.path.isdir(temp_path):
@@ -1150,7 +1146,7 @@ class LibraryItem(QTreeWidgetItem, object):
             self.library_window().select_items([self])
 
         self.saved.emit(self)
-        qt.logger.debug('Item Saved: {}'.format(self.path()))
+        LOGGER.debug('Item Saved: {}'.format(self.path()))
 
         return True
 
@@ -1212,7 +1208,7 @@ class LibraryItem(QTreeWidgetItem, object):
         :param exception: str
         """
 
-        qt.logger.exception(exception)
+        LOGGER.exception(exception)
         return self.show_error_dialog(title, error)
 
     def show_question_dialog(self, title, text):
@@ -2290,7 +2286,7 @@ class LibraryFolderItem(LibraryItem, object):
     TrashIconName = 'trash.png'
 
     def __init__(self, path='', library=None, library_window=None, *args):
-        self._trash_icon_path = tp.ResourcesMgr().get('icons', self.TrashIconName)
+        self._trash_icon_path = resources.get('icons', self.TrashIconName)
 
         super(LibraryFolderItem, self).__init__(path=path, library=library, library_window=library_window, *args)
 
@@ -2442,9 +2438,9 @@ class BaseItem(LibraryItem, object):
         :param kwargs: dict
         """
 
-        qt.logger.debug('Loading: {}'.format(self.transfer_path()))
+        LOGGER.debug('Loading: {}'.format(self.transfer_path()))
         self.transfer_object().load(objects=objects, namespaces=namespaces, **kwargs)
-        qt.logger.debug('Loaded: {}'.format(self.transfer_path()))
+        LOGGER.debug('Loaded: {}'.format(self.transfer_path()))
 
         return True
 
@@ -2510,7 +2506,7 @@ class BaseItem(LibraryItem, object):
 
         self._current_save_schema = fields
 
-        selection = tp.Dcc.selected_nodes(full_path=True) or list()
+        selection = dcc.selected_nodes(full_path=True) or list()
         count = len(selection)
         plural = 's' if count > 1 else ''
         msg = '{} object{} selected for saving'.format(count, plural)
@@ -2594,7 +2590,7 @@ class BaseItem(LibraryItem, object):
 
         kwargs = self.options_from_settings()
         namespaces = self.namespaces()
-        objects = tp.Dcc.selected_nodes(full_path=False) or list()
+        objects = dcc.selected_nodes(full_path=False) or list()
 
         try:
             self.load(objects=objects, namespaces=namespaces, **kwargs)

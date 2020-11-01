@@ -7,7 +7,7 @@ Module that contains different grid widgets
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtWidgets import *
+from Qt.QtWidgets import QTableWidget
 
 from tpDcc.libs.qt.core import base
 

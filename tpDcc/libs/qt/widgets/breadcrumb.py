@@ -9,13 +9,11 @@ from __future__ import print_function, division, absolute_import
 
 import os
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtWidgets import QSizePolicy, QButtonGroup, QFrame
 
-import tpDcc as tp
 from tpDcc.libs.python import path, python
-from tpDcc.libs.qt.core import mixin, base, qtutils
-from tpDcc.libs.qt.widgets import buttons, label
+from tpDcc.libs.qt.core import mixin, base
+from tpDcc.libs.qt.widgets import layouts, buttons, label
 
 
 class Breadcrumb(object):
@@ -53,9 +51,7 @@ class BreadcrumbWidget(base.BaseWidget, object):
         self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
 
     def get_main_layout(self):
-        main_layout = QHBoxLayout()
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
+        main_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
         main_layout.addStretch()
 
         return main_layout
@@ -149,17 +145,15 @@ class BreadcrumbFrame(QFrame, object):
         self.setObjectName('TaskFrame')
         self.setFrameStyle(QFrame.StyledPanel)
 
-        main_layout = QHBoxLayout()
-        main_layout.setContentsMargins(2, 2, 2, 2)
-        main_layout.setSpacing(2)
+        main_layout = layouts.HorizontalLayout(spacing=2, margins=(2, 2, 2, 2))
         self.setLayout(main_layout)
 
         self._breadcrumb = BreadcrumbWidget(separator=separator, parent=self)
 
-        title_layout = QHBoxLayout()
-        title_layout.addItem(QSpacerItem(30, 0, QSizePolicy.Expanding, QSizePolicy.Fixed))
+        title_layout = layouts.HorizontalLayout()
+        title_layout.addStretch()
         title_layout.addWidget(self._breadcrumb)
-        title_layout.addItem(QSpacerItem(30, 0, QSizePolicy.Expanding, QSizePolicy.Fixed))
+        title_layout.addStretch()
 
         main_layout.addLayout(title_layout)
 

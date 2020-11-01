@@ -11,14 +11,13 @@ import os
 import json
 from collections import OrderedDict
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt
+from Qt.QtWidgets import QSizePolicy, QWidget, QLabel, QPushButton, QScrollArea
 
-from tpDcc.libs.qt.core import dialog
-from tpDcc.libs.qt.widgets import accordion
+from tpDcc.libs.qt.widgets import layouts, dialog, accordion
 
 
-class Changelog(dialog.Dialog, object):
+class Changelog(dialog.BaseDialog, object):
     def __init__(self):
         super(Changelog, self).__init__(
             name='ChangelogDialog',
@@ -37,9 +36,7 @@ class Changelog(dialog.Dialog, object):
         self.setFixedWidth(600)
         self.setMaximumHeight(800)
 
-        scroll_layout = QVBoxLayout()
-        scroll_layout.setContentsMargins(2, 2, 2, 2)
-        scroll_layout.setSpacing(2)
+        scroll_layout = layouts.VerticalLayout(spacing=2, margins=(2, 2, 2, 2))
         scroll_layout.setAlignment(Qt.AlignTop)
         central_widget = QWidget()
         central_widget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
@@ -87,7 +84,7 @@ class Changelog(dialog.Dialog, object):
     def _create_version(self, version, elements):
 
         version_widget = QWidget()
-        version_layout = QVBoxLayout()
+        version_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         version_layout.setContentsMargins(0, 0, 0, 0)
         version_layout.setSpacing(0)
         version_layout.setAlignment(Qt.AlignTop)

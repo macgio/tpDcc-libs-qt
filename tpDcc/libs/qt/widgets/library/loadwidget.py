@@ -9,11 +9,11 @@ from __future__ import print_function, division, absolute_import
 
 import os
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, QSize
+from Qt.QtWidgets import QSizePolicy, QWidget, QFrame, QToolButton, QSpacerItem
+from Qt.QtGui import QPixmap, QIcon
 
-import tpDcc
+from tpDcc.managers import resources
 from tpDcc.libs.qt.core import base
 from tpDcc.libs.qt.widgets import layouts, buttons, label, formwidget, dividers, history, tabs
 from tpDcc.libs.qt.widgets.library import widgets
@@ -148,7 +148,7 @@ class LoadWidget(BaseLoadWidget, object):
             'color: rgb(40, 40, 40);\nborder: 1px solid rgb(0, 0, 0, 0);\nbackground-color: rgb(254, 255, 230, 0);')
         self._thumbnail_btn.setLayoutDirection(Qt.LeftToRight)
         self._thumbnail_btn.setText('Snapshot')
-        self._thumbnail_btn.setIcon(tpDcc.ResourcesMgr().icon('thumbnail'))
+        self._thumbnail_btn.setIcon(resources.icon('thumbnail'))
         thumbnail_frame_layout.addWidget(self._thumbnail_btn)
 
         icon_toggle_box_lyt.addWidget(icon_toggle_box_header)
@@ -235,9 +235,9 @@ class LoadWidget(BaseLoadWidget, object):
         self._load_btn.setObjectName('loadButton')
         self._load_btn.setMinimumSize(QSize(60, 35))
         self._load_btn.setMaximumSize(QSize(125, 35))
-        self._preview_buttons_frame_lyt.addItem(QSpacerItem(10, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
+        self._preview_buttons_frame_lyt.addStretch()
         self._preview_buttons_frame_lyt.addLayout(self._preview_buttons_lyt)
-        self._preview_buttons_frame_lyt.addItem(QSpacerItem(10, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
+        self._preview_buttons_frame_lyt.addStretch()
         self._preview_buttons_lyt.addWidget(self._load_btn)
         preview_buttons_frame.setLayout(self._preview_buttons_frame_lyt)
 

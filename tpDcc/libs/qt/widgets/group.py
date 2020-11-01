@@ -7,9 +7,9 @@ Module that contains different group widgets
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, Property
+from Qt.QtWidgets import QSizePolicy, QBoxLayout, QGroupBox, QButtonGroup
+from Qt.QtGui import QIcon
 
 from tpDcc.libs.python import decorators, python
 from tpDcc.libs.qt.core import qtutils, base, theme

@@ -7,9 +7,9 @@ Module that contains classes to show different kind of message boxes
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtWidgets import *
+from Qt.QtWidgets import QMessageBox
 
-import tpDcc as tp
+from tpDcc import dcc
 
 
 class MessageHandler(object):
@@ -17,7 +17,7 @@ class MessageHandler(object):
     def __init__(self):
         super(MessageHandler, self).__init__()
 
-        self.parent_window = tp.Dcc.get_main_window()
+        self.parent_window = dcc.get_main_window()
 
     def set_message(self, msg, level=0):
         """

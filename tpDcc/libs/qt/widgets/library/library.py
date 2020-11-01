@@ -10,13 +10,15 @@ from __future__ import print_function, division, absolute_import
 import os
 import time
 import copy
+import logging
 from collections import OrderedDict
 
-from Qt.QtCore import *
+from Qt.QtCore import Signal, QObject
 
-from tpDcc.libs import qt
 from tpDcc.libs.python import decorators, path as path_utils
 from tpDcc.libs.qt.widgets.library import consts, utils
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class Library(QObject, object):
@@ -134,13 +136,13 @@ class Library(QObject, object):
     @staticmethod
     def sorted(items, sort_by):
         """
-        Return the given data sorted using the sorty_by argument
+        Return the given data sorted using the sort by argument
         :param items: list(LibraryItem)
         :param sort_by: list(str)
         :return: list(LibraryItem)
         """
 
-        qt.logger.debug('Sort by: {}'.format(sort_by))
+        LOGGER.debug('Sort by: {}'.format(sort_by))
         t = time.time()
         for field in reversed(sort_by):
             tokens = field.split(':')
@@ -154,7 +156,7 @@ class Library(QObject, object):
                 return item.item_data().get(field, default)
 
             items = sorted(items, key=sort_key, reverse=reverse)
-        qt.logger.debug('Sort items took {}'.format(time.time() - t))
+        LOGGER.debug('Sort items took {}'.format(time.time() - t))
 
         return items
 
@@ -167,7 +169,7 @@ class Library(QObject, object):
         :return: dict
         """
 
-        qt.logger.debug('Group by: {}'.format(fields))
+        LOGGER.debug('Group by: {}'.format(fields))
 
         # TODO: Implement support for multiple grups not only top level group
 
@@ -197,7 +199,7 @@ class Library(QObject, object):
         for group in groups:
             results[group] = results_[group]
 
-        qt.logger.debug('Group Items Took {}'.format(time.time() - t))
+        LOGGER.debug('Group Items Took {}'.format(time.time() - t))
 
         return results
 
@@ -371,7 +373,7 @@ class Library(QObject, object):
         """
 
         if not self.path():
-            qt.logger.info('No path set for reading the data from disk')
+            LOGGER.info('No path set for reading the data from disk')
             return self._data
 
         if self.is_dirty():
@@ -387,7 +389,7 @@ class Library(QObject, object):
         """
 
         if not self.path():
-            qt.logger.info('No path set for saving the data to disk')
+            LOGGER.info('No path set for saving the data to disk')
 
         utils.save_json(self.data_path(), data)
         self.set_dirty(True)
@@ -447,7 +449,7 @@ class Library(QObject, object):
         :param emit_data_changed: bool
         """
 
-        qt.logger.debug('Saving Items: {}'.format(items))
+        LOGGER.debug('Saving Items: {}'.format(items))
 
         data_ = self.read()
         for item in items:
@@ -468,7 +470,7 @@ class Library(QObject, object):
         :param items: list(LibraryItem)
         """
 
-        qt.logger.debug('Loading item data: {}'.format(items))
+        LOGGER.debug('Loading item data: {}'.format(items))
 
         data = self.read()
         for item in items:
@@ -686,14 +688,14 @@ class Library(QObject, object):
             return
 
         t = time.time()
-        qt.logger.debug('Searching items ...')
+        LOGGER.debug('Searching items ...')
         self.searchStarted.emit()
         self._results = self.find_items(self.queries())
         self._grouped_results = self.group_items(self._results, self.group_by())
         self.searchFinished.emit()
         self._search_time = time.time() - t
         self.searchTimeFinished.emit()
-        qt.logger.debug('Search time: {}'.format(self._search_time))
+        LOGGER.debug('Search time: {}'.format(self._search_time))
 
     def results(self):
         """
@@ -725,7 +727,7 @@ class Library(QObject, object):
         """
 
         if not self.path():
-            qt.logger.warning('No path set for syncing data')
+            LOGGER.warning('No path set for syncing data')
             return
 
         data = self.read()

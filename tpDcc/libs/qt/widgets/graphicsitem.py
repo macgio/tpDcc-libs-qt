@@ -7,9 +7,9 @@ Module that contains different graphic items
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QObject, QPoint, QPointF
+from Qt.QtWidgets import QGraphicsItem
+from Qt.QtGui import QColor
 
 
 class BaseItemCommunicator(QObject, object):

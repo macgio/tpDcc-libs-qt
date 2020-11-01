@@ -7,13 +7,17 @@ Module that contains classes to create attribute editors
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+import logging
+
+from Qt.QtCore import Qt, Signal, QPoint, QPointF, QSize, QRegExp
+from Qt.QtWidgets import QWidget, QGroupBox, QScrollArea, QLineEdit, QCheckBox, QSlider, QColorDialog
+from Qt.QtGui import QColor, QPalette
 
 from tpDcc.libs.python import strings as string_utils
-from tpDcc.libs.qt.widgets import lineedit, directory
 from tpDcc.libs.qt.core import qtutils, base, color
+from tpDcc.libs.qt.widgets import layouts, lineedit, directory
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class AttributeEditor(base.BaseWidget, object):
@@ -56,8 +60,7 @@ class AttributeEditor(base.BaseWidget, object):
         :return: QLayout
         """
 
-        attributes_layout = QHBoxLayout()
-        attributes_layout.setContentsMargins(5, 5, 5, 5)
+        attributes_layout = layouts.HorizontalLayout(margins=(5, 5, 5, 5))
         attributes_layout.setAlignment(Qt.AlignTop)
 
         return attributes_layout
@@ -91,9 +94,7 @@ class BaseEditor(QWidget, object):
         self._default_value = 0.0
         self._current_value = None
 
-        self.main_layout = QHBoxLayout(self)
-        self.main_layout.setContentsMargins(1, 1, 1, 1)
-        self.main_layout.setSpacing(3)
+        self.main_layout = layouts.HorizontalLayout(spacing=3, margins=(1, 1, 1, 1), parent=self)
 
     def get_default_value(self):
         return self._default_value
@@ -285,7 +286,7 @@ class StringEditor(BaseEditor, object):
         self._clean_value = kwargs.get('clean', True)
 
         self.value_line = QLineEdit(self)
-        regexp = QRegExp('^([a-zA-Z0-9_]+)')
+        reg_exp = QRegExp('^([a-zA-Z0-9_]+)')
         self.main_layout.addWidget(self.value_line)
 
         self.value_line.textEdited.connect(self._validate_text)
@@ -430,7 +431,7 @@ class ColorPicker(BaseEditor, object):
     def OnSliderChanged(self):
         slider_value = float(self.slider.value())
         if not self._current_value:
-            tp.logger.debug(
+            LOGGER.debug(
                 'Caching color: (%d, %d, %d)' % (
                     self.color_swatch.color[0], self.color_swatch.color[1], self.color_swatch.color[2]))
             self._current_value = self.color_swatch.color
@@ -566,7 +567,7 @@ def map_widget(attr_type, name, parent=None):
 
     widget_type = attr_type.replace(' ', '').lower()
     if widget_type not in WIDGET_MAPPER:
-        tp.logger.warning('Invalid Editor Class: "{0}" ("{1}")'.format(attr_type, name))
+        LOGGER.warning('Invalid Editor Class: "{0}" ("{1}")'.format(attr_type, name))
     else:
         cls = WIDGET_MAPPER.get(widget_type)[0]
         return cls(parent=parent, name=name)

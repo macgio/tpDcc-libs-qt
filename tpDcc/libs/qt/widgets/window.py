@@ -9,17 +9,21 @@ from __future__ import print_function, division, absolute_import
 
 import os
 import uuid
+import logging
 from collections import defaultdict
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QByteArray, QSettings
+from Qt.QtWidgets import QApplication, QSizePolicy, QToolBar, QScrollArea, QMenuBar, QAction, QDockWidget
+from Qt.QtWidgets import QMainWindow, QWidget, QFrame, QTabWidget, QTabBar
 
-from tpDcc.libs import qt
-import tpDcc as tp
+from tpDcc import dcc
+from tpDcc.managers import resources
 from tpDcc.libs.python import path, folder
-from tpDcc.libs.qt.core import mixin, qtutils, animation, theme, statusbar, dragger, resizers, settings as qt_settings
+from tpDcc.libs.qt.core import mixin, qtutils, animation, theme, statusbar, dragger, resizers
+from tpDcc.libs.qt.core import settings as qt_settings
 from tpDcc.libs.qt.widgets import layouts
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class WindowContents(QFrame, object):
@@ -36,15 +40,15 @@ class WindowContents(QFrame, object):
 class BaseWindow(QMainWindow, object):
 
     closed = Signal()
+    themeUpdated = Signal(object)
+    styleReloaded = Signal(object)
 
     WindowName = 'New Window'
 
     def __init__(self, parent=None, **kwargs):
 
-        main_window = tp.Dcc.get_main_window()
-        if parent is None:
-            parent = main_window
-
+        main_window = dcc.get_main_window()
+        parent = parent or main_window
         window_id = kwargs.get('id', None)
         self._theme = None
         self._docks = list()
@@ -64,7 +68,6 @@ class BaseWindow(QMainWindow, object):
         self._signals = defaultdict(list)
         self._force_disable_saving = False
         win_settings = kwargs.pop('settings', None)
-        prefs_settings = kwargs.pop('preferences_settings', None)
         auto_load = kwargs.get('auto_load', True)
 
         super(BaseWindow, self).__init__(parent)
@@ -78,7 +81,7 @@ class BaseWindow(QMainWindow, object):
 
         self.setObjectName(str(self.WindowId))
         self.setWindowTitle(kwargs.get('title', self.WindowName))
-        self.setWindowIcon(kwargs.get('icon', tp.ResourcesMgr().icon('tpdcc')))
+        self.setWindowIcon(kwargs.get('icon', resources.icon('tpdcc')))
         # self.setFocusPolicy(Qt.ClickFocus)
         self.setMouseTracking(True)
 
@@ -311,7 +314,7 @@ class BaseWindow(QMainWindow, object):
             self._exit_action = QAction(self)
             self._exit_action.setText('Close')
             self._exit_action.setShortcut('Ctrl + Q')
-            self._exit_action.setIcon(tp.ResourcesMgr().resource.icon('close_window'))
+            self._exit_action.setIcon(resources.icon('close_window'))
             self._exit_action.setToolTip('Close application')
             self._file_menu.addAction(self._exit_action)
             self._exit_action.triggered.connect(self.fade_close)
@@ -529,36 +532,46 @@ class BaseWindow(QMainWindow, object):
     # THEME
     # ============================================================================================================
 
-    def load_theme(self):
+    def load_theme(self, theme_name=None, theme_settings=None):
         """
         Loads window theme
         """
 
-        def_settings = self.default_settings()
-        def_theme_settings = def_settings.get('theme', dict())
-        accent_color = self.settings().getw('theme/accent_color') or def_theme_settings.get('accent_color')
-        background_color = self.settings().getw('theme/background_color') or def_theme_settings.get('background_color')
-        accent_color = 'rgb(%d, %d, %d, %d)' % accent_color.getRgb() if isinstance(
-            accent_color, QColor) else accent_color
-        background_color = 'rgb(%d, %d, %d, %d)' % background_color.getRgb() if isinstance(
-            background_color, QColor) else background_color
+        theme_name = theme_name or self.settings().get('theme', None) if self._settings else 'default'
+        theme_to_load = resources.theme(theme_name)
+        if not theme_to_load:
+            theme_to_load = theme.Theme()
+        if theme_settings:
+            theme_to_load.set_settings(theme_settings)
 
-        theme_settings = dict()
-        if accent_color:
-            theme_settings['accent_color'] = accent_color
-        if background_color:
-            theme_settings['background_color'] = background_color
+        # def_settings = self.default_settings()
+        # def_theme_settings = def_settings.get('theme', dict())
+        # accent_color = self.settings().get('theme/accentColor') or def_theme_settings.get('accent_color')
+        # background_color = self.settings().get('theme/backgroundColor') or def_theme_settings.get('background_color')
+        # accent_color = 'rgb(%d, %d, %d, %d)' % accent_color.getRgb() if isinstance(
+        #     accent_color, QColor) else accent_color
+        # background_color = 'rgb(%d, %d, %d, %d)' % background_color.getRgb() if isinstance(
+        #     background_color, QColor) else background_color
+        #
+        # theme_settings = dict()
+        # if accent_color:
+        #     accent_color = color.convert_2_hex(accent_color)
+        #     theme_settings['accent_color'] = accent_color
+        # if background_color:
+        #     background_color = color.convert_2_hex(background_color)
+        #     theme_settings['background_color'] = background_color
+        #
+        # new_theme = self.set_theme_settings(theme_settings)
 
-        self.set_theme_settings(theme_settings)
+        self.set_theme(theme_to_load)
+
+        return theme_to_load
 
     def theme(self):
         """
         Returns the current theme
         :return: Theme
         """
-
-        if not self._theme:
-            return None
 
         return self._theme
 
@@ -570,20 +583,9 @@ class BaseWindow(QMainWindow, object):
 
         self._theme = theme
         self._theme.updated.connect(self.reload_stylesheet)
+        self._theme.set_dpi(self.dpi())
         self.reload_stylesheet()
-
-    def set_theme_settings(self, settings):
-        """
-        Sets the theme settings from the given settings
-        :param settings: dict
-        """
-
-        current_theme = self._settings.get('theme', 'default')
-        new_theme = tp.ResourcesMgr().theme(current_theme)
-        if not new_theme:
-            new_theme = theme.Theme()
-        new_theme.set_settings(settings)
-        self.set_theme(new_theme)
+        # self.themeUpdated.emit(self._theme)
 
     def reload_stylesheet(self):
         """
@@ -591,9 +593,12 @@ class BaseWindow(QMainWindow, object):
         """
 
         current_theme = self.theme()
+        if not current_theme:
+            return
         current_theme.set_dpi(self.dpi())
         stylesheet = current_theme.stylesheet()
         self.setStyleSheet(stylesheet)
+        self.styleReloaded.emit(current_theme)
 
     # ============================================================================================================
     # TOOLBAR
@@ -742,7 +747,7 @@ class MainWindow(BaseWindow, object):
 
         # We set the window title after UI is created
         self.setWindowTitle(kwargs.get('title', 'tpDcc'))
-        self.setWindowIcon(kwargs.get('icon', tp.ResourcesMgr().icon('tpdcc')))
+        self.setWindowIcon(kwargs.get('icon', resources.icon('tpdcc')))
 
         MainWindow._WINDOW_INSTANCES[self.WindowId] = {
             'window': self
@@ -783,7 +788,7 @@ class MainWindow(BaseWindow, object):
             try:
                 inst['window'].clearedInstance.emit()
             except RuntimeError as exc:
-                tp.logger.error('Error while clearing window instance: {} | {}'.format(window_id, exc))
+                LOGGER.error('Error while clearing window instance: {} | {}'.format(window_id, exc))
 
         return inst
 
@@ -905,7 +910,7 @@ class MainWindow(BaseWindow, object):
             callback_type = callback_type[0]
 
         if callback_type not in tp.callbacks():
-            tp.logger.warning('Callback Type: "{}" is not valid! Aborting callback creation ...'.format(callback_type))
+            LOGGER.warning('Callback Type: "{}" is not valid! Aborting callback creation ...'.format(callback_type))
             return
 
         from tpDcc.managers import callbacks
@@ -1156,14 +1161,14 @@ class MainWindow(BaseWindow, object):
         """
 
         if not hasattr(widget_class, 'CATEGORY'):
-            qt.logger.warning(
+            LOGGER.warning(
                 'Impossible to register Category Wigdet Class "{}" because it does not '
                 'defines a CATEGORY attribute'.format(widget_class))
             return
 
         registered_prefs_categories = [pref.CATEGORY for pref in self._preference_widgets_classes]
         if widget_class.CATEGORY in registered_prefs_categories:
-            qt.logger.warning(
+            LOGGER.warning(
                 'Impossible to register Category Widget Class "{}" because its CATEGORY "{}" its '
                 'already registered!'.format(widget_class, widget_class.CATEGORY))
             return
@@ -1218,124 +1223,31 @@ class MainWindow(BaseWindow, object):
         :return: bool
         """
 
-        return tp.Dcc.is_window_floating(self.WindowId)
+        return dcc.is_window_floating(self.WindowId)
 
     # ============================================================================================================
     # INTERNAL
     # ============================================================================================================
 
-    def _settings_validator(self, **kwargs):
-        """
-        Validator used for the settings dialog
-        :param kwargs: dict
-        """
-
-        fields = list()
-
-        clr = kwargs.get("accentColor")
-        if clr and self.theme().accent_color().to_string() != clr:
-            self.theme().set_accent_color(clr)
-
-        clr = kwargs.get("backgroundColor")
-        if clr and self.theme().background_color().to_string() != clr:
-            self.theme().set_background_color(clr)
-
-        return fields
-
-    def _settings_accepted(self, **kwargs):
-        """
-        Function that is called when window settings dialog are accepted
-        :param kwargs: dict
-        """
-
-        if not self.settings():
-            return
-
-        theme_name = self.theme().name()
-        accent_color = kwargs.get('accentColor', self.theme().accent_color().to_string())
-        background_color = kwargs.get('backgroundColor', self.theme().background_color().to_string())
-        if theme_name:
-            self.settings().setw('theme/name', theme_name)
-        self.settings().setw('theme/accentColor', accent_color)
-        self.settings().setw('theme/backgroundColor', background_color)
-        self.settings().sync()
-
-        self.load_theme()
-
-    def _setup_theme_preferences(self):
-
-        from tpDcc.libs.qt.core import preferences
-        from tpDcc.libs.qt.widgets import formwidget
-
-        accent_color = self.theme().accent_color().to_string()
-        background_color = self.theme().background_color().to_string()
-        settings_validator = self._settings_validator
-        settings_accepted = self._settings_accepted
-
-        class ThemeCategoryWidget(preferences.CategoryWidgetBase, object):
-
-            CATEGORY = 'Theme'
-
-            def __init__(self, parent=None):
-                super(ThemeCategoryWidget, self).__init__(parent=parent)
-
-                self.main_layout = QVBoxLayout()
-                self.main_layout.setContentsMargins(2, 2, 2, 2)
-                self.main_layout.setSpacing(2)
-                self.setLayout(self.main_layout)
-
-                form = {
-                    "title": "Theme",
-                    "description": "Theme Colors",
-                    "layout": "vertical",
-                    "schema": [
-                        {
-                            "name": "accentColor",
-                            "type": "color",
-                            "value": accent_color,
-                            "colors": [
-                                "rgb(230, 80, 80, 255)",
-                                "rgb(230, 125, 100, 255)",
-                                "rgb(230, 120, 40)",
-                                "rgb(240, 180, 0, 255)",
-                                "rgb(80, 200, 140, 255)",
-                                "rgb(50, 180, 240, 255)",
-                                "rgb(110, 110, 240, 255)",
-                            ]
-                        },
-                        {
-                            "name": "backgroundColor",
-                            "type": "color",
-                            "value": background_color,
-                            "colors": [
-                                "rgb(40, 40, 40)",
-                                "rgb(68, 68, 68)",
-                                "rgb(80, 60, 80)",
-                                "rgb(85, 60, 60)",
-                                "rgb(60, 75, 75)",
-                                "rgb(60, 64, 79)",
-                                "rgb(245, 245, 255)",
-                            ]
-                        },
-                    ],
-                    "validator": settings_validator,
-                    "accepted": settings_accepted
-                }
-
-                self._dlg = formwidget.FormDialog(parent=parent, form=form)
-                self._dlg.setMinimumWidth(300)
-                self._dlg.setMinimumHeight(300)
-                self._dlg.setMaximumWidth(400)
-                self._dlg.setMaximumHeight(400)
-                self._dlg.accept_button().setText('Save')
-                self._dlg.accept_button().setVisible(False)
-                self._dlg.reject_button().setVisible(False)
-                self._dlg.show()
-                self.main_layout.addWidget(self._dlg)
-
-        theme_prefs_widget = ThemeCategoryWidget(parent=self._preferences_window)
-
-        return theme_prefs_widget
+    # def _settings_accepted(self, **kwargs):
+    #     """
+    #     Function that is called when window settings dialog are accepted
+    #     :param kwargs: dict
+    #     """
+    #
+    #     if not self.settings():
+    #         return
+    #
+    #     theme_name = self.theme().name()
+    #     accent_color = kwargs.get('accentColor', self.theme().accent_color)
+    #     background_color = kwargs.get('backgroundColor', self.theme().background_color)
+    #     if theme_name:
+    #         self.settings().setw('theme/name', theme_name)
+    #     self.settings().setw('theme/accentColor', accent_color)
+    #     self.settings().setw('theme/backgroundColor', background_color)
+    #     self.settings().sync()
+    #
+    #     self.load_theme()
 
 
 class DetachedWindow(QMainWindow):
@@ -1351,7 +1263,7 @@ class DetachedWindow(QMainWindow):
         def __init__(self, parent=None):
             super(DetachedWindow.DetachPanel, self).__init__(parent=parent)
 
-            self.main_layout = QVBoxLayout()
+            self.main_layout = layouts.VerticalLayout()
             self.setLayout(self.main_layout)
 
         def set_widget_visible(self, widget, visible):

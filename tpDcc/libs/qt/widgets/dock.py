@@ -7,11 +7,16 @@ Module that contains functions related with Qt dock behaviour
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+import logging
 
-from tpDcc.libs.qt.widgets import drop
+from Qt.QtCore import Qt, Signal, QPoint, QRect, QPropertyAnimation, QParallelAnimationGroup, QAbstractAnimation
+from Qt.QtWidgets import QApplication, QSizePolicy, QBoxLayout, QStackedLayout, QWidget, QFrame, QSplitter, QLabel
+from Qt.QtWidgets import QPushButton, QScrollArea, QGraphicsDropShadowEffect, QStyle, QMenu, QAction
+from Qt.QtGui import QCursor, QIcon
+
+from tpDcc.libs.qt.widgets import layouts, drop
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 USE_ANIMATIONS = True
 
@@ -139,7 +144,7 @@ class DockSectionContent(object):
         self._content_widget = None
         self._title_widget = None
 
-        tp.logger.debug('Creating DockSectionContent {}'.format(self._uid))
+        LOGGER.debug('Creating DockSectionContent {}'.format(self._uid))
 
     def get_next_uid(self):
         next_id = DockSectionContent.next_uid
@@ -194,13 +199,13 @@ class DockSectionContent(object):
         """
 
         if unique_name == '':
-            tp.logger.error('Cannot create DockSectionContent with empty unique_name')
+            LOGGER.error('Cannot create DockSectionContent with empty unique_name')
             return None
         elif DockContainer.check_section_container_lookup_map_by_name(container, unique_name):
-            tp.logger.error('Cannot create DockSectionContent with already used unique_name')
+            LOGGER.error('Cannot create DockSectionContent with already used unique_name')
             return None
         elif not container or not title or not content:
-            tp.logger.error('Cannot create DockSectionContent with None values')
+            LOGGER.error('Cannot create DockSectionContent with None values')
             return None
 
         section_content = DockSectionContent()
@@ -261,7 +266,7 @@ class DockSectionTitleWidget(QFrame, object):
         if event.button() == Qt.LeftButton:
             event.accept()
             self._drag_start_pos = event.pos()
-            tp.logger.debug('Starting to drag Dock from pos: {}'.format(self._drag_start_pos))
+            LOGGER.debug('Starting to drag Dock from pos: {}'.format(self._drag_start_pos))
             return
 
         super(DockSectionTitleWidget, self).mousePressEvent(event)
@@ -359,7 +364,7 @@ class DockSectionTitleWidget(QFrame, object):
         # Get the DockContainer where this title is stored
         container_widget = find_parent_container_widget(widget=self)
         if container_widget is None:
-            tp.logger.warning('Title is not stored in DockContainer! This should never happen!')
+            LOGGER.warning('Title is not stored in DockContainer! This should never happen!')
             return
 
         # Get the DockSectionWidget where this title is stored
@@ -404,15 +409,15 @@ class DockSectionTitleWidget(QFrame, object):
             # We get the new dock info for the current section
             # DockSectionTitleWidget and DockSectionContentWidgets are reparented to the DockContainer and are ready
             # to be moved to a new DockSectionWidget
-            tp.logger.debug('Creating new floating dock data ...')
+            LOGGER.debug('Creating new floating dock data ...')
             data = section_widget.take_content(self._content.uid())
             if data is None:
-                tp.logger.error(
+                LOGGER.error(
                     'This should not happen! {} - {}'.format(self._content.uid(), self._content.unique_name()))
                 return
 
             # Create floating widget and add it to the list of Container floatters
-            tp.logger.debug('Creating Floating Widget ...')
+            LOGGER.debug('Creating Floating Widget ...')
             self._floating_widget = DockFloatingWidget(container=container_widget, section_content=data.content,
                                                        section_title_widget=data.title_widget,
                                                        content_widget=data.content_widget, parent=container_widget)
@@ -626,7 +631,7 @@ class DockSectionWidget(QFrame, object):
 
     def set_current_index(self, index):
         if index < 0 or index > len(self._contents) - 1:
-            tp.logger.warning('Invalid index: {}'.format(index))
+            LOGGER.warning('Invalid index: {}'.format(index))
             return
 
         for i in range(self._tabs_layout.count()):
@@ -813,7 +818,7 @@ class DockSectionWidget(QFrame, object):
     def move_content(self, from_index, to_index):
         if from_index >= len(self._contents) or from_index < 0 or \
                 to_index >= len(self._contents) or to_index < 0 or from_index == to_index:
-            tp.logger.warning('Invalid for tab movement - From: {} | To: {}'.format(from_index, to_index))
+            LOGGER.warning('Invalid for tab movement - From: {} | To: {}'.format(from_index, to_index))
             self._tabs_layout.update()
             return
 
@@ -939,8 +944,7 @@ class DockContainer(QFrame, object):
         self._section_container_lookup_map_by_name = dict()
         self._section_widget_lookup_map_by_id = dict()
 
-        self.main_layout = QGridLayout()
-        self.main_layout.setContentsMargins(9, 9, 9, 9)
+        self.main_layout = layouts.GridLayout(margins=(9, 9, 9, 9))
         self.setLayout(self.main_layout)
 
     @staticmethod
@@ -1038,7 +1042,7 @@ class DockContainer(QFrame, object):
         if not old_splitter:
             sp = new_dock_splitter(orientation=orientation)
             if self.main_layout.count() > 0:
-                tp.logger.warning('Still items in layout. This should never happen!')
+                LOGGER.warning('Still items in layout. This should never happen!')
                 layout_item = self.main_layout.takeAt(0)
                 layout_item.deleteLater()
                 del layout_item
@@ -1100,7 +1104,7 @@ class DockContainer(QFrame, object):
         # If the DockContainer has no DockSectionContents added to it, we create a new one from scratch and is loaded
         # automatically in the center of the DockContainer
         if self.is_empty():
-            tp.logger.debug('DockContainer is empty! Creating DockSectionWidget from scratch ...')
+            LOGGER.debug('DockContainer is empty! Creating DockSectionWidget from scratch ...')
             target_section_widget = self.new_section_widget()
             self.add_section(target_section_widget)
             drop_area = drop.DropArea.CenterDropArea
@@ -1131,7 +1135,7 @@ class DockContainer(QFrame, object):
         # We loop through all the widgets of the DockSectionWidget and we get its parent (splitter)
         target_section_splitter = find_parent_splitter(target_section_widget)
         if target_section_splitter is None:
-            tp.logger.warning('DockSectionWidget is not parented to any widget. This cannot happen!')
+            LOGGER.warning('DockSectionWidget is not parented to any widget. This cannot happen!')
             return
 
         # Add the DockSectionWidget into its corresponding area
@@ -1201,7 +1205,7 @@ class DockContainer(QFrame, object):
         """
 
         if not section_widget:
-            tp.logger.warning('Impossible to add no valid DockSectionContentWidget!')
+            LOGGER.warning('Impossible to add no valid DockSectionContentWidget!')
             return
 
         # If DockContainer's Main Splitter does not exists, we create it ...
@@ -1212,7 +1216,7 @@ class DockContainer(QFrame, object):
         # Check if the given DockSectionContentWidget has been already to the splitter.
         # If that's the case we do not add it
         if self._splitter.indexOf(section_widget) != -1:
-            tp.logger.warning('Section has already been added!')
+            LOGGER.warning('Section has already been added!')
             return
 
         # If everything is ok, we add the DockSectionContentWidget to the splitter
@@ -1286,7 +1290,7 @@ class DockContainer(QFrame, object):
 
         # If no DockSectionWidget is given, we abort the process
         if section_content is None:
-            tp.logger.warning('Cannot add new DockSectionWidget if no one is specified')
+            LOGGER.warning('Cannot add new DockSectionWidget if no one is specified')
             return
 
         # Create auxiliary data class to store dock data information
@@ -1344,7 +1348,7 @@ class DockContainer(QFrame, object):
                 return True
 
         # Already visible?
-        tp.logger.warning('Unable to show SectionContent, do not know where (already visible)?')
+        LOGGER.warning('Unable to show SectionContent, do not know where (already visible)?')
         return False
 
     def hide_section_content(self, section_content):
@@ -1397,7 +1401,7 @@ class DockContainer(QFrame, object):
         if section_content.uid() in self._hidden_section_contents:
             return True
 
-        tp.logger.error('Unable to hide SectionContent, do not know this one!')
+        LOGGER.error('Unable to hide SectionContent, do not know this one!')
         return False
 
     def raise_section_content(self, section_content):
@@ -1426,7 +1430,7 @@ class DockContainer(QFrame, object):
         if section_content.uid() in self._hidden_section_contents:
             return self.show_section_content(section_content)
 
-        tp.logger.error('Unable hide SectionContent, do not know this one!')
+        LOGGER.error('Unable hide SectionContent, do not know this one!')
         return False
 
     def remove_section_content(self, section_content):
@@ -1456,7 +1460,7 @@ class DockContainer(QFrame, object):
             del data.content_widget
 
         if section_content.uid() not in self._hidden_section_contents:
-            tp.logger.error('Something went wrong ... The content should have been there!')
+            LOGGER.error('Something went wrong ... The content should have been there!')
             return False
 
         hidden_selection_item = self._hidden_section_contents.pop(section_content.uid())
@@ -1469,7 +1473,7 @@ class DockContainer(QFrame, object):
             section_content.clean()
             del section_content
         except Exception:
-            tp.logger.warning('Maybe something went wrong when deleting section ...')
+            LOGGER.warning('Maybe something went wrong when deleting section ...')
 
         if self.is_empty():
             self._splitter.deleteLater()
@@ -1501,7 +1505,7 @@ class DockContainer(QFrame, object):
         if section_content.uid() in self._hidden_section_contents:
             return False
 
-        tp.logger.warning(
+        LOGGER.warning(
             'SectionContent is not a part of this ContainerWidget: {}'.format(section_content.unique_name()))
         return False
 
@@ -1520,7 +1524,7 @@ class DockContainer(QFrame, object):
         uid = a.property('uid').toInt()
         section_content = self._section_container_lookup_map_by_id[uid]
         if not section_content:
-            tp.logger.error('Cannot bind content by ID'.format(uid))
+            LOGGER.error('Cannot bind content by ID'.format(uid))
             return
         if visible:
             self.show_section_content(section_content)

@@ -7,14 +7,16 @@ Module that contains library list view implementation
 
 from __future__ import print_function, division, absolute_import
 
+import logging
 import traceback
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QPoint, QRect, QSize, QMimeData
+from Qt.QtWidgets import QListView, QAbstractItemView, QRubberBand
+from Qt.QtGui import QFont, QPixmap, QColor, QPalette, QPainter, QBrush, QDrag
 
-from tpDcc.libs import qt
 from tpDcc.libs.qt.widgets.library import consts, mixin
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class LibraryListView(mixin.LibraryViewWidgetMixin, QListView):
@@ -197,7 +199,7 @@ class LibraryListView(mixin.LibraryViewWidgetMixin, QListView):
             if self.tree_widget().is_sort_by_custom_order():
                 self.move_items(selected_items, item)
             else:
-                qt.logger.info('You can only re-order items when sorting by custom order')
+                LOGGER.info('You can only re-order items when sorting by custom order')
 
         if item:
             item.drop_event(event)
@@ -445,7 +447,7 @@ class LibraryListView(mixin.LibraryViewWidgetMixin, QListView):
             for item in items:
                 self.tree_widget().setItemSelected(item, value)
         except Exception as e:
-            qt.logger.error('{} | {}'.format(e, traceback.format_exc()))
+            LOGGER.error('{} | {}'.format(e, traceback.format_exc()))
         finally:
             self.tree_widget().blockSignals(False)
 

@@ -9,17 +9,20 @@ from __future__ import print_function, division, absolute_import
 
 import os
 import tempfile
+import logging
 import traceback
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import QSize
+from Qt.QtWidgets import QSizePolicy, QFrame, QLabel, QPushButton, QDialogButtonBox, QFileDialog
+from Qt.QtGui import QPixmap
 
-import tpDcc as tp
-from tpDcc.libs import qt
+from tpDcc import dcc
+from tpDcc.managers import resources
 from tpDcc.libs.qt.core import base, qtutils
 from tpDcc.libs.qt.widgets import layouts, buttons, directory, formwidget, messagebox, dividers, snapshot
 from tpDcc.libs.qt.widgets.library import widgets
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class BaseSaveWidget(base.BaseWidget, object):
@@ -58,12 +61,12 @@ class BaseSaveWidget(base.BaseWidget, object):
         buttons_frame.setFrameShape(QFrame.NoFrame)
         buttons_frame.setFrameShadow(QFrame.Plain)
         buttons_frame.setLayout(buttons_layout)
-        buttons_layout.addSpacerItem(QSpacerItem(10, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
+        buttons_layout.addStretch()
         self.save_btn = buttons.BaseButton('Save')
         self.cancel_btn = buttons.BaseButton('Cancel')
         buttons_layout.addWidget(self.save_btn, parent=self)
         buttons_layout.addWidget(self.cancel_btn, parent=self)
-        buttons_layout.addSpacerItem(QSpacerItem(10, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
+        buttons_layout.addStretch()
 
         self._options_layout = layouts.VerticalLayout()
         self._options_layout.setContentsMargins(0, 0, 0, 0)
@@ -252,7 +255,7 @@ class BaseSaveWidget(base.BaseWidget, object):
             path = self.folder_path()
             options = self._options_widget.values()
             name = options.get('name')
-            objects = tp.Dcc.selected_nodes(full_path=True) or list()
+            objects = dcc.selected_nodes(full_path=True) or list()
             if not path:
                 raise Exception('No folder selected. Please select a destination folder')
             if not name:
@@ -270,7 +273,7 @@ class BaseSaveWidget(base.BaseWidget, object):
 
         except Exception as e:
             messagebox.MessageBox.critical(self.library_window(), 'Error while saving', str(e))
-            qt.logger.error(traceback.format_exc())
+            LOGGER.error(traceback.format_exc())
             raise
 
         self.library_window().stack.slide_in_index(0)
@@ -311,7 +314,7 @@ class SaveWidget(BaseSaveWidget, object):
             self._on_selection_changed()
             # self.set_script_job_enabled(True)
         except NameError as e:
-            qt.logger.error('{} | {}'.format(e, traceback.format_exc()))
+            LOGGER.error('{} | {}'.format(e, traceback.format_exc()))
 
     def ui(self):
         super(SaveWidget, self).ui()
@@ -338,7 +341,7 @@ class SaveWidget(BaseSaveWidget, object):
         self._thumbnail_btn.setToolTip('Take snapshot')
         self._thumbnail_btn.setStyleSheet(
             'color: rgb(40, 40, 40);border: 0px solid rgb(0, 0, 0, 150);background-color: rgb(254, 255, 230, 200);')
-        self._thumbnail_btn.setIcon(tp.ResourcesMgr().icon('thumbnail'))
+        self._thumbnail_btn.setIcon(resources.icon('thumbnail'))
         self._thumbnail_btn.setToolTip("""
         Click to capture a thumbnail from the current viewport.\n
         CTRL + Click to show the capture window for better framing
@@ -404,9 +407,9 @@ class SaveWidget(BaseSaveWidget, object):
         sequence_widget.setStyleSheet(self._thumbnail_btn.styleSheet())
         sequence_widget.setToolTip(self._thumbnail_btn.toolTip())
 
-        camera_icon = tp.ResourcesMgr().get('icons', 'camera.svg')
-        expand_icon = tp.ResourcesMgr().get('icons', 'expand.svg')
-        folder_icon = tp.ResourcesMgr().get('icons', 'folder.svg')
+        camera_icon = resources.get('icons', 'camera.svg')
+        expand_icon = resources.get('icons', 'expand.svg')
+        folder_icon = resources.get('icons', 'folder.svg')
 
         sequence_widget.addAction(camera_icon, 'Capture new image', 'Capture new image', self._on_thumbnail_capture)
         sequence_widget.addAction(
@@ -414,7 +417,7 @@ class SaveWidget(BaseSaveWidget, object):
         sequence_widget.addAction(
             folder_icon, 'Load image from disk', 'Load image from disk', self._on_show_browse_image_dialog)
 
-        sequence_widget.setIcon(tp.ResourcesMgr().icon('thumbnail2'))
+        sequence_widget.setIcon(resources.icon('thumbnail2'))
         self._thumbnail_frame.layout().insertWidget(0, sequence_widget)
         self._thumbnail_btn.hide()
         self._thumbnail_btn = sequence_widget
@@ -536,7 +539,7 @@ class SaveWidget(BaseSaveWidget, object):
             # )
         except Exception as e:
             messagebox.MessageBox.critical(self.library_window(), 'Error while capturing thumbnail', str(e))
-            qt.logger.error(traceback.format_exc())
+            LOGGER.error(traceback.format_exc())
 
     def save(self, path, icon_path, objects=None):
         """

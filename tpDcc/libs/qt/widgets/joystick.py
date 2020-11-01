@@ -7,9 +7,10 @@ Module that contains classes to create different kind of joystick widgets
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QPoint, QPointF, QRectF, QSize
+from Qt.QtCore import QPropertyAnimation, QParallelAnimationGroup, QEasingCurve
+from Qt.QtWidgets import QWidget
+from Qt.QtGui import QPainter, QPen, QBrush, QRadialGradient
 
 
 class JoyPad(QWidget, object):

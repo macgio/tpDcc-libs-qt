@@ -1,7 +1,7 @@
 # Green theme
 
 name: Green
-accentColor: [80, 200, 140, 255]
-backgroundColor: null
 style: default
+accent_color: "#50C88C"
+background_color: null
 overrides: []

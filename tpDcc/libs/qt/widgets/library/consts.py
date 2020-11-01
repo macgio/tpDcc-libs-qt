@@ -7,8 +7,8 @@ Module that contains consts definitions used by libraries
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtGui import *
+from Qt.QtCore import Signal, QObject
+from Qt.QtGui import QColor
 
 
 class LibraryItemSignals(QObject, object):

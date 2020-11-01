@@ -10,9 +10,9 @@ from __future__ import print_function, division, absolute_import
 import sys
 import contextlib
 
-from Qt.QtWidgets import *
+from Qt.QtWidgets import QApplication
 
-import tpDcc
+from tpDcc import dcc
 
 
 @contextlib.contextmanager
@@ -24,5 +24,5 @@ def application():
         app.exec_()
     else:
         yield app
-        if tpDcc.is_standalone():
+        if dcc.is_standalone():
             app.exec_()

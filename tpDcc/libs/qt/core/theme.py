@@ -8,14 +8,18 @@ Module that contains theme implementation
 from __future__ import print_function, division, absolute_import
 
 import os
+import types
+import inspect
+import logging
 
-from Qt.QtCore import *
-from Qt.QtGui import *
+from Qt.QtCore import QObject, Signal
+from Qt.QtGui import QColor
 
-import tpDcc
-from tpDcc.libs import qt
+from tpDcc.managers import resources
 from tpDcc.libs.python import yamlio, color, python
 from tpDcc.libs.qt.core import style, qtutils, cache, color as qt_color
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class Theme(QObject, object):
@@ -33,7 +37,8 @@ class Theme(QObject, object):
         BLUE = '#1890FF'
         PURPLE = '#722ED1'
         CYAN = '#13C2C2'
-        GREEN = '#52C41A'
+        # GREEN = '#52C41A'
+        GREEN = '#367F12'
         MAGENTA = '#EB2F96'
         PINK = '#EF5B97'
         RED = '#F5222D'
@@ -105,22 +110,21 @@ class Theme(QObject, object):
         try:
             theme_data = yamlio.read_file(theme_file)
         except Exception:
-            qt.logger.warning('Impossible to load theme data from file: "{}"!'.format(theme_file))
+            LOGGER.warning('Impossible to load theme data from file: "{}"!'.format(theme_file))
             return None
 
-        theme_name = theme_data.get('name', None)
-        if not theme_name:
-            qt.logger.warning('Impossible to retrieve them name from theme file: "{}"!'.format(theme_file))
-            return None
-        accent_color = theme_data.get('accent_color', None)
-        if not accent_color:
-            qt.logger.warning('No theme color definitions found in theme file: "{}"'.format(theme_file))
-            return None
         self._style = theme_data.get('style', 'default.css')
         self._overrides = theme_data.get('overrides', list())
 
-        self.set_name(theme_name)
-        self.set_accent_color(accent_color)
+        theme_name = theme_data.get('name', None)
+        if not theme_name:
+            LOGGER.warning('Impossible to retrieve them name from theme file: "{}"!'.format(theme_file))
+        else:
+            self.set_name(theme_name)
+
+        accent_color = theme_data.get('accent_color', None)
+        if accent_color:
+            self.set_accent_color(accent_color)
 
     def name(self):
         """
@@ -161,6 +165,10 @@ class Theme(QObject, object):
         """
 
         self._update_accent_color(accent_color)
+        self.update()
+
+    def update(self):
+        self._update_accent_color(self.accent_color)
         self.updated.emit()
 
     def is_dark(self):
@@ -169,7 +177,10 @@ class Theme(QObject, object):
         :return: bool
         """
 
-        bg_color = qt_color.Color(self.background_color)
+        if python.is_list(self.background_color):
+            bg_color = qt_color.Color(*self.background_color)
+        else:
+            bg_color = qt_color.Color(self.background_color)
 
         red = bg_color.redF() * 0.299
         green = bg_color.greenF() * 0.587
@@ -450,6 +461,17 @@ class Theme(QObject, object):
         for theme_sett_name, theme_sett_value in settings.items():
             if hasattr(self, theme_sett_name):
                 setattr(self, theme_sett_name, theme_sett_value)
+                if theme_sett_name in ['accentColor', 'accent_color']:
+                    self._update_accent_color(self.accent_color)
+        self.updated.emit()
+
+    def get_color_attribute_names(self):
+        return [
+            'accent_color', 'background_color', 'background_selected_color', 'background_in_color',
+            'background_out_color', 'sub_background_color', 'mask_color', 'toast_color', 'title_color',
+            'primary_text_color', 'secondary_text_color', 'disable_color', 'border_color', 'divider_color',
+            'header_color', 'icon_color', 'window_dragger_color', 'window_dragger_label_color'
+        ]
 
     def get_theme_option(self, option_name, default_value=None):
         """
@@ -495,10 +517,34 @@ class Theme(QObject, object):
         if not skip_instance_attrs:
             inst_attrs = python.get_instance_user_attributes(self)
             for attr in inst_attrs:
-                if isinstance(attr[1], QColor):
-                    options[attr[0]] = qt_color.Color(attr[1]).to_string()
+                options[attr[0]] = attr[1]
+
+        overrides = self._overrides or dict()
+        options.update(overrides)
+
+        all_options = dict()
+        if not skip_instance_attrs:
+            for k, v in options.items():
+                if k.startswith('_') or k in ['DEFAULT_SIZE', 'EXTENSION']:
+                    continue
+                if inspect.isfunction(v) or inspect.ismethod(v) or hasattr(v, '__dict__'):
+                    continue
+                if isinstance(v, types.BuiltinFunctionType) or isinstance(v, types.BuiltinMethodType):
+                    continue
+                if isinstance(v, Signal):
+                    continue
+                if python.is_int(v):
+                    all_options[k] = int(v)
+                elif python.is_float(v):
+                    all_options[k] = float(v)
+                elif isinstance(v, QColor):
+                    all_options[k] = qt_color.Color(v).to_string()
                 else:
-                    options[attr[0]] = str(attr[1])
+                    str_attr = str(v)
+                    if str_attr.startswith('^'):
+                        continue
+                    all_options[k] = str_attr
+            return all_options
 
     #     options = {
     #         "ACCENT_COLOR": accent_color.to_string(),
@@ -531,8 +577,6 @@ class Theme(QObject, object):
     #         "ITEM_BACKGROUND_SELECTED_COLOR": accent_color.to_string(),
     #     }
     #
-        overrides = self._overrides or dict()
-        options.update(overrides)
 
         return options
 
@@ -547,7 +591,7 @@ class Theme(QObject, object):
         if not style_extension.startswith('.'):
             style_extension = '.{}'.format(style_extension)
         style_file_name = '{}{}'.format(style_name, style_extension)
-        style_path = tpDcc.ResourcesMgr().get('styles', style_file_name)
+        style_path = resources.get('styles', style_file_name)
 
         return style_path
 
@@ -560,6 +604,8 @@ class Theme(QObject, object):
         style_path = self.stylesheet_file()
         options = self.options()
 
+        # TODO: We MUST optimize this. Style file should be read only once, store in dict and update it depending
+        # TODO: of the given theme options
         stylesheet = style.StyleSheet.from_path(style_path, options=options, theme_name=self._name, dpi=self.dpi())
 
         return stylesheet.data()

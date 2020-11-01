@@ -7,8 +7,8 @@ Module that contains base functionality for Qt widgets
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt, Signal, Property
+from Qt.QtWidgets import QApplication, QSizePolicy, QWidget, QFrame, QScrollArea, QWhatsThis
 
 from tpDcc.libs.qt.core import qtutils, mixin, theme
 from tpDcc.libs.qt.widgets import layouts
@@ -181,6 +181,7 @@ class BaseFrame(QFrame, object):
         super(BaseFrame, self).__init__(*args, **kwargs)
 
         self.ui()
+        self.setup_signals()
 
     def mouseReleaseEvent(self, event):
         self.mouseReleased.emit(event)
@@ -203,6 +204,9 @@ class BaseFrame(QFrame, object):
 
         self.main_layout = self.get_main_layout()
         self.setLayout(self.main_layout)
+
+    def setup_signals(self):
+        pass
 
 
 class ContainerWidget(QWidget, object):

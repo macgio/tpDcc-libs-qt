@@ -7,15 +7,15 @@ Module that contains implementation for card widgets
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt, QSize
+from Qt.QtWidgets import QLabel
 
 from tpDcc.libs.qt.core import base, mixin, theme
-from tpDcc.libs.qt.widgets import label, avatar, buttons, dividers
+from tpDcc.libs.qt.widgets import layouts, label, avatar, buttons, dividers
 
 
 @mixin.theme_mixin
-@mixin.cursor_mixin
+# @mixin.cursor_mixin
 class BaseCard(base.BaseWidget, object):
     def __init__(self, title=None, image=None, size=None, extra=None, type=None, parent=None):
 
@@ -34,9 +34,7 @@ class BaseCard(base.BaseWidget, object):
     # =================================================================================================================
 
     def get_main_layout(self):
-        main_layout = QVBoxLayout()
-        main_layout.setSpacing(0)
-        main_layout.setContentsMargins(1, 1, 1, 1)
+        main_layout = layouts.VerticalLayout(spacing=0, margins=(1, 1, 1, 1))
 
         return main_layout
 
@@ -53,8 +51,7 @@ class BaseCard(base.BaseWidget, object):
         size = self._size or widget_theme.default if widget_theme else theme.Theme.Sizes.MEDIUM
         padding = map_label.get(size)[-1]
 
-        self._title_layout = QHBoxLayout()
-        self._title_layout.setContentsMargins(padding, padding, padding, padding)
+        self._title_layout = layouts.HorizontalLayout(margins=(padding, padding, padding, padding))
         self._title_label = label.BaseLabel(text=self._title, parent=self)
         self._title_label.level = map_label.get(size)[0]
         if self._image:
@@ -68,7 +65,7 @@ class BaseCard(base.BaseWidget, object):
             self._extra_button = buttons.BaseToolButton(parent=self).image('more').icon_only()
             self._title_layout.addWidget(self._extra_button)
 
-        self._content_layout = QVBoxLayout()
+        self._content_layout = layouts.VerticalLayout()
 
         if self._title:
             self.main_layout.addLayout(self._title_layout)
@@ -107,7 +104,7 @@ class BaseCard(base.BaseWidget, object):
         return self
 
 
-@mixin.cursor_mixin
+# @mixin.cursor_mixin
 class MetaCard(base.BaseWidget, object):
     def __init__(self, extra=False, parent=None):
 
@@ -122,16 +119,14 @@ class MetaCard(base.BaseWidget, object):
     # =================================================================================================================
 
     def get_main_layout(self):
-        main_layout = QVBoxLayout()
-        main_layout.setSpacing(0)
-        main_layout.setContentsMargins(1, 1, 1, 1)
+        main_layout = layouts.VerticalLayout(spacing=0, margins=(1, 1, 1, 1))
 
         return main_layout
 
     def ui(self):
         super(MetaCard, self).ui()
 
-        self._title_layout = QHBoxLayout()
+        self._title_layout = layouts.HorizontalLayout()
         self._cover_label = QLabel()
         self._cover_label.setFixedSize(QSize(200, 200))
         self._avatar = avatar.Avatar()
@@ -145,11 +140,10 @@ class MetaCard(base.BaseWidget, object):
         self._title_layout.addWidget(self._extra_btn)
         self._extra_btn.setVisible(self._extra)
 
-        content_lyt = QFormLayout()
-        content_lyt.setContentsMargins(5, 5, 5, 5)
+        content_lyt = layouts.FormLayout(margins=(5, 5, 5, 5))
         content_lyt.addRow(self._avatar, self._title_layout)
         content_lyt.addRow(self._description_label)
-        self._btn_lyt = QHBoxLayout()
+        self._btn_lyt = layouts.HorizontalLayout()
 
         self.main_layout.addWidget(self._cover_label)
         self.main_layout.addLayout(content_lyt)

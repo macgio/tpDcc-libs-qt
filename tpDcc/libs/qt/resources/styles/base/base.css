@@ -8,6 +8,7 @@
     font-family: @font_family;
     color: @primary_text_color;
     background-color: transparent;
+    /*background-color: @background_color;*/
     font-size: @default_font_size@unit;
     selection-color: @text_color_inverse;
     /*selection-background-color: red;*/

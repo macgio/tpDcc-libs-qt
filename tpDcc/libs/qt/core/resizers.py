@@ -7,9 +7,9 @@ Module that contains implementation for dialog/window resizers
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QSize
+from Qt.QtWidgets import QApplication, QFrame
+from Qt.QtGui import QCursor, QColor, QPainter
 
 from tpDcc.libs.qt.core import qtutils
 

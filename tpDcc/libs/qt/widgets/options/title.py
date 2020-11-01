@@ -7,7 +7,7 @@ Module that contains title option implementation
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
+from Qt.QtCore import Qt
 
 from tpDcc.libs.qt.widgets import dividers
 from tpDcc.libs.qt.widgets.options import option

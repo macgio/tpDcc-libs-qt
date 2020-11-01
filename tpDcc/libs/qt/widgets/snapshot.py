@@ -8,18 +8,22 @@ Module that contains widget implementation for taking snapshots
 from __future__ import print_function, division, absolute_import
 
 import os
+import logging
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QPoint, QRect, QSize
+from Qt.QtWidgets import QSizePolicy, QWidget, QFrame
+from Qt.QtGui import QResizeEvent
 
-import tpDcc
+from tpDcc.dcc import window
+from tpDcc.managers import resources
 from tpDcc.libs.python import path as path_utils
 from tpDcc.libs.qt.core import qtutils
 from tpDcc.libs.qt.widgets import layouts, label, lineedit, buttons
 
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
-class SnapshotWindow(tpDcc.Window, object):
+
+class SnapshotWindow(window.Window, object):
     saved = Signal(str)
 
     def __init__(self, path=None, image_type='png', width=512, height=512, on_save=None, parent=None):
@@ -48,12 +52,12 @@ class SnapshotWindow(tpDcc.Window, object):
     def ui(self):
         super(SnapshotWindow, self).ui()
 
-        camera_icon = tpDcc.ResourcesMgr().icon('camera')
-        cancel_icon = tpDcc.ResourcesMgr().icon('delete')
-        self._link_icon = tpDcc.ResourcesMgr().icon('link')
-        self._unlink_icon = tpDcc.ResourcesMgr().icon('unlink')
-        self._lock_icon = tpDcc.ResourcesMgr().icon('lock')
-        self._unlock_icon = tpDcc.ResourcesMgr().icon('unlock')
+        camera_icon = resources.icon('camera')
+        cancel_icon = resources.icon('delete')
+        self._link_icon = resources.icon('link')
+        self._unlink_icon = resources.icon('unlink')
+        self._lock_icon = resources.icon('lock')
+        self._unlock_icon = resources.icon('unlock')
 
         self.window().setWindowFlags(self.window().windowFlags() | Qt.WindowStaysOnTopHint)
 
@@ -187,7 +191,7 @@ class SnapshotWindow(tpDcc.Window, object):
         """
 
         if not self._save_path:
-            tpDcc.logger.error('Path not specificed for snapshot.')
+            LOGGER.error('Path not specificed for snapshot.')
             return
 
         rect = QRect(self._snap_widget.rect())
@@ -210,14 +214,14 @@ class SnapshotWindow(tpDcc.Window, object):
 
         saved = None
         if not file_path:
-            tpDcc.logger.error('Path not specificed for snapshot.')
+            LOGGER.error('Path not specificed for snapshot.')
             self.saved.emit(saved)
             return
         file_dir, file_name, file_ext = path_utils.split_path(file_path)
         image_type = image_type if image_type.startswith('.') else '.{}'.format(image_type)
         if image_type != file_ext:
             if file_ext not in ('.png', '.jpg'):
-                tpDcc.logger.warning('Image of type "{}" is not supported by snapshot!'.format(file_ext))
+                LOGGER.warning('Image of type "{}" is not supported by snapshot!'.format(file_ext))
                 return
             image_type = file_ext
 

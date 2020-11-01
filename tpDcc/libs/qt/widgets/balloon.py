@@ -7,15 +7,17 @@ Collapsible accordion widget similar to Maya Attribute Editor
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QPoint, QTimer, QEvent
+from Qt.QtWidgets import QWidget, QDialog
+from Qt.QtGui import QPolygon, QRegion
 
 
 class BalloonDialog(QDialog, object):
 
-    FIXED_HEIGHT = 15
-    FIXED_WIDTH = 35
+    FIXED_HEIGHT = 12
+    FIXED_WIDTH = 25
+
+    closed = Signal()
 
     class BallonDialogFocuser(QWidget, object):
         def __init__(self, w):
@@ -48,6 +50,7 @@ class BalloonDialog(QDialog, object):
             self.setModal(True)
 
         self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WA_DeleteOnClose)
 
         self._lazy_show_window.timeout.connect(self._on_lazy_show_window)
 
@@ -83,7 +86,9 @@ class BalloonDialog(QDialog, object):
 
         if QEvent.WindowDeactivate == e.type():
             self.done(False)
+            self.closed.emit()
             e.ignore()
+            self.close()
             return True
 
         return super(BalloonDialog, self).event(e)

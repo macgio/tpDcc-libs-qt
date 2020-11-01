@@ -10,7 +10,7 @@ from __future__ import print_function, division, absolute_import
 import os
 import re
 
-import tpDcc
+from tpDcc.managers import resources
 from tpDcc.libs.python import color, python
 from tpDcc.libs.qt.core import qtutils
 
@@ -60,7 +60,7 @@ class StyleSheet(object):
         """
 
         data = ''
-        if os.path.isfile(path):
+        if path and os.path.isfile(path):
             with open(path, 'r') as f:
                 data = f.read()
 
@@ -118,7 +118,7 @@ class StyleSheet(object):
                     option_value = str(qtutils.dpi_scale(int(str_key_value[1:])))
                 elif 'icon' in key:
                     theme_name = kwargs.get('theme_name', 'default') or 'default'
-                    resource_path = tpDcc.ResourcesMgr().get('icons', theme_name, str(key_value))
+                    resource_path = resources.get('icons', theme_name, str(key_value))
                     if resource_path and os.path.isfile(resource_path):
                         option_value = resource_path
                 elif color.string_is_hex(str_key_value):

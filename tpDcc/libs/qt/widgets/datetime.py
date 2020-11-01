@@ -7,14 +7,14 @@ Module that contains custom Qt date and time related widgets
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Property
+from Qt.QtWidgets import QDateEdit, QTimeEdit, QDateTimeEdit
 
 from tpDcc.libs.qt.core import mixin, theme
 
 
 @mixin.theme_mixin
-@mixin.cursor_mixin
+# @mixin.cursor_mixin
 class BaseDateTimeEdit(QDateTimeEdit, object):
     def __init__(self, parent=None):
         super(BaseDateTimeEdit, self).__init__(parent=parent)
@@ -100,7 +100,7 @@ class BaseDateTimeEdit(QDateTimeEdit, object):
 
 
 @mixin.theme_mixin
-@mixin.cursor_mixin
+# @mixin.cursor_mixin
 class BaseDateEdit(QDateEdit, object):
     def __init__(self, parent=None):
         super(BaseDateEdit, self).__init__(parent=parent)
@@ -186,7 +186,7 @@ class BaseDateEdit(QDateEdit, object):
 
 
 @mixin.theme_mixin
-@mixin.cursor_mixin
+# @mixin.cursor_mixin
 class BaseTimeEdit(QTimeEdit, object):
     def __init__(self, parent=None):
         super(BaseTimeEdit, self).__init__(parent=parent)

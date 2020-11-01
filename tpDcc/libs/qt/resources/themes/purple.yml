@@ -1,7 +1,7 @@
 # Purple theme
 
 name: Purple
-accentColor: [110, 110, 240, 255]
-backgroundColor: null
 style: default
+accent_color: "#6E6EF0"
+background_color: null
 overrides: []

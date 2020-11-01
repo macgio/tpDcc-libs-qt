@@ -7,9 +7,9 @@ Module that contains base classes for graphic widgets
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import QRectF, QSizeF
+from Qt.QtWidgets import QGraphicsWidget
+from Qt.QtGui import QColor, QBrush, QPainterPath
 
 
 class BaseGraphicWidget(QGraphicsWidget, object):

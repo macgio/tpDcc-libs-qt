@@ -7,12 +7,12 @@ Module that contains implementation for panel widgets
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt, Signal, QPoint, QTimer, QEasingCurve, QPropertyAnimation, QAbstractAnimation
+from Qt.QtWidgets import QScrollArea
 
-import tpDcc as tp
+from tpDcc import dcc
 from tpDcc.libs.qt.core import base
-from tpDcc.libs.qt.widgets import label, buttons, dividers
+from tpDcc.libs.qt.widgets import layouts, label, buttons, dividers
 
 
 class SliderPanelPositions(object):
@@ -103,12 +103,12 @@ class SliderPanel(base.BaseWidget, object):
         self._close_btn = buttons.BaseToolButton(parent=self).icon_only().image('close', theme='window').small()
         self._close_btn.setVisible(self._closable or False)
 
-        title_layout = QHBoxLayout()
+        title_layout = layouts.HorizontalLayout()
         title_layout.addWidget(self._title_label)
         title_layout.addStretch()
         title_layout.addWidget(self._close_btn)
 
-        self._button_layout = QHBoxLayout()
+        self._button_layout = layouts.HorizontalLayout()
         self._button_layout.addStretch()
 
         self._scroll_area = QScrollArea()
@@ -227,7 +227,7 @@ class SliderPanel(base.BaseWidget, object):
 
         parent = self.parent()
         parent_parent = parent.parent()
-        dcc_win = tp.Dcc.get_main_window()
+        dcc_win = dcc.get_main_window()
         dcc_window = parent_parent == dcc_win
         if parent_parent and dcc_win:
             dcc_window = dcc_window or parent_parent.objectName() == dcc_win.objectName()

@@ -7,10 +7,10 @@ Module that contains custom Qt stack widgets
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt, Signal, QPoint, QEasingCurve, QPropertyAnimation, QParallelAnimationGroup
+from Qt.QtWidgets import QFrame, QStackedWidget
 
-import tpDcc
+from tpDcc.managers import resources
 from tpDcc.libs.qt.core import consts, qtutils, base, dpi, mixin
 from tpDcc.libs.qt.widgets import layouts, buttons, lineedit
 
@@ -450,8 +450,8 @@ class StackTitleFrame(QFrame, dpi.DPIScaling):
         self._collapsed = collapsed
         self._item_icon_size = item_icon_size
 
-        self._collapsed_icon = tpDcc.ResourcesMgr().icon('sort_closed')
-        self._expand_icon = tpDcc.ResourcesMgr().icon('sort_down')
+        self._collapsed_icon = resources.icon('sort_closed')
+        self._expand_icon = resources.icon('sort_down')
 
         self.setObjectName('title')
 
@@ -499,12 +499,12 @@ class StackTitleFrame(QFrame, dpi.DPIScaling):
 
     def ui(self):
 
-        item_icon = tpDcc.ResourcesMgr().icon(self._item_icon)
+        item_icon = resources.icon(self._item_icon)
         if item_icon.isNull():
-            item_icon = tpDcc.ResourcesMgr().icon('tpdcc')
-        delete_icon = tpDcc.ResourcesMgr().icon('delete')
-        shift_up_icon = tpDcc.ResourcesMgr().icon('arrow_up')
-        shift_down_icon = tpDcc.ResourcesMgr().icon('arrow_down')
+            item_icon = resources.icon('tpdcc')
+        delete_icon = resources.icon('delete')
+        shift_up_icon = resources.icon('arrow_up')
+        shift_down_icon = resources.icon('arrow_down')
 
         self.setContentsMargins(*qtutils.margins_dpi_scale(0, 0, 0, 0))
         self._extras_layout = layouts.HorizontalLayout(margins=(0, 0, 0, 0), spacing=0)
@@ -542,7 +542,7 @@ class StackTitleFrame(QFrame, dpi.DPIScaling):
         self._expand_toggle_btn.set_icon(self._expand_icon, colors=(192, 192, 192), size=icon_size)
 
         self._horizontal_layout.addWidget(self._item_icon_btn)
-        self._horizontal_layout.addItem(QSpacerItem(10, 10, QSizePolicy.Expanding, QSizePolicy.Minimum))
+        self._horizontal_layout.addStretch()
         self._horizontal_layout.addWidget(self._line_edit)
         self._horizontal_layout.addLayout(self._extras_layout)
         self._horizontal_layout.addWidget(self._shift_up_btn)

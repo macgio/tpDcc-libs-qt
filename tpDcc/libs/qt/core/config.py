@@ -7,18 +7,13 @@ Module that contains default implementation for nested YAML configurations
 
 from __future__ import print_function, division, absolute_import
 
-__author__ = "Tomas Poveda"
-__license__ = "MIT"
-__maintainer__ = "Tomas Poveda"
-__email__ = "tpovedatd@gmail.com"
-
 import os
 import logging
 from collections import OrderedDict
 
 import metayaml
 
-import tpDcc as tp
+from tpDcc import dcc
 from tpDcc.libs.python import decorators, python
 
 LOGGER = logging.getLogger('tpDcc-libs-qt')
@@ -219,9 +214,9 @@ class ConfigurationManager(object):
         found_paths = list()
         for config_path in self._config_paths:
             root_path = os.path.join(config_path, module_config_name)
-            dcc_config_path = os.path.join(config_path, tp.Dcc.get_name(), module_config_name)
+            dcc_config_path = os.path.join(config_path, dcc.get_name(), module_config_name)
             dcc_version_config_path = os.path.join(
-                config_path, tp.Dcc.get_name(), tp.Dcc.get_version_name(), module_config_name)
+                config_path, dcc.get_name(), dcc.get_version_name(), module_config_name)
             for p in [root_path, dcc_config_path, dcc_version_config_path]:
                 if skip_non_existent:
                     if p and os.path.isfile(p) and p not in found_paths:

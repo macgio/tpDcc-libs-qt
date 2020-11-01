@@ -7,7 +7,7 @@ Module that contains consts exception used by libraries
 
 from __future__ import print_function, division, absolute_import
 
-import six
+from tpDcc.libs.python import path
 
 
 class PathError(IOError, object):
@@ -16,7 +16,7 @@ class PathError(IOError, object):
     """
 
     def __init__(self, msg):
-        msg = six.u(msg)
+        msg = path.normalize_path(msg)
         super(PathError, self).__init__(msg)
         self._msg = msg
 
@@ -26,7 +26,7 @@ class PathError(IOError, object):
         :return: str
         """
 
-        msg = six.u(self._msg).decode('unicode_escape')
+        msg = path.normalize_path(self._msg).decode('unicode_escape')
         return msg
 
 
@@ -43,6 +43,10 @@ class RenamePathError(PathError):
     Error related with path renaming
     """
 
+    pass
+
+
+class NoObjectFoundError(Exception):
     pass
 
 

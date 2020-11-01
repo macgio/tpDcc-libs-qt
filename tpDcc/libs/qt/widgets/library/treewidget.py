@@ -7,14 +7,16 @@ Module that contains library item widget implementation
 
 from __future__ import print_function, division, absolute_import
 
+import logging
 from functools import partial
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt
+from Qt.QtWidgets import QApplication, QAbstractItemView, QTreeWidget, QMenu
+from Qt.QtGui import QCursor, QFontMetrics, QClipboard
 
-from tpDcc.libs import qt
 from tpDcc.libs.qt.widgets.library import consts, mixin, items
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class LibraryTreeWidget(mixin.LibraryViewWidgetMixin, QTreeWidget):
@@ -466,7 +468,7 @@ class LibraryTreeWidget(mixin.LibraryViewWidgetMixin, QTreeWidget):
                 hidden = settings[label].get('hidden', False)
                 self.setColumnHidden(column, hidden)
             else:
-                qt.logger.debug('Cannot set the column setting for header label: {}'.format(label))
+                LOGGER.debug('Cannot set the column setting for header label: {}'.format(label))
 
     """
     ##########################################################################################

@@ -7,7 +7,7 @@ Module that contains custom tray balloon
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtWidgets import *
+from Qt.QtWidgets import QWidget, QSystemTrayIcon, QMenu
 
 
 class TrayMessage(QWidget, object):

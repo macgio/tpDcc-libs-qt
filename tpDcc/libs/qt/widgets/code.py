@@ -10,15 +10,18 @@ from __future__ import print_function, division, absolute_import
 import re
 import sys
 import string
+import logging
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QRect, QSize, QRegExp, QStringListModel, QFile
+from Qt.QtWidgets import QWidget, QCompleter, QTextEdit, QPlainTextEdit, QShortcut
+from Qt.QtGui import QFont, QColor, QPainter, QTextCursor, QTextCharFormat, QTextOption, QTextFormat, QSyntaxHighlighter
+from Qt.QtGui import QKeySequence
 
-import tpDcc as tp
-from tpDcc.libs import qt
+from tpDcc import dcc
 from tpDcc.libs.python import python, fileio, code, folder as folder_utils, path as path_utils
 from tpDcc.libs.qt.core import qtutils
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class PythonCompleter(QCompleter, object):
@@ -390,51 +393,51 @@ def get_syntax_format(color=None, style=''):
 
 def syntax_styles(name):
     if name == 'keyword':
-        if tp.is_maya():
+        if dcc.is_maya():
             return get_syntax_format('green', 'bold')
-        if not tp.is_maya():
+        if not dcc.is_maya():
             return get_syntax_format([0, 150, 150], 'bold')
     if name == 'operator':
-        if tp.is_maya():
+        if dcc.is_maya():
             return get_syntax_format('gray')
-        if not tp.is_maya():
+        if not dcc.is_maya():
             return get_syntax_format('darkGray')
     if name == 'brace':
-        if tp.is_maya():
+        if dcc.is_maya():
             return get_syntax_format('lightGray')
-        if not tp.is_maya():
+        if not dcc.is_maya():
             return get_syntax_format('darkGray')
     if name == 'defclass':
-        if tp.is_maya():
+        if dcc.is_maya():
             return get_syntax_format(None, 'bold')
-        if not tp.is_maya():
+        if not dcc.is_maya():
             return get_syntax_format(None, 'bold')
     if name == 'string':
-        if tp.is_maya():
+        if dcc.is_maya():
             return get_syntax_format([230, 230, 0])
-        if not tp.is_maya():
+        if not dcc.is_maya():
             return get_syntax_format('blue')
     if name == 'string2':
-        if tp.is_maya():
+        if dcc.is_maya():
             return get_syntax_format([230, 230, 0])
-        if not tp.is_maya():
+        if not dcc.is_maya():
             return get_syntax_format('lightGreen')
     if name == 'comment':
-        if tp.is_maya():
+        if dcc.is_maya():
             return get_syntax_format('red')
-        if not tp.is_maya():
+        if not dcc.is_maya():
             return get_syntax_format('red')
     if name == 'self':
-        if tp.is_maya():
+        if dcc.is_maya():
             return get_syntax_format(None, 'italic')
-        if not tp.is_maya():
+        if not dcc.is_maya():
             return get_syntax_format('black', 'italic')
     if name == 'bold':
         return get_syntax_format(None, 'bold')
     if name == 'numbers':
-        if tp.is_maya():
+        if dcc.is_maya():
             return get_syntax_format('cyan')
-        if not tp.is_maya():
+        if not dcc.is_maya():
             return get_syntax_format('brown')
 
 
@@ -453,7 +456,7 @@ class PythonHighlighter(QSyntaxHighlighter):
         'None', 'True', 'False', 'process', 'show'
     ]
 
-    if tp.is_maya():
+    if dcc.is_maya():
         keywords += ['cmds', 'pm', 'mc', 'pymel']
 
     # Python operators
@@ -611,8 +614,8 @@ class CodeCompleter(PythonCompleter, object):
         super(CodeCompleter, self)._on_insert_completion(completion_string)
 
         # This stops Maya from entering edit mode in the outliner, if something is selected
-        if tp.is_maya():
-            tp.Dcc.focus('modelPanel1')
+        if dcc.is_maya():
+            dcc.focus('modelPanel1')
 
     def _format_live_function(self, function_instance):
         function_name = None
@@ -637,7 +640,7 @@ class CodeCompleter(PythonCompleter, object):
             if assign_map:
                 if module_name in assign_map:
                     return []
-            if tp.is_maya():
+            if dcc.is_maya():
                 import maya.cmds as cmds
                 functions = dir(cmds)
                 return functions
@@ -968,7 +971,7 @@ class CodeTextEdit(QPlainTextEdit, object):
 
     def _line_number_paint(self, event):
         paint = QPainter(self._line_numbers)
-        if not tp.is_maya():
+        if not dcc.is_maya():
             paint.fillRect(event.rect(), Qt.lightGray)
         else:
             paint.fillRect(event.rect(), Qt.black)
@@ -980,7 +983,7 @@ class CodeTextEdit(QPlainTextEdit, object):
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
                 number = block_number + 1
-                if tp.is_maya():
+                if dcc.is_maya():
                     paint.setPen(Qt.lightGray)
                 else:
                     paint.setPen(Qt.black)
@@ -1006,7 +1009,7 @@ class CodeTextEdit(QPlainTextEdit, object):
         selections = [extra_selection]
         if not self.isReadOnly():
             selection = QTextEdit.ExtraSelection()
-            if tp.is_maya():
+            if dcc.is_maya():
                 line_color = QColor(Qt.black)
             else:
                 line_color = QColor(Qt.lightGray)
@@ -1072,7 +1075,7 @@ class CodeTextEdit(QPlainTextEdit, object):
 
     def _on_save(self):
         if not self.document().isModified():
-            qt.logger.warning('No changes to save in {}'.format(self._file_path))
+            LOGGER.warning('No changes to save in {}'.format(self._file_path))
             return
 
         old_last_modified = self._last_modified

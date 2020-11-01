@@ -7,20 +7,21 @@ Module that contains different widgets used in libraries
 
 from __future__ import print_function, division, absolute_import
 
+import logging
 import traceback
 from functools import partial
 from collections import OrderedDict
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QSize, QUrl
+from Qt.QtWidgets import QSizePolicy, QWidget, QFrame, QCheckBox, QLabel, QToolButton, QLineEdit, QMenu, QAction
+from Qt.QtWidgets import QAbstractItemView, QTreeWidget, QTreeWidgetItem, QToolBar, QWidgetAction
+from Qt.QtGui import QCursor, QColor, QPainter, QBrush
 
-import tpDcc
-from tpDcc.libs import qt
+from tpDcc.managers import resources
 from tpDcc.libs.qt.core import animation, image, icon, qtutils, color, pixmap, statusbar
-from tpDcc.libs.qt.widgets import progressbar, toolbar, action, buttons
+from tpDcc.libs.qt.widgets import layouts, progressbar, toolbar, action, buttons
 
-logger = tpDcc.LogsMgr().get_logger()
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class LibraryImageSequenceWidget(QToolButton, object):
@@ -255,11 +256,11 @@ class LibrarySearchWidget(QLineEdit, object):
 
         self._library = None
         self._space_operator = 'and'
-        search_icon = tpDcc.ResourcesMgr().icon('search', theme='black')
+        search_icon = resources.icon('search', theme='black')
         self._icon_btn = buttons.IconButton(search_icon, icon_padding=2, parent=self)
         self._icon_btn.clicked.connect(self._on_icon_clicked)
         self.set_icon(search_icon)
-        cross_icon = tpDcc.ResourcesMgr().icon('delete', theme='black')
+        cross_icon = resources.icon('delete', theme='black')
         self._clear_btn = buttons.IconButton(cross_icon, icon_padding=2, parent=self)
         self._clear_btn.setCursor(Qt.ArrowCursor)
         self._clear_btn.setToolTip('Clear all search text')
@@ -381,7 +382,7 @@ class LibrarySearchWidget(QLineEdit, object):
             self.library().add_query(self.query())
             self.library().search()
         else:
-            qt.logger.info('No library found for the search widget')
+            LOGGER.info('No library found for the search widget')
 
         self.update_clear_button()
         self.searchChanged.emit()
@@ -628,7 +629,7 @@ class LibrarySideBarWidgetItem(QTreeWidgetItem, object):
         :return: str
         """
 
-        return self._expanded_icon_path or tpDcc.ResourcesMgr().get('icons', 'black', 'open_folder')
+        return self._expanded_icon_path or resources.get('icons', 'black', 'open_folder')
 
     def collapsed_icon_path(self):
         """
@@ -636,7 +637,7 @@ class LibrarySideBarWidgetItem(QTreeWidgetItem, object):
         :return: str
         """
 
-        return self._collapsed_icon_path or tpDcc.ResourcesMgr().get('icons', 'black', 'folder')
+        return self._collapsed_icon_path or resources.get('icons', 'black', 'folder')
 
     def icon_path(self):
         """
@@ -1038,7 +1039,7 @@ class LibrarySidebarWidget(QTreeWidget, object):
             self.add_paths(data, root=root, split=split)
             self.set_settings(settings)
         except Exception as e:
-            qt.logger.error('{} | {}'.format(e, traceback.format_exc()))
+            LOGGER.error('{} | {}'.format(e, traceback.format_exc()))
         finally:
             self.blockSignals(False)
 
@@ -1340,7 +1341,7 @@ class LibrarySidebarWidget(QTreeWidget, object):
             self.library().add_query(self.query())
             self.library().search()
         else:
-            qt.logger.info('No library found for the sidebar widget')
+            LOGGER.info('No library found for the sidebar widget')
 
     def query(self):
         """
@@ -1778,9 +1779,7 @@ class FilterByAction(QWidgetAction, object):
         label2 = QLabel(widget)
         label2.setObjectName('actionCounter')
         label2.setText(count)
-        layout = QHBoxLayout(widget)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0), parent=widget)
         layout.addWidget(label, stretch=1)
         layout.addWidget(label2)
         widget.setLayout(layout)

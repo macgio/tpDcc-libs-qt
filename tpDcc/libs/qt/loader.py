@@ -12,10 +12,9 @@ import sys
 import inspect
 import logging
 
-from Qt.QtWidgets import *
-from tpDcc.libs.qt import register
-from tpDcc.libs.qt.core import window, dialog
-from tpDcc.libs.qt.managers import inputs as inputs_manager, toolsets as toolsets_manager
+from Qt.QtWidgets import QApplication
+
+from tpDcc.managers import resources
 
 # =================================================================================
 
@@ -31,25 +30,12 @@ def init(dev=False):
     :param dev: bool, Whether tpDcc-libs-qt is initialized in dev mode or not
     """
 
-    from tpDcc import register as dcc_register
-
-    if dev:
-        register.cleanup()
-
     logger = create_logger(dev=dev)
 
-    register.register_class('logger', logger)
-
     # NOTE: We register all classes using tpDcc register (not tpDcc.libs.qt one).
-    # We do it in this way to access those classes easily
-    dcc_register.register_class('Window', window.MainWindow, is_unique=True)
-    dcc_register.register_class('Dialog', dialog.Dialog, is_unique=True)
-    dcc_register.register_class('OpenFileDialog', dialog.OpenFileDialog, is_unique=True)
-    dcc_register.register_class('SaveFileDialog', dialog.SaveFileDialog, is_unique=True)
-    dcc_register.register_class('SelectFolderDialog', dialog.SelectFolderDialog, is_unique=True)
-    dcc_register.register_class('NativeDialog', dialog.NativeDialog, is_unique=True)
-    dcc_register.register_class('InputsMgr', inputs_manager.InputsManagerSingleton)
-    dcc_register.register_class('ToolsetsMgr', toolsets_manager.ToolsetsManagerSingleton)
+    # # We do it in this way to access those classes easily
+    # dcc_register.register_class('InputsMgr', inputs_manager.InputsManagerSingleton)
+    # dcc_register.register_class('ToolsetsMgr', toolsets_manager.ToolsetsManagerSingleton)
 
     def init_dcc():
         """
@@ -75,7 +61,7 @@ def init(dev=False):
                     import unreal
                     from tpDcc.dccs.unreal import loader as dcc_loader
                     dcc_loaded = True
-                except Exception as exc:
+                except Exception:
                     pass
         except ImportError:
             logger.warning('Impossible to setup DCC. DCC not found. Abstract one will be used.')
@@ -85,18 +71,11 @@ def init(dev=False):
         if dcc_loaded:
             if hasattr(dcc_loader, 'init_ui') and callable(dcc_loader.init_ui):
                 dcc_loader.init_ui()
-        if not dcc_loaded:
-            global Dcc
-            from tpDcc.core import dcc
-            Dcc = dcc.UnknownDCC
 
     app = QApplication.instance() or QApplication(sys.argv)
 
     update_paths()
     register_resources()
-
-    # skip_modules = ['{}.{}'.format(PACKAGE, name) for name in ['loader', 'externals']]
-    # importer.init_importer(package=PACKAGE, skip_modules=skip_modules)
 
     init_dcc()
 
@@ -156,6 +135,7 @@ def create_logger(dev=False):
 
     logging.config.fileConfig(logging_config, disable_existing_loggers=False)
     logger = logging.getLogger(PACKAGE.replace('.', '-'))
+    dev = os.getenv('TPDCC_DEV', dev)
     if dev:
         logger.setLevel(logging.DEBUG)
         for handler in logger.handlers:
@@ -169,8 +149,8 @@ def register_resources():
     Registers tpDcc.libs.qt resources path
     """
 
-    import tpDcc
-
-    resources_manager = tpDcc.ResourcesMgr()
     resources_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources')
-    resources_manager.register_resource(resources_path, key='tpDcc-libs-qt')
+    resources.register_resource(resources_path, key='tpDcc-libs-qt')
+
+
+create_logger()

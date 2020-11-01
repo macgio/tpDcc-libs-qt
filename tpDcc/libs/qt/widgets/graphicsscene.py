@@ -7,11 +7,15 @@ Module that contains different graphic scenes
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+import logging
+
+from Qt.QtCore import Qt, Signal, QPointF, QRectF
+from Qt.QtWidgets import QGraphicsScene, QGraphicsLineItem, QGraphicsRectItem
+from Qt.QtGui import QPixmap, QColor, QPainter, QPen, QBrush
 
 from tpDcc.libs.python import decorators
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class BaseScene(QGraphicsScene, object):
@@ -388,10 +392,10 @@ class GridScene(BaseScene, object):
         painter.drawRect(scene_rect)
 
         if len(self.views()) <= 0:
-            tp.logger.error('Scene has not view associated to it!')
+            LOGGER.error('Scene has not view associated to it!')
             return
         if not self.views()[0]:
-            tp.logger.error('View {0} is not valid!'.format(self.views()[0]))
+            LOGGER.error('View {0} is not valid!'.format(self.views()[0]))
             return
         if hasattr(self.views()[0], 'is_grid_visible'):
             if self.views()[0].is_grid_visible:

@@ -12,7 +12,7 @@ QLineEdit[theme_size="@tiny"]
     font-size: @font_size_small@unit;
     border-radius: @border_radius_small@unit;
     min-height: @tiny@unit;
-    max-height: @tiny@unit;
+    /*max-height: @tiny@unit;*/
 }
 
 QAbstractButton[theme_size="@small"],
@@ -23,7 +23,7 @@ QLineEdit[theme_size="@small"]
     font-size: @font_size_small@unit;
     border-radius: @border_radius_small@unit;
     min-height: @small@unit;
-    max-height: @small@unit;
+    /*max-height: @small@unit;*/
 }
 
 QAbstractButton[theme_size="@medium"],
@@ -34,7 +34,7 @@ QLineEdit[theme_size="@medium"]
     font-size: @font_size_base@unit;
     border-radius: @border_radius_base@unit;
     min-height: @medium@unit;
-    max-height: @medium@unit;
+    /*max-height: @medium@unit;*/
 }
 
 QAbstractButton[theme_size="@large"],
@@ -45,7 +45,7 @@ QLineEdit[theme_size="@large"]
     font-size: @font_size_large@unit;
     border-radius: @border_radius_large@unit;
     min-height: @large@unit;
-    max-height: @large@unit;
+    /*max-height: @large@unit;*/
 }
 
 QAbstractButton[theme_size="@huge"],
@@ -56,7 +56,7 @@ QLineEdit[theme_size="@huge"]
     font-size: @font_size_large@unit;
     border-radius: @border_radius_large@unit;
     min-height: @huge@unit;
-    max-height: @huge@unit;
+    /*max-height: @huge@unit;*/
 }
 
 QAbstractSpinBox[theme_size="@tiny"]::up-button
@@ -188,44 +188,3 @@ QAbstractSpinBox[theme_size="@huge"]::down-arrow
     width: 14px;
     height: 14px;
 }
-
-
-/*QToolButton[theme_size="@tiny"]*/
-/*{*/
-/*    font-size: @font_size_small@unit;*/
-/*    border-radius: @border_radius_small@unit;*/
-/*    min-height: @large@unit;*/
-/*    max-height: @huge@unit;*/
-/*}*/
-
-/*QToolButton[theme_size="@small"]*/
-/*{*/
-/*    font-size: @font_size_small@unit;*/
-/*    border-radius: @border_radius_small@unit;*/
-/*    min-height: @large@unit;*/
-/*    max-height: @huge@unit;*/
-/*}*/
-
-/*QToolButton[theme_size="@medium"]*/
-/*{*/
-/*    font-size: @font_size_base@unit;*/
-/*    border-radius: @border_radius_base@unit;*/
-/*    min-height: @large@unit;*/
-/*    max-height: @huge@unit;*/
-/*}*/
-
-/*QToolButton[theme_size="@large"]*/
-/*{*/
-/*    font-size: @font_size_large@unit;*/
-/*    border-radius: @border_radius_large@unit;*/
-/*    min-height: @large@unit;*/
-/*    max-height: @huge@unit;*/
-/*}*/
-
-/*QToolButton[theme_size="@huge"]*/
-/*{*/
-/*    font-size: @font_size_large@unit;*/
-/*    border-radius: @border_radius_large@unit;*/
-/*    min-height: @huge@unit;*/
-/*    max-height: @huge@unit;*/
-/*}*/

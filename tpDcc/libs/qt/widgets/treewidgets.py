@@ -9,14 +9,16 @@ from __future__ import print_function, division, absolute_import
 
 import string
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QRect, QSize, QModelIndex
+from Qt.QtWidgets import QApplication, QSizePolicy, QTreeWidget, QTreeWidgetItem, QAbstractItemView, QStyleOption
+from Qt.QtWidgets import QWhatsThis
+from Qt.QtGui import QColor, QPalette, QPen, QBrush, QPainter
 
-import tpDcc as tp
+from tpDcc import dcc
+from tpDcc.managers import resources
 from tpDcc.libs.python import path, fileio, folder
 from tpDcc.libs.qt.core import base
-from tpDcc.libs.qt.widgets import buttons, search, lineedit
+from tpDcc.libs.qt.widgets import layouts, buttons, search, lineedit
 
 
 class TreeWidget(QTreeWidget, object):
@@ -40,12 +42,12 @@ class TreeWidget(QTreeWidget, object):
         self.setIndentation(25)
         self.setExpandsOnDoubleClick(False)
 
-        if tp.Dcc.get_name() == tp.Dccs.Maya:
-            self.setAlternatingRowColors(tp.Dcc.get_version() < 2016)
+        if dcc.is_maya():
+            self.setAlternatingRowColors(dcc.get_version() < 2016)
 
         self.setSortingEnabled(True)
         self.sortByColumn(0, Qt.AscendingOrder)
-        if not tp.is_maya() and not not tp.is_nuke():
+        if not dcc.is_maya() and not not dcc.is_nuke():
             palette = QPalette()
             palette.setColor(palette.Highlight, Qt.gray)
             self.setPalette(palette)
@@ -443,7 +445,7 @@ class TreeWidget(QTreeWidget, object):
             rect = opt.rect
 
             color = Qt.black
-            if tp.is_maya():
+            if dcc.is_maya():
                 color = Qt.white
 
             brush = QBrush(QColor(color))
@@ -730,17 +732,13 @@ class FilterTreeWidget(base.DirectoryWidget, object):
     # ============================================================================================================
 
     def get_main_layout(self):
-        main_layout = QHBoxLayout()
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
+        main_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
         return main_layout
 
     def ui(self):
         super(FilterTreeWidget, self).ui()
 
-        texts_layout = QVBoxLayout()
-        texts_layout.setContentsMargins(0, 0, 0, 0)
-        texts_layout.setSpacing(2)
+        texts_layout = layouts.VerticalLayout(spacing=2, margins=(0, 0, 0, 0))
         self._filter_names = search.SearchFindWidget()
         self._filter_names.set_placeholder_text('Filter Names')
         self._sub_path_filter = lineedit.BaseLineEdit()
@@ -840,7 +838,7 @@ class FilterTreeWidget(base.DirectoryWidget, object):
         """
 
         if flag:
-            if tp.is_maya():
+            if dcc.is_maya():
                 self._sub_path_filter.setStyleSheet('background-color: rgb(255, 100, 100);')
             else:
                 self._sub_path_filter.setStyleSheet('background-color: rgb(255, 150, 150);')
@@ -1207,11 +1205,9 @@ class EditFileTreeWidget(base.DirectoryWidget, object):
         self._filter_widget = self.FILTER_WIDGET()
         self._filter_widget.set_tree_widget(self._tree_widget)
         self._filter_widget.set_directory(self._directory)
-        drag_reorder_icon = tp.ResourcesMgr().icon('drag_reorder')
-        edit_mode_layout = QVBoxLayout()
+        drag_reorder_icon = resources.icon('drag_reorder')
+        edit_mode_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         edit_mode_layout.setAlignment(Qt.AlignBottom)
-        edit_mode_layout.setContentsMargins(0, 0, 0, 0)
-        edit_mode_layout.setSpacing(0)
         self._edit_mode_btn = buttons.IconButton(
             icon=drag_reorder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         self._edit_mode_btn.setCheckable(True)

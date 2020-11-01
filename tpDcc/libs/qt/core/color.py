@@ -10,8 +10,8 @@ from __future__ import print_function, division, absolute_import
 import math
 import random
 
-from Qt.QtCore import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, QRegExp, qFuzzyCompare
+from Qt.QtGui import QColor
 
 from tpDcc.libs.python import python, mathlib
 
@@ -272,8 +272,14 @@ def convert_2_hex(color):
     :return: str
     """
 
-    if python.is_string(color) and string_is_hex(color):
-        return color
+    if python.is_string(color):
+        if string_is_hex(color):
+            return color
+        else:
+            if color.startswith('rgba'):
+                color = [int(value.strip()) for value in color.split('rgba(')[-1].split(')')[0].split(',')]
+            elif color.startswith('rgb'):
+                color = [int(value.strip()) for value in color.split('rgb(')[-1].split(')')[0].split(',')]
 
     hex = '#'
     for var in color:

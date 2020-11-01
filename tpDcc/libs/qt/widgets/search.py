@@ -7,11 +7,11 @@ Module that contains widgets related with search functionality
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt, Signal, QSize, QEvent, QPoint
+from Qt.QtWidgets import QApplication, QWidget, QLineEdit, QStyle, QMenu
 
-from tpDcc.libs.qt.widgets import buttons
-from tpDcc.libs.qt.core import resource
+from tpDcc.managers import resources
+from tpDcc.libs.qt.widgets import layouts, buttons
 
 
 class SearchFindWidget(QWidget, object):
@@ -20,7 +20,7 @@ class SearchFindWidget(QWidget, object):
     editingFinished = Signal(str)
     returnPressed = Signal()
 
-    def __init__(self, parent=None):
+    def __init__(self, search_line=None, parent=None):
         super(SearchFindWidget, self).__init__(parent=parent)
 
         self.setObjectName('SearchFindWidget')
@@ -28,19 +28,17 @@ class SearchFindWidget(QWidget, object):
         self.text = ''
         self._placeholder_text = ''
 
-        main_layout = QHBoxLayout()
-        main_layout.setContentsMargins(2, 2, 2, 2)
-        main_layout.setSpacing(2)
+        main_layout = layouts.HorizontalLayout(spacing=2, margins=(2, 2, 2, 2))
         self.setLayout(main_layout)
 
-        self._search_line = QLineEdit(self)
+        self._search_line = search_line or QLineEdit(self)
         self._search_menu = QMenu()
         self._search_menu.addAction('Test')
 
         icon_size = self.style().pixelMetric(QStyle.PM_SmallIconSize)
 
-        delete_icon = resource.Resource.icon('delete', extension='png')
-        search_icon = resource.Resource.icon('search', extension='png')
+        delete_icon = resources.icon('delete')
+        search_icon = resources.icon('search')
 
         self._clear_btn = buttons.IconButton(delete_icon, icon_padding=2, parent=self)
         self._clear_btn.setIconSize(QSize(icon_size, icon_size))

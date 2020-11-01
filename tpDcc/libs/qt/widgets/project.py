@@ -8,17 +8,20 @@ Module that contains generic functionality when dealing with projects
 from __future__ import print_function, division, absolute_import
 
 import os
+import logging
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QSize
+from Qt.QtWidgets import QSizePolicy, QWidget, QFrame, QPushButton, QMenu, QAction, QAbstractItemView
+from Qt.QtGui import QPixmap, QIcon
 
-import tpDcc as tp
-from tpDcc.libs import qt
-from tpDcc.libs.python import path, settings, folder, fileio
+from tpDcc import dcc
+from tpDcc.managers import resources
 from tpDcc.core import project as core_project
 from tpDcc.core import consts
+from tpDcc.libs.python import path, settings, folder, fileio
 from tpDcc.libs.qt.widgets import layouts, grid, search, directory, dividers, buttons, label, tabs, lineedit
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 def get_project_by_name(projects_path, project_name, project_class=None):
@@ -31,7 +34,7 @@ def get_project_by_name(projects_path, project_name, project_class=None):
     """
 
     if not projects_path or not os.path.isdir(projects_path):
-        qt.logger.warning('Projects Path "{}" does not exist!'.format(projects_path))
+        LOGGER.warning('Projects Path "{}" does not exist!'.format(projects_path))
         return None
 
     all_projects = get_projects(projects_path, project_class=project_class)
@@ -56,7 +59,7 @@ def get_projects(projects_path, project_class=None):
     projects_found = list()
 
     if not projects_path or not os.path.isdir(projects_path):
-        qt.logger.warning('Projects Path {} is not valid!'.format(projects_path))
+        LOGGER.warning('Projects Path {} is not valid!'.format(projects_path))
         return projects_found
 
     for root, dirs, files in os.walk(projects_path):
@@ -140,7 +143,7 @@ class Project(QWidget):
         """
 
         if project_data_path is None or not path.is_file(project_data_path):
-            tp.logger.warning('Project Data Path {} is not valid!'.format(project_data_path))
+            LOGGER.warning('Project Data Path {} is not valid!'.format(project_data_path))
             return None
 
         project_data = settings.JSONSettings()
@@ -150,13 +153,13 @@ class Project(QWidget):
         project_data.set_directory(project_dir, project_name)
         project_options.set_directory(project_dir, 'options.json')
         if not project_data or not project_data.has_settings():
-            qt.logger.warning('No valid project data found on Project Data File: {}'.format(project_data_path))
+            LOGGER.warning('No valid project data found on Project Data File: {}'.format(project_data_path))
 
         project_name = project_data.get('name')
         project_path = path.get_dirname(path.get_dirname(project_data_path))
         project_image = project_data.get('image')
 
-        qt.logger.debug('New Project found [{}]: {}'.format(project_name, project_path))
+        LOGGER.debug('New Project found [{}]: {}'.format(project_name, project_path))
         project_data = core_project.ProjectData(
             name=project_name, project_path=project_path, settings=project_data, options=project_options)
 
@@ -172,19 +175,19 @@ class Project(QWidget):
 
     def contextMenuEvent(self, event):
         menu = QMenu(self)
-        remove_icon = tp.ResourcesMgr().icon(name='delete', extension='png')
+        remove_icon = resources.icon(name='delete', extension='png')
         remove_action = QAction(remove_icon, 'Remove', menu)
         remove_action.setStatusTip(consts.DELETE_PROJECT_TOOLTIP)
         remove_action.setToolTip(consts.DELETE_PROJECT_TOOLTIP)
         remove_action.triggered.connect(self._on_remove_project)
 
-        folder_icon = tp.ResourcesMgr().icon(name='open_folder', extension='png')
+        folder_icon = resources.icon(name='open_folder', extension='png')
         folder_action = QAction(folder_icon, 'Open in Browser', menu)
         folder_action.setStatusTip(consts.OPEN_PROJECT_IN_EXPLORER_TOOLTIP)
         folder_action.setToolTip(consts.OPEN_PROJECT_IN_EXPLORER_TOOLTIP)
         folder_action.triggered.connect(self._on_open_in_browser)
 
-        image_icon = tp.ResourcesMgr().icon(name='picture', extension='png')
+        image_icon = resources.icon(name='picture', extension='png')
         set_image_action = QAction(image_icon, 'Set Project Image', menu)
         set_image_action.setToolTip(consts.SET_PROJECT_IMAGE_TOOLTIP)
         set_image_action.setStatusTip(consts.SET_PROJECT_IMAGE_TOOLTIP)
@@ -287,7 +290,7 @@ class Project(QWidget):
         from tpDcc.libs.qt.core import qtutils
 
         if not path.is_dir(self.full_path):
-            qt.logger.warning('Impossible to remove Project Path: {}'.format(self.full_path))
+            LOGGER.warning('Impossible to remove Project Path: {}'.format(self.full_path))
             return False
 
         project_name = self.project_data.name
@@ -348,7 +351,7 @@ class Project(QWidget):
         Internal callback function that is called when a project is opened
         """
 
-        qt.logger.debug('Loading project "{}" ...'.format(self.full_path))
+        LOGGER.debug('Loading project "{}" ...'.format(self.full_path))
         self.projectOpened.emit(self)
 
     def _on_remove_project(self):
@@ -372,12 +375,12 @@ class Project(QWidget):
         Internal callback function that is called when project image is set
         """
 
-        image_file = tp.Dcc.select_file_dialog(
+        image_file = dcc.select_file_dialog(
             title='Select Project Image File',
             pattern="PNG Files (*.png)")
 
         if image_file is None or not path.is_file(image_file):
-            qt.logger.warning('Selected Image "{}" is not valid!'.format(image_file))
+            LOGGER.warning('Selected Image "{}" is not valid!'.format(image_file))
             return
 
         valid_change = self._project_data.set_project_image(image_file)
@@ -438,7 +441,7 @@ class ProjectViewer(grid.GridWidget, object):
 
         if not project_path:
             if self._settings is None:
-                tp.logger.debug('No Projects Path defined yet ...')
+                LOGGER.debug('No Projects Path defined yet ...')
                 return
             if self._settings.has_setting('project_directory'):
                 project_path = self._settings.get('project_directory')
@@ -620,7 +623,7 @@ class OpenProjectWidget(QWidget, object):
             if self._settings:
                 if self._settings.has_setting('project_directory'):
                     project_path = self._settings.get('project_directory')
-                    tp.logger.debug('Project Path stored in settings: {}'.format(project_path))
+                    LOGGER.debug('Project Path stored in settings: {}'.format(project_path))
 
         if project_path:
             self.browse_widget.set_directory(directory=project_path)
@@ -640,7 +643,7 @@ class OpenProjectWidget(QWidget, object):
 
         if self._settings:
             self._settings.set('project_directory', dir)
-            tp.logger.debug('Updated FactoRig Project Path: {}'.format(dir))
+            LOGGER.debug('Updated FactoRig Project Path: {}'.format(dir))
             self._update_ui()
         else:
             self._update_ui(dir)
@@ -728,15 +731,15 @@ class NewProjectWidget(QWidget, object):
         project_path = self.project_line.text()
         project_name = self.name_line.text()
         if not project_path or not path.is_dir(project_path) or not project_name:
-            tp.logger.warning('Project Path: {} or Project Name: {} are not valid!'.format(project_path, project_name))
+            LOGGER.warning('Project Path: {} or Project Name: {} are not valid!'.format(project_path, project_name))
             return
         if self._selected_template is None:
-            tp.logger.warning('No Template selected, please select one first ...')
+            LOGGER.warning('No Template selected, please select one first ...')
             return
 
         new_project = self._selected_template.create_project(project_name=project_name, project_path=project_path)
         if new_project is not None:
-            tp.logger.debug(
+            LOGGER.debug(
                 'Project {} created successfully on path {}'.format(new_project.name, new_project.path))
             self.name_line.setText('')
             self.projectCreated.emit(new_project)
@@ -759,12 +762,12 @@ class TemplateData(object):
 
     def create_project(self, project_name, project_path):
         if not self.PROJECT_CLASS:
-            qt.logger.warning('Impossible to create because project class is not defined!')
+            LOGGER.warning('Impossible to create because project class is not defined!')
             return None
 
         project_data = settings.JSONSettings()
         project_options = settings.JSONSettings()
-        qt.logger.debug('New Project found [{}]: {}'.format(project_name, project_path))
+        LOGGER.debug('New Project found [{}]: {}'.format(project_name, project_path))
         project_data = core_project.ProjectData(
             name=project_name, project_path=project_path, settings=project_data, options=project_options)
         project_data.create_project()
@@ -809,7 +812,7 @@ class Template(QWidget):
         self.project_btn.toggled.connect(self._on_selected_template)
 
     def get_icon(self):
-        return tp.ResourcesMgr().icon(name='project', extension='png')
+        return resources.icon(name='project', extension='png')
 
     def _on_selected_template(self, template):
         self.templateChecked.emit(self)

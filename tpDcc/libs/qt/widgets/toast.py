@@ -7,13 +7,14 @@ Module that contains toast widget implementation
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QPoint, QSize, QTimer, QPropertyAnimation, QEasingCurve, QAbstractAnimation
+from Qt.QtWidgets import QLabel
+from Qt.QtGui import QFontMetricsF
 
-import tpDcc as tp
-from tpDcc.libs.qt.core import base, mixin, animation, theme
-from tpDcc.libs.qt.widgets import label, avatar, loading
+from tpDcc import dcc
+from tpDcc.managers import resources
+from tpDcc.libs.qt.core import base, mixin, animation
+from tpDcc.libs.qt.widgets import layouts, label, avatar, loading
 
 
 @mixin.theme_mixin
@@ -38,8 +39,7 @@ class BaseToast(base.BaseWidget, object):
         super(BaseToast, self).__init__(parent=parent)
 
     def get_main_layout(self):
-        main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout = layouts.VerticalLayout(margins=(0, 0, 0, 0))
 
         return main_layout
 
@@ -50,7 +50,7 @@ class BaseToast(base.BaseWidget, object):
         self.setAttribute(Qt.WA_StyledBackground)
         self.setFixedSize(QSize(120, 120))
 
-        icon_layout = QHBoxLayout()
+        icon_layout = layouts.HorizontalLayout()
         icon_layout.addStretch()
 
         widget_theme = self.theme()
@@ -60,7 +60,7 @@ class BaseToast(base.BaseWidget, object):
         else:
             icon_label = avatar.Avatar()
             icon_label.theme_size = 60
-            icon_label.image = tp.ResourcesMgr().pixmap(
+            icon_label.image = resources.pixmap(
                 self._toast_type or self.ToastTypes.INFO, color=widget_theme.text_color_inverse)
             icon_layout.addWidget(icon_label)
         icon_layout.addStretch()
@@ -148,7 +148,7 @@ class BaseToast(base.BaseWidget, object):
 
     def _get_center_position(self, parent):
         parent_parent = parent.parent()
-        dcc_win = tp.Dcc.get_main_window()
+        dcc_win = dcc.get_main_window()
         if dcc_win:
             dcc_window = parent_parent == dcc_win or parent_parent.objectName() == dcc_win.objectName()
         else:

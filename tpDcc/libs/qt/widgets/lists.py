@@ -7,8 +7,11 @@ Module that contains classes to create different types of lists
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt, Signal, QRect, QPropertyAnimation, QEasingCurve, QSequentialAnimationGroup, QAbstractAnimation
+from Qt.QtWidgets import QWidget, QFrame, QPushButton, QLineEdit, QListWidget, QTreeWidget, QListWidgetItem
+from Qt.QtWidgets import QAbstractItemView
+
+from tpDcc.libs.qt.widgets import layouts
 
 
 class EditableList(QTreeWidget):
@@ -83,17 +86,13 @@ class WidgetItem(QFrame, object):
 
         self.setFrameStyle(QFrame.Panel | QFrame.Raised)
 
-        self.custom_ui()
+        self.ui()
 
-    def custom_ui(self):
+    def ui(self):
 
-        self.setLayout(QVBoxLayout())
-        self.layout().setContentsMargins(3, 1, 3, 3)
-        self.layout().setSpacing(0)
+        self.setLayout(layouts.VerticalLayout(spacing=0, margins=(3, 1, 3, 3)))
 
-        self.main_layout = QVBoxLayout()
-        self.main_layout.setContentsMargins(2, 2, 2, 2)
-        self.main_layout.setSpacing(5)
+        self.main_layout = layouts.VerticalLayout(spacing=5, margins=(2, 2, 2, 2))
         main_widget = QWidget()
 
         if self._item_height:
@@ -107,11 +106,9 @@ class WidgetItem(QFrame, object):
         # =====================================================
 
         # This layout is used to add custom widgets before the title of the node
-        self.buttons_layout = QVBoxLayout()
-        self.buttons_layout.setContentsMargins(2, 2, 2, 2)
-        self.buttons_layout.setSpacing(2)
+        self.buttons_layout = layouts.VerticalLayout(spacing=2, margins=(2, 2, 2, 2))
 
-        title_layout = QHBoxLayout()
+        title_layout = layouts.HorizontalLayout()
         title_layout.addLayout(self.buttons_layout)
 
         title_line = QLineEdit('Untitled')
@@ -195,19 +192,14 @@ class WidgetsList(QWidget, object):
 
         self._widgets_list = list()
 
-        self.main_layout = QVBoxLayout()
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_layout.setSpacing(0)
+        self.main_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         self.main_layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.main_layout)
 
-        self.widgets_layout = QVBoxLayout()
-        self.widgets_layout.setContentsMargins(0, 0, 0, 0)
-        self.widgets_layout.setSpacing(0)
+        self.widgets_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         self.main_layout.addLayout(self.widgets_layout)
 
-        button_layout = QHBoxLayout()
-        button_layout.setContentsMargins(5, 5, 5, 5)
+        button_layout = layouts.HorizontalLayout(margins=(5, 5, 5, 5))
         button_layout.setAlignment(Qt.AlignRight)
         self.main_layout.addLayout(button_layout)
 

@@ -10,27 +10,21 @@ from __future__ import print_function, division, absolute_import
 import os
 import re
 import time
+import logging
 import operator
 from functools import partial
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QObject, QPoint
+from Qt.QtWidgets import QSizePolicy, QWidget, QFrame, QSplitter, QDialogButtonBox, QMenu, QAction, QFileDialog
+from Qt.QtGui import QCursor
 
-import tpDcc as tp
+from tpDcc.managers import resources
 from tpDcc.libs.python import decorators, path as path_utils
-from tpDcc.libs import qt
-from tpDcc.libs.qt.core import base, icon, menu, qtutils, animation, window
-from tpDcc.libs.qt.widgets import stack, messagebox, action
+from tpDcc.libs.qt.core import base, icon, menu, qtutils, animation, decorators as qt_decorators
+from tpDcc.libs.qt.widgets import layouts, stack, messagebox, action, window
 from tpDcc.libs.qt.widgets.library import consts, utils, library, viewer, widgets
 
-if tp.is_maya():
-    from tpDcc.dccs.maya.core import decorators as maya_decorators
-    show_wait_cursor_decorator = maya_decorators.show_wait_cursor
-    show_arrow_cursor_decorator = maya_decorators.show_arrow_cursor
-else:
-    show_wait_cursor_decorator = decorators.empty_decorator
-    show_arrow_cursor_decorator = decorators.empty_decorator
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class GlobalSignal(QObject):
@@ -145,22 +139,17 @@ class LibraryWindow(window.BaseWindow, object):
         lib.searchTimeFinished.connect(self._on_search_finished)
 
         self._sidebar_frame = SidebarFrame(self)
-        sidebar_frame_lyt = QVBoxLayout(self)
-        sidebar_frame_lyt.setContentsMargins(0, 1, 0, 0)
+        sidebar_frame_lyt = layouts.VerticalLayout(margins=(0, 1, 0, 0))
         self._sidebar_frame.setLayout(sidebar_frame_lyt)
 
         self._new_item_frame = PreviewFrame(self)
         self._new_item_frame.setMinimumWidth(5)
-        new_item_lyt = QVBoxLayout()
-        new_item_lyt.setSpacing(0)
-        new_item_lyt.setContentsMargins(0, 0, 0, 0)
+        new_item_lyt = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         self._new_item_frame.setLayout(new_item_lyt)
 
         self._preview_frame = PreviewFrame(self)
         self._preview_frame.setMinimumWidth(5)
-        preview_frame_lyt = QVBoxLayout()
-        preview_frame_lyt.setSpacing(0)
-        preview_frame_lyt.setContentsMargins(0, 0, 0, 0)
+        preview_frame_lyt = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         self._preview_frame.setLayout(preview_frame_lyt)
 
         self._viewer = self.VIEWER_CLASS(self)
@@ -193,9 +182,7 @@ class LibraryWindow(window.BaseWindow, object):
         self._splitter.setStretchFactor(2, False)
 
         base_widget = QWidget()
-        base_layout = QVBoxLayout()
-        base_layout.setContentsMargins(0, 0, 0, 0)
-        base_layout.setSpacing(0)
+        base_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         base_widget.setLayout(base_layout)
         base_layout.addWidget(self._menubar_widget)
         base_layout.addWidget(self._splitter)
@@ -230,7 +217,7 @@ class LibraryWindow(window.BaseWindow, object):
     def _setup_menubar(self):
         icon_color = self.icon_color()
         name = 'New Item'
-        icon = tp.ResourcesMgr().icon('plus', theme='black')
+        icon = resources.icon('plus', theme='black')
         icon.set_color(icon_color)
         tip = 'Add a new item to the selected folder'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_new_menu)
@@ -238,43 +225,43 @@ class LibraryWindow(window.BaseWindow, object):
         self._menubar_widget.addWidget(self._search_widget)
 
         name = 'Filters'
-        icon = tp.ResourcesMgr().icon('filter', theme='black')
+        icon = resources.icon('filter', theme='black')
         icon.set_color(icon_color)
         tip = 'Filter the current results by type.\nCtrl + Click will hide the ohters and show the selected one.'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_filter_by_menu)
 
         name = 'Item View'
-        icon = tp.ResourcesMgr().icon('slider', theme='black')
+        icon = resources.icon('slider', theme='black')
         icon.set_color(icon_color)
         tip = 'Change the style of the item view'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_item_view_menu)
 
         name = 'Group By'
-        icon = tp.ResourcesMgr().icon('grid_view', theme='black')
+        icon = resources.icon('grid_view', theme='black')
         icon.set_color(icon_color)
         tip = 'Group the current items in the view by column'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_group_by_menu)
 
         name = 'Sort By'
-        icon = tp.ResourcesMgr().icon('descending_sorting', theme='black')
+        icon = resources.icon('descending_sorting', theme='black')
         icon.set_color(icon_color)
         tip = 'Sort the current items in the view by column'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_sort_by_menu)
 
         name = 'View'
-        icon = tp.ResourcesMgr().icon('add')
+        icon = resources.icon('add')
         # icon.set_color(icon_color)
         tip = 'Choose to show/hide both the preview and navigation pane\nCtrl + click will hide the menu bar as well.'
         self.add_menubar_action(name, icon, tip, callback=self._on_toggle_view)
 
         name = 'Sync Items'
-        icon = tp.ResourcesMgr().icon('sync', theme='black')
+        icon = resources.icon('sync', theme='black')
         icon.set_color(icon_color)
         tip = 'Sync with the filesystem'
         self.add_menubar_action(name, icon, tip, callback=self._on_sync)
 
         name = 'Settings'
-        icon = tp.ResourcesMgr().icon('settings', theme='black')
+        icon = resources.icon('settings', theme='black')
         icon.set_color(icon_color)
         tip = 'Settings menu'
         self.add_menubar_action(name, icon, tip, callback=self._on_show_settings_menu)
@@ -517,7 +504,7 @@ class LibraryWindow(window.BaseWindow, object):
             path = path_utils.real_path(path)
 
         if path == self.path():
-            qt.logger.warning('Path is already set!')
+            LOGGER.warning('Path is already set!')
             return
 
         library = self.library()
@@ -1050,7 +1037,7 @@ class LibraryWindow(window.BaseWindow, object):
 
         self.update_view_button()
 
-    @show_wait_cursor_decorator
+    @qt_decorators.show_wait_cursor
     def refresh_sidebar(self):
         """
         Refresh the state of the sidebar widget
@@ -1078,7 +1065,7 @@ class LibraryWindow(window.BaseWindow, object):
         queries = [{'filters': [('type', 'is', 'Folder')]}]
 
         items = self.library().find_items(queries)
-        trash_icon_path = tp.ResourcesMgr().get('icons', 'black', 'trash')
+        trash_icon_path = resources.get('icons', 'black', 'trash')
 
         for item in items:
             path = item.path()
@@ -1156,7 +1143,7 @@ class LibraryWindow(window.BaseWindow, object):
 
         if self._new_item_widget == widget:
             msg = 'New Item widget already contains widghet {}'.format(widget)
-            qt.logger.debug(msg)
+            LOGGER.debug(msg)
         else:
             self.close_new_item_widget()
             self._new_item_widget = widget
@@ -1234,7 +1221,7 @@ class LibraryWindow(window.BaseWindow, object):
 
         if self._preview_widget == widget:
             msg = 'Preview widget already contains widget {}'.format(widget)
-            qt.logger.debug(msg)
+            LOGGER.debug(msg)
         else:
             self.close_preview_widget()
             self._preview_widget = widget
@@ -1281,7 +1268,7 @@ class LibraryWindow(window.BaseWindow, object):
         """
 
         if not force and self._current_item == item:
-            qt.logger.debug('The current item preview widget is already set!')
+            LOGGER.debug('The current item preview widget is already set!')
             return
 
         self._current_item = item
@@ -1551,13 +1538,13 @@ class LibraryWindow(window.BaseWindow, object):
 
         self.reload_stylesheet()
 
-    @show_wait_cursor_decorator
+    @qt_decorators.show_wait_cursor
     def sync(self, force_start=False, force_searh=False):
         """
         Sync any data that might be out of date with the model
         """
 
-        @show_wait_cursor_decorator
+        @qt_decorators.show_wait_cursor
         def _sync():
             elapsed_time = time.time()
             self.library().sync(percent_callback=self.set_progress_bar_value)
@@ -1677,9 +1664,9 @@ class LibraryWindow(window.BaseWindow, object):
         msg = 'Found {0} item{1} in {2:.3f} seconds.'.format(item_count, plural, elapsed_time)
         self.status_widget().show_info_message(msg)
 
-        qt.logger.debug(msg)
+        LOGGER.debug(msg)
 
-    @show_arrow_cursor_decorator
+    @qt_decorators.show_arrow_cursor
     def show_hello_dialog(self):
         """
         This function is called when there is not root path set for the library
@@ -1691,7 +1678,7 @@ class LibraryWindow(window.BaseWindow, object):
         dialog.accepted.connect(self.show_change_path_dialog)
         dialog.exec_()
 
-    @show_arrow_cursor_decorator
+    @qt_decorators.show_arrow_cursor
     def show_path_error_dialog(self):
         """
         This function is called when the root path does not exists during refresh
@@ -1757,7 +1744,7 @@ class LibraryWindow(window.BaseWindow, object):
         :return: QDialogButtonBox.StandardButton
         """
 
-        qt.logger.exception(text)
+        LOGGER.exception(text)
         self.show_error_dialog(title, text)
 
     def show_folder_menu(self, pos=None):
@@ -1809,9 +1796,9 @@ class LibraryWindow(window.BaseWindow, object):
         compact = self.is_compact_view()
         action = self.menubar_widget().find_action('View')
         if not compact:
-            icon = tp.ResourcesMgr().icon('view_all', theme='black')
+            icon = resources.icon('view_all', theme='black')
         else:
-            icon = tp.ResourcesMgr().icon('view_compact', theme='black')
+            icon = resources.icon('view_compact', theme='black')
         icon.set_color(self.icon_color())
         action.setIcon(icon)
 
@@ -1821,7 +1808,7 @@ class LibraryWindow(window.BaseWindow, object):
         """
 
         action = self.menubar_widget().find_action('Filters')
-        icon = tp.ResourcesMgr().icon('filter', theme='black')
+        icon = resources.icon('filter', theme='black')
         icon.set_color(self.icon_color())
         if self._filter_by_menu.is_active():
             icon.set_badge(18, 1, 9, 9, color=consts.ICON_BADGE_COLOR)
@@ -1854,7 +1841,7 @@ class LibraryWindow(window.BaseWindow, object):
         :return: QIcon
         """
 
-        return tp.ResourcesMgr().icon('add')
+        return resources.icon('add')
 
     def _create_new_item_menu(self):
         """
@@ -1896,7 +1883,7 @@ class LibraryWindow(window.BaseWindow, object):
         if not self.is_locked():
             context_menu.addMenu(self._create_new_item_menu())
             if item:
-                edit_icon = tp.ResourcesMgr().icon('edit')
+                edit_icon = resources.icon('edit')
                 edit_menu = menu.Menu(context_menu)
                 edit_menu.setTitle('Edit')
                 edit_menu.setIcon(edit_icon)
@@ -1921,7 +1908,7 @@ class LibraryWindow(window.BaseWindow, object):
         :return: QMenu
         """
 
-        settings_icon = tp.ResourcesMgr().icon('settings')
+        settings_icon = resources.icon('settings')
         context_menu = menu.Menu('', self)
         context_menu.setTitle('Settings')
         context_menu.setIcon(settings_icon)
@@ -2001,7 +1988,7 @@ class LibraryWindow(window.BaseWindow, object):
 
         return context_menu
 
-    @show_arrow_cursor_decorator
+    @qt_decorators.show_arrow_cursor
     def _show_change_path_dialog(self):
         """
         Internal function that opens a file dialog for setting a new root path

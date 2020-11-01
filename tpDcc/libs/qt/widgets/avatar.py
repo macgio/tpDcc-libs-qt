@@ -7,11 +7,11 @@ Module that contains implementation for avatar/user widgets
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Property
+from Qt.QtWidgets import QLabel
+from Qt.QtGui import QPixmap
 
-import tpDcc
+from tpDcc.managers import resources
 from tpDcc.libs.qt.core import theme, mixin
 
 
@@ -24,7 +24,7 @@ class Avatar(QLabel, object):
     def __init__(self, parent=None):
         super(Avatar, self).__init__(parent)
 
-        self._default_pixmap = tpDcc.ResourcesMgr().pixmap('user')
+        self._default_pixmap = resources.pixmap('user')
         self._pixmap = self._default_pixmap
         self._size = 0
         self._set_size(self.theme_default_size())

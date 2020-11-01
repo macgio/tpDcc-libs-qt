@@ -9,11 +9,13 @@ from __future__ import print_function, division, absolute_import
 
 from functools import partial
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, Property, QPoint, QSize, QRect, QTimer
+from Qt.QtWidgets import QApplication, QSizePolicy, QAbstractButton, QPushButton, QToolButton, QRadioButton
+from Qt.QtWidgets import QStyle, QStyleOptionButton, QStylePainter, QStyleOption
+from Qt.QtGui import QCursor, QIcon, QFontMetrics, QPainter, QPainterPath, QColor, QBrush, QLinearGradient
 
-import tpDcc as tp
+from tpDcc import dcc
+from tpDcc.managers import resources
 from tpDcc.libs.python import python
 from tpDcc.libs.qt.core import consts, animation, icon, qtutils, mixin, theme, menu
 from tpDcc.libs.qt.widgets import tooltips
@@ -27,7 +29,7 @@ INNER, OUTER = 1, 2
 
 
 @mixin.theme_mixin
-@mixin.cursor_mixin
+# @mixin.cursor_mixin
 class BaseButton(QPushButton, object):
 
     class Types(object):
@@ -196,14 +198,14 @@ class BaseButton(QPushButton, object):
 
 
 @mixin.theme_mixin
-@mixin.cursor_mixin
+# @mixin.cursor_mixin
 class BaseRadioButton(QRadioButton, object):
     def __init__(self, *args, **kwargs):
         super(BaseRadioButton, self).__init__(*args, **kwargs)
 
 
 @mixin.theme_mixin
-@mixin.cursor_mixin
+# @mixin.cursor_mixin
 class BaseToolButton(QToolButton, object):
     def __init__(self, parent=None):
         super(BaseToolButton, self).__init__(parent=parent)
@@ -255,9 +257,9 @@ class BaseToolButton(QToolButton, object):
             if theme:
                 accent_color = theme.accent_color
                 if self._image_theme:
-                    self.setIcon(tp.ResourcesMgr().icon(self._image, theme=self._image_theme, color=accent_color))
+                    self.setIcon(resources.icon(self._image, theme=self._image_theme, color=accent_color))
                 else:
-                    self.setIcon(tp.ResourcesMgr().icon(self._image, color=accent_color))
+                    self.setIcon(resources.icon(self._image, color=accent_color))
         return super(BaseToolButton, self).enterEvent(event)
 
     def leaveEvent(self, event):
@@ -270,9 +272,9 @@ class BaseToolButton(QToolButton, object):
             if image_theme:
                 kwargs['theme'] = image_theme
             if self.isCheckable() and self.isChecked():
-                self.setIcon(tp.ResourcesMgr().icon(self._image, **kwargs))
+                self.setIcon(resources.icon(self._image, **kwargs))
             else:
-                self.setIcon(tp.ResourcesMgr().icon(self._image, **kwargs))
+                self.setIcon(resources.icon(self._image, **kwargs))
 
     # =================================================================================================================
     # BASE
@@ -1144,7 +1146,7 @@ class BaseMenuButton(QPushButton, ButtonIcons):
                 new_action.setIconText(icon_text or '')
             elif python.is_string(action_icon):
                 new_action.setIconText(action_icon or icon_text or None)
-                action_icon = tp.ResourcesMgr().icon(action_icon)
+                action_icon = resources.icon(action_icon)
                 new_action.setIcon(
                     icon.colorize_layered_icon(action_icon, colors=[icon_color], size=qtutils.dpi_scale(icon_size)))
 
@@ -1321,7 +1323,7 @@ class ColorButton(QPushButton, object):
         self._update_color()
 
     def show_color_editor(self):
-        if tp.is_maya():
+        if dcc.is_maya():
             import maya.cmds as cmds
             cmds.colorEditor(rgbValue=(self._color.redF(), self._color.greenF(), self._color.blueF()))
             if not cmds.colorEditor(query=True, result=True):
@@ -1330,7 +1332,7 @@ class ColorButton(QPushButton, object):
             self.color = QColor.fromRgbF(new_color[0], new_color[1], new_color[2])
             self.colorChanged.emit()
         else:
-            raise RuntimeError('Code Editor is not available for DCC: {}'.format(tp.Dcc.get_name()))
+            raise RuntimeError('Code Editor is not available for DCC: {}'.format(dcc.get_name()))
 
     def _update_color(self):
         self.setStyleSheet(
@@ -1347,7 +1349,7 @@ def get_axis_button(axis_type='x', parent=None, as_tool_button=True):
         axis_btn = BaseToolButton(parent=parent)
     else:
         axis_btn = BaseButton(parent=parent)
-    axis_icon = tp.ResourcesMgr().icon('{}_axis'.format(axis), color=QColor(*consts.AXISES[axis]))
+    axis_icon = resources.icon('{}_axis'.format(axis), color=QColor(*consts.AXISES[axis]))
     axis_btn.setIcon(axis_icon)
 
     return axis_btn

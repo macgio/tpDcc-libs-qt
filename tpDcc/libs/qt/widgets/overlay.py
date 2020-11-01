@@ -7,13 +7,13 @@ Module that contains implementation for overlay widgets
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt, Signal
+from Qt.QtWidgets import QApplication
 
-from tpDcc.libs.qt.core import dialog
+from tpDcc.libs.qt.widgets import dialog
 
 
-class OverlayWidget(dialog.Dialog, object):
+class OverlayWidget(dialog.BaseDialog, object):
     """
     Invisible overlay widget used to capture mouse events among other things
     """

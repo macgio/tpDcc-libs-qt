@@ -9,9 +9,10 @@ from __future__ import print_function, division, absolute_import
 
 from functools import partial
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, Property, QTimer
+from Qt.QtWidgets import QApplication, QLineEdit, QTextEdit
+from Qt.QtGui import QDoubleValidator, QIntValidator
+
 
 from tpDcc.libs.qt.core import mixin, theme
 from tpDcc.libs.qt.widgets import layouts, buttons, browser

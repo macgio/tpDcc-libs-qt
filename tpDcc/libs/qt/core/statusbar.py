@@ -7,11 +7,11 @@ Class that creates a status widgets which can be used the state of an app
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, QSize, QTimer
+from Qt.QtWidgets import QSizePolicy, QHBoxLayout, QFrame, QLabel, QPushButton
+from Qt.QtGui import QIcon
 
-import tpDcc
+from tpDcc.managers import resources
 
 
 class StatusWidget(QFrame, object):
@@ -68,7 +68,7 @@ class StatusWidget(QFrame, object):
         if self.is_blocking():
             return
 
-        icon = tpDcc.ResourcesMgr().icon('ok', extension='png')
+        icon = resources.icon('ok', extension='png')
         self._show_message(message, icon, msecs)
 
     def show_info_message(self, message, msecs=None):
@@ -81,7 +81,7 @@ class StatusWidget(QFrame, object):
         if self.is_blocking():
             return
 
-        icon = tpDcc.ResourcesMgr().icon('info', extension='png')
+        icon = resources.icon('info', extension='png')
         self._show_message(message, icon, msecs)
 
     def show_warning_message(self, message, msecs=None):
@@ -94,7 +94,7 @@ class StatusWidget(QFrame, object):
         if self.is_blocking():
             return
 
-        icon = tpDcc.ResourcesMgr().icon('warning', extension='png')
+        icon = resources.icon('warning', extension='png')
         self._show_message(message, icon, msecs)
 
     def show_error_message(self, message, msecs=None):
@@ -104,7 +104,7 @@ class StatusWidget(QFrame, object):
        :param msecs: int
        """
 
-        icon = tpDcc.ResourcesMgr().icon('error', extension='png')
+        icon = resources.icon('error', extension='png')
         self._show_message(message, icon, msecs)
 
     def _reset(self):
@@ -115,7 +115,7 @@ class StatusWidget(QFrame, object):
         self._timer.stop()
         self._button.hide()
         self._label.setText('')
-        icon = tpDcc.ResourcesMgr().icon('blank')
+        icon = resources.icon('blank')
         self._button.setIcon(icon) if icon else self._button.setIcon(QIcon())
         self.setStyleSheet('')
         self._blocking = False

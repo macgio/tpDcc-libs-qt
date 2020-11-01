@@ -7,8 +7,10 @@ Module that contains implementations for different types of progress bars
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt, Property
+from Qt.QtWidgets import QSizePolicy, QFrame, QLabel, QProgressBar
+
+from tpDcc.libs.qt.widgets import layouts
 
 
 class BaseProgressBar(QProgressBar, object):
@@ -50,16 +52,14 @@ class BaseProgressBar(QProgressBar, object):
         if value >= self.maximum():
             self.theme_status = BaseProgressBar.SUCCESS_STATUS
         else:
-            self.theme_status = BaseProgressBar.NORMAL_STATUS
+            self.theme_status = self._status
 
 
 class FrameProgressBar(QFrame, object):
     def __init__(self, *args):
         super(FrameProgressBar, self).__init__(*args)
 
-        layout = QVBoxLayout()
-        layout.setSpacing(0)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         self.setLayout(layout)
 
         self._label = QLabel('', self)

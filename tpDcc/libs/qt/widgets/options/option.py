@@ -7,10 +7,10 @@ Module that contains core classes for options
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt, Signal
+from Qt.QtWidgets import QMenu, QAction
 
-import tpDcc as tp
+from tpDcc.managers import resources
 from tpDcc.libs.python import name as name_utils
 from tpDcc.libs.qt.core import base, qtutils
 from tpDcc.libs.qt.widgets import layouts
@@ -169,11 +169,11 @@ class Option(base.BaseWidget, object):
     def _create_context_menu(self):
         self._context_menu = QMenu()
 
-        move_up_icon = tp.ResourcesMgr().icon('sort_up')
-        move_down_icon = tp.ResourcesMgr().icon('sort_down')
-        rename_icon = tp.ResourcesMgr().icon('rename')
-        remove_icon = tp.ResourcesMgr().icon('delete')
-        copy_icon = tp.ResourcesMgr().icon('copy')
+        move_up_icon = resources.icon('sort_up')
+        move_down_icon = resources.icon('sort_down')
+        rename_icon = resources.icon('rename')
+        remove_icon = resources.icon('delete')
+        copy_icon = resources.icon('copy')
 
         move_up_action = QAction(move_up_icon, 'Move Up', self._context_menu)
         self._context_menu.addAction(move_up_action)

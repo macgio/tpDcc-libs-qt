@@ -9,12 +9,15 @@ from __future__ import print_function, division, absolute_import
 
 import os
 import math
+import logging
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QPoint, QRectF, QLineF
+from Qt.QtWidgets import QGraphicsRectItem, QGraphicsView, QGraphicsItem
+from Qt.QtGui import QColor, QPen, QBrush, QPainter, QImage, QVector2D
 
 from tpDcc.libs.python import mathlib
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 try:
     from Qt import QtOpenGL
@@ -23,7 +26,7 @@ except ImportError:
         from PySide import QtOpenGL
     except ImportError:
         # Max 2018 does not support QtOpenGL?
-        tp.logger.warning('QtOpenGL is not available! QtOpenGL functionality will not be available!')
+        LOGGER.warning('QtOpenGL is not available! QtOpenGL functionality will not be available!')
 
 
 class ViewportModes(object):
@@ -134,7 +137,7 @@ class BaseGraphicsView(QGraphicsView, object):
         self._init_scrollbars_pos = QVector2D(self.horizontalScrollBar().value(), self.verticalScrollBar().value())
         self._is_rubber_rect_selection = False
         self._use_opengl = kwargs.get('use_opengl', False)
-        self.log = kwargs.get('log', tp.logger)
+        self.log = kwargs.get('log', LOGGER)
 
         self._mouse_pressed = False
         self._pressed_item = None
@@ -382,7 +385,7 @@ class BaseGraphicsView(QGraphicsView, object):
             self.horizontalScrollBar().setValue(horizontal)
             self.verticalScrollBar().setValue(vertical)
         except Exception as e:
-            tp.logger.debug(str(e))
+            LOGGER.debug(str(e))
 
     def reset_scale(self):
         self.resetMatrix()

@@ -7,11 +7,15 @@ Module that contains custom Qt tab bar widgets
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+import logging
+
+from Qt.QtCore import Qt, Signal, QPoint, QRect, QSize, QEvent, QRegExp, QMimeData
+from Qt.QtWidgets import QApplication, QPushButton, QTabBar, QLineEdit, QStyle, QStylePainter, QStyleOptionTab
+from Qt.QtGui import QCursor, QPixmap, QPainter, QMouseEvent, QDrag, QRegExpValidator
 
 from tpDcc.libs.python import name as naming
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 # ======================================================================
 
@@ -109,7 +113,7 @@ class EditableTabBar(QTabBar, object):
             self._editor.hide()
             for i in range(self.count()):
                 if self.tabText(i) == self._editor.text():
-                    tp.logger.warning('Impossible to rename category because exists a tab with the same name!')
+                    LOGGER.warning('Impossible to rename category because exists a tab with the same name!')
                     return
             old_name = self.tabText(index)
             self.setTabText(index, self._editor.text())
@@ -406,3 +410,35 @@ class EditableTearOffTabBar(TearOffTabBar, object):
             self._editor.hide()
             return False
         return QTabBar.eventFilter(self, widget, event)
+
+
+class FingerTabBar(QTabBar, object):
+    def __init__(self, *args, **kwargs):
+        super(FingerTabBar, self).__init__(*args, **kwargs)
+
+    def paintEvent(self, event):
+        painter = QStylePainter(self)
+        opt = QStyleOptionTab()
+
+        for i in range(self.count()):
+            self.initStyleOption(opt, i)
+            painter.drawControl(QStyle.CE_TabBarTabShape, opt)
+            painter.save()
+
+            s = opt.rect.size()
+            s.transpose()
+            r = QRect(QPoint(), s)
+            r.moveCenter(opt.rect.center())
+            opt.rect = r
+
+            c = self.tabRect(i).center()
+            painter.translate(c)
+            painter.rotate(90)
+            painter.translate(-c)
+            painter.drawControl(QStyle.CE_TabBarTabLabel, opt)
+            painter.restore()
+
+    def tabSizeHint(self, index):
+        s = QTabBar.tabSizeHint(self, index)
+        s.transpose()
+        return s

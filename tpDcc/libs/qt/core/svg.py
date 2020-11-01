@@ -14,9 +14,10 @@ import logging
 from xml.dom import minidom
 from collections import OrderedDict
 
-from Qt.QtCore import *
-from Qt.QtGui import *
-from Qt.QtSvg import *
+from Qt.QtCore import QPointF, QRectF
+from Qt.QtGui import QPainterPath, QTransform, QPolygonF, QImage, QPainter
+from Qt.QtSvg import QSvgRenderer
+
 
 PSVG_AVAILABLE = True
 try:

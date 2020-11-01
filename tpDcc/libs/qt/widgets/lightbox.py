@@ -7,10 +7,11 @@ Module that contains lightbox widets
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Signal, QEvent
+from Qt.QtWidgets import QWidget, QFrame
 
 from tpDcc.libs.qt.core import animation
+from tpDcc.libs.qt.widgets import layouts
 
 
 class Lightbox(QFrame, object):
@@ -29,7 +30,9 @@ class Lightbox(QFrame, object):
         self._animation = None
         self._duration = duration
 
-        layout = QGridLayout(self)
+        self.setStyleSheet('background-color: rgba(255, 0, 0, 50);')
+
+        layout = layouts.GridLayout(parent=self)
         self.setLayout(layout)
 
         layout.setRowStretch(0, 1)

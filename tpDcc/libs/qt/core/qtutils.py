@@ -29,9 +29,10 @@ QT_AVAILABLE = True
 UILOADER_AVAILABLE = True
 PYSIDEUIC_AVAILABLE = True
 try:
-    from Qt.QtCore import *
-    from Qt.QtWidgets import *
-    from Qt.QtGui import *
+    from Qt.QtCore import Qt, Signal, QObject, QPoint, QSize
+    from Qt.QtWidgets import QApplication, QLayout, QVBoxLayout, QHBoxLayout, QWidget, QFrame, QLabel, QPushButton
+    from Qt.QtWidgets import QSizePolicy, QMessageBox, QInputDialog, QFileDialog, QMenu, QMenuBar
+    from Qt.QtGui import QFontDatabase, QPixmap, QIcon, QColor
     from Qt import QtGui
     from Qt import QtCompat
     from Qt import __binding__
@@ -79,8 +80,7 @@ if QT_AVAILABLE:
         UILOADER_AVAILABLE = False
         PYSIDEUIC_AVAILABLE = False
 
-import tpDcc
-from tpDcc.libs import qt
+from tpDcc import dcc
 from tpDcc.libs.qt.core import consts, color
 from tpDcc.libs.python import mathlib
 
@@ -95,7 +95,7 @@ INT_RANGE_MAX = mathlib.MAX_INT
 
 # ==============================================================================
 
-LOGGER = logging.getLogger()
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 def is_pyqt():
@@ -403,7 +403,7 @@ def compat_ui_loader(ui_file, widget=None):
         return ui
     else:
         for member in dir(ui):
-            if not member.startswith('__') and member is not 'staticMetaObject':
+            if not member.startswith('__') and member != 'staticMetaObject':
                 setattr(widget, member, getattr(ui, member))
         return ui
 
@@ -418,13 +418,14 @@ def load_ui(ui_file, parent_widget=None):
     """
 
     if not QT_AVAILABLE:
-        qt.logger.error(QT_ERROR_MESSAGE)
+        LOGGER.error(QT_ERROR_MESSAGE)
         return None
 
     if not UILOADER_AVAILABLE:
-        qt.logger.error('QtUiLoader is not available, impossible teo load ui file!')
+        LOGGER.error('QtUiLoader is not available, impossible teo load ui file!')
         return None
 
+    # IMPORTANT: Do not change customWidgets variable name
     customWidgets = UiLoader.get_custom_widgets(ui_file)
     loader = UiLoader(parent_widget, customWidgets)
     # if workingDirectory is not None:
@@ -441,11 +442,11 @@ def load_ui_type(ui_file):
     """
 
     if not QT_AVAILABLE:
-        qt.logger.warning(QT_ERROR_MESSAGE)
+        LOGGER.warning(QT_ERROR_MESSAGE)
         return None, None
 
     if not PYSIDEUIC_AVAILABLE:
-        qt.logger.warning('pysideuic is not available. UI compilation functionality is not available!')
+        LOGGER.warning('pysideuic is not available. UI compilation functionality is not available!')
         return None, None
 
     parsed = ElementTree.parse(ui_file)
@@ -473,15 +474,15 @@ def compile_ui(ui_file, py_file):
     """
 
     if not QT_AVAILABLE:
-        qt.logger.warning(QT_ERROR_MESSAGE)
+        LOGGER.warning(QT_ERROR_MESSAGE)
         return
 
     if not PYSIDEUIC_AVAILABLE:
-        qt.logger.warning('pysideuic is not available. UI compilation functionality is not available!')
+        LOGGER.warning('pysideuic is not available. UI compilation functionality is not available!')
         return
 
     if not os.path.isfile(ui_file):
-        qt.logger.warning('UI file "{}" does not exists!'.format(ui_file))
+        LOGGER.warning('UI file "{}" does not exists!'.format(ui_file))
         return
 
     if os.path.isfile(ui_file):
@@ -499,11 +500,11 @@ def compile_uis(root_path, recursive=True, use_qt=True):
     """
 
     if not QT_AVAILABLE:
-        qt.logger.warning(QT_ERROR_MESSAGE)
+        LOGGER.warning(QT_ERROR_MESSAGE)
         return
 
     if not os.path.exists(root_path):
-        qt.logger.error('Impossible to compile UIs because path "{}" is not valid!'.format(root_path))
+        LOGGER.error('Impossible to compile UIs because path "{}" is not valid!'.format(root_path))
         return
 
     if recursive:
@@ -514,7 +515,7 @@ def compile_uis(root_path, recursive=True, use_qt=True):
 
                     py_file = ui_file.replace('.ui', '_ui.py')
 
-                    qt.logger.debug('> COMPILING: {}'.format(ui_file))
+                    LOGGER.debug('> COMPILING: {}'.format(ui_file))
                     compile_ui(ui_file=ui_file, py_file=py_file)
 
                     # pysideuic will use the proper Qt version used to compile it when generating .ui Python code
@@ -559,7 +560,7 @@ def clean_compiled_uis(root_path, recusive=True):
             for f in files:
                 if f.endswith('_ui.py') or f.endswith('_ui.pyc'):
                     os.remove(os.path.join(root, f))
-                    qt.logger.debug('Removed compiled UI: "{}"'.format(os.path.join(root, f)))
+                    LOGGER.debug('Removed compiled UI: "{}"'.format(os.path.join(root, f)))
 
 
 def create_python_qrc_file(qrc_file, py_file):
@@ -1500,7 +1501,8 @@ def get_window_menu_bar(window=None):
     :return: QMenuBar or None
     """
 
-    window = window or tpDcc.Dcc.get_main_window()
+
+    window = window or dcc.get_main_window()
     if not window:
         return
 

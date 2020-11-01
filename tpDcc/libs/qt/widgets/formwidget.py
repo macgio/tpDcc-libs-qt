@@ -9,16 +9,19 @@ from __future__ import print_function, division, absolute_import
 
 import re
 import sys
+import logging
 import traceback
 from functools import partial
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal
+from Qt.QtWidgets import QSizePolicy, QFrame, QLabel, QPushButton, QSpacerItem, QLineEdit, QCheckBox, QComboBox, QMenu
+from Qt.QtWidgets import QFileDialog
+from Qt.QtGui import QPixmap, QCursor, QIntValidator
 
-from tpDcc.libs import qt
 from tpDcc.libs.python import decorators
-from tpDcc.libs.qt.widgets import label, color
+from tpDcc.libs.qt.widgets import layouts, label, lineedit, color, sliders
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class FormDialog(QFrame, object):
@@ -31,9 +34,7 @@ class FormDialog(QFrame, object):
 
         self._settings = None
 
-        self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_layout.setSpacing(0)
+        self.main_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         self.setLayout(self.main_layout)
 
         self._widgets = list()
@@ -47,9 +48,7 @@ class FormDialog(QFrame, object):
         self._form_widget = FormWidget(self)
         self._form_widget.setObjectName('formWidget')
         self._form_widget.validated.connect(self._on_validated)
-        btn_layout = QHBoxLayout(self)
-        btn_layout.setContentsMargins(0, 0, 0, 0)
-        btn_layout.setSpacing(0)
+        btn_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
         self._accept_btn = QPushButton(self)
         self._accept_btn.setObjectName('acceptButton')
         self._accept_btn.setText('Accept')
@@ -171,16 +170,12 @@ class FormWidget(QFrame, object):
         self._widgets = list()
         self._validator = None
 
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
+        main_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         self.setLayout(main_layout)
 
         self._options_frame = QFrame(self)
         self._options_frame.setObjectName('optionsFrame')
-        options_layout = QVBoxLayout(self._options_frame)
-        options_layout.setContentsMargins(0, 0, 0, 0)
-        options_layout.setSpacing(0)
+        options_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         self._options_frame.setLayout(options_layout)
 
         self._title_widget = QPushButton(self)
@@ -377,7 +372,7 @@ class FormWidget(QFrame, object):
         for data in schema:
             cls = FIELD_WIDGET_REGISTRY.get(data.get('type', 'label'))
             if not cls:
-                qt.logger.warning('Cannot find widget for {}'.format(data))
+                LOGGER.warning('Cannot find widget for {}'.format(data))
                 continue
             if layout and not data.get('layout'):
                 data['layout'] = layout
@@ -433,7 +428,7 @@ class FormWidget(QFrame, object):
                 self._set_state(fields)
             self.validated.emit()
         else:
-            qt.logger.debug('No validator set')
+            LOGGER.debug('No validator set')
 
     def has_errors(self):
         """
@@ -507,11 +502,9 @@ class FieldWidget(QFrame, object):
 
         direction = self._data.get('layout', self.DefaultLayout)
         if direction == 'vertical':
-            main_layout = QVBoxLayout(self)
+            main_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         else:
-            main_layout = QHBoxLayout(self)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
+            main_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
         self.setLayout(main_layout)
 
         self._label = QLabel(self)
@@ -519,7 +512,7 @@ class FieldWidget(QFrame, object):
         self._label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         main_layout.addWidget(self._label)
 
-        self._layout2 = QHBoxLayout(self)
+        self._layout2 = layouts.HorizontalLayout()
         main_layout.addLayout(self._layout2)
         if direction == 'vertical':
             self._label.setAlignment(Qt.AlignLeft | Qt .AlignVCenter)
@@ -661,7 +654,7 @@ class FieldWidget(QFrame, object):
                 try:
                     self.set_value(value)
                 except TypeError as e:
-                    qt.logger.exception('{} | {}'.format(e, traceback.format_exc()))
+                    LOGGER.exception('{} | {}'.format(e, traceback.format_exc()))
             enabled = state.get('enabled', None)
             if enabled is not None:
                 self.setEnabled(enabled)
@@ -740,9 +733,7 @@ class FieldWidget(QFrame, object):
         :param widget: QWidget
         """
 
-        widget_layout = QHBoxLayout()
-        widget_layout.setContentsMargins(0, 0, 0, 0)
-        widget_layout.setSpacing(0)
+        widget_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
 
         self._widget = widget
         self._widget.setParent(self)
@@ -758,9 +749,7 @@ class FieldWidget(QFrame, object):
         widget_layout.addWidget(self._widget)
         widget_layout.addWidget(self._menu_button)
 
-        layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
 
         self._error_label = QLabel(self)
         self._error_label.setHidden(True)
@@ -896,11 +885,8 @@ class IntFieldWidget(FieldWidget, object):
     def __init__(self, *args, **kwargs):
         super(IntFieldWidget, self).__init__(*args, **kwargs)
 
-        validator = QIntValidator(-sys.maxint, sys.maxint, self)
-
-        widget = QLineEdit(self)
-        widget.setValidator(validator)
-        widget.stateChanged.connect(self._on_emit_value_changed)
+        widget = sliders.BaseSlider(parent=self)
+        widget.valueChanged.connect(self._on_emit_value_changed)
         self.set_widget(widget)
 
     def value(self):
@@ -910,11 +896,11 @@ class IntFieldWidget(FieldWidget, object):
         :return: str
         """
 
-        value = self.widget().text()
-        if value.strip() == '':
-            value = self.default()
+        value = self.widget().value()
+        # if value.strip() == '':
+        #     value = self.default()
 
-        return int(str(value))
+        return int(value)
 
     def set_value(self, value):
         """
@@ -925,14 +911,14 @@ class IntFieldWidget(FieldWidget, object):
 
         if value == '':
             value = self.default()
-        self.widget().setText(str(int(value)))
+        self.widget().setValue(int(value))
 
 
 class SliderFieldWidget(FieldWidget, object):
     def __init__(self, *args, **kwargs):
         super(SliderFieldWidget, self).__init__(*args, **kwargs)
 
-        widget = QSlider(self)
+        widget = sliders.DoubleSlider(parent=self)
         widget.setOrientation(Qt.Horizontal)
         widget.setObjectName('widget')
         widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
@@ -963,9 +949,7 @@ class RangeFieldWidget(FieldWidget, object):
         super(RangeFieldWidget, self).__init__(*args, **kwargs)
 
         widget = QFrame(self)
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(3)
+        layout = layouts.HorizontalLayout(spacing=3, margins=(0, 0, 0, 0))
         widget.setLayout(layout)
 
         validator = QIntValidator(-sys.maxint, sys.maxint, self)
@@ -1012,7 +996,7 @@ class StringFieldWidget(FieldWidget, object):
     def __init__(self, *args, **kwargs):
         super(StringFieldWidget, self).__init__(*args, **kwargs)
 
-        widget = label.QLineEdit(self)
+        widget = lineedit.BaseLineEdit(parent=self)
         widget.textChanged.connect(self._on_emit_value_changed)
         self.set_widget(widget)
 
@@ -1218,7 +1202,7 @@ class EnumFieldWidget(FieldWidget, object):
         if index != -1:
             self.widget().setCurrentIndex(index)
         else:
-            qt.logger.warning('Cannot set the value for field {}'.format(self.name()))
+            LOGGER.warning('Cannot set the value for field {}'.format(self.name()))
 
 
 class SeparatorFieldWidget(FieldWidget, object):

@@ -9,8 +9,8 @@ from __future__ import print_function, division, absolute_import
 
 from functools import partial
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt, QPoint, QEvent, QPropertyAnimation, QEasingCurve
+from Qt.QtWidgets import QGraphicsDropShadowEffect, QGraphicsOpacityEffect
 
 from tpDcc.libs.qt.core import qtutils, theme as core_theme
 

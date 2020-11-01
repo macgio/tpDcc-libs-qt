@@ -1,7 +1,7 @@
 # Blue theme
 
 name: Blue
-accentColor: [50, 180, 240, 255]
-backgroundColor: null
 style: default
+accent_color: "#32B4F0"
+background_color: null
 overrides: []

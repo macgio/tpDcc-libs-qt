@@ -7,20 +7,18 @@ Module that contains base class for icons
 
 from __future__ import print_function, division, absolute_import
 
+from Qt.QtCore import Qt, Signal, QObject, QSize, QTimer, QPoint
+from Qt.QtWidgets import QWidget, QStyle
+from Qt.QtGui import QFont, QCursor
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
-
+from tpDcc import dcc
+from tpDcc.libs.qt.core import icon
+from tpDcc.libs.qt.widgets import layouts, dialog, parsers, label
 
 EXPANDED_TOOLTIP_INJECTOR_ATTRIBUTE = '_expandedTooltips_'
 
-import tpDcc as tp
-from tpDcc.libs.qt.core import icon, dialog
-from tpDcc.libs.qt.widgets import parsers
 
-
-class ExpandedTooltipPopup(dialog.Dialog, object):
+class ExpandedTooltipPopup(dialog.BaseDialog, object):
 
     popupKey = Qt.Key_Control
 
@@ -58,8 +56,7 @@ class ExpandedTooltipPopup(dialog.Dialog, object):
             self.close()
 
     def get_main_layout(self):
-        main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(6, 4, 6, 8)
+        main_layout = layouts.VerticalLayout(margins=(6, 4, 6, 8))
         return main_layout
 
     def ui(self):
@@ -69,15 +66,13 @@ class ExpandedTooltipPopup(dialog.Dialog, object):
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setMouseTracking(True)
 
-        self._title_layout = QHBoxLayout()
-        self._title_layout.setContentsMargins(1, 1, 1, 1)
-        self._title_layout.setSpacing(2)
-        self._title_label = QLabel()
+        self._title_layout = layouts.HorizontalLayout(spacing=2, margins=(1, 1, 1, 1))
+        self._title_label = label.BaseLabel(parent=self)
         self._title_label.setObjectName('title')
         self._title_layout.addWidget(self._title_label)
         self._title_layout.setStretch(1, 3)
         self._title_layout.addWidget(self._title_label)
-        self._widgets_layout = QVBoxLayout()
+        self._widgets_layout = layouts.VerticalLayout()
         self.main_layout.addLayout(self._title_layout)
         self.main_layout.addLayout(self._widgets_layout)
 
@@ -105,8 +100,11 @@ class ExpandedTooltipPopup(dialog.Dialog, object):
             self._widgets_layout.itemAt(i).widget().setParent(None)
 
     def set_icon(self, new_icon):
+
+        from tpDcc.libs.qt.widgets import buttons
+
         new_icon = icon.colorize_icon(icon=new_icon, size=self._icon_size, color=self._icon_color)
-        icon_widget = QToolButton()
+        icon_widget = buttons.BaseToolButton(parent=self)
         icon_widget.setIconSize(QSize(self._icon_size, self._icon_size))
         icon_widget.setIcon(new_icon)
         self._tooltip_icon = icon_widget
@@ -234,8 +232,7 @@ class ToolTipWidget(QWidget, object):
         :param parent_window: QWindow
         """
 
-        if not parent_window:
-            parent_window = tp.Dcc.get_main_window().windowHandle()
+        parent_window = parent_window or dcc.get_main_window().windowHandle()
 
         self._add_widget(content)
         self._show(pos, parent_window)
@@ -248,8 +245,7 @@ class ToolTipWidget(QWidget, object):
         :param parent_window: QWindow
         """
 
-        if not parent_window:
-            parent_window = tp.Dcc.get_main_window().windowHandle()
+        parent_window = parent_window or dcc.get_main_window().windowHandle()
 
         self._add_widget(content)
         margin_size = QSize(
@@ -294,7 +290,7 @@ class ToolTipWidget(QWidget, object):
         """
 
         self.setMouseTracking(True)
-        self._layout = QVBoxLayout(self)
+        self._layout = layouts.VerticalLayout(parent=self)
         self._hide_timer.setSingleShot(True)
         self._hide_timer.setInterval(500)
         self._hide_timer.timeout.connect(self._on_timer_timeout)

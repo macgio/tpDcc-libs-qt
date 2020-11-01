@@ -7,14 +7,16 @@ Module that contains widgets with expandable behaviour
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QPoint, QPointF, QRect, QSize, QMimeData, QEvent
+from Qt.QtCore import QPropertyAnimation, QParallelAnimationGroup, QAbstractAnimation
+from Qt.QtWidgets import QSizePolicy, QWidget, QFrame, QPushButton, QToolButton, QScrollArea, QGroupBox
+from Qt.QtGui import QCursor, QPixmap, QIcon, QFont, QColor, QPalette, QPen, QBrush, QPainter, QPolygon, QPolygonF
+from Qt.QtGui import QDrag
 
-import tpDcc as tp
+from tpDcc import dcc
 from tpDcc.libs.python import python
 from tpDcc.libs.qt.core import base
-from tpDcc.libs.qt.widgets import dividers
+from tpDcc.libs.qt.widgets import layouts, label, dividers
 
 if python.is_python2():
     from tpDcc.libs.python.enum import Enum
@@ -32,28 +34,28 @@ class ExpandablePanel(base.BaseWidget, object):
     def __init__(self, header_text, min_height=30, max_height=1000,
                  show_header_text=True, is_opened=False, parent=None):
 
-        self.setObjectName('ExpandablePanel')
         self._header_text = header_text
         self._show_header_text = show_header_text
         self._min_height = min_height
         self._max_height = max_height
 
         if is_opened:
-            self._panel_state = self.PanelState.OPEN
+            self._panel_state = PanelState.OPEN
         else:
-            self._panel_state = self.PanelState.CLOSED
-        self._collapse_icon = QPixmap()
-        self._icon = QLabel()
+            self._panel_state = PanelState.CLOSED
+        self._collapse_icon = QIcon()
+        self._icon = QPushButton()
         self._icon.setMaximumSize(20, 20)
-        self._icon.setPixmap(self._collapse_icon)
+        self._icon.setIcon(self._collapse_icon)
 
         super(ExpandablePanel, self).__init__(parent=parent)
 
+        self.setObjectName('ExpandablePanel')
         self.update_size()
         self.update_icon()
 
-    def custom_ui(self):
-        super(ExpandablePanel, self).custom_ui()
+    def ui(self):
+        super(ExpandablePanel, self).ui()
 
         widget_palette = QPalette()
         widget_palette.setColor(QPalette.Background, QColor.fromRgb(60, 60, 60))
@@ -66,9 +68,7 @@ class ExpandablePanel(base.BaseWidget, object):
         frame.setFrameShadow(QFrame.Sunken)
         self.main_layout.addWidget(frame)
 
-        main_layout = QVBoxLayout(frame)
-        main_layout.setContentsMargins(2, 2, 2, 2)
-        main_layout.setSpacing(0)
+        main_layout = layouts.VerticalLayout(spacing=0, margins=(2, 2, 2, 2), parent=frame)
         main_layout.setAlignment(Qt.AlignTop)
 
         self._header_area = QWidget()
@@ -79,12 +79,11 @@ class ExpandablePanel(base.BaseWidget, object):
 
         self._header_text_label = dividers.Divider(self._header_text)
 
-        self._widget_layout = QVBoxLayout()
+        self._widget_layout = layouts.VerticalLayout(spacing=5)
         self._widget_layout.setMargin(5)
         self._widget_area.setLayout(self._widget_layout)
 
-        header_layout = QHBoxLayout()
-        header_layout.setMargin(0)
+        header_layout = layouts.HorizontalLayout(margins=(0, 0, 0, 0))
         header_layout.addWidget(self._icon)
         header_layout.addWidget(self._header_text_label)
         self._header_area.setLayout(header_layout)
@@ -96,7 +95,7 @@ class ExpandablePanel(base.BaseWidget, object):
 
     def update_icon(self):
 
-        if self._panel_state == self.PanelState.OPEN:
+        if self._panel_state == PanelState.OPEN:
             self._icon.setStyleSheet(
                 'QLabel {image: url(:/icons/open_hover_collapsible_panel) no-repeat;} '
                 'QLabel:hover {image:url(:/icons/open_hover_collapsible_panel) no-repeat;}')
@@ -110,7 +109,7 @@ class ExpandablePanel(base.BaseWidget, object):
             self._widget_area.hide()
 
     def update_size(self):
-        if self._panel_state == self.PanelState.OPEN:
+        if self._panel_state == PanelState.OPEN:
             self.setMaximumHeight(self._max_height)
             self.setMinimumHeight(self._min_height)
         else:
@@ -122,12 +121,12 @@ class ExpandablePanel(base.BaseWidget, object):
         if not self._show_header_text:
             self._header_text_label.setVisible(False)
 
-        if self._panel_state == self.PanelState.OPEN:
-            self._panel_state = self.PanelState.CLOSED
+        if self._panel_state == PanelState.OPEN:
+            self._panel_state = PanelState.CLOSED
             # self._header_text_label.setText('Closed')
             self._widget_area.hide()
         else:
-            self._panel_state = self.PanelState.OPEN
+            self._panel_state = PanelState.OPEN
             # self._header_text_label.setText('Open')
             self._widget_area.show()
         self.update_icon()
@@ -146,9 +145,8 @@ class ExpandableLine(QWidget, object):
 
         self._animation_duration = animation_duration
 
-        base_layout = QGridLayout()
+        base_layout = layouts.GridLayout(margins=(0, 0, 0, 0))
         base_layout.setVerticalSpacing(0)
-        base_layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(base_layout)
 
         self.expand_btn = QToolButton()
@@ -209,37 +207,54 @@ class ExpandableLine(QWidget, object):
         content_anim.setEndValue(content_height)
 
 
-class ExpandableFrame(QWidget, object):
-    def __init__(self, title='', parent=None):
-        super(ExpandableFrame, self).__init__(parent=parent)
+class ExpandableFrame(base.BaseFrame, object):
 
+    def __init__(self, title='', icon=None, parent=None):
         self._is_collapsed = True
         self._title_frame = None
         self._content = None
+        self._title = title
+        self._icon = icon
         self._content_layout = None
 
-        # ==================================================================
+        super(ExpandableFrame, self).__init__(parent=parent)
 
-        main_layout = QVBoxLayout(self)
+    def ui(self):
+        super(ExpandableFrame, self).ui()
+
+        title_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
+        self._title_frame = TitleFrame(title=self._title, icon=self._icon, collapsed=self._is_collapsed)
+        self._icon_button = label.BaseLabel(parent=self)
+        if self._icon:
+            self._icon_button.setPixmap(self._icon.pixmap(QSize(20, 20)))
+        else:
+            self._icon_button.setVisible(False)
+        title_layout.addWidget(self._icon_button)
+        title_layout.addWidget(self._title_frame)
+        title_layout.addStretch()
+
         self._content = QWidget()
-        self._content_layout = QVBoxLayout()
+        self._content_layout = layouts.VerticalLayout()
         self._content.setLayout(self._content_layout)
         self._content.setVisible(not self._is_collapsed)
 
-        # ==================================================================
+        self.main_layout.addLayout(title_layout)
+        self.main_layout.addWidget(self._content)
 
-        self._title_frame = TitleFrame(title=title, collapsed=self._is_collapsed)
-
-        main_layout.addWidget(self._title_frame)
-        main_layout.addWidget(self._content)
-
-        # === SIGNALS === #
-        QObject.connect(self._title_frame, SIGNAL('clicked()'), self.toggleCollapsed)
+    def setup_signals(self):
+        self._title_frame.clicked.connect(self._on_toggle_collapsed)
+        self._icon_button.clicked.connect(self._on_toggle_collapsed)
 
     def addWidget(self, widget):
         self._content_layout.addWidget(widget)
 
-    def toggleCollapsed(self):
+    def addLayout(self, layout):
+        self._content_layout.addLayout(layout)
+
+    def set_title(self, title):
+        self._title_frame.set_title(title)
+
+    def _on_toggle_collapsed(self):
         self._content.setVisible(self._is_collapsed)
         self._is_collapsed = not self._is_collapsed
         self._title_frame._arrow.setArrow(self._is_collapsed)
@@ -322,37 +337,43 @@ class ExpandableGroup(QGroupBox, object):
 
 
 class TitleFrame(QFrame, object):
-    def __init__(self, title='', collapsed=False, parent=None):
+
+    clicked = Signal()
+
+    def __init__(self, title='', icon=None, collapsed=False, parent=None):
         super(TitleFrame, self).__init__(parent=parent)
 
         self.setMinimumHeight(24)
-        self.move(QPoint(24, 0))
+        # self.move(QPoint(24, 0))
         self.setStyleSheet('border 1px solid rgb(41, 41, 41);')
 
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
+        self.setLayout(layout)
 
         self._arrow = ExpandableArrow(collapsed=collapsed)
         self._arrow.setStyleSheet('border:0px;')
 
-        self._title = QLabel(title)
+        self._title = label.BaseLabel(title, parent=self).strong()
         self._title.setMinimumHeight(24)
-        self._title.move(QPoint(24, 0))
+        # self._title.move(QPoint(24, 0))
         self._title.setStyleSheet('border: 0px;')
 
         layout.addWidget(self._arrow)
         layout.addWidget(self._title)
 
     def mousePressEvent(self, event):
-        self.emit(SIGNAL('clicked()'))
+        self.clicked.emit()
         return super(TitleFrame, self).mousePressEvent(event)
+
+    def set_title(self, title):
+        self._title.setText(title)
 
 
 class ExpandableArrow(QFrame):
     def __init__(self, collapsed=False, parent=None):
         super(ExpandableArrow, self).__init__(parent=parent)
         self.setMaximumSize(24, 24)
+        self.setMinimumWidth(24)
 
         self._arrow = None
 
@@ -362,7 +383,7 @@ class ExpandableArrow(QFrame):
         self._vertical = QPolygonF([QPointF(8.0, 7.0), QPointF(13.0, 12.0), QPointF(8.0, 17.0)])
         self._horizontal = QPolygonF([QPointF(7.0, 8.0), QPointF(17.0, 8.0), QPointF(12.0, 13.0)])
 
-        self.setArrow(int(collapsed))
+        self.setArrow(bool(collapsed))
 
     def setArrow(self, collapsed):
         if collapsed is True:
@@ -405,9 +426,7 @@ class ExpanderItem(QGroupBox, object):
         self._customData = dict()
         self._margin = 2
 
-        layout = QVBoxLayout()
-        layout.setContentsMargins(2, 2, 2, 2)
-        layout.setSpacing(0)
+        layout = layouts.VerticalLayout(spacing=0, margins=(2, 2, 2, 2))
         layout.addWidget(widget)
         self.setAcceptDrops(True)
         self.setLayout(layout)
@@ -674,7 +693,7 @@ class ExpanderWidget(QScrollArea, object):
     def __init__(self, parent=None):
         super(ExpanderWidget, self).__init__(parent=parent)
 
-        self._rolloutStyle = ExpanderStyles.Maya if tp.is_maya() else ExpanderStyles.Square
+        self._rolloutStyle = ExpanderStyles.Maya if dcc.is_maya() else ExpanderStyles.Square
         self._dragDropMode = ExpanderDragDropModes.NoDragDrop
         self._scrolling = False
         self._scrollInitY = 0
@@ -687,10 +706,8 @@ class ExpanderWidget(QScrollArea, object):
         self.setWidgetResizable(True)
         self.setMouseTracking(True)
         widget = QWidget(self)
-        layout = QVBoxLayout()
+        layout = layouts.VerticalLayout(spacing=2, margins=(2, 2, 2, 2))
         layout.setAlignment(Qt.AlignTop)
-        layout.setContentsMargins(2, 2, 2, 2)
-        layout.setSpacing(2)
         widget.setLayout(layout)
         self.setWidget(widget)
 

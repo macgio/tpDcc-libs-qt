@@ -10,9 +10,10 @@ from __future__ import print_function, division, absolute_import
 import os
 import glob
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QByteArray, QSize, QModelIndex, QPersistentModelIndex, QItemSelectionModel, QMimeData
+from Qt.QtCore import QUrl
+from Qt.QtWidgets import QListView, QTableView, QTreeView
+from Qt.QtGui import QDrag
 
 from tpDcc.libs.python import python
 from tpDcc.libs.qt.widgets import models

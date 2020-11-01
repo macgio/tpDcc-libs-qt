@@ -8,16 +8,19 @@ Module that contains widgets related with directories and files
 from __future__ import print_function, division, absolute_import
 
 import os
+import logging
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal
+from Qt.QtWidgets import QSizePolicy, QWidget, QLabel, QListWidget, QAbstractItemView
+from Qt.QtGui import QColor, QPalette
 
-import tpDcc as tp
-from tpDcc.libs import qt
+from tpDcc import dcc
+from tpDcc.managers import resources
 from tpDcc.libs.python import path
 from tpDcc.libs.qt.core import base, qtutils
 from tpDcc.libs.qt.widgets import layouts, buttons, lineedit, label
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class FileListWidget(QListWidget, object):
@@ -174,7 +177,7 @@ class SelectFolderButton(QWidget, object):
         main_layout = layouts.HorizontalLayout(spacing=2, margins=(2, 2, 2, 2))
         self.setLayout(main_layout)
 
-        folder_icon = tp.ResourcesMgr().icon('folder')
+        folder_icon = resources.icon('folder')
         self._folder_btn = buttons.IconButton(
             icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         main_layout.addWidget(self._folder_btn)
@@ -209,7 +212,7 @@ class SelectFolderButton(QWidget, object):
 
         self.beforeNewDirectory.emit()
 
-        if tp.Dcc.get_name() == tp.Dccs.Maya:
+        if dcc.is_maya():
             import maya.cmds as cmds
             result = cmds.fileDialog2(caption='Select Folder', fileMode=3, startingDirectory=self.init_directory)
             if result:
@@ -218,7 +221,7 @@ class SelectFolderButton(QWidget, object):
                 return
         else:
             raise NotImplementedError(
-                'Open Folder Browser Dialog is not impelented in your current DCC: {}'.format(tp.Dcc.get_name()))
+                'Open Folder Browser Dialog is not impelented in your current DCC: {}'.format(dcc.get_name()))
 
         self.directoryChanged.emit(result)
         # if not result or not os.path.isdir(result[0]):
@@ -256,7 +259,7 @@ class SelectFolder(QWidget, object):
             self._folder_line.setText(self._directory)
 
         if self._use_icon:
-            folder_icon = tp.ResourcesMgr().icon('folder')
+            folder_icon = resources.icon('folder')
             self._folder_btn = buttons.IconButton(
                 icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         else:
@@ -314,8 +317,8 @@ class SelectFolder(QWidget, object):
         :return: str, Path of the selected folder
         """
 
-        if tp.is_maya():
-            import tpDcc.dccs.maya as maya
+        if dcc.is_maya():
+            import maya.cmds
             result = maya.cmds.fileDialog2(
                 caption='Select Folder', fileMode=3, startingDirectory=self.folder_line.text())
             if result:
@@ -328,7 +331,7 @@ class SelectFolder(QWidget, object):
                 self._text_changed()
         else:
             raise NotImplementedError(
-                'Open Folder Browser Dialog is not implemented in your current DCC: {}'.format(tp.Dcc.get_name()))
+                'Open Folder Browser Dialog is not implemented in your current DCC: {}'.format(dcc.get_name()))
 
         return filename
 
@@ -399,7 +402,7 @@ class SelectFile(base.DirectoryWidget, object):
             self._file_line.setText(self._directory)
 
         if self._use_icon:
-            folder_icon = tp.ResourcesMgr().icon('folder')
+            folder_icon = resources.icon('folder')
             self._file_btn = buttons.IconButton(
                 icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
         else:
@@ -461,9 +464,8 @@ class SelectFile(base.DirectoryWidget, object):
         :return: str, Path of the selected folder
         """
 
-        if tp.is_maya():
-            import tpDcc.dccs.maya as maya
-
+        if dcc.is_maya():
+            import maya.cmds
             file_line = self._file_line.text()
             if os.path.isfile(file_line):
                 file_line = os.path.dirname(file_line)
@@ -472,7 +474,7 @@ class SelectFile(base.DirectoryWidget, object):
             if result:
                 result = result[0]
             if not result or not os.path.isfile(result):
-                qt.logger.warning('Selected file {} is not a valid file!'.format(result))
+                LOGGER.warning('Selected file {} is not a valid file!'.format(result))
                 return
             else:
                 filename = path.clean_path(result)
@@ -481,7 +483,7 @@ class SelectFile(base.DirectoryWidget, object):
                 self.update_settings(filename=filename)
         else:
             raise NotImplementedError(
-                'Select File Dialog is not implemented in your current DCC: {}'.format(tp.Dcc.get_name()))
+                'Select File Dialog is not implemented in your current DCC: {}'.format(dcc.get_name()))
 
         return filename
 
@@ -557,7 +559,7 @@ class GetDirectoryWidget(base.DirectoryWidget, object):
 
     def set_error(self, flag):
 
-        if tp.is_maya():
+        if dcc.is_maya():
             yes_color = QColor(0, 255, 0, 50)
             no_color = QColor(255, 0, 0, 50)
         else:

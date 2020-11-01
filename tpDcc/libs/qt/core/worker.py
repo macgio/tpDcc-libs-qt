@@ -10,7 +10,7 @@ from __future__ import print_function, division, absolute_import
 import uuid
 from threading import Lock, Condition
 
-from Qt.QtCore import *
+from Qt.QtCore import Signal, QThread
 
 
 class Worker(QThread, object):

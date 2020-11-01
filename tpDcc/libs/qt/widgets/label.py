@@ -7,15 +7,17 @@ Module that contains classes to create different kind of labels
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, Property, QRect, QSize, QPropertyAnimation
+from Qt.QtWidgets import QSizePolicy, QLabel, QLineEdit, QStyleOption
+from Qt.QtGui import QFontMetrics, QTextCursor, QTextDocument, QPainter
 
 from tpDcc.libs.qt.core import qtutils
 from tpDcc.libs.qt.widgets import graphicseffects
 
 
 class BaseLabel(QLabel, object):
+
+    clicked = Signal()
 
     class Levels(object):
         H1 = 1
@@ -208,6 +210,10 @@ class BaseLabel(QLabel, object):
     #         self.setText(self.property('label_text'))
     #
     #     return super(BaseLabel, self).event(event)
+
+    def mousePressEvent(self, event):
+        self.clicked.emit()
+        super(BaseLabel, self).mousePressEvent(event)
 
     def minimumSizeHint(self):
         """

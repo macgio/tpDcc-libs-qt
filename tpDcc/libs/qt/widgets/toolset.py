@@ -7,16 +7,21 @@ Module that contains manager to handle tools
 
 from __future__ import print_function, division, absolute_import
 
+import os
+import logging
 import webbrowser
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QSize
+from Qt.QtWidgets import QApplication, QSizePolicy, QMenu, QFrame, QPlainTextEdit, QDialog
+from Qt.QtGui import QCursor, QPixmap, QFont
 
-import tpDcc
+from tpDcc import dcc
+from tpDcc.managers import resources
 from tpDcc.libs.python import python, color
-from tpDcc.libs.qt.core import qtutils
-from tpDcc.libs.qt.widgets import stack, buttons
+from tpDcc.libs.qt.core import qtutils, base, preferences
+from tpDcc.libs.qt.widgets import layouts, label, stack, buttons, switch, gif, dividers, theme
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class ToolsetPropertiesDict(python.ObjectDict, object):
@@ -56,6 +61,7 @@ class ToolsetWidget(stack.StackItem, object):
     toolsetDragCancelled = Signal()
     toolsetActivated = Signal()
     toolsetDeactivated = Signal()
+    helpModeChanged = Signal(bool)
 
     def __init__(self, tree_widget=None, icon_color=(255, 255, 255), widget_item=None, parent=None, *args, **kwargs):
 
@@ -66,13 +72,18 @@ class ToolsetWidget(stack.StackItem, object):
         self._tree_widget = tree_widget
         self._toolset_widget_item = widget_item
         self._stacked_widget = None
+        self._prev_stack_index = 1
         self._display_mode_button = None
+        self._manual_button = None
         self._help_button = None
+        self._help_widget = None
         self._settings_button = None
         self._connect_button = None
         self._widgets = list()
         self._attacher = None
         self._client = None
+        self._help_mode = False
+        self._help_event = None
         self._dev = kwargs.get('dev', False)
         self._supported_dccs = self.CONFIG.get('supported_dccs', dict()) if self.CONFIG else dict()
         self._properties = self._setup_properties()
@@ -105,6 +116,10 @@ class ToolsetWidget(stack.StackItem, object):
     @property
     def properties(self):
         return self._properties
+
+    @property
+    def info_mode(self):
+        return self._help_mode
 
     # =================================================================================================================
     # TO OVERRIDE
@@ -151,6 +166,15 @@ class ToolsetWidget(stack.StackItem, object):
 
         pass
 
+    def help_mode(self, flag):
+        """
+        Function that can be used to show custom tooltip widgets for current toolset
+        Override in specific toolset widgets
+        :param flag: bool, Whether or not help mode is enabled
+        """
+
+        pass
+
     # =================================================================================================================
     # OVERRIDES
     # =================================================================================================================
@@ -162,7 +186,7 @@ class ToolsetWidget(stack.StackItem, object):
         self._contents_layout.setContentsMargins(0, 0, 0, 0)
         self._contents_layout.setSpacing(0)
 
-        self._stacked_widget = QStackedWidget(self._widget_hider)
+        self._stacked_widget = stack.SlidingOpacityStackedWidget(self._widget_hider)
         self._stacked_widget.setContentsMargins(0, 0, 0, 0)
         self._stacked_widget.setLineWidth(0)
         self._contents_layout.addWidget(self._stacked_widget)
@@ -176,15 +200,20 @@ class ToolsetWidget(stack.StackItem, object):
         self._connect_button.setFixedSize(QSize(22, 22))
         self._connect_button.setEnabled(False)
         self._connect_button.setToolTip('No connected to any DCC')
+        self._manual_button = buttons.BaseMenuButton(parent=self)
+        self._manual_button.set_icon(resources.icon('manual'))
+        self._manual_button.setFixedSize(QSize(22, 22))
         self._help_button = buttons.BaseMenuButton(parent=self)
-        self._help_button.set_icon(tpDcc.ResourcesMgr().icon('help'))
+        self._help_button.set_icon(resources.icon('help'))
         self._help_button.setFixedSize(QSize(22, 22))
+        self._help_switch = switch.SwitchWidget(parent=self)
         self._settings_button = buttons.BaseMenuButton(parent=self)
-        self._settings_button.set_icon(tpDcc.ResourcesMgr().icon('settings'))
+        self._settings_button.set_icon(resources.icon('settings'))
         self._settings_button.setFixedSize(QSize(22, 22))
+        self._help_widget = ToolsetHelpWidget()
 
-        # TODO: Disable until we implement preferences system
-        # self._settings_button.setVisible(False)
+        self._preferences_widget = preferences.PreferencesWidget(parent=self)
+        self._stacked_widget.addWidget(self._preferences_widget)
 
         # We call if after setting all buttons
         self.set_icon_color(self._icon_color)
@@ -194,8 +223,10 @@ class ToolsetWidget(stack.StackItem, object):
         self._dccs_menu = QMenu(self)
 
         display_button_pos = 7
+        self._title_frame.horizontal_layout.insertWidget(display_button_pos - 1, self._manual_button)
+        self._title_frame.horizontal_layout.insertWidget(display_button_pos - 1, self._help_switch)
         self._title_frame.horizontal_layout.insertWidget(display_button_pos - 1, self._help_button)
-        self._title_frame.horizontal_layout.insertWidget(display_button_pos - 2, self._settings_button)
+        self._title_frame.horizontal_layout.insertWidget(display_button_pos - 1, self._settings_button)
         self._title_frame.horizontal_layout.insertWidget(0, self._connect_button)
         self._title_frame.horizontal_layout.insertWidget(display_button_pos, self._display_mode_button)
         self._title_frame.horizontal_layout.setSpacing(0)
@@ -207,7 +238,7 @@ class ToolsetWidget(stack.StackItem, object):
         font.setBold(True)
         self.setFont(font)
 
-        if not tpDcc.is_standalone():
+        if not dcc.is_standalone():
             self._connect_button.setVisible(False)
 
     def setup_signals(self):
@@ -220,8 +251,11 @@ class ToolsetWidget(stack.StackItem, object):
             self._display_mode_button.clicked.connect(lambda: self.displaySwitched.emit())
             self.displaySwitched.connect(lambda: self.updateRequested.emit())
 
-        self._help_button.leftClicked.connect(self._on_open_help)
+        self._manual_button.leftClicked.connect(self._on_open_help)
+        self._help_button.leftClicked.connect(self._on_toggle_info_switch)
+        self._help_switch.toggled.connect(self._on_toggle_help_mode)
         self._settings_button.leftClicked.connect(self._on_show_preferences_dialog)
+        self._preferences_widget.closed.connect(self._on_close_preferences_window)
 
         self.deletePressed.connect(self._on_stop_callbacks)
 
@@ -235,6 +269,8 @@ class ToolsetWidget(stack.StackItem, object):
         toolset_contents = self.contents()
         for toolset_widget in toolset_contents:
             self.add_stacked_widget(toolset_widget)
+        if self.count() > 0:
+            self._stacked_widget.setCurrentIndex(1)
         self.post_content_setup()
         self.update_display_button()
         self.expand()
@@ -248,6 +284,35 @@ class ToolsetWidget(stack.StackItem, object):
 
         self._attacher = attacher
 
+        # Setup standard settings and attacher preferences
+        self._preferences_widget.set_settings(self._attacher.settings())
+        self._theme_prefs_widget = theme.ThemePreferenceWidget(
+            theme=self._attacher.theme(), parent=self._preferences_widget)
+        self._preferences_widget.add_category(self._theme_prefs_widget.CATEGORY, self._theme_prefs_widget)
+
+        # self.setup_attacher_settings(attacher)
+
+        self._attacher.themeUpdated.connect(self.reload_theme)
+        self._attacher.styleReloaded.connect(self.reload_theme)
+
+        self.reload_theme(self._attacher.theme())
+
+    def setup_attacher_settings(self, attacher):
+        """
+        Function that can be used to setup all the attacher settings widgets
+        :return:
+        """
+
+        if not attacher:
+            return
+
+        if not hasattr(attacher, 'get_settings_widgets') or not callable(attacher.get_settings_widgets):
+            return
+
+        settings_widgets = attacher.get_settings_widgets()
+        if not settings_widgets:
+            return
+
     def get_icon(self):
         """
         Returns toolset icon
@@ -255,9 +320,9 @@ class ToolsetWidget(stack.StackItem, object):
         """
 
         if not self._title_frame:
-            return tpDcc.ResourcesMgr().icon('tpdcc')
+            return resources.icon('tpdcc')
 
-        return tpDcc.ResourcesMgr().icon(self._title_frame.item_icon or 'tpdcc')
+        return resources.icon(self._title_frame.item_icon or 'tpdcc')
 
     def widgets(self):
         """
@@ -298,7 +363,9 @@ class ToolsetWidget(stack.StackItem, object):
         :return: int
         """
 
-        return self._stacked_widget.count()
+        # We ignore first widget, which is the preferences widget
+
+        return self._stacked_widget.count() - 1
 
     def item_at(self, index):
         """
@@ -360,7 +427,7 @@ class ToolsetWidget(stack.StackItem, object):
         if displays in [ToolsetDisplays.Single, ToolsetDisplays.Double, ToolsetDisplays.Triple]:
             self._display_mode_button.set_displays(displays)
         else:
-            tpDcc.logger.error('setDisplays() must be 2 or 3')
+            LOGGER.error('setDisplays() must be 2 or 3')
 
     def block_save(self, flag):
         """
@@ -397,7 +464,7 @@ class ToolsetWidget(stack.StackItem, object):
         if widget:
             widget.setSizePolicy(widget.sizePolicy().horizontalPolicy(), QSizePolicy.Expanding)
         else:
-            tpDcc.logger.warning('Widget not found!')
+            LOGGER.warning('Widget not found!')
 
         self.block_save(False)
 
@@ -414,6 +481,7 @@ class ToolsetWidget(stack.StackItem, object):
         self.set_item_icon_color(color)
         self._display_mode_button.set_icon_color(color)
         self._help_button.set_icon_color((color[0] * darken, color[1] * darken, color[2] * darken))
+        self._manual_button.set_icon_color((color[0] * darken, color[1] * darken, color[2] * darken))
         self._title_frame.delete_button.set_icon_color(color)
 
     def populate_widgets(self):
@@ -467,6 +535,42 @@ class ToolsetWidget(stack.StackItem, object):
 
         return result
 
+    def reload_theme(self, theme):
+        if not theme:
+            return
+        stylesheet = theme.stylesheet()
+        self.setStyleSheet(stylesheet)
+
+        # cached_icons_keys = icon.IconCache._resources_keys_cache.copy()
+        # keys_names_mapping = icon.IconCache._resources_names_keys_mapping
+        #
+        # print('gogogog')
+        #
+        # # Update icons taking into account the new theme
+        # new_icons_to_apply = dict()
+        # for icon_key, icon_object in cached_icons_keys.items():
+        #     icon_full_name = keys_names_mapping.get(icon_key, None)
+        #     if not icon_full_name:
+        #         continue
+        #     icon_name, icon_ext = os.path.splitext(icon_full_name)
+        #     new_icon = resources.icon(icon_name, extension=icon_ext, theme=theme.name())
+        #     if not new_icon or new_icon.isNull():
+        #         continue
+        #     new_icons_to_apply[icon_key] = new_icon
+        #
+        # # TODO: This can by quite hard to process. Find a better approach for this
+        # all_widgets = self.findChildren(QWidget)
+        # for w in all_widgets:
+        #     if hasattr(w, 'setIcon'):
+        #         try:
+        #             curr_icon = w.icon()
+        #             curr_icon_key = curr_icon.cacheKey()
+        #             if curr_icon_key not in new_icons_to_apply:
+        #                 continue
+        #             w.setIcon(new_icons_to_apply[curr_icon_key])
+        #         except Exception:
+        #             pass
+
     # =================================================================================================================
     # INTERNAL
     # =================================================================================================================
@@ -477,7 +581,7 @@ class ToolsetWidget(stack.StackItem, object):
         instance_props = ToolsetPropertiesDict()
         for prop in tool_props:
             instance_props[prop['name']] = ToolsetPropertiesDict(**prop)
-            if 'default' not in instance_props[p['name']]:
+            if 'default' not in instance_props[['name']]:
                 instance_props[prop['name']].default = instance_props[prop['name']].value
 
         return instance_props
@@ -490,13 +594,13 @@ class ToolsetWidget(stack.StackItem, object):
         self._connect_button.setToolTip(str(text))
 
         if severity == 'warning':
-            tpDcc.logger.warning(text)
+            LOGGER.warning(text)
             self._connect_button.setStyleSheet('background-color: #bc3030')
         elif severity == 'error':
-            tpDcc.logger.error(text)
+            LOGGER.error(text)
             self._connect_button.setStyleSheet('background-color: #e4c019')
         else:
-            tpDcc.logger.info(text)
+            LOGGER.info(text)
             self._connect_button.setStyleSheet('')
 
     def _update_client(self):
@@ -508,7 +612,7 @@ class ToolsetWidget(stack.StackItem, object):
             self._reset_connect_button()
             return False
 
-        if tpDcc.is_standalone():
+        if dcc.is_standalone():
 
             success, dcc_exe = self._client.update_paths()
             if not success:
@@ -547,9 +651,9 @@ class ToolsetWidget(stack.StackItem, object):
         self._connect_button.setEnabled(True)
         msg = 'Connected to: {} ({})'.format(dcc_name, dcc_version)
         self._connect_button.setToolTip(msg)
-        tpDcc.logger.info(msg)
+        LOGGER.info(msg)
 
-        if not tpDcc.is_standalone():
+        if not dcc.is_standalone():
             self._connect_button.setVisible(False)
 
         return True
@@ -572,37 +676,44 @@ class ToolsetWidget(stack.StackItem, object):
             return
         webbrowser.open(url)
 
+    def _on_toggle_info_switch(self):
+        self._help_switch.setChecked(not self._help_switch.isChecked())
+
+    def _on_toggle_help_mode(self, flag):
+        """
+        Internal callback function that toggles info mode
+        """
+
+        self._help_mode = flag
+
+        if not self._help_event:
+            self._help_event = self.help_mode(self._help_mode)
+
+        if self._help_event:
+            if self._help_mode:
+                self._help_event.help_mode = True
+            else:
+                self._help_event.help_mode = False
+                self._help_event.current_tooltip.close()
+                self._help_event.close()
+                self._help_event = None
+
+        self.helpModeChanged.emit(self._help_mode)
+
     def _on_stop_callbacks(self):
         self._stop_selection_callback()
 
     def _on_show_preferences_dialog(self):
-        tpDcc.logger.info('Preferences functionality not implemented yet!')
-        # from tpDcc.libs.qt.widgets import lightbox
-        # from tpDcc.libs.qt.core import preferences
-        # self._lightbox = lightbox.Lightbox(self)
-        # self._lightbox.closed.connect(self._on_close_lightbox)
-        # self._preferences_window = preferences.PreferencesWidget(settings=self.preferences_settings())
-        # self._preferences_window.setFixedHeight(500)
-        # self._preferences_window.closed.connect(self._on_close_preferences_window)
-        # self._lightbox.set_widget(self._preferences_window)
-        # for pref_widget in self._preference_widgets_classes:
-        #     pref_widget = pref_widget()
-        #     self._preferences_window.add_category(pref_widget.CATEGORY, pref_widget)
-        # self._theme_widget = self._setup_theme_preferences()
-        # self._preferences_window.add_category(self._theme_widget.CATEGORY, self._theme_widget)
-        # self._lightbox.show()
+        if not self._attacher:
+            return
 
-    def _on_close_preferences_window(self, save_widget=False):
-        self._on_close_lightbox(save_widget)
-        self._lightbox.blockSignals(True)
-        self._lightbox.close()
-        self._lightbox.blockSignals(False)
+        self._prev_stack_index = self._stacked_widget.currentIndex()
+        self._stacked_widget.setCurrentIndex(0)
 
-    def _on_close_lightbox(self, save_widgets=False):
-        if not save_widgets:
-            self._settings_accepted(**self._theme_widget._dlg._form_widget.default_values())
-        else:
-            self._settings_accepted(**self._theme_widget._dlg._form_widget.values())
+    def _on_close_preferences_window(self, *args):
+        self._stacked_widget.setCurrentIndex(self._prev_stack_index)
+        if self._attacher:
+            self.reload_theme(self._attacher.theme())
 
     def _on_dcc_disconnected(self):
         self._connect_button.setEnabled(False)
@@ -631,8 +742,8 @@ class DisplayModeButton(buttons.BaseMenuButton, object):
 
         menu_icon_double_names = ['menu_double_empty', 'menu_double_one', 'menu_double_full']
         menu_icon_triple_names = ['menu_triple_empty', 'menu_triple_one', 'menu_triple_two', 'menu_triple_full']
-        self._menu_icon_double = [tpDcc.ResourcesMgr().icon(menu_icon) for menu_icon in menu_icon_double_names]
-        self._menu_icon_triple = [tpDcc.ResourcesMgr().icon(menu_icon) for menu_icon in menu_icon_triple_names]
+        self._menu_icon_double = [resources.icon(menu_icon) for menu_icon in menu_icon_double_names]
+        self._menu_icon_triple = [resources.icon(menu_icon) for menu_icon in menu_icon_triple_names]
 
         self._current_icon = None
         self._icons = None
@@ -680,7 +791,7 @@ class DisplayModeButton(buttons.BaseMenuButton, object):
         elif displays == 1:
             self.hide()
         else:
-            tpDcc.logger.error('only 2 or 3 displays are available!')
+            LOGGER.error('only 2 or 3 displays are available!')
 
         self._current_icon = self._icons[self._initial_display]
         self.set_icon_index(self._initial_display)
@@ -710,3 +821,129 @@ class DisplayModeButton(buttons.BaseMenuButton, object):
         new_icon = self._icons[new_index]
 
         return new_icon, new_index
+
+
+class ToolsetHelpWidget(base.BaseFrame, object):
+    def __init__(self, parent=None):
+        super(ToolsetHelpWidget, self).__init__(parent=parent)
+
+    def ui(self):
+        super(ToolsetHelpWidget, self).ui()
+
+        self.setFrameStyle(QFrame.StyledPanel | QFrame.Plain)
+
+        self._image_label = label.BaseLabel(parent=self)
+        self._title_label = label.BaseLabel(parent=self).strong()
+        self._description_text = QPlainTextEdit(parent=self)
+        # self._description_text.setFrameShape(QFrame.NoFrame)
+        self._description_text.setMinimumWidth(200)
+        self._description_text.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self._gif_label = gif.GifLabel(parent=self)
+        self._gif_label.set_size(256, 256)
+
+        self.main_layout.addWidget(self._title_label)
+        self.main_layout.addWidget(dividers.Divider())
+        body_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
+        body_layout.addWidget(self._description_text)
+        body_layout.addWidget(self._gif_label)
+        body_layout.addWidget(self._image_label)
+        body_layout.addStretch()
+        self.main_layout.addLayout(body_layout)
+
+    def set_title(self, title):
+        self._title_label.setText(str(title))
+
+    def set_description(self, description):
+        self._description_text.setPlainText(str(description))
+
+    def set_image(self, image_file):
+        if not image_file or not os.path.isfile(image_file):
+            return
+        self._image_label.setPixmap(QPixmap(image_file).scaled(QSize(256, 256), Qt.KeepAspectRatio))
+        self._image_label.setVisible(True)
+        self._gif_label.setVisible(False)
+
+    def set_gif(self, gif_file):
+        if not gif_file or not os.path.isfile(gif_file):
+            return
+        self._gif_label.set_file(gif_file)
+        self._gif_label.setVisible(True)
+        self._image_label.setVisible(False)
+
+
+class ToolsetHelpEvent(base.BaseWidget, object):
+    def __init__(self, layout, widgets=None, tooltip_widget=None):
+        super(ToolsetHelpEvent, self).__init__()
+
+        self._widgets = python.force_list(widgets)
+        self._help_mode = False
+        self._current_tooltip = ToolsetTooltipHelpDialog(self, tooltip_widget)
+        self._current_widget = None
+        self.setVisible(False)
+
+        layout.insertWidget(0, self)
+
+        for widget in self._widgets:
+            widget.installEventFilter(self)
+
+    @property
+    def help_mode(self):
+        return self._help_mode
+
+    @help_mode.setter
+    def help_mode(self, flag):
+        self._help_mode = flag
+
+    @property
+    def current_tooltip(self):
+        return self._current_tooltip
+
+    def eventFilter(self, obj, event):
+        pos = QCursor.pos()
+        widget_under_cursor = QApplication.widgetAt(pos)
+        if not widget_under_cursor or widget_under_cursor.objectName() == '':
+            self._current_tooltip.hide()
+            return super(ToolsetHelpEvent, self).eventFilter(obj, event)
+
+        if self._help_mode:
+            self._current_tooltip.move(pos.x() + 15, pos.y())
+            if self._current_widget != widget_under_cursor:
+                self._current_widget = widget_under_cursor
+                tooltip_data = self._current_widget.property('tooltip_help')
+                self._current_tooltip.update_tooltip(tooltip_data)
+        else:
+            self._current_tooltip.hide()
+
+        return super(ToolsetHelpEvent, self).eventFilter(obj, event)
+
+
+class ToolsetTooltipHelpDialog(QDialog, object):
+    def __init__(self, parent, tooltip_widget):
+        super(ToolsetTooltipHelpDialog, self).__init__(parent)
+
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
+        self._tooltip_widget = tooltip_widget
+        self._layout = layouts.VerticalLayout(margins=(0, 0, 0, 0))
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.addWidget(self._tooltip_widget)
+        self.setLayout(self._layout)
+        self._tooltip_data = None
+        self.setStyleSheet('QDialog{background: rgb(60, 70, 75);}')
+
+    def update_tooltip(self, tooltip_data):
+        self._tooltip_data = tooltip_data
+        if not self._tooltip_data:
+            self.hide()
+            return
+
+        title = tooltip_data.get('title', '')
+        description = tooltip_data.get('description', '')
+        image_file = tooltip_data.get('image', None)
+        gif_file = tooltip_data.get('gif', None)
+
+        self._tooltip_widget.set_title(title)
+        self._tooltip_widget.set_description(description)
+        self._tooltip_widget.set_image(image_file)
+        self._tooltip_widget.set_gif(gif_file)
+
+        self.show()

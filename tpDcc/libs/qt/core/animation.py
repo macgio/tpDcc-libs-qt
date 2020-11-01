@@ -7,11 +7,11 @@ Class with classes and function to work with GUI animations
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, QPoint, QTimer, QPropertyAnimation, QEasingCurve
+from Qt.QtWidgets import QGraphicsOpacityEffect
+from Qt.QtGui import QFont, QColor, QPen, QBrush
 
-import tpDcc as tp
+from tpDcc import dcc
 
 
 class BaseAnimObject(object):
@@ -77,9 +77,7 @@ class BaseAnimObject(object):
             else:
                 self._glow_index -= 1
 
-        if tp.Dcc.get_name() == tp.Dccs.Maya:
-            import maya.utils as utils
-            utils.executeDeferred(self.update)
+        dcc.execute_deferred(self.update)
 
     def _start_anim(self):
         if self._anim_timer.isActive():
@@ -234,9 +232,9 @@ def fade_animation(start=0, end=1, duration=300, object=None, on_finished=None):
     anim_curve = QEasingCurve()
     anim_curve.setType(QEasingCurve.OutQuint)
 
-    if start is 'current':
+    if start == 'current':
         start = object.opacity()
-    if end is 'current':
+    if end == 'current':
         end = object.opacity()
 
     animation = QPropertyAnimation(object, 'opacity', object)

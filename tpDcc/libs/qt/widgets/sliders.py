@@ -9,13 +9,15 @@ from __future__ import print_function, division, absolute_import
 
 from copy import copy
 
-from Qt.QtCore import *
-from Qt.QtGui import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt, Signal, QPoint, QPointF, QEvent
+from Qt.QtWidgets import QWidget, QLabel, QPushButton, QAbstractSpinBox, QDoubleSpinBox, QStyle, QStyleOptionSlider
+from Qt.QtWidgets import QGroupBox, QSlider, QToolTip, QMenu, QColorDialog
+from Qt.QtGui import QCursor, QColor, QFont, QPainter, QBrush, QLinearGradient, QMouseEvent
 
-import tpDcc as tp
+from tpDcc import dcc
 from tpDcc.libs.python import mathlib, color as core_color
 from tpDcc.libs.qt.core import qtutils, color, mixin
+from tpDcc.libs.qt.widgets import layouts
 
 FLOAT_SLIDER_DRAG_STEPS = [100.0, 10.0, 1.0, 0.1, 0.01, 0.001]
 INT_SLIDER_DRAG_STEPS = [100.0, 10.0, 1.0]
@@ -47,9 +49,7 @@ class SliderDraggers(QWidget, object):
 
         self.setWindowFlags(Qt.Popup)
 
-        draggers_layout = QVBoxLayout()
-        draggers_layout.setContentsMargins(0, 0, 0, 0)
-        draggers_layout.setSpacing(0)
+        draggers_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         self.setLayout(draggers_layout)
 
         steps = copy(dragger_steps)
@@ -144,7 +144,7 @@ class Slider(QSlider, object):
         self._real_start_drag_pos = QPointF()
         self._draggers = None
 
-        if tp.is_maya():
+        if dcc.is_maya():
             self._left_button = Qt.MidButton
             self._mid_button = Qt.LeftButton
         else:
@@ -321,14 +321,10 @@ class HoudiniInputDragger(QWidget, object):
         self.setMaximumHeight(self._size)
         self.setMaximumWidth(self._size)
 
-        main_layout = QVBoxLayout()
-        main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout = layouts.VerticalLayout(margins=(0, 0, 0, 0))
         self.setLayout(main_layout)
 
-        frame_layout = QVBoxLayout()
-        frame_layout.setContentsMargins(0, 0, 0, 0)
-        frame_layout.setSpacing(0)
+        frame_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         self._frame = QGroupBox()
         self._frame.setLayout(frame_layout)
         main_layout.addWidget(self._frame)
@@ -523,8 +519,7 @@ class HoudiniDoubleSlider(QWidget, object):
         self.setMaximumHeight(h)
         self.setMinimumHeight(h)
 
-        self._main_layout = QHBoxLayout()
-        self._main_layout.setContentsMargins(10, 0, 0, 0)
+        self._main_layout = layouts.HorizontalLayout(margins=(10, 0, 0, 0))
         self.setLayout(self._main_layout)
 
         self._input = DraggerSlider(slider_type=slider_type)
@@ -809,8 +804,7 @@ class ColorSlider(QWidget, object):
                           "border-radius: 2px;border-style: outset;border-width: 1px;}" \
                           "\nQPushButton:pressed{ border-style: inset;border-color: beige}"
 
-        main_layout = QHBoxLayout()
-        main_layout.setSpacing(5)
+        main_layout = layouts.HorizontalLayout(spacing=5)
         self.setLayout(main_layout)
         self.setMaximumHeight(height)
         self._menu = QMenu()
@@ -841,10 +835,10 @@ class ColorSlider(QWidget, object):
         self._alpha_dragger.valueChanged.connect(lambda value: self._alpha_slider.set_mapped_value(float(value)))
         self._alpha_slider.doubleValueChanged.connect(lambda value: self._alpha_dragger.setValue(value))
 
-        red_layout = QHBoxLayout()
-        green_layout = QHBoxLayout()
-        blue_layout = QHBoxLayout()
-        alpha_layout = QHBoxLayout()
+        red_layout = layouts.HorizontalLayout()
+        green_layout = layouts.HorizontalLayout()
+        blue_layout = layouts.HorizontalLayout()
+        alpha_layout = layouts.HorizontalLayout()
         red_layout.addWidget(self._red_dragger)
         red_layout.addWidget(self._red_slider)
         green_layout.addWidget(self._green_dragger)
@@ -853,7 +847,7 @@ class ColorSlider(QWidget, object):
         blue_layout.addWidget(self._blue_slider)
         alpha_layout.addWidget(self._alpha_dragger)
         alpha_layout.addWidget(self._alpha_slider)
-        self._sliders_layout = QVBoxLayout()
+        self._sliders_layout = layouts.VerticalLayout()
         self._sliders_layout.setSpacing(0)
         layouts_list = [red_layout, green_layout, blue_layout]
         if self._alpha:

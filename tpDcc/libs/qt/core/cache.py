@@ -9,9 +9,9 @@ from __future__ import print_function, division, absolute_import
 
 import os
 
-from Qt.QtCore import *
-from Qt.QtGui import *
-from Qt.QtSvg import *
+from Qt.QtCore import Qt, QByteArray
+from Qt.QtGui import QPixmap, QIcon, QPainter
+from Qt.QtSvg import QSvgRenderer
 
 
 class CacheResource(object):
@@ -22,25 +22,33 @@ class CacheResource(object):
         super(CacheResource, self).__init__()
 
         self._cls = cls
-        self._cache_pixmap_dict = dict()
+        self._resources_path_cache = dict()
+        self._resources_keys_cache = dict()
+        self._resources_names_cache = dict()
+        self._resources_names_keys_mapping = dict()
 
-    def __call__(self, path, color=None):
+    def __call__(self, path, color=None, skip_cache=False):
         if not path or not os.path.isfile(path):
             return None
 
         key = '{}{}'.format(path.lower(), color or '')
-        pixmap = self._cache_pixmap_dict.get(key, None)
-        if not pixmap:
+        resource = self._resources_path_cache.get(key, None)
+        if not resource:
             if path.endswith('svg'):
-                pixmap = self._render_svg(path, color)
+                resource = self._render_svg(path, color)
             else:
-                pixmap = self._cls(path)
+                resource = self._cls(path)
                 if color:
-                    pixmap.set_color(color)
+                    resource.set_color(color)
 
-            self._cache_pixmap_dict.update({key: pixmap})
+            if not skip_cache:
+                self._resources_path_cache.update({key: resource})
+                self._resources_names_cache.update({os.path.basename(path): resource})
+                if hasattr(resource, 'cacheKey'):
+                    self._resources_keys_cache.update({resource.cacheKey(): resource})
+                    self._resources_names_keys_mapping.update({resource.cacheKey(): os.path.basename(path)})
 
-        return pixmap
+        return resource
 
     def _render_svg(self, svg_path, replace_color=None):
         if issubclass(self._cls, QIcon) and not replace_color:

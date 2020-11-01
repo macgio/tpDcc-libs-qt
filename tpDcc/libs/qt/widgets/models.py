@@ -7,7 +7,8 @@ Module that contains base classes for Qt models
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
+from Qt.QtCore import Qt, Signal, QObject, QModelIndex, QItemSelection, QAbstractListModel, QAbstractTableModel
+from Qt.QtCore import QAbstractItemModel
 
 import tpDcc as tp
 from tpDcc.libs.qt.core import qtutils

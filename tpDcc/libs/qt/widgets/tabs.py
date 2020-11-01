@@ -7,14 +7,14 @@ Module that contains custom Qt tab widgets
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, Property, QPoint, QPointF, QRect, QSize
+from Qt.QtWidgets import QWidget, QTabWidget, QMainWindow
+from Qt.QtGui import QColor, QPalette
 
-import tpDcc as tp
+from tpDcc import dcc
 from tpDcc.libs.qt.core import qtutils, mixin
-from tpDcc.libs.qt.core import base, window, theme
-from tpDcc.libs.qt.widgets import tabbars, buttons, group, dividers, stack
+from tpDcc.libs.qt.core import base, theme
+from tpDcc.libs.qt.widgets import layouts, window, tabbars, buttons, group, dividers, stack
 
 
 class BaseTabWidget(QTabWidget, object):
@@ -493,12 +493,12 @@ class EditableTearOffTabWidget(TearOffTabWidget, object):
     def button_rect(self):
         r = self.tabBar().tabRect(self.count() - 1)
 
-        if tp.Dcc.get_name() == tp.Dccs.Maya and tp.Dcc.get_version() > 2015:
+        if dcc.is_maya() and dcc.get_version() > 2015:
             rect = QRect(2, 0, 30, 31)
         else:
             rect = QRect(6, 3, 26, 17)
         if r.isValid():
-            if tp.Dcc.get_name() == tp.Dccs.Maya and tp.Dcc.get_version() > 2015:
+            if dcc.is_maya() and dcc.get_version() > 2015:
                 rect.moveBottomLeft(r.bottomRight() + QPoint(1, 1))
             else:
                 rect.moveBottomLeft(r.bottomRight() + QPoint(3, -1))
@@ -596,9 +596,7 @@ class MenuTabWidget(base.BaseWidget, object):
         super(MenuTabWidget, self).__init__(parent=parent)
 
     def get_main_layout(self):
-        main_layout = QVBoxLayout()
-        main_layout.setSpacing(0)
-        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
 
         return main_layout
 
@@ -609,8 +607,7 @@ class MenuTabWidget(base.BaseWidget, object):
 
         bar_widget = QWidget()
         bar_widget.setObjectName('bar_widget')
-        self._bar_layout = QHBoxLayout()
-        self._bar_layout.setContentsMargins(10, 0, 10, 0)
+        self._bar_layout = layouts.HorizontalLayout(margins=(10, 0, 10, 0))
         bar_widget.setLayout(self._bar_layout)
         self._bar_layout.addWidget(self.tool_btn_grp)
         self._bar_layout.addStretch()
@@ -705,9 +702,7 @@ class MenuLineTabWidget(base.BaseWidget, object):
         return self._tool_button_group
 
     def get_main_layout(self):
-        main_layout = QVBoxLayout()
-        main_layout.setSpacing(0)
-        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
 
         return main_layout
 
@@ -715,8 +710,7 @@ class MenuLineTabWidget(base.BaseWidget, object):
         super(MenuLineTabWidget, self).ui()
 
         self._tool_button_group = MenuLineButtonGroup()
-        self._bar_layout = QHBoxLayout()
-        self._bar_layout.setContentsMargins(0, 0, 0, 0)
+        self._bar_layout = layouts.HorizontalLayout(margins=(0, 0, 0, 0))
         if self._alignment == Qt.AlignCenter:
             self._bar_layout.addStretch()
             self._bar_layout.addWidget(self._tool_button_group)

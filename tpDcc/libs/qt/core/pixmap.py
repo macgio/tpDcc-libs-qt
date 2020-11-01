@@ -7,8 +7,8 @@ Module that contains base class for Qt pixmaps
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt
+from Qt.QtGui import QPixmap, QImage, QColor, QPainter
 
 from tpDcc.libs.qt.core import color, cache
 

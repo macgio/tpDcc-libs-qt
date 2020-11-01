@@ -7,8 +7,8 @@ Module that contains dictionary option implementation
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt, Signal
+from Qt.QtWidgets import QSizePolicy
 
 from tpDcc.libs.qt.core import base
 from tpDcc.libs.qt.widgets import layouts, label, buttons, dividers

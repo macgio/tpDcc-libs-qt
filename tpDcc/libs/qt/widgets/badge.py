@@ -7,12 +7,11 @@ Module that contains implementation for avatar/user widgets
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Property
+from Qt.QtWidgets import QSizePolicy, QPushButton
 
-import tpDcc
-from tpDcc.libs.qt.core import base, theme, mixin, formatters
+from tpDcc.libs.qt.core import base, formatters
+from tpDcc.libs.qt.widgets import layouts
 
 
 class Badge(base.BaseWidget, object):
@@ -124,8 +123,7 @@ class Badge(base.BaseWidget, object):
     # =================================================================================================================
 
     def get_main_layout(self):
-        main_layout = QGridLayout()
-        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout = layouts.GridLayout(margins=(0, 0, 0, 0))
 
         return main_layout
 

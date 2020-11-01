@@ -7,6 +7,12 @@ Module that contains decorators for Qt
 
 from __future__ import print_function, division, absolute_import
 
+from functools import wraps
+
+from Qt.QtCore import Qt
+from Qt.QtWidgets import QApplication
+from Qt.QtGui import QCursor
+
 from tpDcc.libs.qt.core import theme as core_theme
 
 
@@ -47,3 +53,39 @@ def theme_widget(cls):
     setattr(cls, 'accent_color', accent_color)
 
     return cls
+
+
+def show_wait_cursor(fn):
+    """
+    Decorator that shows wait cursor during function execution
+    :param fn:
+    """
+
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        cursor = QCursor(Qt.WaitCursor)
+        QApplication.setOverrideCursor(cursor)
+        try:
+            return fn(*args, **kwargs)
+        finally:
+            QApplication.restoreOverrideCursor()
+
+    return wrapper
+
+
+def show_arrow_cursor(fn):
+    """
+    Decorator that shows arrow cursor during function execution
+    :param fn:
+    """
+
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        cursor = QCursor(Qt.ArrowCursor)
+        QApplication.setOverrideCursor(cursor)
+        try:
+            return fn(*args, **kwargs)
+        finally:
+            QApplication.restoreOverrideCursor()
+
+    return wrapper

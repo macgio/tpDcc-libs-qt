@@ -7,14 +7,17 @@ Module that contains library viewer widget implementation
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+import logging
 
-from tpDcc.libs import qt
+from Qt.QtCore import Qt, Signal, QSize
+from Qt.QtWidgets import QApplication, QStyledItemDelegate, QAbstractItemView, QMenu, QAction
+from Qt.QtGui import QCursor, QColor
+
 from tpDcc.libs.qt.core import base
-from tpDcc.libs.qt.widgets import toast, action
+from tpDcc.libs.qt.widgets import layouts, toast, action
 from tpDcc.libs.qt.widgets.library import consts, treewidget, listview, items
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class LibraryViewerDelegate(QStyledItemDelegate, object):
@@ -141,8 +144,8 @@ class LibraryViewer(base.BaseWidget, object):
         super(LibraryViewer, self).__init__(parent=parent)
 
     def get_main_layout(self):
-        main_layout = QHBoxLayout(self)
-        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout = layouts.HorizontalLayout(margins=(0, 0, 0, 0, ))
+
         return main_layout
 
     def ui(self):
@@ -1091,7 +1094,7 @@ class LibraryViewer(base.BaseWidget, object):
             try:
                 item.context_menu(menu)
             except Exception as e:
-                qt.logger.exception(e)
+                LOGGER.exception(e)
         else:
             item_action = QAction(menu)
             item_action.setText('No Item selected')

@@ -9,12 +9,12 @@ from __future__ import print_function, division, absolute_import
 
 from functools import partial
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt, Signal, Property, QPoint, QTimer, QPropertyAnimation, QEasingCurve, QAbstractAnimation
 
-import tpDcc as tp
+from tpDcc import dcc
+from tpDcc.managers import resources
 from tpDcc.libs.qt.core import base, mixin, theme
-from tpDcc.libs.qt.widgets import label, avatar, buttons, loading
+from tpDcc.libs.qt.widgets import layouts, label, avatar, buttons, loading
 
 
 class MessageTypes(object):
@@ -78,7 +78,7 @@ class BaseMessage(base.BaseWidget, object):
         :param value: str
         """
 
-        current_them = self.theme()
+        current_theme = self.theme()
 
         if value in [MessageTypes.INFO, MessageTypes.SUCCESS, MessageTypes.WARNING, MessageTypes.ERROR]:
             self._type = value
@@ -87,11 +87,11 @@ class BaseMessage(base.BaseWidget, object):
                 'Given button type: "{}" is not supported. Supported types '
                 'are: info, success, warning, error'.format(value))
 
-        if current_them:
-            self._icon_label.image = tp.ResourcesMgr().pixmap(
-                self._type, color=getattr(current_them, '{}_color'.format(self._type)))
+        if current_theme:
+            self._icon_label.image = resources.pixmap(
+                self._type, color=getattr(current_theme, '{}_color'.format(self._type)))
         else:
-            self._icon_label.image = tp.ResourcesMgr().pixmap(self._type)
+            self._icon_label.image = resources.pixmap(self._type)
         self.style().polish(self)
 
     text = Property(str, _get_text, _set_text)
@@ -102,8 +102,7 @@ class BaseMessage(base.BaseWidget, object):
     # =================================================================================================================
 
     def get_main_layout(self):
-        main_layout = QHBoxLayout()
-        main_layout.setContentsMargins(8, 8, 8, 8)
+        main_layout = layouts.HorizontalLayout(margins=(8, 8, 8, 8))
 
         return main_layout
 
@@ -243,7 +242,7 @@ class PopupMessage(base.BaseWidget, object):
     # =================================================================================================================
 
     def get_main_layout(self):
-        main_layout = QHBoxLayout()
+        main_layout = layouts.HorizontalLayout()
 
         return main_layout
 
@@ -262,7 +261,7 @@ class PopupMessage(base.BaseWidget, object):
             icon_label = avatar.Avatar.tiny()
             current_type = self._theme_type or MessageTypes.INFO
             if current_theme:
-                icon_label.image = tp.ResourcesMgr().pixmap(
+                icon_label.image = resources.pixmap(
                     current_type, color=getattr(current_theme, '{}_color'.format(current_type)))
 
         self._content_label = label.BaseLabel(parent=self)
@@ -397,7 +396,7 @@ class PopupMessage(base.BaseWidget, object):
 
     def _set_proper_position(self, parent):
         parent_parent = parent.parent()
-        dcc_win = tp.Dcc.get_main_window()
+        dcc_win = dcc.get_main_window()
         if dcc_win:
             dcc_window = parent_parent == dcc_win or parent_parent.objectName() == dcc_win.objectName()
         else:

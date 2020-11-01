@@ -9,8 +9,8 @@ from __future__ import print_function, division, absolute_import
 
 import copy
 
-from Qt.QtCore import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, QSize
+from Qt.QtGui import QIcon, QColor, QPainter, QPen
 
 from tpDcc.libs.python import python
 from tpDcc.libs.qt.core import color, qtutils, cache, pixmap as px
@@ -289,7 +289,7 @@ def colorize_layered_icon(icons, size, colors=None, icon_scaling=None, tint_colo
 
     icon_largest = icons.pop(0)
 
-    orig_size = icon_largest.availableSizes()[0]
+    orig_size = icon_largest.availableSizes()[0] if icon_largest.availableSizes() else 1.0
     col = colors.pop(0)
     scale = icon_scaling.pop(0)
     if col is not None:
@@ -329,4 +329,5 @@ def grayscale_icon(icon):
     return icon
 
 
+# IconCache = cache.CacheResource(Icon)
 IconCache = cache.CacheResource(Icon)

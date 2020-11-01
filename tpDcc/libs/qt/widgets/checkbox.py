@@ -7,14 +7,14 @@ Module that contains custom widget for Qt check boxes
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, QRect
+from Qt.QtWidgets import QCheckBox, QStylePainter, QStyleOption
+from Qt.QtGui import QColor, QPainter, QBrush
 
 from tpDcc.libs.qt.core import mixin, animation
 
 
-@mixin.cursor_mixin
+# @mixin.cursor_mixin
 class BaseCheckBox(QCheckBox, object):
     def __init__(self, text='', parent=None):
         super(BaseCheckBox, self).__init__(text=text, parent=parent)

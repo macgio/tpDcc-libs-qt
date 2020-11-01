@@ -12,26 +12,19 @@ import string
 import getpass
 from functools import partial
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, QObject, Signal, QSize, QRectF, QFileInfo, QDir
+from Qt.QtWidgets import QApplication, QGroupBox, QDesktopWidget, QDialog, QStatusBar, QSizePolicy, QGraphicsView
+from Qt.QtWidgets import QGraphicsScene, QFileIconProvider, QListWidgetItem, QMessageBox, QInputDialog
+from Qt.QtWidgets import QWidget, QLabel, QFrame, QPushButton, QSlider, QLineEdit, QComboBox, QCheckBox, QRadioButton
 
-import tpDcc as tp
+from tpDcc import dcc
+from tpDcc.managers import resources
+from tpDcc.abstract import dialog as abstract_dialog
 from tpDcc.libs.qt.core import qtutils, animation, theme, dragger, resizers
 from tpDcc.libs.qt.widgets import layouts, dividers
 
 
-class DialogContents(QFrame, object):
-    """
-    Widget that defines the core contents of frameless window
-    Can be used to custom CSS for frameless windows contents
-    """
-
-    def __init__(self, parent=None):
-        super(DialogContents, self).__init__(parent=parent)
-
-
-class Dialog(QDialog, object):
+class BaseDialog(QDialog, abstract_dialog.AbstractDialog):
     """
     Class to create basic Maya docked windows
     """
@@ -41,8 +34,8 @@ class Dialog(QDialog, object):
 
     def __init__(self, **kwargs):
 
-        parent = kwargs.get('parent', tp.Dcc.get_main_window())
-        super(Dialog, self).__init__(parent=parent)
+        parent = kwargs.get('parent', None) or dcc.get_main_window()
+        super(BaseDialog, self).__init__(parent=parent)
 
         self._setup_resizers()
 
@@ -50,7 +43,7 @@ class Dialog(QDialog, object):
         name = kwargs.get('name', title or self.__class__.__name__)
         width = kwargs.get('width', 600)
         height = kwargs.get('height', 800)
-        show_on_initialize = kwargs.get('show_on_initialize', True)
+        show_on_initialize = kwargs.get('show_on_initialize', False)
         self._theme = None
         self._dpi = kwargs.get('dpi', 1.0)
         self._fixed_size = kwargs.get('fixed_size', False)
@@ -170,9 +163,7 @@ class Dialog(QDialog, object):
         animation.fade_window(start=1, end=0, duration=400, object=self, on_finished=self.close)
 
     def get_main_layout(self):
-        main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(2, 2, 2, 2)
-        main_layout.setSpacing(0)
+        main_layout = layouts.VerticalLayout(spacing=0, margins=(2, 2, 2, 2))
         return main_layout
 
     def ui(self):
@@ -308,7 +299,7 @@ class Dialog(QDialog, object):
         # TODO: This will allow to setup specific themes if dialogs are launch from windows with
         # TODO: specific themes
 
-        new_theme = tp.ResourcesMgr().theme('default')
+        new_theme = resources.theme('default')
         if not new_theme:
             new_theme = theme.Theme()
         new_theme.set_settings(settings)
@@ -341,7 +332,7 @@ class Dialog(QDialog, object):
         # TODO: Take the width from the QGraphicsView not hardcoded :)
         if hasattr(self, 'logo_view'):
             self.logo_view.centerOn(1000, 0)
-        return super(Dialog, self).resizeEvent(event)
+        return super(BaseDialog, self).resizeEvent(event)
 
     def closeEvent(self, event):
         self.dialogClosed.emit()
@@ -350,12 +341,12 @@ class Dialog(QDialog, object):
     def setWindowIcon(self, icon):
         if self.is_frameless() or (hasattr(self, '_dragger') and self._dragger):
             self._dragger.set_icon(icon)
-        super(Dialog, self).setWindowIcon(icon)
+        super(BaseDialog, self).setWindowIcon(icon)
 
     def setWindowTitle(self, title):
         if self.is_frameless() or (hasattr(self, '_dragger') and self._dragger):
             self._dragger.set_title(title)
-        super(Dialog, self).setWindowTitle(title)
+        super(BaseDialog, self).setWindowTitle(title)
 
     # ============================================================================================================
     # RESIZERS
@@ -444,7 +435,7 @@ class Dialog(QDialog, object):
         return None
 
 
-class ColorDialog(Dialog, object):
+class BaseColorDialog(BaseDialog, object):
 
     def_title = 'Select Color'
 
@@ -457,10 +448,9 @@ class ColorDialog(Dialog, object):
         (0.188, 0.627, 0.627), (0.188, 0.404, 0.627), (0.435, 0.188, 0.627), (0.627, 0.188, 0.404)]
 
     def __init__(self, name='MayaColorDialog', parent=None, **kwargs):
-        if parent is None:
-            parent = tp.Dcc.get_main_window()
+        parent = parent or dcc.get_main_window()
 
-        super(ColorDialog, self).__init__(name=name, parent=parent, **kwargs)
+        super(BaseColorDialog, self).__init__(name=name, parent=parent, **kwargs)
 
         self._color = None
 
@@ -473,59 +463,52 @@ class ColorDialog(Dialog, object):
 
         self.color_buttons = list()
 
-        super(ColorDialog, self).ui()
+        super(BaseColorDialog, self).ui()
 
-        if tp.Dcc.get_name() == tp.Dccs.Maya and tp.Dcc.get_version() <= 2016:
-            self.color_dialog = QColorDialog(parent=self)
-            self.color_dialog.setWindowFlags(Qt.Widget)
-            self.color_dialog.setOptions(QColorDialog.DontUseNativeDialog | QColorDialog.NoButtons)
-            self.main_layout.addWidget(self.color_dialog)
-        else:
-            grid_layout = QGridLayout()
-            grid_layout.setAlignment(Qt.AlignTop)
-            self.main_layout.addLayout(grid_layout)
-            color_index = 0
-            for i in range(0, 4):
-                for j in range(0, 8):
-                    color_btn = QPushButton()
-                    color_btn.setMinimumHeight(35)
-                    color_btn.setMinimumWidth(35)
-                    self.color_buttons.append(color_btn)
-                    color_btn.setStyleSheet('background-color:rgb(%s,%s,%s);' % (
-                        self.maya_colors[color_index][0] * 255,
-                        self.maya_colors[color_index][1] * 255,
-                        self.maya_colors[color_index][2] * 255
-                    ))
-                    grid_layout.addWidget(color_btn, i, j)
-                    color_index += 1
-            selected_color_layout = QHBoxLayout()
-            self.main_layout.addLayout(selected_color_layout)
-            self.color_slider = QSlider(Qt.Horizontal)
-            self.color_slider.setMinimum(0)
-            self.color_slider.setMaximum(31)
-            self.color_slider.setValue(2)
-            self.color_slider.setStyleSheet(
-                "QSlider::groove:horizontal {border: 1px solid #999999;height: 25px; /* the groove expands "
-                "to the size of the slider by default. by giving it a height, it has a fixed size */background: "
-                "qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #B1B1B1, stop:1 #c4c4c4);margin: 2px 0;}"
-                "QSlider::handle:horizontal {background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #b4b4b4,"
-                " stop:1 #8f8f8f);border: 1px solid #5c5c5c;width: 10px;margin: -2px 0; /* handle is placed by "
-                "default on the contents rect of the groove. Expand outside the groove */border-radius: 1px;}")
-            selected_color_layout.addWidget(self.color_slider)
+        grid_layout = layouts.GridLayout()
+        grid_layout.setAlignment(Qt.AlignTop)
+        self.main_layout.addLayout(grid_layout)
+        color_index = 0
+        for i in range(0, 4):
+            for j in range(0, 8):
+                color_btn = QPushButton()
+                color_btn.setMinimumHeight(35)
+                color_btn.setMinimumWidth(35)
+                self.color_buttons.append(color_btn)
+                color_btn.setStyleSheet('background-color:rgb(%s,%s,%s);' % (
+                    self.maya_colors[color_index][0] * 255,
+                    self.maya_colors[color_index][1] * 255,
+                    self.maya_colors[color_index][2] * 255
+                ))
+                grid_layout.addWidget(color_btn, i, j)
+                color_index += 1
+        selected_color_layout = layouts.HorizontalLayout()
+        self.main_layout.addLayout(selected_color_layout)
+        self.color_slider = QSlider(Qt.Horizontal)
+        self.color_slider.setMinimum(0)
+        self.color_slider.setMaximum(31)
+        self.color_slider.setValue(2)
+        self.color_slider.setStyleSheet(
+            "QSlider::groove:horizontal {border: 1px solid #999999;height: 25px; /* the groove expands "
+            "to the size of the slider by default. by giving it a height, it has a fixed size */background: "
+            "qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #B1B1B1, stop:1 #c4c4c4);margin: 2px 0;}"
+            "QSlider::handle:horizontal {background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #b4b4b4,"
+            " stop:1 #8f8f8f);border: 1px solid #5c5c5c;width: 10px;margin: -2px 0; /* handle is placed by "
+            "default on the contents rect of the groove. Expand outside the groove */border-radius: 1px;}")
+        selected_color_layout.addWidget(self.color_slider)
 
-            color_label_layout = QHBoxLayout()
-            color_label_layout.setContentsMargins(10, 10, 10, 0)
-            self.main_layout.addLayout(color_label_layout)
+        color_label_layout = layouts.HorizontalLayout(margins=(10, 10, 10, 10))
+        self.main_layout.addLayout(color_label_layout)
 
-            self.color_lbl = QLabel()
-            self.color_lbl.setStyleSheet("border: 1px solid black; background-color:rgb(0, 0, 0);")
-            self.color_lbl.setMinimumWidth(45)
-            self.color_lbl.setMaximumWidth(80)
-            self.color_lbl.setMinimumHeight(80)
-            self.color_lbl.setAlignment(Qt.AlignCenter)
-            color_label_layout.addWidget(self.color_lbl)
+        self.color_lbl = QLabel()
+        self.color_lbl.setStyleSheet("border: 1px solid black; background-color:rgb(0, 0, 0);")
+        self.color_lbl.setMinimumWidth(45)
+        self.color_lbl.setMaximumWidth(80)
+        self.color_lbl.setMinimumHeight(80)
+        self.color_lbl.setAlignment(Qt.AlignCenter)
+        color_label_layout.addWidget(self.color_lbl)
 
-        bottom_layout = QHBoxLayout()
+        bottom_layout = layouts.HorizontalLayout()
         bottom_layout.setAlignment(Qt.AlignRight)
         self.main_layout.addLayout(bottom_layout)
 
@@ -537,42 +520,26 @@ class ColorDialog(Dialog, object):
 
     def setup_signals(self):
 
-        if tp.Dcc.get_name() == tp.Dccs.Maya and tp.Dcc.get_version() <= 2016:
-            pass
-        else:
-            for i, btn in enumerate(self.color_buttons):
-                btn.clicked.connect(partial(self._on_set_color, i))
-            self.color_slider.valueChanged.connect(self._on_set_color)
+        for i, btn in enumerate(self.color_buttons):
+            btn.clicked.connect(partial(self._on_set_color, i))
+        self.color_slider.valueChanged.connect(self._on_set_color)
 
         self.ok_btn.clicked.connect(self._on_ok_btn)
         self.cancel_btn.clicked.connect(self._on_cancel_btn)
 
     def _on_set_color(self, color_index):
-
-        if tp.Dcc.get_name() == tp.Dccs.Maya and tp.Dcc.get_version() <= 2016:
-            self.color_dialog.setCurrentColor(QColor.fromRgb(
-                self.maya_colors[color_index][0] * 255,
-                self.maya_colors[color_index][1] * 255,
-                self.maya_colors[color_index][2] * 255
-            ))
-        else:
-            self.color_lbl.setStyleSheet('background-color:rgb(%s,%s,%s);' % (
-                self.maya_colors[color_index][0] * 255,
-                self.maya_colors[color_index][1] * 255,
-                self.maya_colors[color_index][2] * 255
-            ))
-            self.color_slider.setValue(color_index)
+        self.color_lbl.setStyleSheet('background-color:rgb(%s,%s,%s);' % (
+            self.maya_colors[color_index][0] * 255,
+            self.maya_colors[color_index][1] * 255,
+            self.maya_colors[color_index][2] * 255
+        ))
+        self.color_slider.setValue(color_index)
 
     def _on_set_slider(self, color_index):
         self._set_color(color_index=color_index)
 
     def _on_ok_btn(self):
-
-        if tp.Dcc.get_name() == tp.Dccs.Maya and tp.Dcc.get_version() <= 2016:
-            pass
-        else:
-            self._color = self.color_slider.value()
-
+        self._color = self.color_slider.value()
         self.close()
 
     def _on_cancel_btn(self):
@@ -580,7 +547,7 @@ class ColorDialog(Dialog, object):
         self.close()
 
 
-class BaseFileFolderDialog(Dialog, object):
+class BaseFileFolderDialog(BaseDialog, abstract_dialog.AbstractFileFolderDialog):
     """
     Base dialog classes for folders and files
     """
@@ -613,8 +580,8 @@ class BaseFileFolderDialog(Dialog, object):
 
         self.places = dict()
 
-        self.grid = QGridLayout()
-        sub_grid = QGridLayout()
+        self.grid = layouts.GridLayout()
+        sub_grid = layouts.GridLayout()
         self.grid.addWidget(QLabel('Path:'), 0, 0, Qt.AlignRight)
 
         self.path_edit = QLineEdit(self)
@@ -657,7 +624,7 @@ class BaseFileFolderDialog(Dialog, object):
         self.filter_label = QLabel('Filter:')
         self.grid.addWidget(self.filter_label, 8, 0, Qt.AlignRight)
         self.grid.addWidget(self.filter_box, 8, 1)
-        hbox = QGridLayout()
+        hbox = layouts.GridLayout()
         hbox.addWidget(self.open_button, 0, 0, Qt.AlignRight)
         hbox.addWidget(self.cancel_button, 0, 1, Qt.AlignRight)
         self.grid.addLayout(hbox, 9, 1, Qt.AlignRight)
@@ -706,7 +673,7 @@ class BaseFileFolderDialog(Dialog, object):
 
         w = QGroupBox('')
         w.setParent(self)
-        box = QVBoxLayout()
+        box = layouts.VerticalLayout()
         box.setAlignment(Qt.AlignTop)
         places = [(getpass.getuser(), os.path.realpath(os.path.expanduser('~')))]
         places += [(q, q) for q in [os.path.realpath(x.absolutePath()) for x in QDir().drives()]]
@@ -863,7 +830,7 @@ class BaseFileFolderDialog(Dialog, object):
         self.file_edit.setText(name)
 
 
-class OpenFileDialog(BaseFileFolderDialog, object):
+class BaseOpenFileDialog(BaseFileFolderDialog, object):
     """
     Open file dialog
     """
@@ -880,10 +847,9 @@ class OpenFileDialog(BaseFileFolderDialog, object):
             parent=None,
             use_app_browser=False):
 
-        if parent is None:
-            parent = tp.Dcc.get_main_window()
+        parent = parent or dcc.get_main_window()
 
-        super(OpenFileDialog, self).__init__(
+        super(BaseOpenFileDialog, self).__init__(
             name=name, title=title, size=size, fixed_size=fixed_size, frame_less=frame_less,
             hide_title=hide_title, use_app_browser=use_app_browser, parent=parent
         )
@@ -896,40 +862,21 @@ class OpenFileDialog(BaseFileFolderDialog, object):
         selected_file, selected_dir, selected_file_name = self.get_result()
         if not os.path.isdir(selected_file):
             if os.path.exists(selected_file):
-                super(OpenFileDialog, self).accept()
+                super(BaseOpenFileDialog, self).accept()
             else:
                 message_box = QMessageBox()
                 message_box.setWindowTitle('Confirme file selection')
                 message_box.setText('File "{0}" does not exists!'.format(selected_file))
                 message_box.exec_()
 
-    def open_app_browser(self):
-        if tp.Dcc.get_name() == tp.Dccs.Maya:
-            import maya.cmds as cmds
-            sel_file = cmds.fileDialog2(
-                caption=self.windowTitle(),
-                fileMode=1,
-                fileFilter=self.filters,
-                dialogStyle=2
-            )
-        else:
-            raise NotImplementedError(
-                'Open App Browser is not implemented for your current DCC: {}'.format(tp.Dcc.get_name()))
-
-        if sel_file:
-            sel_file = sel_file[0]
-            return [sel_file, os.path.dirname(sel_file), [os.path.basename(sel_file)]]
-
-        return None
-
     def select_file_item(self, names):
         if self._multi:
             self.file_edit.setText(os.pathsep.join(names))
         else:
-            super(OpenFileDialog, self).select_file_item(names)
+            super(BaseOpenFileDialog, self).select_file_item(names)
 
 
-class SaveFileDialog(BaseFileFolderDialog, object):
+class BaseSaveFileDialog(BaseFileFolderDialog, object):
     def __init__(self,
                  name='SaveFile',
                  title='Save File',
@@ -940,10 +887,9 @@ class SaveFileDialog(BaseFileFolderDialog, object):
                  parent=None,
                  use_app_browser=False):
 
-        if parent is None:
-            parent = tp.Dcc.get_main_window()
+        parent = parent or dcc.get_main_window()
 
-        super(SaveFileDialog, self).__init__(
+        super(BaseSaveFileDialog, self).__init__(
             name=name, title=title, size=size, fixed_size=fixed_size, frame_less=frame_less, hide_title=hide_title,
             use_app_browser=use_app_browser, parent=parent)
 
@@ -967,28 +913,9 @@ class SaveFileDialog(BaseFileFolderDialog, object):
                 message_box.setDefaultButton(QMessageBox.No)
                 rv = message_box.exec_()
                 if rv == QMessageBox.Yes and not os.path.isdir(selected_file):
-                    super(SaveFileDialog, self).accept()
+                    super(BaseSaveFileDialog, self).accept()
         else:
-            super(SaveFileDialog, self).accept()
-
-    def open_app_browser(self):
-
-        if tp.Dcc.get_name() == tp.Dccs.Maya:
-            import maya.cmds as cmds
-            sel_file = cmds.fileDialog2(
-                caption=self.windowTitle(),
-                fileMode=0,
-                fileFilter=self.filters,
-                dialogStyle=2
-            )
-        else:
-            raise NotImplementedError(
-                'Open App Browser is not implemented for your current DCC: {}'.format(tp.Dcc.get_name()))
-
-        if sel_file:
-            sel_file = sel_file[0]
-
-        return [sel_file, os.path.dirname(sel_file), [os.path.basename(sel_file)]]
+            super(BaseSaveFileDialog, self).accept()
 
     def create_new_directory(self):
         name, ok = QInputDialog.getText(self, 'New directory name', 'Name:', QLineEdit.Normal, 'New Directory')
@@ -1010,7 +937,7 @@ class SaveFileDialog(BaseFileFolderDialog, object):
                     msg_box.exec_()
 
 
-class SelectFolderDialog(BaseFileFolderDialog, object):
+class BaseSelectFolderDialog(BaseFileFolderDialog, object):
     def __init__(self,
                  name='SelectFolder',
                  title='Select Folder',
@@ -1022,81 +949,35 @@ class SelectFolderDialog(BaseFileFolderDialog, object):
                  parent=None,
                  **kwargs):
 
-        if parent is None:
-            parent = tp.Dcc.get_main_window()
+        parent = parent or dcc.get_main_window()
 
-        super(SelectFolderDialog, self).__init__(
+        super(BaseSelectFolderDialog, self).__init__(
             name=name, title=title, size=size, fixed_size=fixed_size, frame_less=frame_less, hide_title=hide_title,
             use_app_browser=use_app_browser, parent=parent, **kwargs
         )
 
     def accept(self, *args, **kwargs):
         selected_file, selected_dir, selected_filename = self.get_result()
-        super(SelectFolderDialog, self).accept()
-
-    def open_app_browser(self):
-
-        if tp.Dcc.get_name() == tp.Dccs.Maya:
-            import maya.cmds as cmds
-            sel_folder = cmds.fileDialog2(
-                caption=self.windowTitle(),
-                fileMode=3,
-                fileFilter=self.filters,
-                dialogStyle=2
-            )
-        else:
-            raise NotImplementedError(
-                'Open App Browser is not implemented for your current DCC: {}'.format(tp.Dcc.get_name()))
-
-        if sel_folder:
-            sel_folder = sel_folder[0]
-
-            result = [sel_folder, os.path.dirname(sel_folder), [os.path.basename(sel_folder)]]
-            return result[0]
-
-        return None
+        super(BaseSelectFolderDialog, self).accept()
 
     def exec_(self, *args, **kwargs):
         self.set_filters('')
-        return super(SelectFolderDialog, self).exec_()
+        return super(BaseSelectFolderDialog, self).exec_()
 
 
-class NativeDialog(object):
+class BaseNativeDialog(abstract_dialog.AbstractNativeDialog, object):
     """
     Dialog that opens DCC native dialogs
     """
 
-    @staticmethod
-    def open_file(title='Open File', start_directory=None, filters=None):
-        """
-        Function that shows open file DCC native dialog
-        :param title: str
-        :param start_directory: str
-        :param filters: str
-        :return: str
-        """
+    pass
 
-        raise NotImplementedError('open_file() function is not implemented')
 
-    @staticmethod
-    def save_file(title='Save File', start_directory=None, filters=None):
-        """
-        Function that shows save file DCC native dialog
-        :param title: str
-        :param start_directory: str
-        :param filters: str
-        :return: str
-        """
+class DialogContents(QFrame, object):
+    """
+    Widget that defines the core contents of frameless window
+    Can be used to custom CSS for frameless windows contents
+    """
 
-        raise NotImplementedError('save_file() function is not implemented')
-
-    @staticmethod
-    def select_folder(title='Select Folder', start_directory=None):
-        """
-        Function that shows select folder DCC native dialog
-        :param title: str
-        :param start_directory: str
-        :return: str
-        """
-
-        raise NotImplementedError('select_folder() function is not implemented')
+    def __init__(self, parent=None):
+        super(DialogContents, self).__init__(parent=parent)

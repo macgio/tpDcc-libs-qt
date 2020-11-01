@@ -7,10 +7,10 @@ Module that contains implementation for loading widgets
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Property, QSize, QPropertyAnimation
+from Qt.QtGui import QPainter
 
-import tpDcc
+from tpDcc.managers import resources
 from tpDcc.libs.qt.core import base, theme, mixin
 
 
@@ -23,7 +23,7 @@ class CircleLoading(base.BaseWidget, object):
         self.setFixedSize(QSize(size, size))
 
         self._rotation = 0
-        self._loading_pixmap = tpDcc.ResourcesMgr().pixmap(
+        self._loading_pixmap =resources.pixmap(
             'loading', extension='svg', color=color or self.accent_color()).scaledToWidth(size, Qt.SmoothTransformation)
         self._loading_anim = QPropertyAnimation()
         self._loading_anim.setTargetObject(self)

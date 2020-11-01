@@ -7,14 +7,17 @@ Module that viewer widget for options
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+import logging
 
-import tpDcc as tp
-from tpDcc.libs import qt
+from Qt.QtCore import Qt, Signal
+from Qt.QtWidgets import QWidget, QFrame, QScrollArea
+
+from tpDcc.managers import resources
 from tpDcc.libs.qt.core import base
 from tpDcc.libs.qt.widgets import layouts, buttons, dividers
 from tpDcc.libs.qt.widgets.options import optionlist
+
+LOGGER = logging.getLogger('tpDcc-core')
 
 
 class OptionsViewer(base.BaseWidget):
@@ -46,10 +49,10 @@ class OptionsViewer(base.BaseWidget):
     def ui(self):
         super(OptionsViewer, self).ui()
 
-        edit_mode_icon = tp.ResourcesMgr().icon('edit')
-        move_up_icon = tp.ResourcesMgr().icon('sort_up')
-        move_down_icon = tp.ResourcesMgr().icon('sort_down')
-        remove_icon = tp.ResourcesMgr().icon('delete')
+        edit_mode_icon = resources.icon('edit')
+        move_up_icon = resources.icon('sort_up')
+        move_down_icon = resources.icon('sort_down')
+        remove_icon = resources.icon('delete')
 
         self._edit_widget = QWidget()
         top_layout = layouts.HorizontalLayout()
@@ -192,7 +195,7 @@ class OptionsViewer(base.BaseWidget):
 
         if not self._option_object:
             self._options_list.clear_widgets()
-            qt.logger.warning('Impossible to update options because option object is not defined!')
+            LOGGER.warning('Impossible to update options because option object is not defined!')
             return
 
         self._options_list.update_options()
@@ -213,7 +216,7 @@ class OptionsViewer(base.BaseWidget):
         """
 
         if not self._option_object:
-            qt.logger.warning('Impossible to check options because option object is not defined!')
+            LOGGER.warning('Impossible to check options because option object is not defined!')
             return
 
         return self._option_object.has_options()

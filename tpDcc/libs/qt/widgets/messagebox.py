@@ -7,11 +7,12 @@ Module that includes classes to create different types of message boxes
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt
+from Qt.QtWidgets import QSizePolicy, QFrame, QLabel, QLineEdit, QCheckBox, QDialog, QDialogButtonBox
 
-import tpDcc as tp
+from tpDcc import dcc
 from tpDcc.libs.qt.core import animation, qtutils, theme
+from tpDcc.libs.qt.widgets import layouts
 
 
 def create_message_box(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None,
@@ -221,16 +222,14 @@ class MessageBox(QDialog, object):
         # self.setStyleSheet('background-color: rgb(68, 68, 68, 255);')
 
         parent = self.parent()
-        if parent and parent != tp.Dcc.get_main_window():
+        if parent and parent != dcc.get_main_window():
             parent.installEventFilter(self)
             self._frame = QFrame(parent)
             self._frame.setObjectName('messageBoxFrame')
             self._frame.show()
             self.setParent(self._frame)
 
-        self.main_layout = QVBoxLayout()
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_layout.setSpacing(0)
+        self.main_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         self.setLayout(self.main_layout)
 
         self._header = QFrame(self)
@@ -250,14 +249,12 @@ class MessageBox(QDialog, object):
         self._title.setObjectName('messageBoxHeaderLabel')
         self._title.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        hlayout = QHBoxLayout(self._header)
-        hlayout.setContentsMargins(15, 7, 15, 10)
-        hlayout.setSpacing(10)
+        hlayout = layouts.HorizontalLayout(spacing=10, margins=(15, 7, 15, 10), parent=self._header)
         hlayout.addWidget(self._icon)
         hlayout.addWidget(self._title)
         self._header.setLayout(hlayout)
 
-        body_layout = QVBoxLayout(self)
+        body_layout = layouts.VerticalLayout(parent=self)
         self._body = QFrame(self)
         self._body.setObjectName('messageBoxBody')
         self._body.setLayout(body_layout)

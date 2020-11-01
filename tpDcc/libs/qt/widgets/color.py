@@ -11,14 +11,17 @@ import math
 import array
 from functools import partial
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, Slot, QSize, QSizeF, QPoint, QPointF, QRect, QRectF, QLineF, QMimeData, qFuzzyCompare
+from Qt.QtWidgets import QStyle, QStyleOptionFrame, QStylePainter, QSizePolicy, QColorDialog, QDialogButtonBox
+from Qt.QtWidgets import QApplication, QWidget, QFrame, QDialog, QToolButton, QLineEdit, QSlider
+from Qt.QtGui import QColor, QBrush, QPen, QPainter, QPainterPath, QGradient, QLinearGradient, QConicalGradient
+from Qt.QtGui import QPixmap, QImage, QPolygonF, QDrag
 
-import tpDcc as tp
+from tpDcc.dcc import dialog
+from tpDcc.managers import resources
 from tpDcc.libs.python import mathlib, python
 from tpDcc.libs.qt.core import base, qtutils, color as core_color
-from tpDcc.libs.qt.widgets import buttons, label, spinbox, dividers, panel
+from tpDcc.libs.qt.widgets import layouts, buttons, label, spinbox, dividers, panel
 
 
 class ColorButton(buttons.BaseButton, object):
@@ -39,9 +42,7 @@ class ColorPicker(QFrame, object):
         self._current_color = None
         self._browser_colors = None
 
-        main_layout = QHBoxLayout()
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
+        main_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
         self.setLayout(main_layout)
 
     def current_color(self):
@@ -106,7 +107,7 @@ class ColorPicker(QFrame, object):
             callback = partial(self._on_color_changed, color)
             css = 'background-color: {}'.format(color)
 
-            btn = self.COLOR_BUTTON_CLASS(self)
+            btn = self.COLOR_BUTTON_CLASS(parent=self)
             btn.setObjectName('colorButton')
             btn.setStyleSheet(css)
             btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
@@ -116,7 +117,7 @@ class ColorPicker(QFrame, object):
             self.layout().addWidget(btn)
             first = False
 
-        browse_btn = QPushButton('...', self)
+        browse_btn = buttons.BaseButton('...', parent=self)
         browse_btn.setObjectName('menuButton')
         browse_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         browse_btn.clicked.connect(self._on_browse_color)
@@ -261,9 +262,6 @@ class ColorSwatch(QToolButton, object):
 
     def _on_open_color_picker(self):
 
-        # THIS ONLY WORKS ON MAYA
-        from tpDcc.libs.qt.core import dialog
-
         color_picker = dialog.ColorDialog()
         color_picker.exec_()
         if color_picker.color is None:
@@ -299,7 +297,7 @@ class ColorLineEdit(QLineEdit, object):
         self._preview_color = True
         self._background = QBrush()
 
-        self._background.setTexture(QPixmap(tp.ResourcesMgr().pixmap('alpha_back')))
+        self._background.setTexture(QPixmap(resources.pixmap('alpha_back')))
         self.set_color(QColor(Qt.white))
 
         self.textEdited.connect(self._on_text_edited)
@@ -1071,7 +1069,7 @@ class ColorPreview(QWidget, object):
         self._background = QBrush(Qt.darkGray, Qt.DiagCrossPattern)
         self._display_mode = self.DisplayMode.NO_ALPHA
 
-        self._background.setTexture(QPixmap(tp.ResourcesMgr().pixmap('alpha_back')))
+        self._background.setTexture(QPixmap(resources.pixmap('alpha_back')))
 
     def sizeHint(self):
         return QSize(24, 24)
@@ -1270,6 +1268,8 @@ class ColorSelector(ColorPreview, object):
         self._panel_parent = parent
 
     def show_panel(self):
+        self._color_widget._select_color_btn.setVisible(True)
+        self._color_widget._cancel_btn.setVisible(True)
         self._panel = panel.SliderPanel(
             'Select Color', parent=self._panel_parent or self.parent(), closable=True)
         self.set_update_mode(self.UpdateMode.CONTINUOUS)
@@ -1280,6 +1280,8 @@ class ColorSelector(ColorPreview, object):
         self._panel.show()
 
     def show_dialog(self):
+        self._color_widget._select_color_btn.setVisible(False)
+        self._color_widget._cancel_btn.setVisible(False)
         self._dialog = ColorDialog(color_widget=self._color_widget, parent=self)
         if self._dialog_modality:
             self._dialog.setWindowModality(self._dialog_modality)
@@ -1291,13 +1293,18 @@ class ColorSelector(ColorPreview, object):
         self._dialog.exec_()
 
     def _connect_panel(self):
+        self._color_widget.colorSelected.connect(self._on_selected_panel_color)
+        self._color_widget.colorCancelled.connect(self._panel.close)
         if self._update_mode == self.UpdateMode.CONTINUOUS:
             self._color_widget.colorChanged.connect(self.set_color)
         else:
             self._disconnect_panel()
 
     def _disconnect_panel(self):
-        self._color_widget.disconnect(self.set_color)
+        self._color_widget.colorSelected.disconnect(self._on_selected_panel_color)
+        self._color_widget.colorCancelled.disconnect(self._panel.close)
+        if self._update_mode == self.UpdateMode.CONTINUOUS:
+            self._color_widget.colorChanged.disconnect(self.set_color)
 
     def _disconnect_dialog(self, dialog):
         dialog.colorChanged.disconnect(self.set_color)
@@ -1316,12 +1323,21 @@ class ColorSelector(ColorPreview, object):
         if (self._dialog and not self._dialog.isVisible()) or (self._panel and not self._panel.isVisible()):
             self._old_color = color
 
+    def _on_selected_panel_color(self, color):
+        self.set_color(color)
+        self._panel.blockSignals(True)
+        try:
+            self._panel.close()
+        finally:
+            self._panel.blockSignals(False)
+        self._disconnect_panel()
+
     def _on_close_panel(self):
         if self._reset_on_close:
             self.set_color(self._old_color)
             self._color_widget.set_color(self._old_color)
-        self._panel = None
         self.closedColor.emit(self.color())
+        self._disconnect_panel()
 
     def _on_accepted_dialog(self):
         self.set_color(self._dialog.color())
@@ -1355,7 +1371,7 @@ class GradientSlider(QSlider, object):
 
         self._gradient = QLinearGradient()
         self._background = QBrush(Qt.darkGray, Qt.DiagCrossPattern)
-        self._background.setTexture(QPixmap(tp.ResourcesMgr().pixmap('alpha_back')))
+        self._background.setTexture(QPixmap(resources.pixmap('alpha_back')))
         self._gradient.setCoordinateMode(QGradient.StretchToDeviceMode)
         self._gradient.setSpread(QGradient.RepeatSpread)
 
@@ -1614,6 +1630,7 @@ class ColorDialogWidget(base.BaseWidget, object):
 
     colorSelected = Signal(QColor)
     colorChanged = Signal(QColor)
+    colorCancelled = Signal()
     alphaEnabledChanged = Signal(bool)
     colorSpaceChanged = Signal(int)
     rotatingSelectorChanged = Signal(bool)
@@ -1630,33 +1647,23 @@ class ColorDialogWidget(base.BaseWidget, object):
         self.set_alpha_enabled(True)
 
     def get_main_layout(self):
-        main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(2)
+        main_layout = layouts.VerticalLayout(spacing=2, margins=(0, 0, 0, 0,))
 
         return main_layout
 
     def ui(self):
         super(ColorDialogWidget, self).ui()
 
-        horizontal_lyt = QHBoxLayout()
-        horizontal_lyt.setContentsMargins(0, 0, 0, 0)
-        horizontal_lyt.setSpacing(2)
-
-        preview_wheel_lyt = QVBoxLayout()
-        preview_wheel_lyt.setContentsMargins(0, 0, 0, 0)
-        preview_wheel_lyt.setSpacing(7)
-
-        self._buttons_lyt = QHBoxLayout()
-        self._buttons_lyt.setContentsMargins(0, 0, 0, 0)
-        self._buttons_lyt.setSpacing(2)
+        horizontal_lyt = layouts.HorizontalLayout(spacing=2, margins=(0, 0, 0, 0,))
+        preview_wheel_lyt = layouts.VerticalLayout(spacing=2, margins=(0, 0, 0, 0,))
+        self._buttons_lyt = layouts.HorizontalLayout(spacing=2, margins=(0, 0, 0, 0,))
 
         self._color_wheel = ColorWheel()
         self._color_preview = ColorPreview()
         preview_wheel_lyt.addWidget(self._color_wheel)
         preview_wheel_lyt.addWidget(self._color_preview)
 
-        colors_lyt = QGridLayout()
+        colors_lyt = layouts.GridLayout()
         hue_lbl = label.BaseLabel('Hue')
         self._hue_slider = HueSlider()
         self._hue_spinner = spinbox.BaseSpinBox()
@@ -1725,9 +1732,18 @@ class ColorDialogWidget(base.BaseWidget, object):
         self._buttons_lyt.addWidget(self._pick_btn)
         self._buttons_lyt.addStretch()
 
+        bottom_layout = layouts.HorizontalLayout(spacing=1, margins=(0, 0, 0, 0))
+        self._select_color_btn = buttons.BaseButton('Select', resources.icon('palette'), parent=self)
+        self._cancel_btn = buttons.BaseButton('Cancel', resources.icon('cancel'), parent=self)
+        bottom_layout.addStretch()
+        bottom_layout.addWidget(self._select_color_btn)
+        bottom_layout.addWidget(self._cancel_btn)
+
         self.main_layout.addLayout(horizontal_lyt)
         self.main_layout.addWidget(dividers.Divider())
         self.main_layout.addLayout(self._buttons_lyt)
+        self.main_layout.addStretch()
+        self.main_layout.addLayout(bottom_layout)
 
     def setup_signals(self):
         self._color_wheel.colorSpaceChanged.connect(self.colorSpaceChanged.emit)
@@ -1763,6 +1779,9 @@ class ColorDialogWidget(base.BaseWidget, object):
 
         self._pick_btn.clicked.connect(self._on_grab_color)
         self._reset_btn.clicked.connect(self._on_reset)
+
+        self._select_color_btn.clicked.connect(self._on_select_color)
+        self._cancel_btn.clicked.connect(self.colorCancelled.emit)
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasColor() or (event.mimeData().hasText() and QColor(event.mimeData().text()).isValid()):
@@ -1938,6 +1957,10 @@ class ColorDialogWidget(base.BaseWidget, object):
     def _on_reset(self):
         self._set_color(self._color_preview.comparison_color())
 
+    def _on_select_color(self):
+        current_color = self.color()
+        self.colorSelected.emit(current_color)
+
 
 class ColorDialog(QDialog, object):
 
@@ -1954,9 +1977,7 @@ class ColorDialog(QDialog, object):
 
         self._button_mode = self.ButtonMode.OK_CANCEL
 
-        main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(2)
+        main_layout = layouts.VerticalLayout(spacing=2, margins=(0, 0, 0, 0))
         self.setLayout(main_layout)
 
         self._color_widget = color_widget or ColorDialogWidget()

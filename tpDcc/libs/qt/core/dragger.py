@@ -7,18 +7,13 @@ Module that contains widgets to to drag PySide windows and dialogs
 
 from __future__ import print_function, division, absolute_import
 
-__author__ = "Tomas Poveda"
-__license__ = "MIT"
-__maintainer__ = "Tomas Poveda"
-__email__ = "tpoveda@cgart3d.com"
+from Qt.QtCore import Qt, Signal, QPoint, QSize, QTimer
+from Qt.QtWidgets import QApplication, QSizePolicy, QWidget, QFrame, QSpacerItem, QPushButton
+from Qt.QtGui import QColor, QPainter
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
-
-import tpDcc
+from tpDcc.managers import resources
 from tpDcc.libs.qt.core import qtutils
-from tpDcc.libs.qt.widgets import label
+from tpDcc.libs.qt.widgets import layouts, label
 
 
 class WindowDragger(QFrame, object):
@@ -112,16 +107,14 @@ class WindowDragger(QFrame, object):
         self.setFixedHeight(qtutils.dpi_scale(40))
         self.setAutoFillBackground(True)
 
-        main_layout = QHBoxLayout()
-        main_layout.setContentsMargins(15, 0, 15, 0)
-        main_layout.setSpacing(5)
+        main_layout = layouts.HorizontalLayout(spacing=5, margins=(15, 0, 15, 0))
         self.setLayout(main_layout)
 
         self._logo_button = self._setup_logo_button()
         self._title_text = label.ClippedLabel(text=self._window.windowTitle())
         self._title_text.setObjectName('WindowDraggerLabel')
-        self._contents_layout = QHBoxLayout()
-        self._corner_contents_layout = QHBoxLayout()
+        self._contents_layout = layouts.HorizontalLayout()
+        self._corner_contents_layout = layouts.HorizontalLayout()
 
         main_layout.addWidget(self._logo_button)
         main_layout.addWidget(self._title_text)
@@ -130,32 +123,30 @@ class WindowDragger(QFrame, object):
         main_layout.addLayout(self._corner_contents_layout)
 
         buttons_widget = QWidget()
-        self.buttons_layout = QHBoxLayout()
+        self.buttons_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
         self.buttons_layout.setAlignment(Qt.AlignRight)
-        self.buttons_layout.setContentsMargins(0, 0, 0, 0)
-        self.buttons_layout.setSpacing(0)
         buttons_widget.setLayout(self.buttons_layout)
         main_layout.addWidget(buttons_widget)
 
         self._button_minimized = QPushButton()
         self._button_minimized.setIconSize(QSize(25, 25))
         # self._button_minimized.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
-        self._button_minimized.setIcon(tpDcc.ResourcesMgr().icon('minimize', theme='window'))
+        self._button_minimized.setIcon(resources.icon('minimize', theme='window'))
         self._button_minimized.setStyleSheet('QWidget {background-color: rgba(255, 255, 255, 0); border:0px;}')
         self._button_maximized = QPushButton()
-        self._button_maximized.setIcon(tpDcc.ResourcesMgr().icon('maximize', theme='window'))
+        self._button_maximized.setIcon(resources.icon('maximize', theme='window'))
         # self._button_maximized.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
         self._button_maximized.setStyleSheet('QWidget {background-color: rgba(255, 255, 255, 0); border:0px;}')
         self._button_maximized.setIconSize(QSize(25, 25))
         self._button_restored = QPushButton()
         # self._button_restored.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
         self._button_restored.setVisible(False)
-        self._button_restored.setIcon(tpDcc.ResourcesMgr().icon('restore', theme='window'))
+        self._button_restored.setIcon(resources.icon('restore', theme='window'))
         self._button_restored.setStyleSheet('QWidget {background-color: rgba(255, 255, 255, 0); border:0px;}')
         self._button_restored.setIconSize(QSize(25, 25))
         self._button_closed = QPushButton()
         # button_closed.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
-        self._button_closed.setIcon(tpDcc.ResourcesMgr().icon('close', theme='window'))
+        self._button_closed.setIcon(resources.icon('close', theme='window'))
         self._button_closed.setStyleSheet('QWidget {background-color: rgba(255, 255, 255, 0); border:0px;}')
         self._button_closed.setIconSize(QSize(25, 25))
 
@@ -178,7 +169,7 @@ class WindowDragger(QFrame, object):
 
         icon = icon or self._window.windowIcon()
         if not icon or icon.isNull():
-            icon = tpDcc.ResourcesMgr().icon('tpDcc')
+            icon = resources.icon('tpDcc')
 
         size = self.DEFAULT_LOGO_ICON_SIZE
 
@@ -288,7 +279,9 @@ class WindowDragger(QFrame, object):
         :param frameless: bool
         """
 
-        tool_inst = tpDcc.ToolsMgr().get_tool_by_plugin_instance(self._window)
+        from tpDcc.managers import tools
+
+        tool_inst = tools.ToolsManager().get_tool_by_plugin_instance(self._window)
 
         offset = QPoint()
 
@@ -370,9 +363,11 @@ class WindowDragger(QFrame, object):
         Internal callback function that is called when the user clicks on close button
         """
 
+        from tpDcc.managers import tools
+
         closed = False
         if hasattr(self._window, 'WindowId'):
-            closed = tpDcc.ToolsMgr().close_tool(self._window.WindowId, force=False)
+            closed = tools.ToolsManager().close_tool(self._window.WindowId, force=False)
 
         if not closed:
             if hasattr(self._window, 'docked'):

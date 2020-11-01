@@ -7,11 +7,16 @@ Collapsible accordion widget similar to Maya Attribute Editor
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+import logging
 
-import tpDcc
+from Qt.QtCore import Qt, Signal, QPoint, QRect, QMimeData, QEvent
+from Qt.QtWidgets import QApplication, QWidget, QGroupBox, QScrollArea
+from Qt.QtGui import QCursor, QColor, QPixmap, QPalette, QPen, QBrush, QPainter, QDrag, QPolygon
+
+from tpDcc import dcc
+from tpDcc.libs.qt.widgets import layouts
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class AccordionStyle(object):
@@ -30,11 +35,12 @@ class AccordionItem(QGroupBox, object):
 
     trigger = Signal(bool)
 
-    def __init__(self, accordion, title, widget):
+    def __init__(self, accordion, title, widget, icon=None):
         super(AccordionItem, self).__init__(parent=accordion)
 
         self._accordion_widget = accordion
         self._widget = widget
+        self._icon = icon
         self._rollout_style = AccordionStyle.ROUNDED
         self._drag_drop_mode = AccordionDragDrop.NO_DRAG_DROP
         self._collapsed = False
@@ -42,9 +48,7 @@ class AccordionItem(QGroupBox, object):
         self._clicked = False
         self._custom_data = dict()
 
-        layout = QVBoxLayout()
-        layout.setContentsMargins(6, 12, 6, 6)
-        layout.setSpacing(0)
+        layout = layouts.VerticalLayout(spacing=0, margins=(6, 12, 6, 6))
         layout.addWidget(widget)
 
         self.setAcceptDrops(True)
@@ -156,8 +160,9 @@ class AccordionItem(QGroupBox, object):
         _rect = 8
 
         if self.rollout_style == AccordionStyle.ROUNDED:
-            painter.drawText(x + 33, y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
+            painter.drawText(x + 33 if not self._icon else 40, y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
             self._draw_triangle(painter, x, y)
+            self._draw_icon(painter, x + 22, y + 3)
             pen = QPen(self.palette().color(QPalette.Light))
             pen.setWidthF(0.6)
             painter.setPen(pen)
@@ -166,19 +171,20 @@ class AccordionItem(QGroupBox, object):
             painter.setPen(pen)
             painter.drawRoundedRect(x, y, w - 1, h - 1, _rect, _rect)
         elif self.rollout_style == AccordionStyle.SQUARE:
-            painter.drawText(x + 33, y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
+            painter.drawText(x + 33 if not self._icon else 40, y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
             self._draw_triangle(painter, x, y)
+            self._draw_icon(painter, x + 22, y + 3)
             pen = QPen(self.palette().color(QPalette.Light))
-            pen.setWidthF(0.6)
+            pen.setWidthF(0.3)
             painter.setPen(pen)
             painter.drawRect(x + 1, y + 1, w - 1, h - 1)
             pen.setColor(self.palette().color(QPalette.Shadow))
             painter.setPen(pen)
-            painter.drawRect(x, y, w - 1, h - 1)
         elif self.rollout_style == AccordionStyle.MAYA:
-            painter.drawText(x + 33, y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
+            painter.drawText(x + 33 if not self._icon else 40, y + 3, w, 16, Qt.AlignLeft | Qt.AlignTop, self.title())
             painter.setRenderHint(QPainter.Antialiasing, False)
             self._draw_triangle(painter, x, y)
+            self._draw_icon(painter, x + 22, y + 3)
             header_height = 20
             header_rect = QRect(x + 1, y + 1, w - 1, header_height)
             header_rect_shadow = QRect(x - 1, y - 1, w + 1, header_height + 2)
@@ -304,6 +310,11 @@ class AccordionItem(QGroupBox, object):
         painter.drawPolygon(triangle)
         painter.setBrush(current_brush)
 
+    def _draw_icon(self, painter, x, y):
+        if not self._icon:
+            return
+        self._icon.paint(painter, x, y, 16, 16)
+
 
 class AccordionWidget(QScrollArea, object):
 
@@ -316,7 +327,7 @@ class AccordionWidget(QScrollArea, object):
         super(AccordionWidget, self).__init__(parent=parent)
 
         self._rollout_style = AccordionStyle.SQUARE
-        if tpDcc.is_maya():
+        if dcc.is_maya():
             self._rollout_style = AccordionStyle.MAYA
         self._drag_drop_mode = AccordionDragDrop.NO_DRAG_DROP
         self._scrolling = False
@@ -331,9 +342,7 @@ class AccordionWidget(QScrollArea, object):
         self.verticalScrollBar().setMaximumWidth(10)
 
         widget = QWidget(self)
-        layout = QVBoxLayout()
-        layout.setContentsMargins(2, 2, 2, 6)
-        layout.setSpacing(2)
+        layout = layouts.VerticalLayout(spacing=2, margins=(2, 2, 2, 6))
         layout.addStretch(1)
         widget.setLayout(layout)
         self.setWidget(widget)
@@ -421,10 +430,10 @@ class AccordionWidget(QScrollArea, object):
     def set_spacing(self, space_int):
         self.widget().layout().setSpacing(space_int)
 
-    def add_item(self, title, widget, collapsed=False):
+    def add_item(self, title, widget, collapsed=False, icon=None):
         self.setUpdatesEnabled(False)
         try:
-            item = self._item_class(self, title, widget)
+            item = self._item_class(self, title, widget, icon=icon)
             item.rollout_style = self.rollout_style
             item.drag_drop_mode = self.drag_drop_mode
             layout = self.widget().layout()
@@ -436,6 +445,7 @@ class AccordionWidget(QScrollArea, object):
             return item
         except Exception:
             self.setUpdatesEnabled(True)
+            LOGGER.exception('Error while adding item to accordion')
             return None
 
     def clear(self):

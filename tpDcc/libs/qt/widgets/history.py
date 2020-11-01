@@ -7,12 +7,12 @@ Module that contains custom Qt widgets related with version management
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt
+from Qt.QtWidgets import QSizePolicy, QTreeWidgetItem, QPushButton
 
 from tpDcc.libs.python import version
 from tpDcc.libs.qt.core import base, qtutils
-from tpDcc.libs.qt.widgets import treewidgets
+from tpDcc.libs.qt.widgets import layouts, treewidgets
 
 
 class HistoryTreeWidget(treewidgets.FileTreeWidget, object):
@@ -74,7 +74,7 @@ class HistoryFileWidget(base.DirectoryWidget, object):
         super(HistoryFileWidget, self).ui()
 
         self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
-        self._btn_layout = QHBoxLayout()
+        self._btn_layout = layouts.HorizontalLayout()
         self._open_btn = QPushButton('Open')
         self._open_btn.setMaximumWidth(100)
         self._btn_layout.addWidget(self._open_btn)

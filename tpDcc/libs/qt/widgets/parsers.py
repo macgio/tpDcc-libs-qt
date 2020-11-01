@@ -5,8 +5,8 @@
 Module that contains implementation for custom PySide/PyQt windows
 """
 
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtWidgets import QLabel
+from Qt.QtGui import QFont
 
 from tpDcc.libs.python import python
 from tpDcc.libs.qt.widgets import gif

@@ -7,18 +7,19 @@ Module that contains implementation for preferences window
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt, Signal
+from Qt.QtWidgets import QSizePolicy, QWidget, QSplitter, QScrollArea
 
+from tpDcc.managers import resources
 from tpDcc.libs.qt.core import base
-from tpDcc.libs.qt.widgets import stack
+from tpDcc.libs.qt.widgets import layouts, stack, buttons, dividers
 
 
 class PreferencesWidget(base.BaseWidget, object):
 
-    closed = Signal(bool)
+    closed = Signal(bool, dict)
 
-    def __init__(self, settings, parent=None):
+    def __init__(self, settings=None, parent=None):
         self._settings = settings
         super(PreferencesWidget, self).__init__(
             parent=parent
@@ -26,6 +27,7 @@ class PreferencesWidget(base.BaseWidget, object):
 
         self._indexes = dict()
         self._category_buttons = dict()
+        self._settings = settings
 
         self._try_create_defaults()
 
@@ -36,47 +38,47 @@ class PreferencesWidget(base.BaseWidget, object):
 
         self._splitter = QSplitter()
         self._splitter.setOrientation(Qt.Horizontal)
-        self._splitter.setSizes([150, 450])
         self._splitter.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self._scroll_area = QScrollArea()
         self._scroll_area.setWidgetResizable(True)
-        self._scroll_area.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
-        self._scroll_area.setMinimumWidth(200)
+        self._scroll_area.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        # self._scroll_area.setMinimumWidth(200)
         self._scroll_area_widget_contents = QWidget()
-        self._scroll_area_widget_contents.setGeometry(QRect(0, 0, 480, 595))
-        self._scroll_area_layout = QVBoxLayout()
-        self._scroll_area_layout.setContentsMargins(1, 1, 1, 1)
-        self._scroll_area_layout.setSpacing(2)
+        # self._scroll_area_widget_contents.setGeometry(QRect(0, 0, 480, 595))
+        self._scroll_area_layout = layouts.VerticalLayout(spacing=2, margins=(1, 1, 1, 1))
+        self._scroll_area_layout.setAlignment(Qt.AlignTop)
         self._scroll_area_widget_contents.setLayout(self._scroll_area_layout)
-        self._categories_layout = QVBoxLayout()
-        self._categories_layout.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        self._categories_layout = layouts.VerticalLayout()
         self._stack = stack.SlidingStackedWidget()
         self._stack.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._stack.set_vertical_mode()
-        self._buttons_layout = QHBoxLayout()
-        self._save_prefs_btn = QPushButton('Save as Default')
-        self._save_prefs_close_btn = QPushButton('Save and Close')
-        self._close_btn = QPushButton('Close')
-        self._close_btn.setMaximumWidth(65)
+        self._buttons_layout = layouts.HorizontalLayout(spacing=1, margins=(0, 0, 0, 0))
+        self._save_prefs_close_btn = buttons.BaseButton(
+            'Save and Close', icon=resources.icon('save'), parent=self)
+        self._close_btn = buttons.BaseButton('Close', icon=resources.icon('cancel'), parent=self)
 
-        self._buttons_layout.addWidget(self._save_prefs_btn)
+        self._buttons_layout.addStretch()
         self._buttons_layout.addWidget(self._save_prefs_close_btn)
         self._buttons_layout.addWidget(self._close_btn)
-        self._categories_layout.addLayout(self._buttons_layout)
         self._scroll_area_layout.addLayout(self._categories_layout)
         self._scroll_area.setWidget(self._scroll_area_widget_contents)
         self._splitter.addWidget(self._scroll_area)
         self._splitter.addWidget(self._stack)
+        self._splitter.setSizes([150, 450])
 
         self.main_layout.addWidget(self._splitter)
+        self.main_layout.addWidget(dividers.Divider(parent=self))
+        self.main_layout.addLayout(self._buttons_layout)
 
     def setup_signals(self):
-        self._save_prefs_btn.clicked.connect(self._on_save_prefs)
         self._save_prefs_close_btn.clicked.connect(self._on_save_and_close_prefs)
         self._close_btn.clicked.connect(self._on_close)
 
     def showEvent(self, event):
         settings = self.settings()
+        if not settings:
+            return
+
         groups = settings.childGroups()
         for name, index_widget in self._indexes.items():
             index, widget = index_widget
@@ -89,14 +91,22 @@ class PreferencesWidget(base.BaseWidget, object):
     def settings(self):
         return self._settings
 
+    def set_settings(self, settings):
+        if not settings:
+            return
+        self._settings = settings
+        self._try_create_defaults()
+
     def add_category(self, name, widget):
-        category_button = CategoryButton(text=name)
+        category_button = CategoryButton(text=name, parent=self)
         self._categories_layout.insertWidget(self._categories_layout.count() - 2, category_button)
         widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         index = self._stack.addWidget(widget)
         self._indexes[name] = (index, widget)
         self._category_buttons[index] = category_button
         category_button.clicked.connect(lambda checked=False, idx=index: self._on_switch_category_content(idx))
+        widget.init_defaults(settings=self.settings())
+        self.closed.connect(widget._on_reset)
 
     def select_by_name(self, name):
         if name not in self._indexes:
@@ -107,6 +117,9 @@ class PreferencesWidget(base.BaseWidget, object):
 
     def _try_create_defaults(self):
         settings = self.settings()
+        if not settings:
+            return
+
         groups = settings.childGroups()
         for name, index_widget in self._indexes.items():
             index, widget = index_widget
@@ -125,38 +138,44 @@ class PreferencesWidget(base.BaseWidget, object):
 
     def _on_save_prefs(self):
         settings = self.settings()
+        if not settings:
+            return
+
+        stored_data = dict()
+
         for name, index_widget in self._indexes.items():
             index, widget = index_widget
             settings.beginGroup(name)
-            widget.serialize(settings)
+            data = widget.serialize(settings)
+            if data:
+                stored_data[name] = data
             settings.endGroup()
         settings.sync()
 
+        return stored_data
+
     def _on_save_and_close_prefs(self):
-        self._on_save_prefs()
-        self.close()
-        self.closed.emit(True)
+        stored_data = self._on_save_prefs()
+        self.closed.emit(True, stored_data)
 
     def _on_close(self):
-        self.close()
-        self.closed.emit(False)
+        self.closed.emit(False, None)
 
 
-class CategoryButton(QPushButton, object):
+class CategoryButton(buttons.BaseButton, object):
     def __init__(self, icon=None, text='test', parent=None):
-        super(CategoryButton, self).__init__(text, parent)
+        super(CategoryButton, self).__init__(text=text, icon=icon, parent=parent)
         self.setMinimumHeight(30)
         self.setCheckable(True)
         self.setAutoExclusive(True)
 
 
-class CategoryWidgetBase(QScrollArea, object):
+class CategoryWidgetBase(base.BaseWidget, object):
 
     CATEGORY = 'GeneralPrefs'
 
     def __init__(self, parent=None):
         super(CategoryWidgetBase, self).__init__(parent)
-        self.setWidgetResizable(True)
 
     def init_defaults(self, settings):
         pass
@@ -164,5 +183,13 @@ class CategoryWidgetBase(QScrollArea, object):
     def serialize(self, settings):
         pass
 
+    def reset(self):
+        pass
+
     def show_widget(self, settings):
         pass
+
+    def _on_reset(self, flag, *args):
+        if flag:
+            return
+        self.reset()

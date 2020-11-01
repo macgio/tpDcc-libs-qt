@@ -9,9 +9,9 @@ from __future__ import print_function, division, absolute_import
 
 import os
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, QPoint, QPointF, QRect, QRectF, QSize
+from Qt.QtWidgets import QStyle, QStyledItemDelegate
+from Qt.QtGui import QFontMetrics, QColor, QPalette, QTextOption, QPainter, QPen
 
 
 class BaseListViewDelegate(QStyledItemDelegate, object):

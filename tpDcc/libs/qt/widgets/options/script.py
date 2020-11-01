@@ -7,8 +7,8 @@ Module that contains script option implementation
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt
+from Qt.QtWidgets import QSizePolicy
 
 from tpDcc.libs.qt.widgets import layouts, code
 from tpDcc.libs.qt.widgets.options import option, text

@@ -7,14 +7,12 @@ Module that contains custom Qt spinner widgets
 
 from __future__ import print_function, division, absolute_import
 
-from functools import partial
-
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, Property, QPoint, QRect
+from Qt.QtWidgets import QSizePolicy, QFrame, QSpinBox, QDoubleSpinBox
+from Qt.QtGui import QColor, QPainter, QDoubleValidator
 
 from tpDcc.libs.qt.core import base, mixin, theme
-from tpDcc.libs.qt.widgets import lineedit, buttons, label
+from tpDcc.libs.qt.widgets import layouts, lineedit, buttons, label
 
 
 @mixin.theme_mixin
@@ -104,7 +102,7 @@ class BaseSpinBox(QSpinBox, object):
 
 
 @mixin.theme_mixin
-@mixin.cursor_mixin
+# @mixin.cursor_mixin
 class BaseDoubleSpinBox(QDoubleSpinBox, object):
     def __init__(self, parent=None):
         super(BaseDoubleSpinBox, self).__init__(parent=parent)
@@ -197,9 +195,8 @@ class BaseNumberWidget(base.BaseWidget, object):
         super(BaseNumberWidget, self).__init__(parent)
 
     def get_main_layout(self):
-        main_layout = QHBoxLayout()
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
+        main_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
+
         return main_layout
 
     def ui(self):
@@ -422,9 +419,7 @@ class DragDoubleSpinBoxLineAxis(base.BaseWidget, object):
         super(DragDoubleSpinBoxLineAxis, self).__init__(parent=parent)
 
     def get_main_layout(self):
-        main_layout = QHBoxLayout()
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
+        main_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
 
         return main_layout
 
@@ -433,9 +428,7 @@ class DragDoubleSpinBoxLineAxis(base.BaseWidget, object):
 
         axis_widget = QFrame()
         axis_widget.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
-        axis_layout = QHBoxLayout()
-        axis_layout.setContentsMargins(0, 0, 0, 0)
-        axis_layout.setSpacing(0)
+        axis_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
         axis_widget.setLayout(axis_layout)
         self._axis_btn = buttons.get_axis_button(axis_type=self._axis, parent=self)
         self._line = DragDoubleSpinBoxLine(

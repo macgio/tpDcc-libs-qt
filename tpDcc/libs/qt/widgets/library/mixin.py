@@ -7,8 +7,8 @@ Module that contains mixin implementation for library views
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt
+from Qt.QtWidgets import QApplication, QAbstractItemView
 
 
 class LibraryViewWidgetMixin(object):

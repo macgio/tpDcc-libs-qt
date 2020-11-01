@@ -1,7 +1,7 @@
 # Dark theme
 
 name: Dark
-accentColor: null
-backgroundColor: [60, 64, 79, 255]
 style: default
+accent_color: null
+background_color: "#3C404F"
 overrides: []

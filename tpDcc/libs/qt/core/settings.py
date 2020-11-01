@@ -10,8 +10,9 @@ from __future__ import print_function, division, absolute_import
 import os
 import sys
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import QSettings, QPoint, QSize
+from Qt.QtWidgets import QMainWindow, QDockWidget, QComboBox, QCheckBox, QToolButton, QSpinBox, QLineEdit
+from Qt.QtWidgets import QDoubleSpinBox
 
 from tpDcc.libs.python import settings
 
@@ -27,7 +28,7 @@ class QtSettings(QSettings, object):
         self._initialize()
 
     def has_setting(self, setting_name):
-        return self.get(setting_name)
+        return bool(self.get(setting_name))
 
     def get(self, setting_name, default_value=None, setting_group=None):
         """

@@ -7,8 +7,8 @@ Module that contains text option implementations
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt, Signal
+from Qt.QtWidgets import QSizePolicy, QLineEdit
 
 import tpDcc as tp
 from tpDcc.libs.qt.core import base

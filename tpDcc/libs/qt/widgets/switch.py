@@ -7,14 +7,14 @@ Module that contains implementation for switch widget
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Property, QSize
+from Qt.QtWidgets import QRadioButton
 
 from tpDcc.libs.qt.core import mixin, theme
 
 
 @mixin.theme_mixin
-@mixin.cursor_mixin
+# @mixin.cursor_mixin
 class SwitchWidget(QRadioButton, object):
     def __init__(self, parent=None):
         super(SwitchWidget, self).__init__(parent)

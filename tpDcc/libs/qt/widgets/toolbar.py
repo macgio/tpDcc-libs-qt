@@ -7,11 +7,12 @@ Module that contains classes that extend QToolBar functionality
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt, QSize
+from Qt.QtWidgets import QWidget, QToolBar, QAction, QFrame
 
-import tpDcc
-from tpDcc.libs.qt.core import base, icon, qtutils
+from tpDcc.dcc import dialog
+from tpDcc.managers import resources
+from tpDcc.libs.qt.core import icon, qtutils
 from tpDcc.libs.qt.widgets import layouts, buttons
 
 
@@ -203,8 +204,8 @@ class FlowToolBar(QFrame, object):
         self._icon_size = icon_size
         self._icon_padding = icon_padding
         self._overflow_button_color = (128, 128, 128)
-        self._menu_indicator_icon = menu_indicator_icon or tpDcc.ResourcesMgr().icon('arrow_menu')
-        self._overflow_icon = tpDcc.ResourcesMgr().icon('sort_down')
+        self._menu_indicator_icon = menu_indicator_icon or resources.icon('arrow_menu')
+        self._overflow_icon = resources.icon('sort_down')
         self._overflow_menu = False
         self._overflow_menu_button = None
 
@@ -413,7 +414,7 @@ class FlowToolBar(QFrame, object):
         return btn
 
 
-class FlowToolbarMenu(tpDcc.Dialog, object):
+class FlowToolbarMenu(dialog.Dialog, object):
     def __init__(self, parent=None):
         super(FlowToolbarMenu, self).__init__(parent=parent, show_on_initialize=False)
 

@@ -8,19 +8,22 @@ Module that contains core classes for option lists
 from __future__ import print_function, division, absolute_import
 
 import string
+import logging
 import traceback
 from functools import partial
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
+from Qt.QtCore import Qt, Signal, QPoint, QRect
+from Qt.QtWidgets import QSizePolicy, QGroupBox, QMenu, QAction
+from Qt.QtGui import QColor, QPalette, QPainter, QPen, QBrush, QPolygon
 
-import tpDcc as tp
-from tpDcc.libs import qt
+from tpDcc import dcc
+from tpDcc.managers import resources
 from tpDcc.libs.python import name as name_utils
 from tpDcc.libs.qt.core import qtutils
 from tpDcc.libs.qt.widgets import layouts
 from tpDcc.libs.qt.widgets.options import factory
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class GroupStyles(object):
@@ -34,7 +37,7 @@ class OptionList(QGroupBox, object):
     editModeChanged = Signal(bool)
     valueChanged = Signal()
 
-    FACTORY_CLASS = factory.OptionsFactorySingleton
+    FACTORY_CLASS = factory
 
     def __init__(self, parent=None, option_object=None):
         super(OptionList, self).__init__(parent)
@@ -70,14 +73,10 @@ class OptionList(QGroupBox, object):
         super(OptionList, self).mousePressEvent(event)
 
     def setup_ui(self):
-        self.main_layout = QVBoxLayout()
-        self.main_layout.setContentsMargins(5, 5, 5, 5)
-        self.main_layout.setSpacing(5)
+        self.main_layout = layouts.VerticalLayout(spacing=5, margins=(5, 5, 5, 5))
         self.setLayout(self.main_layout)
 
-        self.child_layout = QVBoxLayout()
-        self.child_layout.setContentsMargins(5, 5, 5, 5)
-        self.child_layout.setSpacing(5)
+        self.child_layout = layouts.VerticalLayout(spacing=5, margins=(5, 5, 5, 5))
         self.child_layout.setAlignment(Qt.AlignTop)
         self.main_layout.addLayout(self.child_layout)
         self.main_layout.addSpacing(30)
@@ -104,7 +103,7 @@ class OptionList(QGroupBox, object):
         """
 
         if not self._option_object:
-            qt.logger.warning('Impossible to update options because option object is not defined!')
+            LOGGER.warning('Impossible to update options because option object is not defined!')
             return
 
         options = self._option_object.get_options()
@@ -146,7 +145,7 @@ class OptionList(QGroupBox, object):
         self._create_group_context_menu(group, group._context_menu)
         group.set_expanded(value)
         if self.__class__.__name__.endswith('OptionListGroup') or parent.__class__.__name__.endswith('OptionListGroup'):
-            if tp.is_maya():
+            if dcc.is_maya():
                 group.group.set_inset_dark()
         self._handle_parenting(group, parent)
         self._write_options(clear=False)
@@ -288,22 +287,22 @@ class OptionList(QGroupBox, object):
 
     def _create_context_menu(self, menu, parent):
 
-        plus_icon = tp.ResourcesMgr().icon('plus')
-        string_icon = tp.ResourcesMgr().icon('rename')
-        directory_icon = tp.ResourcesMgr().icon('folder')
-        file_icon = tp.ResourcesMgr().icon('file')
-        integer_icon = tp.ResourcesMgr().icon('number_1')
-        float_icon = tp.ResourcesMgr().icon('float_1')
-        bool_icon = tp.ResourcesMgr().icon('true_false')
-        dict_icon = tp.ResourcesMgr().icon('dictionary')
-        list_icon = tp.ResourcesMgr().icon('list')
-        group_icon = tp.ResourcesMgr().icon('group_objects')
-        script_icon = tp.ResourcesMgr().icon('source_code')
-        title_icon = tp.ResourcesMgr().icon('label')
-        color_icon = tp.ResourcesMgr().icon('palette')
-        clear_icon = tp.ResourcesMgr().icon('clean')
-        copy_icon = tp.ResourcesMgr().icon('copy')
-        paste_icon = tp.ResourcesMgr().icon('paste')
+        plus_icon = resources.icon('plus')
+        string_icon = resources.icon('rename')
+        directory_icon = resources.icon('folder')
+        file_icon = resources.icon('file')
+        integer_icon = resources.icon('number_1')
+        float_icon = resources.icon('float_1')
+        bool_icon = resources.icon('true_false')
+        dict_icon = resources.icon('dictionary')
+        list_icon = resources.icon('list')
+        group_icon = resources.icon('group_objects')
+        script_icon = resources.icon('source_code')
+        title_icon = resources.icon('label')
+        color_icon = resources.icon('palette')
+        clear_icon = resources.icon('clean')
+        copy_icon = resources.icon('copy')
+        paste_icon = resources.icon('paste')
 
         create_menu = menu.findChild(QMenu, 'createMenu')
         if not create_menu:
@@ -368,8 +367,8 @@ class OptionList(QGroupBox, object):
 
         group.copy_action.setVisible(False)
 
-        string_icon = tp.ResourcesMgr().icon('rename')
-        remove_icon = tp.ResourcesMgr().icon('trash')
+        string_icon = resources.icon('rename')
+        remove_icon = resources.icon('trash')
 
         rename_action = QAction(string_icon, 'Rename', menu)
         menu.addAction(rename_action)
@@ -390,18 +389,18 @@ class OptionList(QGroupBox, object):
         else:
             option_object = self.get_option_object()
             name = self._get_unique_name(name or option_type, parent=parent)
-            new_option = self.FACTORY_CLASS().add_option(
+            new_option = self.FACTORY_CLASS.add_option(
                 option_type, name=name, value=value, parent=parent,
                 main_widget=self._parent, option_object=option_object)
             if new_option:
                 self._handle_parenting(new_option, parent=parent)
                 self._write_options(clear=False)
             else:
-                qt.logger.warning('Option of type "{}" is not supported!'.format(option_type))
+                LOGGER.warning('Option of type "{}" is not supported!'.format(option_type))
 
         return new_option
 
-    def _add_custom_option(self, optiontype, name=None, value=None, parent=None):
+    def _add_custom_option(self, option_type, name=None, value=None, parent=None):
         pass
 
     def _get_unique_name(self, name, parent=None):
@@ -589,7 +588,7 @@ class OptionList(QGroupBox, object):
                         self._add_option(option_type, name, value, widget)
 
         except Exception:
-            qt.logger.error(traceback.format_exc())
+            LOGGER.error(traceback.format_exc())
         finally:
             self._disable_auto_expand = False
             # self.setVisible(True)
@@ -662,7 +661,7 @@ class OptionList(QGroupBox, object):
 
         item_count = self.child_layout.count()
         if item_count <= 0:
-            qt.logger.debug('No widgets to clear ...')
+            LOGGER.debug('No widgets to clear ...')
             return
 
         permission = qtutils.get_permission('Clear all the widgets in {}'.format(name), parent=self)
@@ -677,7 +676,7 @@ class OptionList(QGroupBox, object):
         """
 
         if not self._option_object:
-            qt.logger.warning('Impossible to write options because option object is not defined!')
+            LOGGER.warning('Impossible to write options because option object is not defined!')
             return
 
         if self._supress_update:
@@ -702,7 +701,7 @@ class OptionList(QGroupBox, object):
             return
 
         if not self._option_object:
-            qt.logger.warning('Impossible to write options because option object is not defined!')
+            LOGGER.warning('Impossible to write options because option object is not defined!')
             return
 
         item_count = widget.child_layout.count()
@@ -722,7 +721,7 @@ class OptionList(QGroupBox, object):
     def _write_all(self):
 
         if not self._option_object:
-            qt.logger.warning('Impossible to write options because option object is not defined!')
+            LOGGER.warning('Impossible to write options because option object is not defined!')
             return
 
         self._option_object.clear_options()
@@ -737,7 +736,7 @@ class OptionList(QGroupBox, object):
         """
 
         palette = widget.palette()
-        if not tp.Dcc.get_name() == tp.Dccs.Maya:
+        if not dcc.is_maya():
             palette.setColor(widget.backgroundRole(), Qt.gray)
         else:
             palette.setColor(widget.backgroundRole(), QColor(35, 150, 245, 255))
@@ -1016,8 +1015,8 @@ class OptionGroup(QGroupBox, object):
     def __init__(self, name, parent=None):
         super(OptionGroup, self).__init__(parent)
 
-        if tp.is_maya():
-            if tp.Dcc.get_version() < 2016:
+        if dcc.is_maya():
+            if dcc.get_version() < 2016:
                 # self.setFrameStyle(self.Panel | self.Raised)
                 palette = self.palette()
                 palette.setColor(self.backgroundRole(), QColor(80, 80, 80))
@@ -1026,7 +1025,7 @@ class OptionGroup(QGroupBox, object):
             # else:
             #     self.setFrameStyle(self.NoFrame)
 
-        if tp.Dcc.get_name() == tp.Dccs.Maya:
+        if dcc.is_maya():
             self._rollout_style = GroupStyles.Maya
         else:
             self._rollout_style = GroupStyles.Square
@@ -1198,8 +1197,8 @@ class OptionGroup(QGroupBox, object):
     def set_inset_dark(self):
         value = self.background_shade
         value -= 15
-        if tp.Dcc.get_name() == tp.Dccs.Maya:
-            if tp.Dcc.get_version() < 2016:
+        if dcc.is_maya():
+            if dcc.get_version() < 2016:
                 self.setFrameStyle(self.Panel | self.Sunken)
 
         palette = self.palette()

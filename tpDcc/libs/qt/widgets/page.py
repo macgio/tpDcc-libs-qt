@@ -10,11 +10,10 @@ from __future__ import print_function, division, absolute_import
 import math
 from functools import partial
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Qt, Signal
 
 from tpDcc.libs.qt.core import mixin, base, menu, theme
-from tpDcc.libs.qt.widgets import label, buttons, combobox, spinbox
+from tpDcc.libs.qt.widgets import layouts, label, buttons, combobox, spinbox
 
 
 @mixin.theme_mixin
@@ -34,9 +33,7 @@ class Page(base.BaseWidget, mixin.FieldMixin):
     # =================================================================================================================
 
     def get_main_layout(self):
-        main_layout = QHBoxLayout()
-        main_layout.setSpacing(2)
-        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout = layouts.HorizontalLayout(spacing=2, margins=(0, 0, 0, 0))
 
         return main_layout
 

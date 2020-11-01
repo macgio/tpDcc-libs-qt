@@ -9,7 +9,6 @@ from __future__ import print_function, division, absolute_import
 
 import os
 
-
 from tpDcc.libs.python import folder, path
 from tpDcc.libs.qt.core import qtutils, pixmap as pixmap_resource, icon as icon_resource, theme as theme_resource
 
@@ -200,7 +199,7 @@ class Resource(object):
 
         return self._path
 
-    def _icon(self, name, category='icons', extension='png', color=None, theme='default'):
+    def _icon(self, name, category='icons', extension='png', color=None, theme='default', skip_cache=False):
         """
         Returns a icon_resource.Icon object from the given resource name
         :param name: str, name of the icon
@@ -210,7 +209,7 @@ class Resource(object):
         """
 
         path = self.image_path(name=name, category=category, extension=extension, theme=theme)
-        p = icon_resource.IconCache(path=path, color=color)
+        p = icon_resource.IconCache(path=path, color=color, skip_cache=skip_cache)
 
         return p
 

@@ -11,10 +11,9 @@ import os
 import sys
 import subprocess
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from Qt.QtCore import Signal, Property, QSize
+from Qt.QtWidgets import QSizePolicy, QFileDialog
 
-from tpDcc.libs.qt.core import mixin
 from tpDcc.libs.qt.widgets import buttons
 
 
@@ -561,7 +560,7 @@ class DragFileButton(buttons.BaseToolButton, object):
         return file_list
 
 
-@mixin.cursor_mixin
+# @mixin.cursor_mixin
 # @mixin.property_mixin
 class DragFolderButton(buttons.BaseToolButton, object):
     folderChanged = Signal(str)

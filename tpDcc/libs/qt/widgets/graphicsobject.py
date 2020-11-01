@@ -7,11 +7,11 @@ Module that contains different graphic objects
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
-from Qt.QtWidgets import *
-from Qt.QtGui import *
-
 from tpDcc.libs.python.decorators import accepts, returns
+
+from Qt.QtCore import Qt
+from Qt.QtWidgets import QGraphicsObject
+from Qt.QtGui import QColor, QFont
 
 
 class BaseObjectItem(QGraphicsObject, object):

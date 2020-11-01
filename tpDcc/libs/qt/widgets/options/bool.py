@@ -7,7 +7,7 @@ Module that contains bool option implementation
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import *
+from Qt.QtCore import Qt
 
 from tpDcc.libs.qt.widgets import spinbox, checkbox
 from tpDcc.libs.qt.widgets.options import option

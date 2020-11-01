@@ -8,12 +8,14 @@ Module that contains manager object for libraries
 from __future__ import print_function, division, absolute_import
 
 import os
+import logging
 from collections import OrderedDict
 
 from tpDcc.core import scripts
-from tpDcc.libs import qt
 from tpDcc.libs.python import fileio, folder, settings, osplatform, path as path_utils
 from tpDcc.libs.qt.widgets.library import items
+
+LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
 class LibraryManager(object):
@@ -128,7 +130,7 @@ class LibraryManager(object):
                 valid_items.append(cls)
 
         if len(valid_items) > 1:
-            qt.logger.warning(
+            LOGGER.warning(
                 'Multiple data file supports data type {}:\n{}'.format(data_type, '\n'.join(valid_items)))
         valid_item = valid_items[0]
 
@@ -186,7 +188,7 @@ class LibraryManager(object):
                 items.append(item)
             else:
                 msg = 'Cannot find the item for path "{}"'.format(path)
-                qt.logger.warning(msg)
+                LOGGER.warning(msg)
 
         return items
 
@@ -407,13 +409,13 @@ class LibraryDataFolder(fileio.FileManager, object):
                 data_type = scripts.ScriptTypes.Python
                 self.settings.set('data_type', data_type)
         if not data_type:
-            qt.logger.warning(
+            LOGGER.warning(
                 'Impossible to instantiate Data Folder because given Data Type: {} is not valid!'.format(data_type))
             return
 
         data_manager = self.get_manager()
         if not data_manager:
-            qt.logger.warning('Impossible to instantiate Data Folder because LibraryManager is not defined!')
+            LOGGER.warning('Impossible to instantiate Data Folder because LibraryManager is not defined!')
             return
 
         data_inst = data_manager.get_type_instance(data_type)
