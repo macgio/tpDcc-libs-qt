@@ -26,3 +26,12 @@ def application():
         yield app
         if dcc.is_standalone():
             app.exec_()
+
+
+@contextlib.contextmanager
+def block_signals(widget):
+    widget.blockSignals(True)
+    try:
+        yield widget
+    finally:
+        widget.blockSignals(False)

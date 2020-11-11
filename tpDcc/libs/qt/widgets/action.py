@@ -175,7 +175,7 @@ class SliderAction(QWidgetAction):
 
         action_widget = self.widget()
 
-        action_layout = layouts.HorizontalLayout(margins=(0, 0, 0, 0), parent=action_widget)
+        action_layout = layouts.HorizontalLayout(margins=(0, 0, 0, 0))
         action_layout.setContentsMargins(0, 0, 0, 0)
         action_layout.addWidget(self.label())
         action_layout.addWidget(self.slider())

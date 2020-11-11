@@ -249,12 +249,12 @@ class MessageBox(QDialog, object):
         self._title.setObjectName('messageBoxHeaderLabel')
         self._title.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        hlayout = layouts.HorizontalLayout(spacing=10, margins=(15, 7, 15, 10), parent=self._header)
+        hlayout = layouts.HorizontalLayout(spacing=10, margins=(15, 7, 15, 10))
         hlayout.addWidget(self._icon)
         hlayout.addWidget(self._title)
         self._header.setLayout(hlayout)
 
-        body_layout = layouts.VerticalLayout(parent=self)
+        body_layout = layouts.VerticalLayout()
         self._body = QFrame(self)
         self._body.setObjectName('messageBoxBody')
         self._body.setLayout(body_layout)

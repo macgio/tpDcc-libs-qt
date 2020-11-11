@@ -15,7 +15,7 @@ from functools import partial
 
 from Qt.QtCore import Qt, Signal
 from Qt.QtWidgets import QSizePolicy, QFrame, QLabel, QPushButton, QSpacerItem, QLineEdit, QCheckBox, QComboBox, QMenu
-from Qt.QtWidgets import QFileDialog
+from Qt.QtWidgets import QFileDialog, QTextEdit
 from Qt.QtGui import QPixmap, QCursor, QIntValidator
 
 from tpDcc.libs.python import decorators
@@ -1056,7 +1056,7 @@ class TextFieldWidget(FieldWidget, object):
     def __init__(self, *args, **kwargs):
         super(TextFieldWidget, self).__init__(*args, **kwargs)
 
-        widget = label.QTextEdit(self)
+        widget = QTextEdit(self)
         widget.textChanged.connect(self._on_emit_value_changed)
         self.set_widget(widget)
 

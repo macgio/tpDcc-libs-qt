@@ -7,7 +7,7 @@ Module that contains extended functionality for QMenus
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import Signal
+from Qt.QtCore import Qt, Signal
 from Qt.QtWidgets import QLineEdit, QMenu, QActionGroup, QAction, QWidgetAction
 
 from tpDcc.libs.python import python

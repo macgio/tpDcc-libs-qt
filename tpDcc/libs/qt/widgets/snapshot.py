@@ -23,7 +23,7 @@ from tpDcc.libs.qt.widgets import layouts, label, lineedit, buttons
 LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
-class SnapshotWindow(window.Window, object):
+class SnapshotWindow(window.Window(as_class=True), object):
     saved = Signal(str)
 
     def __init__(self, path=None, image_type='png', width=512, height=512, on_save=None, parent=None):
