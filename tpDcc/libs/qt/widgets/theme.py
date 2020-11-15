@@ -78,7 +78,7 @@ class ThemePreferenceWidget(preferences.CategoryWidgetBase, object):
         return general_widget
 
     def setup_signals(self):
-        self._themes_combobox.currentTextChanged.connect(self._on_current_theme_changed)
+        self._themes_combobox.currentIndexChanged.connect(self._on_current_theme_changed)
 
     def init_defaults(self, settings):
         if not settings or not self._theme:
@@ -203,8 +203,9 @@ class ThemePreferenceWidget(preferences.CategoryWidgetBase, object):
             setattr(self._theme, property_name, hex_color)
             self._theme.update()
 
-    def _on_current_theme_changed(self, theme_name):
+    def _on_current_theme_changed(self, theme_index):
 
+        theme_name = self._themes_combobox.itemText(theme_index)
         all_themes = resources.get_all_resources_of_type(resources.ResourceTypes.THEME)
         for theme_found in all_themes:
             if not theme_found or not theme_found.name() == theme_name:
