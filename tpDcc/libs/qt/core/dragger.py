@@ -282,6 +282,8 @@ class WindowDragger(QFrame, object):
         from tpDcc.managers import tools
 
         tool_inst = tools.ToolsManager().get_tool_by_plugin_instance(self._window)
+        if not tool_inst:
+            return
 
         offset = QPoint()
 

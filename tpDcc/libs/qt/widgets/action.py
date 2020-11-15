@@ -8,9 +8,9 @@ Module that defines that implements different types of actions
 from __future__ import print_function, division, absolute_import
 
 from Qt.QtCore import Qt
-from Qt.QtWidgets import QSizePolicy, QFrame, QLabel, QCheckBox, QSlider, QWidgetAction
+from Qt.QtWidgets import QSizePolicy, QFrame, QWidgetAction
 
-from tpDcc.libs.qt.widgets import layouts
+from tpDcc.libs.qt.widgets import layouts, label, checkbox, sliders
 
 
 class SeparatorLine(QFrame, object):
@@ -24,12 +24,11 @@ class SeparatorWidgetAction(QFrame, object):
 
 
 class SeparatorAction(QWidgetAction, object):
-    def __init__(self, label='', parent=None):
+    def __init__(self, name='', parent=None):
         super(SeparatorAction, self).__init__(parent)
 
         self._widget = SeparatorWidgetAction(parent)
-        self._label = QLabel(self._widget)
-        self._label.setText(label)
+        self._label = label.BaseLabel(name, parent=self._widget)
         self._line = SeparatorLine(self._widget)
         self._line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
@@ -73,7 +72,7 @@ class SeparatorAction(QWidgetAction, object):
         """
 
         action_widget = self.widget()
-        action_layout = layouts.HorizontalLayout(margins=(0, 0, 0, 0), parent=action_widget)
+        action_layout = layouts.HorizontalLayout(margins=(0, 0, 0, 0))
         action_layout.setContentsMargins(0, 0, 0, 0)
         action_layout.addWidget(self.label())
         action_layout.addWidget(self.line())
@@ -98,7 +97,7 @@ class LabelAction(QWidgetAction, object):
         widget = QFrame(self.parent())
         widget.setObjectName('filterByAction')
         title = self._name
-        label = QCheckBox(widget)
+        label = checkbox.BaseCheckBox(parent=widget)
         label.setText(title)
         label.setAttribute(Qt.WA_TransparentForMouseEvents)
         label.toggled.connect(self._on_triggered)
@@ -110,7 +109,7 @@ class LabelAction(QWidgetAction, object):
             image: url(none.png)
         }
         """)
-        action_layout = layouts.HorizontalLayout(margins=(0, 0, 0, 0), parent=widget)
+        action_layout = layouts.HorizontalLayout(margins=(0, 0, 0, 0))
         action_layout.addWidget(label, stretch=1)
         widget.setLayout(action_layout)
 
@@ -132,13 +131,13 @@ class SliderWidgetAction(QFrame):
 
 class SliderAction(QWidgetAction):
 
-    def __init__(self, label="", parent=None):
+    def __init__(self, name="", parent=None):
         super(SliderAction, self).__init__(parent)
 
         self._widget = SliderWidgetAction(parent)
-        self._label = QLabel(label, self._widget)
+        self._label = label.BaseLabel(name, parent=self._widget)
 
-        self._slider = QSlider(Qt.Horizontal, self._widget)
+        self._slider = sliders.BaseSlider(Qt.Horizontal, parent=self._widget)
         self._slider.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.valueChanged = self._slider.valueChanged

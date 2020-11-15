@@ -38,15 +38,15 @@ class TreeWidget(QTreeWidget, object):
         self._current_item = None
         self._last_item = None
         self._drop_indicator_rect = QRect()
+        self._name_filter = None
 
         self.setIndentation(25)
         self.setExpandsOnDoubleClick(False)
+        self.setSortingEnabled(True)
+        self.sortByColumn(0, Qt.AscendingOrder)
 
         if dcc.is_maya():
             self.setAlternatingRowColors(dcc.get_version() < 2016)
-
-        self.setSortingEnabled(True)
-        self.sortByColumn(0, Qt.AscendingOrder)
         if not dcc.is_maya() and not not dcc.is_nuke():
             palette = QPalette()
             palette.setColor(palette.Highlight, Qt.gray)
@@ -196,12 +196,14 @@ class TreeWidget(QTreeWidget, object):
         :param filter_text: str, text used to filter tree items
         """
 
+        self._name_filter = filter_text.strip(' ')
+
         self.unhide_items()
 
         for i in range(self.topLevelItemCount()):
             item = self.topLevelItem(i)
             text = str(item.text(self._title_text_index))
-            filter_text = str(filter_text)
+            filter_text = str(filter_text).strip(' ')
 
             # If the filter text is not found on the item text, we hide the item
             if text.find(filter_text) == -1:
@@ -900,7 +902,7 @@ class FileTreeWidget(TreeWidget, object):
 
     HEADER_LABELS = ['Name', 'Size MB', 'Time']
     NEW_ITEM_NAME = 'new_file'
-    NEW_ITEM_WIDGET = QTreeWidgetItem
+    ITEM_WIDGET = QTreeWidgetItem
     EXCLUDE_EXTENSIONS = list()
 
     def __init__(self, parent=None):
@@ -908,6 +910,14 @@ class FileTreeWidget(TreeWidget, object):
         super(FileTreeWidget, self).__init__(parent)
 
         self.setHeaderLabels(self.HEADER_LABELS)
+
+    # ============================================================================================================
+    # PROPERTIES
+    # ============================================================================================================
+
+    @property
+    def directory(self):
+        return self._directory
 
     # ============================================================================================================
     # OVERRIDES
@@ -1050,7 +1060,7 @@ class FileTreeWidget(TreeWidget, object):
     # BASE
     # ============================================================================================================
 
-    def set_directory(self, directory, refresh=True):
+    def set_directory(self, directory, refresh=True, name_filter=None):
         """
         Sets the directory used by this QTreeWidget
         :param directory: str, directory
@@ -1058,6 +1068,7 @@ class FileTreeWidget(TreeWidget, object):
         """
 
         self._directory = directory
+        self._name_filter = name_filter
         if refresh:
             self.refresh()
 
@@ -1208,11 +1219,9 @@ class EditFileTreeWidget(base.DirectoryWidget, object):
         drag_reorder_icon = resources.icon('drag_reorder')
         edit_mode_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         edit_mode_layout.setAlignment(Qt.AlignBottom)
-        self._edit_mode_btn = buttons.IconButton(
-            icon=drag_reorder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
+        self._edit_mode_btn = buttons.BaseButton(parent=self)
+        self._edit_mode_btn.setIcon(drag_reorder_icon)
         self._edit_mode_btn.setCheckable(True)
-        self._edit_mode_btn.setMaximumHeight(20)
-        self._edit_mode_btn.setMaximumWidth(40)
         edit_mode_layout.addWidget(self._edit_mode_btn)
         self._filter_widget.main_layout.addLayout(edit_mode_layout)
 

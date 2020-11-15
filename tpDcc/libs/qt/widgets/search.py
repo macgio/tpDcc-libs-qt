@@ -9,6 +9,7 @@ from __future__ import print_function, division, absolute_import
 
 from Qt.QtCore import Qt, Signal, QSize, QEvent, QPoint
 from Qt.QtWidgets import QApplication, QWidget, QLineEdit, QStyle, QMenu
+from Qt.QtGui import QIcon
 
 from tpDcc.managers import resources
 from tpDcc.libs.qt.widgets import layouts, buttons
@@ -38,7 +39,7 @@ class SearchFindWidget(QWidget, object):
         icon_size = self.style().pixelMetric(QStyle.PM_SmallIconSize)
 
         delete_icon = resources.icon('delete')
-        search_icon = resources.icon('search')
+        search_icon = QIcon(resources.icon('search'))
 
         self._clear_btn = buttons.IconButton(delete_icon, icon_padding=2, parent=self)
         self._clear_btn.setIconSize(QSize(icon_size, icon_size))
@@ -77,13 +78,9 @@ class SearchFindWidget(QWidget, object):
         self._clear_btn.clicked.connect(self.clear)
         self._search_btn.clicked.connect(self._popup_menu)
 
-    # def get_text(self):
-    #     return self._text
-    #
-    # def set_text(self, text):
-    #     self._text = text
-    #
-    # text = property(get_text, set_text)
+    @property
+    def search_line(self):
+        return self._search_line
 
     def changeEvent(self, event):
         if event.type() == QEvent.EnabledChange:
@@ -132,7 +129,7 @@ class SearchFindWidget(QWidget, object):
         self._search_line.setPlaceholderText(text)
 
     def get_menu(self):
-        search_icon = resource.icon('search')
+        search_icon = resources.icon('search')
         self._search_btn.setIcon(search_icon)
         self._search_btn.setEnabled(self.isEnabled() and self._menu)
 

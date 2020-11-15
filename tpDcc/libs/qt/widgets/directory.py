@@ -41,12 +41,9 @@ class FileListWidget(QListWidget, object):
         self.parent = parent
         super(FileListWidget, self).__init__(parent)
 
-        # region Signals
         self.itemSelectionChanged.connect(self.selectItem)
         self.itemDoubleClicked.connect(self.activateItem)
-        # endregion
 
-    # region Override Functions
     def resizeEvent(self, event):
         """
         Overrides QWidget resizeEvent so when the widget is resize a update request signal is emitted
@@ -89,9 +86,7 @@ class FileListWidget(QListWidget, object):
             self.update_requested.emit()
         else:
             super(FileListWidget, self).keyPressEvent(event)
-    # endregion
 
-    # region Public Functions
     def selectItem(self):
         if len(self.selectedItems()) > 0:
             item = self.selectedItems()[0]
@@ -121,7 +116,6 @@ class FileListWidget(QListWidget, object):
         items = filter(lambda x: x.type() != 0, self.selectedItems())
         names = map(lambda x: x.text(), items)
         self.files_selected.emit(names)
-    # endregion
 
 
 class FolderEditLine(lineedit.BaseLineEdit, object):
@@ -178,13 +172,12 @@ class SelectFolderButton(QWidget, object):
         self.setLayout(main_layout)
 
         folder_icon = resources.icon('folder')
-        self._folder_btn = buttons.IconButton(
-            icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
+        self._folder_btn = buttons.BaseButton(text, parent=self)
+        self._folder_btn.setIcon(folder_icon)
         main_layout.addWidget(self._folder_btn)
 
         self._folder_btn.clicked.connect(self._open_folder_browser_dialog)
 
-    # region Properties
     @property
     def folder_btn(self):
         return self._folder_btn
@@ -196,14 +189,10 @@ class SelectFolderButton(QWidget, object):
         self._directory = directory
 
     init_directory = property(get_init_directory, set_init_directory)
-    # endregion
 
-    # region Public Functions
     def set_settings(self, settings):
         self.settings = settings
-    # endregion
 
-    # region Private Functions
     def _open_folder_browser_dialog(self):
         """
         Opens a set folder browser and returns the selected path
@@ -228,7 +217,6 @@ class SelectFolderButton(QWidget, object):
         if not result or not os.path.isdir(result):
             return
         return path.clean_path(result[0])
-    # endregion
 
 
 class SelectFolder(QWidget, object):
@@ -258,13 +246,12 @@ class SelectFolder(QWidget, object):
         if os.path.exists(self._directory):
             self._folder_line.setText(self._directory)
 
+        self._folder_btn = buttons.BaseButton(parent=self)
         if self._use_icon:
             folder_icon = resources.icon('folder')
-            self._folder_btn = buttons.IconButton(
-                icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
+            self._folder_btn.setIcon(folder_icon)
         else:
-            self._folder_btn = buttons.StyleBaseButton('Browse...')
-        self._folder_btn.setMaximumHeight(20)
+            self._folder_btn.setText('Browse ...')
 
         for widget in [self._folder_label, self._folder_line, self._folder_btn]:
             main_layout.addWidget(widget)
@@ -401,12 +388,12 @@ class SelectFile(base.DirectoryWidget, object):
         if self._directory and os.path.exists(self._directory):
             self._file_line.setText(self._directory)
 
+        self._file_btn = buttons.BaseButton(parent=self)
         if self._use_icon:
             folder_icon = resources.icon('folder')
-            self._file_btn = buttons.IconButton(
-                icon=folder_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
+            self._file_btn.setIcon(folder_icon)
         else:
-            self._file_btn = buttons.StyleBaseButton('Browse ...')
+            self._file_btn.setText('Browse ...')
 
         for widget in [self._file_label, self._file_line, self._file_btn]:
             self.main_layout.addWidget(widget)

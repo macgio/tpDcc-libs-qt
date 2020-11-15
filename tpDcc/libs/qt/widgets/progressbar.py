@@ -56,8 +56,8 @@ class BaseProgressBar(QProgressBar, object):
 
 
 class FrameProgressBar(QFrame, object):
-    def __init__(self, *args):
-        super(FrameProgressBar, self).__init__(*args)
+    def __init__(self, *args, **kwargs):
+        super(FrameProgressBar, self).__init__(*args, **kwargs)
 
         layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         self.setLayout(layout)

@@ -8,7 +8,7 @@ Module that contains different group widgets
 from __future__ import print_function, division, absolute_import
 
 from Qt.QtCore import Qt, Signal, Property
-from Qt.QtWidgets import QSizePolicy, QBoxLayout, QGroupBox, QButtonGroup
+from Qt.QtWidgets import QSizePolicy, QWidget, QBoxLayout, QGroupBox, QButtonGroup
 from Qt.QtGui import QIcon
 
 from tpDcc.libs.python import decorators, python
@@ -18,6 +18,9 @@ from tpDcc.libs.qt.widgets import layouts, buttons
 
 class BaseGroup(QGroupBox, object):
     def __init__(self, name='', parent=None, layout_spacing=2, layout_orientation=Qt.Vertical):
+
+        self._layout_orientation = layout_orientation
+
         super(BaseGroup, self).__init__(parent)
 
         self.setTitle(name)
@@ -81,10 +84,23 @@ class BaseGroup(QGroupBox, object):
 
 class CollapsableGroup(BaseGroup, object):
     def __init__(self, name='', parent=None, collapsable=True):
-        super(CollapsableGroup, self).__init__(name, parent)
         self._collapsable = collapsable
+        super(CollapsableGroup, self).__init__(name, parent, layout_orientation=Qt.Horizontal)
 
-    def mousePRessEvent(self, event):
+    def ui(self):
+        super(CollapsableGroup, self).ui()
+
+        self._base_widget = QWidget()
+        if self._layout_orientation == Qt.Vertical:
+            manager_layout = layouts.VerticalLayout(spacing=2, margins=(4, 4, 4, 4))
+        else:
+            manager_layout = layouts.HorizontalLayout(spacing=2, margins=(4, 4, 4, 4))
+        manager_layout.setAlignment(Qt.AlignCenter)
+        self._base_widget.setLayout(manager_layout)
+        self.main_layout.addWidget(self._base_widget)
+        self.main_layout = manager_layout
+
+    def mousePressEvent(self, event):
         super(CollapsableGroup, self).mousePressEvent(event)
 
         if not event.button() == Qt.LeftButton:
@@ -92,23 +108,33 @@ class CollapsableGroup(BaseGroup, object):
 
         if self._collapsable:
             if event.y() < 30:
-                self._base_widget.setVisible(not self._base_widget.isVisible())
+                if self._base_widget.isHidden():
+                    self.expand_group()
+                else:
+                    self.collapse_group()
 
     def set_collapsable(self, flag):
         """
         Sets if the group can be collapsed or not
-        :param collapsable: flag
+        :param flag: bool
         """
 
         self._collapsable = flag
+
+    def set_title(self, title):
+        if not title.startswith('+ '):
+            title = '+ ' + title
+        self.setTitle(title)
 
     def expand_group(self):
         """
         Expands the content of the group
         """
 
-        self.setFixedSize(qtutils.QWIDGET_SIZE_MAX)
         self.setVisible(True)
+        title = self.title()
+        title = title.replace('+', '-')
+        self.setTitle(title)
 
     def collapse_group(self):
         """
@@ -116,6 +142,9 @@ class CollapsableGroup(BaseGroup, object):
         """
 
         self._base_widget.setVisible(False)
+        title = self.title()
+        title = title.replace('-', '+')
+        self.setTitle(title)
 
 
 class BaseButtonGroup(base.BaseWidget, object):

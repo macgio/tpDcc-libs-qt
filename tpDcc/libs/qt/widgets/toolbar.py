@@ -7,11 +7,12 @@ Module that contains classes that extend QToolBar functionality
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import Qt, QSize
+from Qt.QtCore import Qt, Property, QSize
 from Qt.QtWidgets import QWidget, QToolBar, QAction, QFrame
 
 from tpDcc.dcc import dialog
 from tpDcc.managers import resources
+from tpDcc.libs.python import python
 from tpDcc.libs.qt.core import icon, qtutils
 from tpDcc.libs.qt.widgets import layouts, buttons
 
@@ -21,15 +22,31 @@ class ToolBar(QToolBar, object):
     Class that adds functionality to expand/collapse QToolBars
     """
 
-    DEFAULT_EXPANDED_HEIGHT = 34
+    DEFAULT_EXPANDED_HEIGHT = 32
     DEFAULT_COLLAPSED_HEIGHT = 10
+    ICON_SIZE = 32
 
-    def __init__(self, *args):
-        super(ToolBar, self).__init__(*args)
+    def __init__(self, *args, **kwargs):
+        super(ToolBar, self).__init__(*args, **kwargs)
 
+        self._dpi = 1
         self._is_expanded = True
         self._expanded_height = self.DEFAULT_EXPANDED_HEIGHT
         self._collapsed_height = self.DEFAULT_COLLAPSED_HEIGHT
+
+        self.setMinimumHeight(self.DEFAULT_EXPANDED_HEIGHT)
+
+    def _get_expanded(self):
+        return self._is_expanded
+
+    def _set_expanded(self, flag):
+        self._is_expanded = flag
+
+    expanded = Property(bool, _get_expanded, _set_expanded)
+
+    # =================================================================================================================
+    # OVERRIDES
+    # =================================================================================================================
 
     def mousePressEvent(self, event):
         if not self.is_expanded():
@@ -43,7 +60,8 @@ class ToolBar(QToolBar, object):
         """
 
         self.set_children_height(value)
-        super(QToolBar, self).setFixedHeight(value)
+        super(ToolBar, self).setFixedHeight(value)
+        print(self.height())
 
     def insertAction(self, before, action):
         """
@@ -55,7 +73,7 @@ class ToolBar(QToolBar, object):
         """
 
         action.setParent(self)
-        if isinstance(before, (unicode, str)):
+        if python.is_string(before):
             before = self.find_action(before)
 
         action = super(ToolBar, self).insertAction(before, action)
@@ -69,13 +87,41 @@ class ToolBar(QToolBar, object):
         :return: list(QWidget)
         """
 
-        widgets = list()
-        for i in range(self.layout().count()):
-            w = self.layout().itemAt(i).widget()
-            if isinstance(w, QWidget):
-                widgets.append(w)
+        actions = list()
 
-        return widgets
+        for child in self.children():
+            if isinstance(child, QAction):
+                actions.append(child)
+
+        return actions
+
+    # =================================================================================================================
+    # DPI
+    # =================================================================================================================
+
+    def dpi(self):
+        """
+        Returns the zoom multiplier
+        :return: float
+        """
+
+        return self._dpi
+
+    def set_dpi(self, dpi):
+        """
+        Set the zoom multiplier
+        :param : float
+        """
+
+        self._dpi = dpi
+        if self.is_expanded():
+            self.expand()
+        else:
+            self.collapse()
+
+    # =================================================================================================================
+    # BASE
+    # =================================================================================================================
 
     def widgets(self):
         """
@@ -105,7 +151,7 @@ class ToolBar(QToolBar, object):
         :return: float
         """
 
-        return self._expanded_height
+        return int(self._expanded_height * self.dpi())
 
     def collapse_height(self):
         """
@@ -113,7 +159,7 @@ class ToolBar(QToolBar, object):
         :return: int
         """
 
-        return self._collapsed_height
+        return int(self._collapsed_height * self.dpi())
 
     def set_children_hidden(self, flag):
         """
@@ -121,8 +167,11 @@ class ToolBar(QToolBar, object):
         :param flag: bool
         """
 
-        for w in self.widgets():
-            w.setHidden(flag)
+        for action in self.actions():
+            action.setVisible(not flag)
+
+        # for w in self.widgets():
+        #     w.setHidden(flag)
 
     def set_children_height(self, height):
         """
@@ -142,7 +191,9 @@ class ToolBar(QToolBar, object):
         height = self.expand_height()
         self.setFixedHeight(height)
         self.set_children_hidden(False)
-        self.setIconSize(QSize(height, height))
+        icon_size = self.ICON_SIZE * self.dpi()
+        self.setIconSize(QSize(icon_size, icon_size))
+        self.setStyleSheet(self.styleSheet())
 
     def collapse(self):
         """
@@ -155,6 +206,7 @@ class ToolBar(QToolBar, object):
         self.set_children_height(0)
         self.set_children_hidden(True)
         self.setIconSize(QSize(0, 0))
+        self.setStyleSheet(self.styleSheet())
 
     def set_icon_color(self, color):
         """

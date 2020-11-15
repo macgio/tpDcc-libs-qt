@@ -7,20 +7,22 @@ Class that creates a status widgets which can be used the state of an app
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import Qt, QSize, QTimer
-from Qt.QtWidgets import QSizePolicy, QHBoxLayout, QFrame, QLabel, QPushButton
+from Qt.QtCore import Qt, Property, QSize, QTimer
+from Qt.QtWidgets import QSizePolicy, QHBoxLayout, QFrame
 from Qt.QtGui import QIcon
 
 from tpDcc.managers import resources
+from tpDcc.libs.qt.widgets import label, buttons
 
 
 class StatusWidget(QFrame, object):
 
-    DEFAULT_DISPLAY_TIME = 10000  # milliseconds -> 15 seconds
+    DEFAULT_DISPLAY_TIME = 10000  # milliseconds -> 10 seconds
 
     def __init__(self, *args):
         super(StatusWidget, self).__init__(*args)
 
+        self._status = ''
         self._blocking = False
         self._timer = QTimer(self)
 
@@ -29,26 +31,33 @@ class StatusWidget(QFrame, object):
         self.setFixedHeight(19)
         self.setMinimumWidth(5)
 
-        self._label = QLabel('', self)
+        self._label = label.BaseLabel('', parent=self)
         self._label.setStyleSheet('background-color: transparent;')
         self._label.setCursor(Qt.IBeamCursor)
         self._label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         self._label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
-        self._button = QPushButton(self)
-        self._button.setMaximumSize(QSize(17, 17))
-        self._button.setIconSize(QSize(20, 20))
-        self._button.hide()
+        self.label_image = label.BaseLabel(parent=self)
+        self.label_image.setMaximumSize(QSize(17, 17))
+        self.label_image.hide()
 
         self.main_layout = QHBoxLayout(self)
-        self.main_layout.setContentsMargins(5, 0, 0, 0)
+        self.main_layout.setContentsMargins(1, 0, 0, 0)
 
-        self.main_layout.addWidget(self._button)
+        self.main_layout.addWidget(self.label_image)
         self.main_layout.addWidget(self._label)
 
         self.setLayout(self.main_layout)
 
         self._timer.timeout.connect(self._reset)
+
+    def _get_status(self):
+        return self._status
+
+    def _set_status(self, value):
+        self._status = str(value)
+
+    status = Property(str, _get_status, _set_status)
 
     def is_blocking(self):
         """
@@ -68,7 +77,7 @@ class StatusWidget(QFrame, object):
         if self.is_blocking():
             return
 
-        icon = resources.icon('ok', extension='png')
+        icon = resources.icon('ok')
         self._show_message(message, icon, msecs)
 
     def show_info_message(self, message, msecs=None):
@@ -81,7 +90,7 @@ class StatusWidget(QFrame, object):
         if self.is_blocking():
             return
 
-        icon = resources.icon('info', extension='png')
+        icon = resources.icon('info')
         self._show_message(message, icon, msecs)
 
     def show_warning_message(self, message, msecs=None):
@@ -94,7 +103,7 @@ class StatusWidget(QFrame, object):
         if self.is_blocking():
             return
 
-        icon = resources.icon('warning', extension='png')
+        icon = resources.icon('warning')
         self._show_message(message, icon, msecs)
 
     def show_error_message(self, message, msecs=None):
@@ -105,7 +114,7 @@ class StatusWidget(QFrame, object):
        """
 
         icon = resources.icon('error', extension='png')
-        self._show_message(message, icon, msecs)
+        self._show_message(message, icon, msecs, blocking=True)
 
     def _reset(self):
         """
@@ -113,12 +122,13 @@ class StatusWidget(QFrame, object):
         """
 
         self._timer.stop()
-        self._button.hide()
+        self.label_image.setVisible(False)
         self._label.setText('')
-        icon = resources.icon('blank')
-        self._button.setIcon(icon) if icon else self._button.setIcon(QIcon())
+        icon = resources.pixmap('blank')
+        self.label_image.setPixmap(icon) if icon else self.label_image.setIcon(QIcon())
         self.setStyleSheet('')
         self._blocking = False
+        self._status = ''
 
     def _show_message(self, message, icon, msecs=None, blocking=False):
         """
@@ -132,13 +142,13 @@ class StatusWidget(QFrame, object):
         msecs = msecs or self.DEFAULT_DISPLAY_TIME
         self._blocking = blocking
 
-        self._button.setStyleSheet('border: 0px;')
+        self.label_image.setStyleSheet('border: 0px;')
 
         if icon:
-            self._button.setIcon(icon)
-            self._button.show()
+            self.label_image.setPixmap(icon.pixmap(QSize(17, 17)))
+            self.label_image.show()
         else:
-            self._button.hide()
+            self.label_image.hide()
 
         if message:
             self._label.setText(str(message))

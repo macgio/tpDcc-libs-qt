@@ -677,7 +677,7 @@ class NewProjectWidget(QWidget, object):
         self.project_line = lineedit.BaseLineEdit(parent=self)
         self.project_line.setPlaceholderText('Project Path')
         self.project_line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.project_btn = directory.SelectFolderButton(text='...', use_app_browser=True)
+        self.project_btn = directory.SelectFolderButton(use_app_browser=True)
         project_line_layout.addWidget(self.project_line)
         project_line_layout.addWidget(self.project_btn)
         self.name_line = lineedit.BaseLineEdit(parent=self)

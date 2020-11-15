@@ -128,17 +128,19 @@ class Icon(QIcon, object):
         elif isinstance(new_color, (list, tuple)):
             new_color = color.Color(*new_color)
 
+        if self.isNull():
+            return
+
         icon = self
         size = size or icon.availableSizes()[0]
         pixmap = icon.pixmap(size)
 
-        if not self.isNull():
-            painter = QPainter(pixmap)
-            painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
-            painter.setBrush(new_color)
-            painter.setPen(new_color)
-            painter.drawRect(pixmap.rect())
-            painter.end()
+        painter = QPainter(pixmap)
+        painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
+        painter.setBrush(new_color)
+        painter.setPen(new_color)
+        painter.drawRect(pixmap.rect())
+        painter.end()
 
         icon = Icon(pixmap)
         self.swap(icon)

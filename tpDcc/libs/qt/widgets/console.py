@@ -7,6 +7,7 @@ Module that contains console widgets
 
 from __future__ import print_function, division, absolute_import
 
+import logging
 from io import StringIO
 
 from Qt.QtCore import Qt, QSize, QStringListModel
@@ -31,10 +32,9 @@ class ConsoleInput(QLineEdit, object):
 
 
 class Console(QTextEdit, object):
-    def __init__(self, logger=None, parent=None):
+    def __init__(self, parent=None):
         super(Console, self).__init__(parent=parent)
 
-        self._logger = logger
         self._buffer = StringIO()
 
         size_policy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
@@ -69,8 +69,6 @@ class Console(QTextEdit, object):
         self.insertPlainText(msg + '\n')
         self.moveCursor(QTextCursor.End)
         self._buffer.write(unicode(msg))
-        if self._logger:
-            self._logger.debug('{}\n'.format(msg))
 
     def write_error(self, msg):
         """
@@ -83,8 +81,6 @@ class Console(QTextEdit, object):
         self.insertHtml(msg_html)
         self.moveCursor(QTextCursor.End)
         self._buffer.write(unicode(msg))
-        if self._logger:
-            self._logger.error('{}\n'.format(msg))
 
     def write_ok(self, msg):
         """
@@ -96,8 +92,6 @@ class Console(QTextEdit, object):
         self.insertHtml(msg_html)
         self.moveCursor(QTextCursor.End)
         self._buffer.write(unicode(msg))
-        if self._logger:
-            self._logger.debug('{}\n'.format(msg))
 
     def write_warning(self, msg):
         """
@@ -109,8 +103,6 @@ class Console(QTextEdit, object):
         self.insertHtml(msg_html)
         self.moveCursor(QTextCursor.End)
         self._buffer.write(unicode(msg))
-        if self._logger:
-            self._logger.warning('{}\n'.format(msg))
 
     def flush(self):
         self.moveCursor(QTextCursor.End, QTextCursor.MoveAnchor)
@@ -154,3 +146,35 @@ class Console(QTextEdit, object):
     def _on_redo(self):
         if self.isUndoRedoEnabled():
             self.redo()
+
+
+class ConsoleLoggerHandler(logging.Handler):
+    def __init__(self, parent):
+        super(ConsoleLoggerHandler, self).__init__()
+
+        self.widget = Console(parent=parent)
+        self.widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        formatter = ConsoleFormatter('%(asctime)s|%(levelname)s|%(message)s|', '%d/%m/%Y %H:%M:%S')
+        self.setFormatter(formatter)
+
+    def emit(self, record):
+        msg = self.format(record)
+        if '|INFO|' in msg:
+            self.widget.write_ok(msg)
+        elif '|WARNING|' in msg:
+            self.widget.write_warning(msg)
+        elif '|ERROR|' in msg:
+            self.widget.write_error(msg)
+        else:
+            self.widget.write(msg)
+
+
+class ConsoleFormatter(logging.Formatter):
+
+    def format(self, record):
+        s = super(ConsoleFormatter, self).format(record)
+        if record.exc_text:
+            s = s.replace('\n', '')
+
+        return s

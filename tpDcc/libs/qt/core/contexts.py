@@ -13,6 +13,7 @@ import contextlib
 from Qt.QtWidgets import QApplication
 
 from tpDcc import dcc
+from tpDcc.dcc import window
 
 
 @contextlib.contextmanager
@@ -35,3 +36,13 @@ def block_signals(widget):
         yield widget
     finally:
         widget.blockSignals(False)
+
+
+@contextlib.contextmanager
+def show_window(widget):
+    with application():
+        new_window = window.Window()
+        new_window.main_layout.addWidget(widget)
+        new_window.adjustSize()
+        new_window.show()
+        yield new_window

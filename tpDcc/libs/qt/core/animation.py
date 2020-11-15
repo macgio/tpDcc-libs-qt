@@ -121,7 +121,7 @@ def fade_in_widget(widget, duration=200, on_finished=None):
 
     effect = QGraphicsOpacityEffect(widget)
     widget.setGraphicsEffect(effect)
-    animation = QPropertyAnimation(effect, 'opacity')
+    animation = QPropertyAnimation(effect, b'opacity')
     animation.setDuration(duration)
     animation.setStartValue(0.0)
     animation.setEndValue(1.0)
@@ -147,7 +147,7 @@ def fade_out_widget(widget, duration=200, on_finished=None):
 
     effect = QGraphicsOpacityEffect(widget)
     widget.setGraphicsEffect(effect)
-    animation = QPropertyAnimation(effect, 'opacity')
+    animation = QPropertyAnimation(effect, b'opacity')
     animation.setDuration(duration)
     animation.setStartValue(1.0)
     animation.setEndValue(0.0)
@@ -200,7 +200,7 @@ def slide_window(start=-100, end=0, duration=300, object=None, on_finished=None)
     """
 
     pos = object.pos()
-    animation = QPropertyAnimation(object, 'pos', object)
+    animation = QPropertyAnimation(object, b'pos', object)
     animation.setDuration(duration)
     anim_curve = QEasingCurve()
     if start >= end:
@@ -237,7 +237,7 @@ def fade_animation(start=0, end=1, duration=300, object=None, on_finished=None):
     if end == 'current':
         end = object.opacity()
 
-    animation = QPropertyAnimation(object, 'opacity', object)
+    animation = QPropertyAnimation(object, b'opacity', object)
     animation.setEasingCurve(anim_curve)
     animation.setDuration(duration)
     animation.setStartValue(start)

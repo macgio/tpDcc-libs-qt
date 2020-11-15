@@ -657,14 +657,14 @@ class OptionList(QGroupBox, object):
         if self.__class__ == OptionList:
             name = 'the list?'
         else:
-            name = 'group: {}?'.format(self.get_name())
+            name = 'group?'
 
         item_count = self.child_layout.count()
         if item_count <= 0:
             LOGGER.debug('No widgets to clear ...')
             return
 
-        permission = qtutils.get_permission('Clear all the widgets in {}'.format(name), parent=self)
+        permission = qtutils.get_permission('Clear all the widgets?', parent=self)
         if permission:
             self.clear_widgets()
             self._write_options(clear=True)

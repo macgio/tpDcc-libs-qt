@@ -10,7 +10,7 @@ from __future__ import print_function, division, absolute_import
 import logging
 
 from Qt.QtCore import Qt, Signal
-from Qt.QtWidgets import QWidget, QFrame, QScrollArea
+from Qt.QtWidgets import QSizePolicy, QWidget, QFrame, QScrollArea
 
 from tpDcc.managers import resources
 from tpDcc.libs.qt.core import base
@@ -60,11 +60,9 @@ class OptionsViewer(base.BaseWidget):
         top_layout.setSpacing(2)
         self._edit_widget.setLayout(top_layout)
         self.main_layout.addWidget(self._edit_widget)
-        self._edit_mode_btn = buttons.IconButton(
-            icon=edit_mode_icon, icon_padding=2, button_style=buttons.ButtonStyles.FlatStyle)
+        self._edit_mode_btn = buttons.BaseButton(parent=self)
+        self._edit_mode_btn.setIcon(edit_mode_icon)
         self._edit_mode_btn.setCheckable(True)
-        self._edit_mode_btn.setMaximumWidth(45)
-        self._edit_mode_btn.setMinimumHeight(15)
         top_layout.addWidget(self._edit_mode_btn)
 
         horizontal_separator = QFrame()
@@ -72,24 +70,23 @@ class OptionsViewer(base.BaseWidget):
         horizontal_separator.setFrameShadow(QFrame.Sunken)
         top_layout.addWidget(horizontal_separator)
 
-        self._move_up_btn = buttons.IconButton(
-            icon=move_up_icon, icon_padding=0, button_style=buttons.ButtonStyles.FlatStyle)
-        self.move_down_btn = buttons.IconButton(
-            icon=move_down_icon, icon_padding=0, button_style=buttons.ButtonStyles.FlatStyle)
-        self.remove_btn = buttons.IconButton(
-            icon=remove_icon, icon_padding=0, button_style=buttons.ButtonStyles.FlatStyle)
-        self._move_up_btn.setEnabled(False)
-        self.move_down_btn.setEnabled(False)
-        self.remove_btn.setEnabled(False)
+        self._move_up_btn = buttons.BaseButton(parent=self)
+        self.move_down_btn = buttons.BaseButton(parent=self)
+        self.remove_btn = buttons.BaseButton(parent=self)
+        self._move_up_btn.setIcon(move_up_icon)
+        self.move_down_btn.setIcon(move_down_icon)
+        self.remove_btn.setIcon(remove_icon)
+        self._move_up_btn.setVisible(False)
+        self.move_down_btn.setVisible(False)
+        self.remove_btn.setVisible(False)
         top_layout.addWidget(self._move_up_btn)
         top_layout.addWidget(self.move_down_btn)
         top_layout.addWidget(self.remove_btn)
-        self._edit_splitter = QWidget()
-        edit_splitter_layout = dividers.DividerLayout()
-        self._edit_splitter.setLayout(edit_splitter_layout)
-        self.main_layout.addWidget(self._edit_splitter)
+        top_layout.addStretch()
+        self.main_layout.addWidget(dividers.Divider())
 
         self._scroll = QScrollArea()
+        self._scroll.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._scroll.setFocusPolicy(Qt.NoFocus)
         self._scroll.setWidgetResizable(True)
         self.setFocusPolicy(Qt.NoFocus)
@@ -228,9 +225,9 @@ class OptionsViewer(base.BaseWidget):
         """
 
         self._edit_mode = edit_value
-        self.move_down_btn.setEnabled(edit_value)
-        self._move_up_btn.setEnabled(edit_value)
-        self.remove_btn.setEnabled(edit_value)
+        self.move_down_btn.setVisible(edit_value)
+        self._move_up_btn.setVisible(edit_value)
+        self.remove_btn.setVisible(edit_value)
         if not edit_value:
             self._options_list.clear_selection()
         self._options_list.set_edit(edit_value)

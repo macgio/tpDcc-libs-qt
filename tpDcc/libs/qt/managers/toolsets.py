@@ -363,6 +363,7 @@ class ToolsetsManager(object):
             pkg_path = tools_path.format(package_name, tool_name)
             pkg_loader = loader.find_loader(pkg_path)
             if not pkg_loader:
+                LOGGER.debug('No loader found for "{}"'.format(tool_name))
                 continue
             if tool_name not in paths_to_register:
                 paths_to_register[tool_name] = list()
@@ -371,6 +372,6 @@ class ToolsetsManager(object):
             if package_filename not in tools_paths_to_load:
                 tools_paths_to_load.append(package_filename)
 
-        # Find toolset widgets are located
+        # Find where toolset widgets are located
         if tools_paths_to_load:
             self._manager.register_paths(tools_paths_to_load, package_name=package_name)
