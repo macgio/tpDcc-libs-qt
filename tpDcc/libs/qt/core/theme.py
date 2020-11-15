@@ -15,6 +15,7 @@ import logging
 from Qt.QtCore import QObject, Signal
 from Qt.QtGui import QColor
 
+from tpDcc import dcc
 from tpDcc.managers import resources
 from tpDcc.libs.python import yamlio, color, python
 from tpDcc.libs.qt.core import style, qtutils, cache, color as qt_color
@@ -113,7 +114,7 @@ class Theme(QObject, object):
             LOGGER.warning('Impossible to load theme data from file: "{}"!'.format(theme_file))
             return None
 
-        self._style = theme_data.get('style', 'default.css')
+        self._style = theme_data.get('style', 'default')
         self._overrides = theme_data.get('overrides', list())
 
         theme_name = theme_data.get('name', None)
@@ -587,11 +588,20 @@ class Theme(QObject, object):
         """
 
         style_name = self._style or 'default'
+        dcc_name = dcc.get_name()
+        dcc_version = dcc.get_version()
+        dcc_style = '{}_{}{}'.format(style_name, dcc_name, dcc_version)
+        all_styles = [dcc_style, style_name]
+
         style_extension = style.StyleSheet.EXTENSION
         if not style_extension.startswith('.'):
             style_extension = '.{}'.format(style_extension)
-        style_file_name = '{}{}'.format(style_name, style_extension)
-        style_path = resources.get('styles', style_file_name)
+
+        for style_name in all_styles:
+            style_file_name = '{}{}'.format(style_name, style_extension)
+            style_path = resources.get('styles', style_file_name)
+            if style_path and os.path.isfile(style_path):
+                return style_path
 
         return style_path
 
