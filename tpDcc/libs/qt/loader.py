@@ -75,7 +75,6 @@ def init(dev=False):
     app = QApplication.instance() or QApplication(sys.argv)
 
     update_paths()
-    register_resources()
 
     init_dcc()
 
@@ -142,15 +141,6 @@ def create_logger(dev=False):
             handler.setLevel(logging.DEBUG)
 
     return logger
-
-
-def register_resources():
-    """
-    Registers tpDcc.libs.qt resources path
-    """
-
-    resources_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources')
-    resources.register_resource(resources_path, key='tpDcc-libs-qt')
 
 
 create_logger()

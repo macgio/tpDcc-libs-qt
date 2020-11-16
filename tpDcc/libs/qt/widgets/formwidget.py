@@ -18,7 +18,7 @@ from Qt.QtWidgets import QSizePolicy, QFrame, QLabel, QPushButton, QSpacerItem, 
 from Qt.QtWidgets import QFileDialog, QTextEdit
 from Qt.QtGui import QPixmap, QCursor, QIntValidator
 
-from tpDcc.libs.python import decorators
+from tpDcc.libs.python import decorators, path as path_utils
 from tpDcc.libs.qt.widgets import layouts, label, lineedit, color, sliders
 
 LOGGER = logging.getLogger('tpDcc-libs-qt')
@@ -462,6 +462,9 @@ class FormWidget(QFrame, object):
                 widget.blockSignals(False)
 
         self.stateChanged.emit()
+
+    def save_persistent_values(self):
+        LOGGER.warning('save_persistent_values is not implemented yet!')
 
     def _on_title_clicked(self, toggle):
         """
@@ -1132,7 +1135,10 @@ class LabelFieldWidget(FieldWidget, object):
         :return: str
         """
 
-        return str(self.widget().text())
+        try:
+            return str(self.widget().text())
+        except Exception:
+            return str(path_utils.normalize_path(self.widget().text()))
 
     def set_value(self, value):
         """

@@ -19,7 +19,8 @@ from Qt.QtWidgets import QMainWindow, QWidget, QFrame, QTabWidget, QTabBar
 from tpDcc import dcc
 from tpDcc.managers import resources
 from tpDcc.libs.python import path, folder
-from tpDcc.libs.qt.core import mixin, qtutils, animation, theme, statusbar, dragger, resizers
+from tpDcc.libs.resources.core import theme
+from tpDcc.libs.qt.core import qtutils, animation, statusbar, dragger, resizers
 from tpDcc.libs.qt.core import settings as qt_settings
 from tpDcc.libs.qt.widgets import layouts
 
@@ -36,7 +37,7 @@ class WindowContents(QFrame, object):
         super(WindowContents, self).__init__(parent=parent)
 
 
-@mixin.theme_mixin
+@theme.mixin
 class BaseWindow(QMainWindow, object):
 
     closed = Signal()
@@ -127,8 +128,8 @@ class BaseWindow(QMainWindow, object):
     def closeEvent(self, event):
         self.save_settings()
         self.closed.emit()
-        for child in self.findChildren(QWidget):
-            child.close()
+        # for child in self.findChildren(QWidget):
+        #     child.close()
         self.setParent(None)
         self.deleteLater()
 
@@ -262,11 +263,7 @@ class BaseWindow(QMainWindow, object):
         :return: QLayout
         """
 
-        main_layout = layouts.VerticalLayout()
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
-
-        return main_layout
+        return layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
 
     def ui(self):
         """

@@ -11,10 +11,11 @@ from Qt.QtCore import Qt, Signal
 from Qt.QtWidgets import QLineEdit, QMenu, QActionGroup, QAction, QWidgetAction
 
 from tpDcc.libs.python import python
-from tpDcc.libs.qt.core import mixin, qtutils, formatters
+from tpDcc.libs.resources.core import theme
+from tpDcc.libs.qt.core import qtutils, formatters
 
 
-@mixin.theme_mixin
+@theme.mixin
 # @mixin.property_mixin
 class BaseMenu(QMenu, object):
 

@@ -13,11 +13,12 @@ from Qt.QtGui import QFontMetricsF
 
 from tpDcc import dcc
 from tpDcc.managers import resources
-from tpDcc.libs.qt.core import base, mixin, animation
+from tpDcc.libs.resources.core import theme
+from tpDcc.libs.qt.core import base, animation
 from tpDcc.libs.qt.widgets import layouts, label, avatar, loading
 
 
-@mixin.theme_mixin
+@theme.mixin
 class BaseToast(base.BaseWidget, object):
 
     class ToastTypes(object):

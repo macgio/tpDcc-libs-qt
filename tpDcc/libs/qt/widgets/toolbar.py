@@ -13,7 +13,8 @@ from Qt.QtWidgets import QWidget, QToolBar, QAction, QFrame
 from tpDcc.dcc import dialog
 from tpDcc.managers import resources
 from tpDcc.libs.python import python
-from tpDcc.libs.qt.core import icon, qtutils
+from tpDcc.libs.resources.core import icon
+from tpDcc.libs.qt.core import qtutils
 from tpDcc.libs.qt.widgets import layouts, buttons
 
 

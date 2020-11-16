@@ -7,12 +7,13 @@ Module that includes classes to create different types of message boxes
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import Qt
-from Qt.QtWidgets import QSizePolicy, QFrame, QLabel, QLineEdit, QCheckBox, QDialog, QDialogButtonBox
+from Qt.QtCore import Qt, QEvent
+from Qt.QtWidgets import QSizePolicy, QFrame, QDialog, QDialogButtonBox
 
 from tpDcc import dcc
-from tpDcc.libs.qt.core import animation, qtutils, theme
-from tpDcc.libs.qt.widgets import layouts
+from tpDcc.libs.resources.core import theme
+from tpDcc.libs.qt.core import animation, qtutils
+from tpDcc.libs.qt.widgets import layouts, label, checkbox, lineedit
 
 
 def create_message_box(parent, title, text, width=None, height=None, buttons=None, header_pixmap=None,
@@ -51,7 +52,7 @@ def create_message_box(parent, title, text, width=None, height=None, buttons=Non
 
     mb.setStyleSheet(theme_to_apply.stylesheet())
 
-    header_color = header_color or theme_to_apply.accent_color or "rgb(50, 150, 200)"
+    header_color = header_color or theme_to_apply.window_dragger_color or "rgb(50, 150, 225)"
     mb.set_header_color(header_color)
     mb.setWindowTitle(title)
     mb.set_title_text(title)
@@ -218,13 +219,15 @@ class MessageBox(QDialog, object):
         self.setMinimumHeight(height or self.MAX_HEIGHT)
         self.setObjectName(name)
         self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
-        # self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setAttribute(Qt.WA_TranslucentBackground)
         # self.setStyleSheet('background-color: rgb(68, 68, 68, 255);')
 
         parent = self.parent()
+        self._frame = None
         if parent and parent != dcc.get_main_window():
             parent.installEventFilter(self)
             self._frame = QFrame(parent)
+            self._frame.setStyleSheet('background-color: rgba(25, 25, 25, 150);')
             self._frame.setObjectName('messageBoxFrame')
             self._frame.show()
             self.setParent(self._frame)
@@ -237,7 +240,7 @@ class MessageBox(QDialog, object):
         self._header.setObjectName('messageBoxHeaderFrame')
         self._header.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
-        self._icon = QLabel(self._header)
+        self._icon = label.BaseLabel(parent=self._header)
         self._icon.hide()
         self._icon.setFixedHeight(32)
         self._icon.setFixedHeight(32)
@@ -245,7 +248,7 @@ class MessageBox(QDialog, object):
         self._icon.setAlignment(Qt.AlignTop)
         self._icon.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
 
-        self._title = QLabel(self._header)
+        self._title = label.BaseLabel(parent=self._header)
         self._title.setObjectName('messageBoxHeaderLabel')
         self._title.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
@@ -259,7 +262,7 @@ class MessageBox(QDialog, object):
         self._body.setObjectName('messageBoxBody')
         self._body.setLayout(body_layout)
 
-        self._message = QLabel(self._body)
+        self._message = label.BaseLabel(parent=self._body)
         self._message.setWordWrap(True)
         self._message.setMinimumHeight(15)
         self._message.setAlignment(Qt.AlignLeft)
@@ -269,7 +272,7 @@ class MessageBox(QDialog, object):
         body_layout.setContentsMargins(15, 15, 15, 15)
 
         if enable_input_edit:
-            self._input_edit = QLineEdit(self._body)
+            self._input_edit = lineedit.BaseLineEdit(parent=self._body)
             self._input_edit.setObjectName('messageBoxInputEdit')
             self._input_edit.setMinimumHeight(32)
             self._input_edit.setFocus()
@@ -279,7 +282,7 @@ class MessageBox(QDialog, object):
 
         if enable_dont_show_checkbox:
             msg = 'Do not show this message again'
-            self._dont_show_checkbox = QCheckBox(msg, self._body)
+            self._dont_show_checkbox = checkbox.BaseCheckBox(msg, parent=self._body)
             body_layout.addStretch(10)
             body_layout.addWidget(self._dont_show_checkbox)
             body_layout.addStretch(2)
@@ -295,17 +298,17 @@ class MessageBox(QDialog, object):
 
         self.updateGeometry()
 
-    # def eventFilter(self, object, event):
-    #     """
-    #     Overrides base QDialog eventFilter function
-    #     Updates the geometry when the parnet widget changes size
-    #     :param object: QWidget
-    #     :param event: QEvent
-    #     """
-    #
-    #     if event.type() == QEvent.Resize:
-    #         self.updateGeometry()
-    #     return super(MessageBox, self).eventFilter(object, event)
+    def eventFilter(self, object, event):
+        """
+        Overrides base QDialog eventFilter function
+        Updates the geometry when the parnet widget changes size
+        :param object: QWidget
+        :param event: QEvent
+        """
+
+        if event.type() == QEvent.Resize:
+            self.updateGeometry()
+        return super(MessageBox, self).eventFilter(object, event)
 
     def showEvent(self, event):
         """

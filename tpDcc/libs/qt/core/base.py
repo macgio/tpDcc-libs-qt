@@ -10,11 +10,12 @@ from __future__ import print_function, division, absolute_import
 from Qt.QtCore import Qt, Signal, Property
 from Qt.QtWidgets import QApplication, QSizePolicy, QWidget, QFrame, QScrollArea, QWhatsThis
 
-from tpDcc.libs.qt.core import qtutils, mixin, theme
+from tpDcc.libs.resources.core import theme
+from tpDcc.libs.qt.core import qtutils
 from tpDcc.libs.qt.widgets import layouts
 
 
-@mixin.theme_mixin
+@theme.mixin
 class BaseWidget(QWidget, object):
     """
     Base class for all QWidgets based items
@@ -173,7 +174,7 @@ class BaseWidget(QWidget, object):
         return self
 
 
-@mixin.theme_mixin
+@theme.mixin
 class BaseFrame(QFrame, object):
     mouseReleased = Signal(object)
 

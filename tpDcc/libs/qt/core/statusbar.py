@@ -9,12 +9,14 @@ from __future__ import print_function, division, absolute_import
 
 from Qt.QtCore import Qt, Property, QSize, QTimer
 from Qt.QtWidgets import QSizePolicy, QHBoxLayout, QFrame
-from Qt.QtGui import QIcon
+from Qt.QtGui import QPixmap
 
 from tpDcc.managers import resources
-from tpDcc.libs.qt.widgets import label, buttons
+from tpDcc.libs.resources.core import theme
+from tpDcc.libs.qt.widgets import label
 
 
+@theme.mixin
 class StatusWidget(QFrame, object):
 
     DEFAULT_DISPLAY_TIME = 10000  # milliseconds -> 10 seconds
@@ -22,7 +24,7 @@ class StatusWidget(QFrame, object):
     def __init__(self, *args):
         super(StatusWidget, self).__init__(*args)
 
-        self._status = ''
+        self._status = None
         self._blocking = False
         self._timer = QTimer(self)
 
@@ -51,11 +53,15 @@ class StatusWidget(QFrame, object):
 
         self._timer.timeout.connect(self._reset)
 
+        # Force set to initialize default status Qt property
+        self.status = ''
+
     def _get_status(self):
         return self._status
 
     def _set_status(self, value):
         self._status = str(value)
+        self.polish()
 
     status = Property(str, _get_status, _set_status)
 
@@ -77,6 +83,7 @@ class StatusWidget(QFrame, object):
         if self.is_blocking():
             return
 
+        self.status = 'ok'
         icon = resources.icon('ok')
         self._show_message(message, icon, msecs)
 
@@ -90,6 +97,7 @@ class StatusWidget(QFrame, object):
         if self.is_blocking():
             return
 
+        self.status = 'info'
         icon = resources.icon('info')
         self._show_message(message, icon, msecs)
 
@@ -103,6 +111,7 @@ class StatusWidget(QFrame, object):
         if self.is_blocking():
             return
 
+        self.status = 'warning'
         icon = resources.icon('warning')
         self._show_message(message, icon, msecs)
 
@@ -113,6 +122,7 @@ class StatusWidget(QFrame, object):
        :param msecs: int
        """
 
+        self.status = 'error'
         icon = resources.icon('error', extension='png')
         self._show_message(message, icon, msecs, blocking=True)
 
@@ -125,10 +135,10 @@ class StatusWidget(QFrame, object):
         self.label_image.setVisible(False)
         self._label.setText('')
         icon = resources.pixmap('blank')
-        self.label_image.setPixmap(icon) if icon else self.label_image.setIcon(QIcon())
+        self.label_image.setPixmap(icon) if icon else self.label_image.setPixmap(QPixmap())
         self.setStyleSheet('')
         self._blocking = False
-        self._status = ''
+        self.status = ''
 
     def _show_message(self, message, icon, msecs=None, blocking=False):
         """

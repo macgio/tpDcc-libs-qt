@@ -20,7 +20,8 @@ from Qt.QtWidgets import QWidget, QLabel, QFrame, QPushButton, QSlider, QLineEdi
 from tpDcc import dcc
 from tpDcc.managers import resources
 from tpDcc.abstract import dialog as abstract_dialog
-from tpDcc.libs.qt.core import qtutils, animation, theme, dragger, resizers
+from tpDcc.libs.resources.core import theme
+from tpDcc.libs.qt.core import qtutils, animation, dragger, resizers
 from tpDcc.libs.qt.widgets import layouts, dividers
 
 

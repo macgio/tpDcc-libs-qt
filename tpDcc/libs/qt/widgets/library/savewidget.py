@@ -28,15 +28,15 @@ LOGGER = logging.getLogger('tpDcc-libs-qt')
 class BaseSaveWidget(base.BaseWidget, object):
     def __init__(self, item, settings, temp_path=None, parent=None):
 
-        self._item = None
+        # self._item = None
         self._settings = settings
         self._temp_path = temp_path
         self._options_widget = None
 
-        super(BaseSaveWidget, self).__init__(parent=parent)
-
-        self.setObjectName('LibrarySaveWidget')
-        self.set_item(item)
+        # super(BaseSaveWidget, self).__init__(parent=parent)
+        #
+        # self.setObjectName('LibrarySaveWidget')
+        # self.set_item(item)
 
     def ui(self):
         super(BaseSaveWidget, self).ui()
@@ -109,13 +109,13 @@ class BaseSaveWidget(base.BaseWidget, object):
 
         self._settings = settings
 
-    def item(self):
-        """
-        Returns the library item to be created
-        :return: LibraryItem
-        """
-
-        return self._item
+    # def item(self):
+    #     """
+    #     Returns the library item to be created
+    #     :return: LibraryItem
+    #     """
+    #
+    #     return self._item
 
     def set_item(self, item):
         """

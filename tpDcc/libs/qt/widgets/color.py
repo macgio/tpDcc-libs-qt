@@ -20,7 +20,8 @@ from Qt.QtGui import QPixmap, QImage, QPolygonF, QDrag
 from tpDcc.dcc import dialog
 from tpDcc.managers import resources
 from tpDcc.libs.python import mathlib, python
-from tpDcc.libs.qt.core import base, qtutils, color as core_color
+from tpDcc.libs.resources.core import color as core_color
+from tpDcc.libs.qt.core import base, qtutils
 from tpDcc.libs.qt.widgets import layouts, buttons, label, spinbox, dividers, panel
 
 

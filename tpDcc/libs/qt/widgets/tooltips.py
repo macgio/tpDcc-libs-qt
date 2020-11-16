@@ -12,7 +12,7 @@ from Qt.QtWidgets import QWidget, QStyle
 from Qt.QtGui import QFont, QCursor
 
 from tpDcc import dcc
-from tpDcc.libs.qt.core import icon
+from tpDcc.libs.resources.core import icon
 from tpDcc.libs.qt.widgets import layouts, dialog, parsers, label
 
 EXPANDED_TOOLTIP_INJECTOR_ATTRIBUTE = '_expandedTooltips_'

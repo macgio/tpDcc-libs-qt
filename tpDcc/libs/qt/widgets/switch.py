@@ -10,10 +10,10 @@ from __future__ import print_function, division, absolute_import
 from Qt.QtCore import Property, QSize
 from Qt.QtWidgets import QRadioButton
 
-from tpDcc.libs.qt.core import mixin, theme
+from tpDcc.libs.resources.core import theme
 
 
-@mixin.theme_mixin
+@theme.mixin
 # @mixin.cursor_mixin
 class SwitchWidget(QRadioButton, object):
     def __init__(self, parent=None):

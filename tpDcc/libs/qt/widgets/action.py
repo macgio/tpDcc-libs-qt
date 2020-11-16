@@ -8,9 +8,9 @@ Module that defines that implements different types of actions
 from __future__ import print_function, division, absolute_import
 
 from Qt.QtCore import Qt
-from Qt.QtWidgets import QSizePolicy, QFrame, QWidgetAction
+from Qt.QtWidgets import QSizePolicy, QFrame, QMenu, QWidgetAction
 
-from tpDcc.libs.qt.widgets import layouts, label, checkbox, sliders
+from tpDcc.libs.qt.widgets import layouts, label, checkbox, sliders, color, icon
 
 
 class SeparatorLine(QFrame, object):
@@ -181,3 +181,82 @@ class SliderAction(QWidgetAction):
         action_widget.setLayout(action_layout)
 
         return action_widget
+
+
+class ColorPickerAction(QWidgetAction):
+    def __init__(self, *args, **kwargs):
+        super(ColorPickerAction, self).__init__(*args, **kwargs)
+
+        self._picker = color.ColorPicker()
+        self._picker.setMouseTracking(True)
+        self._picker.colorChanged.connect(self._on_triggered)
+
+    def createWidget(self, menu):
+        widget = QFrame(menu)
+        widget.setObjectName('colorPickerAction')
+        action_layout = layouts.HorizontalLayout(margins=(0, 0, 0, 0))
+        action_layout.addWidget(self.picker(), stretch=1)
+        widget.setLayout(action_layout)
+
+        return widget
+
+    def picker(self):
+        """
+        Returns picker widget instance
+        :return: ColorPicker
+        """
+
+        return self._picker
+
+    def _on_triggered(self):
+        self.trigger()
+
+        try:
+            if isinstance(self.parent().parent(), QMenu):
+                self.parent().parent().close()
+        except Exception:
+            try:
+                if isinstance(self.parent(), QMenu):
+                    self.parent().close()
+            except Exception:
+                pass
+
+
+class IconPickerAction(QWidgetAction):
+    def __init__(self, *args, **kwargs):
+        super(IconPickerAction, self).__init__(*args, **kwargs)
+
+        self._picker = icon.IconPicker()
+        self._picker.setMouseTracking(True)
+        self._picker.iconChanged.connect(self._on_triggered)
+
+    def createWidget(self, menu):
+        widget = QFrame(menu)
+        widget.setObjectName('iconPickerAction')
+        action_layout = layouts.HorizontalLayout(margins=(0, 0, 0, 0))
+        action_layout.addWidget(self.picker(), stretch=1)
+        widget.setLayout(action_layout)
+
+        return widget
+
+    def picker(self):
+        """
+        Returns picker widget instance
+        :return: IconPicker
+        """
+
+        return self._picker
+
+    def _on_triggered(self):
+        self.trigger()
+
+        try:
+            if isinstance(self.parent().parent(), QMenu):
+                self.parent().parent().close()
+        except Exception:
+            try:
+                if isinstance(self.parent(), QMenu):
+                    self.parent().close()
+            except Exception:
+                pass
+

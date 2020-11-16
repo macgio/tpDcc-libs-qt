@@ -10,10 +10,11 @@ from __future__ import print_function, division, absolute_import
 from Qt.QtCore import Signal, Property, QPoint, QEvent
 from Qt.QtWidgets import QSizePolicy, QComboBox
 
-from tpDcc.libs.qt.core import mixin, formatters, theme
+from tpDcc.libs.resources.core import theme
+from tpDcc.libs.qt.core import formatters
 
 
-@mixin.theme_mixin
+@theme.mixin
 # @mixin.cursor_mixin
 # @mixin.property_mixin
 class BaseComboBox(QComboBox, object):

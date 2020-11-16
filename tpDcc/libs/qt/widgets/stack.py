@@ -221,9 +221,10 @@ class StackItem(QFrame, object):
     def ui(self):
         # theme = tpDcc.ToolsMgr().get_tool_theme('tpDcc-tools-hub')
         # border_width = qtutils.dpi_scale_divide(theme.STACK_BORDER_WIDTH)
-        border_width = qtutils.dpi_scale_divide(1)
-        self.main_layout = layouts.VerticalLayout(
-            margins=(border_width, border_width, border_width, border_width), spacing=0)
+        margin = qtutils.dpi_scale_divide(1)
+        self.main_layout = layouts.VerticalLayout(margins=(margin, margin, margin, margin), spacing=0)
+        # self.main_layout = layouts.VerticalLayout(margins=(0, 0, 0, 0), spacing=0)
+
         self.setLayout(self.main_layout)
 
         if not self._title_frame:

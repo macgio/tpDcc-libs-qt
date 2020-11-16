@@ -12,57 +12,7 @@ from functools import partial
 from Qt.QtCore import Qt, QPoint, QEvent, QPropertyAnimation, QEasingCurve
 from Qt.QtWidgets import QGraphicsDropShadowEffect, QGraphicsOpacityEffect
 
-from tpDcc.libs.qt.core import qtutils, theme as core_theme
-
-
-def theme_mixin(cls):
-    """
-    Decorator that can be used to allow custom widget classes to retrieve theme info of its main tpDcc window
-    :param cls:
-    :return: cls
-    """
-
-    original_init__ = cls.__init__
-
-    def my__init__(self, *args, **kwargs):
-        original_init__(self, *args, **kwargs)
-
-        # TODO: This is SUPER slow. We cannot use it deliberately. We should add some kind of class variable
-        # TODO: to enable disable this functionality in a by wigdet level. By default, disable.
-
-        # current_theme = self.theme()
-        # if current_theme:
-        #     self.setStyleSheet(current_theme.stylesheet())
-
-    def polish(self):
-        self.style().polish(self)
-
-    def theme(self):
-        found_theme = self._theme if hasattr(self, '_theme') else core_theme.Theme()
-
-        return found_theme
-
-    def theme_default_size(self):
-        theme = self.theme()
-        if not theme:
-            return core_theme.Theme.DEFAULT_SIZE
-        else:
-            return theme.default_size
-
-    def accent_color(self):
-        theme = self.theme()
-        if not theme:
-            return core_theme.Theme.Colors.BLUE
-        else:
-            return theme.accent_color
-
-    setattr(cls, '__init__', my__init__)
-    setattr(cls, 'polish', polish)
-    setattr(cls, 'theme', theme)
-    setattr(cls, 'theme_default_size', theme_default_size)
-    setattr(cls, 'accent_color', accent_color)
-
-    return cls
+from tpDcc.libs.qt.core import qtutils
 
 
 def property_mixin(cls):

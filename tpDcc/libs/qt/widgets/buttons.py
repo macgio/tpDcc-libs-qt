@@ -17,7 +17,8 @@ from Qt.QtGui import QCursor, QIcon, QFontMetrics, QPainter, QPainterPath, QColo
 from tpDcc import dcc
 from tpDcc.managers import resources
 from tpDcc.libs.python import python
-from tpDcc.libs.qt.core import consts, animation, icon, qtutils, mixin, theme, menu
+from tpDcc.libs.resources.core import icon, theme
+from tpDcc.libs.qt.core import consts, animation, qtutils, menu
 from tpDcc.libs.qt.widgets import tooltips
 
 # ===================================================================
@@ -28,7 +29,7 @@ INNER, OUTER = 1, 2
 # ===================================================================
 
 
-@mixin.theme_mixin
+@theme.mixin
 # @mixin.cursor_mixin
 class BaseButton(QPushButton, object):
 
@@ -197,14 +198,14 @@ class BaseButton(QPushButton, object):
         return self
 
 
-@mixin.theme_mixin
+@theme.mixin
 # @mixin.cursor_mixin
 class BaseRadioButton(QRadioButton, object):
     def __init__(self, *args, **kwargs):
         super(BaseRadioButton, self).__init__(*args, **kwargs)
 
 
-@mixin.theme_mixin
+@theme.mixin
 # @mixin.cursor_mixin
 class BaseToolButton(QToolButton, object):
     def __init__(self, parent=None):

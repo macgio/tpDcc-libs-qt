@@ -13,12 +13,11 @@ from Qt.QtCore import Qt, Signal, Property, QTimer
 from Qt.QtWidgets import QApplication, QLineEdit, QTextEdit
 from Qt.QtGui import QDoubleValidator, QIntValidator
 
-
-from tpDcc.libs.qt.core import mixin, theme
+from tpDcc.libs.resources.core import theme
 from tpDcc.libs.qt.widgets import layouts, buttons, browser
 
 
-@mixin.theme_mixin
+@theme.mixin
 class BaseLineEdit(QLineEdit, object):
     """
      Basic line edit

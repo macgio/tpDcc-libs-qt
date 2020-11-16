@@ -16,14 +16,15 @@ from Qt.QtGui import QCursor, QColor, QFont, QPainter, QBrush, QLinearGradient, 
 
 from tpDcc import dcc
 from tpDcc.libs.python import mathlib, color as core_color
-from tpDcc.libs.qt.core import qtutils, color, mixin
+from tpDcc.libs.resources.core import theme, color
+from tpDcc.libs.qt.core import qtutils
 from tpDcc.libs.qt.widgets import layouts
 
 FLOAT_SLIDER_DRAG_STEPS = [100.0, 10.0, 1.0, 0.1, 0.01, 0.001]
 INT_SLIDER_DRAG_STEPS = [100.0, 10.0, 1.0]
 
 
-@mixin.theme_mixin
+@theme.mixin
 class BaseSlider(QSlider, object):
     def __init__(self, orientation=Qt.Horizontal, parent=None):
         super(BaseSlider, self).__init__(orientation, parent=parent)
@@ -484,7 +485,7 @@ class DraggerSlider(QDoubleSpinBox, object):
         self.setValue(self.value() + step)
 
 
-@mixin.theme_mixin
+@theme.mixin
 class HoudiniDoubleSlider(QWidget, object):
     """
     Slider that encapsulates a DoubleSlider and Houdini draggers linked together

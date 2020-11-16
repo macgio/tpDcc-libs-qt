@@ -11,10 +11,11 @@ from Qt.QtCore import Qt, Property, QSize, QPropertyAnimation
 from Qt.QtGui import QPainter
 
 from tpDcc.managers import resources
-from tpDcc.libs.qt.core import base, theme, mixin
+from tpDcc.libs.resources.core import theme
+from tpDcc.libs.qt.core import base
 
 
-@mixin.theme_mixin
+@theme.mixin
 class CircleLoading(base.BaseWidget, object):
     def __init__(self, size=None, color=None, speed=1, parent=None):
         super(CircleLoading, self).__init__(parent=parent)

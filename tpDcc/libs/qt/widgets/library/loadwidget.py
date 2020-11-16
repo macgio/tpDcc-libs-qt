@@ -19,30 +19,30 @@ from tpDcc.libs.qt.widgets import layouts, buttons, label, formwidget, dividers,
 from tpDcc.libs.qt.widgets.library import widgets
 
 
-class BaseLoadWidget(base.BaseWidget, object):
-    def __init__(self, item, parent=None):
-        super(BaseLoadWidget, self).__init__(parent=parent)
-
-        self._item = None
-
-        self.setObjectName('Load')
-        self.set_item(item)
-
-    def item(self):
-        """
-        Returns the library item to load
-        :return: LibraryItem
-        """
-
-        return self._item
-
-    def set_item(self, item):
-        """
-        Sets the library item to load
-        :param item: LibraryItem
-        """
-
-        self._item = item
+# class BaseLoadWidget(base.BaseWidget, object):
+#     def __init__(self, item, parent=None):
+#         super(BaseLoadWidget, self).__init__(parent=parent)
+#
+#         self._item = None
+#
+#         self.setObjectName('Load')
+#         self.set_item(item)
+#
+#     def item(self):
+#         """
+#         Returns the library item to load
+#         :return: LibraryItem
+#         """
+#
+#         return self._item
+#
+#     def set_item(self, item):
+#         """
+#         Sets the library item to load
+#         :param item: LibraryItem
+#         """
+#
+#         self._item = item
 
 
 class OptionsFileWidget(base.DirectoryWidget, object):
