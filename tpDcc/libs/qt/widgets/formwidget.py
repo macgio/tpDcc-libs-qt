@@ -7,19 +7,16 @@ Module that contains form widgets for library
 
 from __future__ import print_function, division, absolute_import
 
-import re
-import sys
 import logging
-import traceback
 from functools import partial
 
-from Qt.QtCore import Qt, Signal
-from Qt.QtWidgets import QSizePolicy, QFrame, QLabel, QPushButton, QSpacerItem, QLineEdit, QCheckBox, QComboBox, QMenu
-from Qt.QtWidgets import QFileDialog, QTextEdit
-from Qt.QtGui import QPixmap, QCursor, QIntValidator
+from Qt.QtCore import Signal
+from Qt.QtWidgets import QSizePolicy, QFrame, QSpacerItem
 
-from tpDcc.libs.python import decorators, path as path_utils
-from tpDcc.libs.qt.widgets import layouts, label, lineedit, color, sliders
+from tpDcc.libs.qt.core import contexts as qt_contexts
+from tpDcc.libs.qt.widgets import layouts, label, buttons, formfields
+
+from tpDcc.libs.datalibrary.core import settings
 
 LOGGER = logging.getLogger('tpDcc-libs-qt')
 
@@ -40,20 +37,20 @@ class FormDialog(QFrame, object):
         self._widgets = list()
         self._validator = None
 
-        self._title = QLabel(self)
+        self._title = label.BaseLabel(parent=self)
         self._title.setObjectName('title')
         self._title.setText('FORM')
-        self._description = QLabel(self)
+        self._description = label.BaseLabel(parent=self)
         self._description.setObjectName('description')
         self._form_widget = FormWidget(self)
         self._form_widget.setObjectName('formWidget')
         self._form_widget.validated.connect(self._on_validated)
         btn_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
-        self._accept_btn = QPushButton(self)
+        self._accept_btn = buttons.BaseButton(parent=self)
         self._accept_btn.setObjectName('acceptButton')
         self._accept_btn.setText('Accept')
         self._accept_btn.clicked.connect(self.accept)
-        self._reject_btn = QPushButton(self)
+        self._reject_btn = buttons.BaseButton(parent=self)
         self._reject_btn.setObjectName('rejectButton')
         self._reject_btn.setText('Cancel')
         self._reject_btn.clicked.connect(self.reject)
@@ -166,26 +163,38 @@ class FormWidget(QFrame, object):
     def __init__(self, *args, **kwargs):
         super(FormWidget, self).__init__(*args, **kwargs)
 
-        self._schema = list()
+        self._schema = dict()
         self._widgets = list()
         self._validator = None
 
         main_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
         self.setLayout(main_layout)
 
-        self._options_frame = QFrame(self)
-        self._options_frame.setObjectName('optionsFrame')
+        self._fields_frame = QFrame(self)
+        self._fields_frame.setObjectName('fieldsFrame')
         options_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
-        self._options_frame.setLayout(options_layout)
+        self._fields_frame.setLayout(options_layout)
 
-        self._title_widget = QPushButton(self)
+        self._title_widget = buttons.BaseButton(parent=self)
         self._title_widget.setCheckable(True)
         self._title_widget.setObjectName('titleWidget')
         self._title_widget.toggled.connect(self._on_title_clicked)
         self._title_widget.hide()
 
         main_layout.addWidget(self._title_widget)
-        main_layout.addWidget(self._options_frame)
+        main_layout.addWidget(self._fields_frame)
+
+    # =================================================================================================================
+    # OVERRIDES
+    # =================================================================================================================
+
+    def closeEvent(self, event):
+        self.save_persistent_values()
+        super(FormWidget, self).closeEvent(event)
+
+    # =================================================================================================================
+    # BASE
+    # =================================================================================================================
 
     def title_widget(self):
         """
@@ -217,12 +226,9 @@ class FormWidget(QFrame, object):
         :param flag: bool
         """
 
-        self._title_widget.blockSignals(True)
-        try:
+        with qt_contexts.block_signals(self._title_widget):
             self._title_widget.setChecked(flag)
-            self._options_frame.setVisible(flag)
-        finally:
-            self._title_widget.blockSignals(False)
+            self._fields_frame.setVisible(flag)
 
     def set_title_visible(self, flag):
         """
@@ -271,9 +277,23 @@ class FormWidget(QFrame, object):
 
         values = dict()
         for widget in self._widgets:
-            values[widget.data().get('name')] = widget.value()
+            name = widget.data().get('name')
+            if name:
+                values[name] = widget.value()
 
         return values
+
+    def set_values(self, values):
+        """
+        Sets the field values for the current form
+        :param values: dict
+        """
+
+        state = list()
+        for name in values:
+            state.append({'name': name, 'value': values[name]})
+
+        self._set_state(state)
 
     def default_values(self):
         """
@@ -283,13 +303,27 @@ class FormWidget(QFrame, object):
 
         values = dict()
         for widget in self._widgets:
-            values[widget.data().get('name')] = widget.default()
+            name = widget.data().get('name')
+            if name:
+                values[name] = widget.default()
 
         return values
 
-    def options(self):
+    def set_data(self, name, data):
         """
-        Returns fields options
+        Sets the data for the given field name
+        :param name: str
+        :param data: dict
+        """
+
+        widget = self.widget(name)
+        if not widget:
+            return
+        widget.set_data(data)
+
+    def fields(self):
+        """
+        Returns fields data for the form
         :return: list(dict)
         """
 
@@ -299,18 +333,26 @@ class FormWidget(QFrame, object):
 
         return options
 
+    def field_widgets(self):
+        """
+        Returns all field widgets
+        :return: list(FieleWidget)
+        """
+
+        return self._widgets
+
     def state(self):
         """
         Returns the current state
         :return: dict
         """
 
-        options = list()
+        fields = list()
         for widget in self._widgets:
-            options.append(widget.state())
+            fields.append(widget.state())
 
         state = {
-            'options': options,
+            'fields': fields,
             'expanded': self.is_expanded()
         }
 
@@ -326,71 +368,59 @@ class FormWidget(QFrame, object):
         if expanded is not None:
             self.set_expanded(expanded)
 
-        options = state.get('options')
-        if options is not None:
-            self._set_state(options)
+        fields = state.get('fields')
+        if fields is not None:
+            self._set_state(fields)
 
         self.validate()
 
-    def options_state(self):
+    def schema(self):
         """
-        Returns options state
+        Returns form's schema
         :return: dict
         """
 
-        state = dict()
-        values = self.values()
-        options = self.options()
-        for option in options:
-            name = option.get('name')
-            persistent = option.get('persistent')
-            if name and persistent:
-                state[name] = values[name]
+        return self._schema
 
-        return state
-
-    def set_state_from_options(self, options):
-        """
-        Sets state from given options
-        :param options: list(dict)
-        """
-
-        state = list()
-        for option in options:
-            state.append({'name': option, 'value': options[option]})
-
-        self._set_state(state)
-
-    def set_schema(self, schema, layout=None):
+    def set_schema(self, schema, layout=None, errors_visible=False):
         """
         Sets the schema for the widget
-        :param schema: ilst(dict)
+        :param schema: list(dict)
         :param layout: str
+        :param errors_visible: str
         """
 
-        self._schema = schema
-        for data in schema:
-            cls = FIELD_WIDGET_REGISTRY.get(data.get('type', 'label'))
+        self._schema = self._sort_schema(schema)
+        for field in schema:
+            cls = formfields.FIELD_WIDGET_REGISTRY.get(field.get('type', 'label'))
             if not cls:
-                LOGGER.warning('Cannot find widget for {}'.format(data))
+                LOGGER.warning('Cannot find widget for {}'.format(field))
                 continue
-            if layout and not data.get('layout'):
-                data['layout'] = layout
+            if layout and not field.get('layout'):
+                field['layout'] = layout
 
-            widget = cls(data=data)
+            error_visible = field.get('errorVisible')
+            field['errorVisible'] = error_visible if error_visible is not None else errors_visible
+
+            widget = cls(data=field, parent=self._fields_frame, form_widget=self)
+            data = widget.default_data()
+            data.update(field)
+
             widget.set_data(data)
 
-            value = data.get('value')
-            default = data.get('default')
+            value = field.get('value')
+            default = field.get('default')
             if value is None and default is not None:
                 widget.set_value(default)
 
             self._widgets.append(widget)
 
-            callback = partial(self._on_option_changed, widget)
+            callback = partial(self._on_field_changed, widget)
             widget.valueChanged.connect(callback)
 
-            self._options_frame.layout().addWidget(widget)
+            self._fields_frame.layout().addWidget(widget)
+
+        self.load_persistent_values()
 
     def validator(self):
         """
@@ -417,18 +447,42 @@ class FormWidget(QFrame, object):
             widget.reset()
         self.validate()
 
-    def validate(self):
+    def validate(self, widget=None):
         """
         Validates the current options using the validator
         """
 
-        if self._validator:
-            fields = self._validator(**self.values())
-            if fields:
-                self._set_state(fields)
-            self.validated.emit()
-        else:
-            LOGGER.debug('No validator set')
+        if not self._validator:
+            return
+
+        values = dict()
+        for name, value in self.values().items():
+            data = self.widget(name).data()
+            if data.get('validate', True):
+                values[name] = value
+
+        if widget:
+            values['fieldChanged'] = widget.name()
+
+        fields = self._validator(**values)
+        if fields is not None:
+            self._set_state(fields)
+
+        self.validated.emit()
+
+    def errors(self):
+        """
+        Returns all form errors
+        :return: list(str)
+        """
+
+        errors = list()
+        for widget in self._widgets:
+            error = widget.data().get('error')
+            if error:
+                errors.append(error)
+
+        return errors
 
     def has_errors(self):
         """
@@ -436,11 +490,73 @@ class FormWidget(QFrame, object):
         :return: bool
         """
 
-        for widget in self._widgets:
-            if widget.data().get('error'):
-                return True
+        return bool(self.errors())
 
-        return False
+    def save_persistent_values(self):
+        """
+        Saves form widget values
+        Triggered when the user changes field values
+        """
+
+        data = dict()
+
+        for widget in self._widgets:
+            name = widget.data().get('name')
+            if name and widget.data().get('persistent'):
+                key = self.objectName() or 'FormWidget'
+                key = widget.data().get('persistentKey', key)
+                data.setdefault(key, dict())
+                data[key][name] = widget.value()
+
+        for key in data:
+            settings.set(key, data[key])
+
+    def load_persistent_values(self):
+        """
+        Returns the options from the user settings
+        :return: dict
+        """
+
+        values = dict()
+        default_values = self.default_values()
+
+        for field in self.schema():
+            name = field.get('name')
+            persistent = field.get('persistent')
+            if persistent:
+                key = self.objectName() or 'FormWidget'
+                key = field.get('persistentKey', key)
+                value = settings.get(key, dict()).get(name)
+            else:
+                value = default_values.get(name)
+
+            if value is not None:
+                values[name] = value
+
+        self.set_values(values)
+
+    # ============================================================================================================
+    # INTERNAL
+    # ============================================================================================================
+
+    def _sort_schema(self, schema):
+        """
+        Internal function that sorts the schema depending on the group order
+        :param schema: list(dict)
+        :return: list(dict)
+        """
+
+        def _key(field):
+            return field['order']
+
+        order = 0
+
+        for i, field in enumerate(schema):
+            if field.get('type') == 'group':
+                order = field.get('order', order)
+            field['order'] = order
+
+        return sorted(schema, key=_key)
 
     def _set_state(self, fields):
         """
@@ -463,8 +579,9 @@ class FormWidget(QFrame, object):
 
         self.stateChanged.emit()
 
-    def save_persistent_values(self):
-        LOGGER.warning('save_persistent_values is not implemented yet!')
+    # ============================================================================================================
+    # CALLBACKS
+    # ============================================================================================================
 
     def _on_title_clicked(self, toggle):
         """
@@ -474,895 +591,12 @@ class FormWidget(QFrame, object):
         self.set_expanded(toggle)
         self.stateChanged.emit()
 
-    def _on_option_changed(self, widget):
+    def _on_field_changed(self, widget):
         """
         Internal callback function triggered when the given option widget changes its value
         :param widget: FieldWidget
         """
 
-        self.validate()
+        self.validate(widget=widget)
 
 
-class FieldWidget(QFrame, object):
-
-    valueChanged = Signal()
-
-    DefaultLayout = 'horizontal'
-
-    def __init__(self, parent=None, data=None):
-        super(FieldWidget, self).__init__(parent)
-
-        self._data = data or dict()
-        self._error = False
-        self._widget = None
-        self._default = None
-        self._required = None
-        self._error_label = None
-        self._menu_button = None
-        self._action_result = None
-
-        self.setObjectName('fieldWidget')
-
-        direction = self._data.get('layout', self.DefaultLayout)
-        if direction == 'vertical':
-            main_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
-        else:
-            main_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
-        self.setLayout(main_layout)
-
-        self._label = QLabel(self)
-        self._label.setObjectName('label')
-        self._label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        main_layout.addWidget(self._label)
-
-        self._layout2 = layouts.HorizontalLayout()
-        main_layout.addLayout(self._layout2)
-        if direction == 'vertical':
-            self._label.setAlignment(Qt.AlignLeft | Qt .AlignVCenter)
-        else:
-            self._label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-
-    @staticmethod
-    def to_title(name):
-        """
-        Converts camel case strings to title strings
-        :param name: str
-        :return: str
-        """
-
-        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1 \2', name)
-        return re.sub('([a-z0-9])([A-Z])', r'\1 \2', s1).title()
-
-    @decorators.abstractmethod
-    def value(self):
-        """
-        Returns the current value fo the field widget
-        :return: variant
-        """
-
-        raise NotImplementedError('value function of FieldWidget is not implemented!')
-
-    @decorators.abstractmethod
-    def set_items(self, items):
-        """
-        Sets the items for the field widget
-        :param items: list(str)
-        """
-
-        raise NotImplementedError('set_items function of FieldWidget is not implemented!')
-
-    def label(self):
-        """
-        Returns label widget
-        :return: QLabel
-        """
-
-        return self._label
-
-    def title(self):
-        """
-        Returns the title to be displayed for the field
-        :return: str
-        """
-
-        data = self.data()
-        title = data.get('title', '') or data.get('name', '')
-        if title:
-            title = self.to_title(title)
-
-        if self.is_required():
-            title += '*'
-
-        return title
-
-    def is_default(self):
-        """
-        Returns whether the current value is the same as the default value or not
-        :return: bool
-        """
-
-        return self.value() == self.default()
-
-    def default(self):
-        """
-        Returns the default value for the field widget
-        :return: variant
-        """
-
-        return self._default
-
-    def set_default(self, default):
-        """
-        Sets teh default value for the field widget
-        :param default: variant
-        """
-
-        self._default = default
-
-    def set_text(self, text):
-        """
-        Sets the label text for the field widget
-        :param text: str
-        """
-
-        self._label.setText(text)
-
-    def set_value(self, value):
-        """
-        Sets the value of the field widget
-        :param value: variant
-        """
-
-        self._on_emit_value_changed()
-
-    def state(self):
-        """
-        Returns the current state of the data
-        :return: dict
-        """
-
-        return {
-            'name': self._data['name'],
-            'value': self.value()
-        }
-
-    def data(self):
-        """
-        Returns the data for the widget
-        :return: dict
-        """
-
-        return self._data
-
-    def set_data(self, data):
-        """
-        Sets the current state of the field widget using a dictionary
-        :param data: dict
-        """
-
-        state = data
-        self.blockSignals(True)
-
-        try:
-            items = state.get('items', None)
-            if items is not None:
-                self.set_items(items)
-            value = state.get('value', None)
-            default = state.get('default', None)
-            if default is not None:
-                self.set_default(default)
-            elif value is not None:
-                self.set_default(value)
-            if value is not None and value != self.value():
-                try:
-                    self.set_value(value)
-                except TypeError as e:
-                    LOGGER.exception('{} | {}'.format(e, traceback.format_exc()))
-            enabled = state.get('enabled', None)
-            if enabled is not None:
-                self.setEnabled(enabled)
-                self._label.setEnabled(enabled)
-            hidden = state.get('hidden', None)
-            if hidden is not None:
-                self.setHidden(hidden)
-            required = state.get('required', None)
-            if required is not None:
-                self.set_required(required)
-            error = state.get('error', None)
-            if error is not None:
-                self.set_error(error)
-            tooltip = state.get('toolTip', None)
-            if tooltip is not None:
-                self.setToolTip(tooltip)
-                self.setStatusTip(tooltip)
-            style = state.get('style', None)
-            if style is not None:
-                self.setStyleSheet(style)
-            title = self.title() or ''
-            self.set_text(title)
-            lbl = state.get('label')
-            if lbl is not None:
-                text = lbl.get('name', None)
-                if text is not None:
-                    self.set_text(text)
-                visible = lbl.get('visible', None)
-                if visible is not None:
-                    self.label().setVisible(visible)
-            actions = state.get('actions', None)
-            if actions is not None:
-                self._menu_button.setVisible(True)
-            menu = state.get('menu', None)
-            if menu is not None:
-                text = menu.get('name')
-                if text is not None:
-                    self._menu_button.setText(text)
-                visible = menu.get('visible', True)
-                self._menu_button.setVisible(visible)
-            self._data.update(data)
-            self.refresh()
-        finally:
-            self.blockSignals(False)
-
-    def set_error(self, message):
-        """
-        Sets the error message to be displayed for the field widget
-        :param message: str
-        """
-
-        self._error = True if message else False
-        self._data['error'] = message
-        if self._error:
-            self._error_label.setText(message)
-            self._error_label.setHidden(False)
-            self.setToolTip(message)
-        else:
-            self._error_label.setText('')
-            self._error_label.setHidden(True)
-            self.setToolTip(self.data().get('toolTip'))
-
-        self.refresh()
-
-    def widget(self):
-        """
-        Returns the widget used to set and get the field value
-        :return: QWidget
-        """
-
-        return self._widget
-
-    def set_widget(self, widget):
-        """
-        Sets the widget used to set and get the field value
-        :param widget: QWidget
-        """
-
-        widget_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
-
-        self._widget = widget
-        self._widget.setParent(self)
-        self._widget.setObjectName('widget')
-        self._widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-
-        self._menu_button = QPushButton('...')
-        self._menu_button.setHidden(True)
-        self._menu_button.setObjectName('menuButton')
-        self._menu_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-        self._menu_button.clicked.connect(self._on_menu_callback)
-
-        widget_layout.addWidget(self._widget)
-        widget_layout.addWidget(self._menu_button)
-
-        layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
-
-        self._error_label = QLabel(self)
-        self._error_label.setHidden(True)
-        self._error_label.setObjectName('errorLabel')
-        self._error_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-
-        layout.addLayout(widget_layout)
-        layout.addWidget(self._error_label)
-
-        self._layout2.addLayout(layout)
-
-    def is_required(self):
-        """
-        Returns whether current field is required for the field widget or not
-        :return: bool
-        """
-
-        return bool(self._required)
-
-    def set_required(self, flag):
-        """
-        Sets whether the field is required for the field widget or not
-        :param flag: bool
-        """
-
-        self._required = flag
-        self.setProperty('required', flag)
-        self.setStyleSheet(self.styleSheet())
-
-    def reset(self):
-        """
-        Resets the field widget back to its default values
-        """
-
-        self.set_state(self._data)
-
-    def refresh(self):
-        """
-        Refresh the style properties of the field
-        """
-
-        direction = self._data.get('layout', self.DefaultLayout)
-        self.setProperty('layout', direction)
-        self.setProperty('default', self.is_default())
-        self.setProperty('error', self._error)
-        self.setStyleSheet(self.styleSheet())
-
-    def _action_callback(self, callback):
-        """
-        Internal function that wraps schema callback to get the return value
-        :param callback: fn
-        """
-
-        self._action_result = callback()
-
-    def _on_menu_callback(self):
-        """
-        Internal callback function that is triggered when the menu button is clicked
-        """
-
-        callback = self.data().get('menu', {}).get('callback', self._on_how_menu)
-        callback()
-
-    def _on_show_menu(self):
-        """
-        Internal callback that shows field menu using the actions from the data
-        """
-
-        menu = QMenu(self)
-
-        actions = self.data().get('actions', [])
-        for action in actions:
-            name = action.get('name', 'No name found')
-            callback = action.get('callback')
-            fn = partial(self._action_callback, callback)
-            action = menu.addAction(name)
-            action.triggered.connect(fn)
-
-        point = QCursor.pos()
-        point.setX(point.x() + 3)
-        point.setY(point.y() + 3)
-
-        self._action_result = None
-
-        menu.exec_(point)
-
-        if self._action_result is not None:
-            self.set_value(self._action_result)
-
-    def _on_emit_value_changed(self, *args):
-        """
-        Emits the value changed signal
-        :param args: list
-        """
-
-        self.valueChanged.emit()
-        self.refresh()
-
-
-class BoolFieldWidget(FieldWidget, object):
-    def __init__(self, *args, **kwargs):
-        super(BoolFieldWidget, self).__init__(*args, **kwargs)
-
-        widget = QCheckBox(self)
-        widget.stateChanged.connect(self._on_emit_value_changed)
-        self.set_widget(widget)
-        inline = self.data().get('inline')
-        if inline:
-            self.label().setText('')
-            self.widget().setText(self.title())
-
-    def value(self):
-        """
-        Implements FieldWidget value function
-        Returns the value of the checkbox
-        :return: str
-        """
-
-        return bool(self.widget().isChecked())
-
-    def set_value(self, value):
-        """
-        Overrides FileWidget set_value function
-        Sets the value of the checkbox
-        :param value: str
-        """
-
-        self.widget().setChecked(value)
-        super(BoolFieldWidget, self).set_value(value)
-
-
-class IntFieldWidget(FieldWidget, object):
-    def __init__(self, *args, **kwargs):
-        super(IntFieldWidget, self).__init__(*args, **kwargs)
-
-        widget = sliders.BaseSlider(parent=self)
-        widget.valueChanged.connect(self._on_emit_value_changed)
-        self.set_widget(widget)
-
-    def value(self):
-        """
-        Implements FieldWidget value function
-        Returns the value of the widget
-        :return: str
-        """
-
-        value = self.widget().value()
-        # if value.strip() == '':
-        #     value = self.default()
-
-        return int(value)
-
-    def set_value(self, value):
-        """
-        Overrides FileWidget set_value function
-        Sets the value of the widget
-        :param value: str
-        """
-
-        if value == '':
-            value = self.default()
-        self.widget().setValue(int(value))
-
-
-class SliderFieldWidget(FieldWidget, object):
-    def __init__(self, *args, **kwargs):
-        super(SliderFieldWidget, self).__init__(*args, **kwargs)
-
-        widget = sliders.DoubleSlider(parent=self)
-        widget.setOrientation(Qt.Horizontal)
-        widget.setObjectName('widget')
-        widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        widget.valueChanged.connect(self._on_emit_value_changed)
-        self.set_widget(widget)
-
-    def value(self):
-        """
-        Implements FieldWidget value function
-        Returns the value of the slider
-        :return: str
-        """
-
-        return self.widget().value()
-
-    def set_value(self, value):
-        """
-        Overrides FileWidget set_value function
-        Sets the value of the slider
-        :param value: str
-        """
-
-        self.widget().setValue(value)
-
-
-class RangeFieldWidget(FieldWidget, object):
-    def __init__(self, *args, **kwargs):
-        super(RangeFieldWidget, self).__init__(*args, **kwargs)
-
-        widget = QFrame(self)
-        layout = layouts.HorizontalLayout(spacing=3, margins=(0, 0, 0, 0))
-        widget.setLayout(layout)
-
-        validator = QIntValidator(-sys.maxint, sys.maxint, self)
-
-        self._min_widget = QLineEdit(self)
-        self._min_widget.setValidator(validator)
-        self._min_widget.textChanged.connect(self._on_emit_value_changed)
-        widget.layout().addWidget(self._min_widget)
-
-        self._max_widget = QLineEdit(self)
-        self._max_widget.setValidator(validator)
-        self._max_widget.textChanged.connect(self._on_emit_value_changed)
-        widget.layout().addWidget(self._max_widget)
-
-        self.set_widget(widget)
-
-    def value(self):
-        """
-        Implements FieldWidget value function
-        Returns the current range
-        :return: list(int)
-        """
-
-        min_value = int(float(self._min_widget.text() or '0'))
-        max_value = int(float(self._max_widget.text() or '0'))
-
-        return min_value, max_value
-
-    def set_value(self, value):
-        """
-        Overrides FileWidget set_value function
-        Sets the current range
-        :param value: list(int)
-        """
-
-        min_value, max_value = int(value[0], int(value[1]))
-        self._min_widget.setText(str(min_value))
-        self._max_widget.setText(str(max_value))
-
-        super(RangeFieldWidget, self).set_value(value)
-
-
-class StringFieldWidget(FieldWidget, object):
-    def __init__(self, *args, **kwargs):
-        super(StringFieldWidget, self).__init__(*args, **kwargs)
-
-        widget = lineedit.BaseLineEdit(parent=self)
-        widget.textChanged.connect(self._on_emit_value_changed)
-        self.set_widget(widget)
-
-    def value(self):
-        """
-        Implements FieldWidget value function
-        Returns the value of the widget
-        :return: str
-        """
-
-        return str(self.widget().text())
-
-    def set_value(self, value):
-        """
-        Overrides FileWidget set_value function
-        Sets the value of the widget
-        :param value: str
-        """
-
-        self.widget().setText(value)
-        super(StringFieldWidget, self).set_value(value)
-
-
-class PasswordFieldWidget(FieldWidget, object):
-    def __init__(self, *args, **kwargs):
-        super(PasswordFieldWidget, self).__init__(*args, **kwargs)
-
-        widget = label.QLineEdit(self)
-        widget.setEchoMode(QLineEdit.EchoMode.Password)
-        widget.textChanged.connect(self._on_emit_value_changed)
-        self.set_widget(widget)
-
-    def value(self):
-        """
-        Implements FieldWidget value function
-        Returns the value of the widget
-        :return: str
-        """
-
-        return str(self.widget().text())
-
-    def set_value(self, value):
-        """
-        Overrides FileWidget set_value function
-        Sets the value of the widget
-        :param value: str
-        """
-
-        self.widget().setText(value)
-        super(PasswordFieldWidget, self).set_value(value)
-
-
-class TextFieldWidget(FieldWidget, object):
-
-    DefaultLayout = 'vertical'
-
-    def __init__(self, *args, **kwargs):
-        super(TextFieldWidget, self).__init__(*args, **kwargs)
-
-        widget = QTextEdit(self)
-        widget.textChanged.connect(self._on_emit_value_changed)
-        self.set_widget(widget)
-
-    def value(self):
-        """
-        Implements FieldWidget value function
-        Returns the value of the text edit
-        :return: str
-        """
-
-        return str(self.widget().toPlainText())
-
-    def set_value(self, value):
-        """
-        Overrides FileWidget set_value function
-        Sets the value of the text edit
-        :param value: str
-        """
-
-        self.widget().setText(value)
-        super(TextFieldWidget, self).set_value(value)
-
-
-class PathFieldWidget(StringFieldWidget, object):
-    def __init__(self, *args, **kwargs):
-        super(PathFieldWidget, self).__init__(*args, **kwargs)
-
-    def set_data(self, data):
-        """
-        Overrides StringFieldWidget set_data function
-        Adds a browse button to folder button
-        :param data: dict
-        """
-
-        if 'menu' not in data:
-            data['menu'] = {
-                'callback': self._on_browse
-            }
-        super(PathFieldWidget, self).set_data(data)
-
-    def _on_browse(self):
-        """
-        Opens file dialog
-        """
-
-        path = self.value()
-        path = QFileDialog.getExistingDirectory(None, 'Browse Folder', path)
-        if path:
-            self.set_value(path)
-
-        widget = QCheckBox(self)
-        widget.stateChanged.connect(self._on_emit_value_changed)
-        self.set_widget(widget)
-        inline = self.data().get('inline')
-        if inline:
-            self.label().setText('')
-            self.widget().setText(self.title())
-
-
-class LabelFieldWidget(FieldWidget, object):
-    def __init__(self, *args, **kwargs):
-        super(LabelFieldWidget, self).__init__(*args, **kwargs)
-
-        widget = label.RightElidedLabel(self)
-        widget.setAlignment(Qt.AlignVCenter)
-        widget.setTextInteractionFlags(Qt.TextSelectableByMouse)
-        self.set_widget(widget)
-
-    def value(self):
-        """
-        Implements FieldWidget value function
-        Returns the value of the label
-        :return: str
-        """
-
-        try:
-            return str(self.widget().text())
-        except Exception:
-            return str(path_utils.normalize_path(self.widget().text()))
-
-    def set_value(self, value):
-        """
-        Overrides FileWidget set_value function
-        Sets the value of the label
-        :param value: str
-        """
-
-        self.widget().setText(value)
-        super(LabelFieldWidget, self).set_value(value)
-
-
-class EnumFieldWidget(FieldWidget, object):
-    def __init__(self, *args, **kwargs):
-        super(EnumFieldWidget, self).__init__(*args, **kwargs)
-
-        widget = QComboBox(self)
-        widget.currentIndexChanged.connect(self._on_emit_value_changed)
-        self.set_widget(widget)
-
-    def value(self):
-        """
-        Implements FieldWidget value function
-        Returns the value of the combo box
-        :return: str
-        """
-
-        return str(self.widget().currentText())
-
-    def set_value(self, item):
-        """
-        Overrides FileWidget set_value function
-        Sets the value of the combo box
-        :param item: str
-        """
-
-        self.set_current_text(item)
-
-    def set_items(self, items):
-        """
-        Overrides FieldWidget set_items function
-        Sets the current items of the combo box
-        :param items: list(str)
-        """
-
-        self.widget().clear()
-        self.widget().addItems(items)
-
-    def set_state(self, state):
-        """
-        Sets the current state with support for editable
-        :param state: dict
-        """
-
-        super(EnumFieldWidget, self).set_state(state)
-        editable = state.get('editable')
-        if editable is not None:
-            self.widget().setEditable(editable)
-
-    def set_current_text(self, text):
-        """
-        Sets current text
-        :param text: str
-        """
-
-        index = self.widget().findText(text, Qt.MatchExactly)
-        if index != -1:
-            self.widget().setCurrentIndex(index)
-        else:
-            LOGGER.warning('Cannot set the value for field {}'.format(self.name()))
-
-
-class SeparatorFieldWidget(FieldWidget, object):
-    def __init__(self, *args, **kwargs):
-        super(SeparatorFieldWidget, self).__init__(*args, **kwargs)
-
-        widget = QLabel(self)
-        widget.setObjectName('widget')
-        widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.label().hide()
-        self.set_widget(widget)
-
-    def value(self):
-        """
-        Implements FieldWidget value function
-        Returns the value of the separator
-        :return: str
-        """
-
-        return str(self.widget().text())
-
-    def set_value(self, value):
-        """
-        Overrides FileWidget set_value function
-        Sets the value of the separator
-        :param value: str
-        """
-
-        self.widget().setText(value)
-
-
-class ColorFieldWidget(FieldWidget, object):
-    def __init__(self, *args, **kwargs):
-        super(ColorFieldWidget, self).__init__(*args, **kwargs)
-
-        widget = color.ColorPicker()
-        widget.setObjectName('widget')
-        widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        widget.colorChanged.connect(self._on_color_changed)
-        self.set_widget(widget)
-
-    def set_data(self, data):
-        """
-        Overrides FieldWidget data function
-        :param data: dict
-        """
-
-        colors = data.get('colors')
-        if colors:
-            self.widget().set_colors(colors)
-
-        super(ColorFieldWidget, self).set_data(data)
-
-    def value(self):
-        """
-        Implements FieldWidget value function
-        Returns the value of the color picker
-        :return: Color
-        """
-
-        return self.widget().current_color()
-
-    def set_value(self, value):
-        """
-        Overrides FileWidget set_value function
-        Sets the value of the color picker
-        :param value: str
-        """
-
-        self.widget().set_current_color(value)
-
-    def _on_color_changed(self, new_color):
-        """
-        Internal callback function triggered when the color changes from the color browser
-        :param new_color: QColor
-        """
-
-        self.set_value(new_color)
-        self._on_emit_value_changed()
-
-
-class ImageFieldWidget(FieldWidget, object):
-    def __init__(self, *args, **kwargs):
-        super(ImageFieldWidget, self).__init__(*args, **kwargs)
-
-        self._value = ''
-        self._pixmap = None
-
-        widget = QLabel(self)
-        widget.setObjectName('widget')
-        self.setStyleSheet('min-height: 32px;')
-        widget.setScaledContents(False)
-        widget.setAlignment(Qt.AlignHCenter)
-        self.set_widget(widget)
-        self.layout().addStretch()
-
-    def resizeEvent(self, event):
-        """
-        Overrides FieldWidget resizeEvent function
-        Called when teh field widget is resized
-        :param event: QResizeEvent
-        """
-
-        self.update()
-
-    def value(self):
-        """
-        Implements FieldWidget value function
-        Returns the path of the image in disk
-        :return: str
-        """
-
-        return self._value
-
-    def set_value(self, value):
-        """
-        Overrides FileWidget set_value function
-        Sets the path of the image in disk
-        :param value: str
-        """
-
-        self._value = value
-        self._pixmap = QPixmap(value)
-        self.update()
-
-    def update(self):
-        """
-        Updates the image depending on the size
-        """
-
-        if not self._pixmap:
-            return
-
-        width = self.widget().height()
-        if self.widget().width() > self.widget().height():
-            pixmap = self._pixmap.scaledToWidth(width, Qt.SmoothTransformation)
-        else:
-            pixmap = self._pixmap.scaledToHeight(width, Qt.SmoothTransformation)
-        self.widget().setPixmap(pixmap)
-        self.widget().setAlignment(Qt.AlignLeft)
-
-
-FIELD_WIDGET_REGISTRY = {
-    "int": IntFieldWidget,
-    "bool": BoolFieldWidget,
-    "enum": EnumFieldWidget,
-    "text": TextFieldWidget,
-    "path": PathFieldWidget,
-    "image": ImageFieldWidget,
-    "label": LabelFieldWidget,
-    "range": RangeFieldWidget,
-    "color": ColorFieldWidget,
-    "string": StringFieldWidget,
-    "password": PasswordFieldWidget,
-    "slider": SliderFieldWidget,
-    "separator": SeparatorFieldWidget
-}
