@@ -188,7 +188,7 @@ class Menu(QMenu, object):
         :return: QAction
         """
 
-        if isinstance(before, (unicode, str)):
+        if python.is_string(before):
             before = self.find_action(before)
 
         return super(Menu, self).insertAction(before, *args)
@@ -202,7 +202,7 @@ class Menu(QMenu, object):
         :return: QAction
         """
 
-        if isinstance(before, (unicode, str)):
+        if python.is_string(before):
             before = self.find_action(before)
 
         return super(Menu, self).insertMenu(before, menu)
@@ -214,7 +214,7 @@ class Menu(QMenu, object):
         :return: QAction
         """
 
-        if isinstance(before, (unicode, str)):
+        if python.is_string(before):
             before = self.find_action(before)
 
         return super(Menu, self).insertSeparator(before)

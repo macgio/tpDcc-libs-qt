@@ -431,8 +431,8 @@ class RightElidedLabel(QLabel, object):
     Custom label which supports elide right
     """
 
-    def __init__(self, *args):
-        super(RightElidedLabel, self).__init__(*args)
+    def __init__(self, *args, **kwargs):
+        super(RightElidedLabel, self).__init__(*args, **kwargs)
         self._text = ''
 
     def setText(self, text):

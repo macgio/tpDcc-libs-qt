@@ -11,6 +11,7 @@ from Qt.QtCore import Qt, QEvent
 from Qt.QtWidgets import QSizePolicy, QFrame, QDialog, QDialogButtonBox
 
 from tpDcc import dcc
+from tpDcc.libs.python import python
 from tpDcc.libs.resources.core import theme
 from tpDcc.libs.qt.core import animation, qtutils
 from tpDcc.libs.qt.widgets import layouts, label, checkbox, lineedit
@@ -78,7 +79,7 @@ def show_message_box(parent, title, text, width=None, height=None, buttons=None,
     :return: MessageBox
     """
 
-    if isinstance(enable_dont_show_checkbox, (str, basestring)):
+    if python.is_string(enable_dont_show_checkbox):
         enable_dont_show_checkbox = enable_dont_show_checkbox == 'true'
 
     clicked_btn = None
@@ -197,7 +198,7 @@ class MessageBox(QDialog, object):
         :return: QDialogButtonBox.StandardButton
         """
 
-        buttons = buttons or QDialogButtonBox.Ok
+        buttons = buttons or QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         clicked_btn = show_message_box(parent=parent, title=title, text=text, width=width, height=height,
                                        buttons=buttons, header_pixmap=header_pixmap, header_color=header_color)
         return clicked_btn

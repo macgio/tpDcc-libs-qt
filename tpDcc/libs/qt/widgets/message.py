@@ -13,7 +13,8 @@ from Qt.QtCore import Qt, Signal, Property, QPoint, QTimer, QPropertyAnimation, 
 
 from tpDcc import dcc
 from tpDcc.managers import resources
-from tpDcc.libs.qt.core import base, mixin, theme
+from tpDcc.libs.resources.core import theme
+from tpDcc.libs.qt.core import base
 from tpDcc.libs.qt.widgets import layouts, label, avatar, buttons, loading
 
 
@@ -25,7 +26,7 @@ class MessageTypes(object):
     LOADING = 'loading'
 
 
-@mixin.theme_mixin
+@theme.mixin
 # @mixin.property_mixin
 class BaseMessage(base.BaseWidget, object):
     def __init__(self, text='', parent=None):
@@ -136,6 +137,8 @@ class BaseMessage(base.BaseWidget, object):
 
         self._close_btn.setVisible(flag)
 
+        return self
+
     def set_show_icon(self, flag):
         """
         Sets whether or not the display information type icon is visible or not
@@ -143,6 +146,8 @@ class BaseMessage(base.BaseWidget, object):
         """
 
         self._icon_label.setVisible(flag)
+
+        return self
 
     def info(self):
         """
@@ -190,7 +195,7 @@ class BaseMessage(base.BaseWidget, object):
         return self
 
 
-@mixin.theme_mixin
+@theme.mixin
 class PopupMessage(base.BaseWidget, object):
     """
     Message that appears at the top of the window and shows feedback in response to user actions

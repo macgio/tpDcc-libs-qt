@@ -16,7 +16,7 @@ from Qt.QtGui import QResizeEvent
 
 from tpDcc.dcc import window
 from tpDcc.managers import resources
-from tpDcc.libs.python import path as path_utils
+from tpDcc.libs.python import fileio, path as path_utils, folder as folder_utils
 from tpDcc.libs.qt.core import qtutils
 from tpDcc.libs.qt.widgets import layouts, label, lineedit, buttons
 
@@ -205,6 +205,8 @@ class SnapshotWindow(window.Window(as_class=True), object):
 
         self.save(self._save_path, self._image_type)
 
+        self.close()
+
     def save(self, file_path, image_type='png'):
         """
         Saves screen to a file
@@ -218,6 +220,12 @@ class SnapshotWindow(window.Window(as_class=True), object):
             self.saved.emit(saved)
             return
         file_dir, file_name, file_ext = path_utils.split_path(file_path)
+        if not os.path.isdir(file_dir):
+            folder_utils.create_folder(file_dir)
+        else:
+            if os.path.isfile(file_path):
+                fileio.delete_file(file_path)
+
         image_type = image_type if image_type.startswith('.') else '.{}'.format(image_type)
         if image_type != file_ext:
             if file_ext not in ('.png', '.jpg'):

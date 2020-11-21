@@ -11,7 +11,11 @@ import os
 import logging
 from collections import OrderedDict
 
-import metayaml
+# To avoid errors when initializing Dcc server
+try:
+    import metayaml
+except ImportError:
+    pass
 
 from tpDcc import dcc
 from tpDcc.libs.python import decorators, python

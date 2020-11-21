@@ -65,6 +65,9 @@ class ToolsetsManager(object):
         if package_name not in self._toolsets:
             self._toolsets[package_name] = list()
         toolset_data = self._manager.get_plugins(package_name)
+        if not toolset_data:
+            return True
+
         for tool_set in toolset_data.values():
             if tool_set.ID not in self._toolsets[package_name]:
                 toolset_config = tools_mgr().get_tool_config(tool_set.ID, package_name=package_name)
