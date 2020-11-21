@@ -8,11 +8,13 @@ Module that contains different group widgets
 from __future__ import print_function, division, absolute_import
 
 from Qt.QtCore import Qt, Signal, Property
-from Qt.QtWidgets import QSizePolicy, QWidget, QBoxLayout, QGroupBox, QButtonGroup
+from Qt.QtWidgets import QSizePolicy, QWidget, QFrame, QBoxLayout, QGroupBox, QButtonGroup
 from Qt.QtGui import QIcon
 
+from tpDcc.managers import resources
 from tpDcc.libs.python import decorators, python
-from tpDcc.libs.qt.core import qtutils, base, theme
+from tpDcc.libs.resources.core import theme
+from tpDcc.libs.qt.core import base
 from tpDcc.libs.qt.widgets import layouts, buttons
 
 
@@ -145,6 +147,160 @@ class CollapsableGroup(BaseGroup, object):
         title = self.title()
         title = title.replace('-', '+')
         self.setTitle(title)
+
+
+@theme.mixin
+class GroupBoxWidget(base.BaseFrame):
+
+    toggled = Signal(bool)
+
+    def __init__(self, title, widget, persistent=False, settings=None, *args, **kwargs):
+
+        self._title = title
+        self._widget = None
+        self._persistent = None
+        self._settings = settings
+
+        super(GroupBoxWidget, self).__init__(*args, **kwargs)
+
+        if widget:
+            self.set_widget(widget)
+            # We force the update of the check status to make sure that the wrapped widget visibility is updated
+            self.set_checked(self.is_checked())
+
+        self.set_persistent(persistent)
+
+    # ============================================================================================================
+    # OVERRIDES
+    # ============================================================================================================
+
+    def get_main_layout(self):
+        return layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
+
+    def ui(self):
+        super(GroupBoxWidget, self).ui()
+
+        self._title_widget = buttons.BaseButton(self._title, parent=self)
+        self._title_widget.setCheckable(True)
+
+        self._on_icon = resources.icon('down_button')
+        self._off_icon = resources.icon('right_button')
+        self._title_widget.setIcon(self._off_icon)
+
+        self._widget_frame = QFrame(self)
+        widget_frame_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
+        self._widget_frame.setLayout(widget_frame_layout)
+
+        self.main_layout.addWidget(self._title_widget)
+        self.main_layout.addWidget(self._widget_frame)
+
+    def setup_signals(self):
+        self._title_widget.toggled.connect(self._on_toggled_title)
+
+    # ============================================================================================================
+    # BASE
+    # ============================================================================================================
+
+    def is_checked(self):
+        """
+        Returns whether or not group box is checked
+        :return: bool
+        """
+
+        return self._title_widget.isChecked()
+
+    def set_checked(self, flag):
+        """
+        Sets the check statue of the group box
+        :param flag: bool
+        """
+
+        self._title_widget.setChecked(flag)
+        self._title_widget.setIcon(self._on_icon if flag else self._off_icon)
+        if self._widget:
+            self._widget.setVisible(flag)
+
+    def is_persistent(self):
+        """
+        Returns whether or not widget state is stored in settings
+        :return: bool
+        """
+
+        return self._persistent
+
+    def set_persistent(self, flag):
+        """
+        Sets whether or not widget state is stored in settings
+        :param flag: bool
+        """
+
+        self._persistent = flag
+        self.load_settings()
+
+    def title(self):
+        """
+        Returns group box title
+        :return: str
+        """
+
+        return self._title_widget.text()
+
+    def set_widget(self, widget):
+        """
+        Sets the widget to hide when the user clicks the title
+        :param widget: QWidget
+        """
+
+        self._widget = widget
+        # self._widget.setParent(self._widget_frame)
+        # self._widget_frame.layout().addWidget(self._widget)
+
+    # ============================================================================================================
+    # SETTINGS
+    # ============================================================================================================
+
+    def load_settings(self):
+        """
+        Loads widget state from given settings
+        """
+
+        if not self._settings or not self._persistent:
+            return
+        if not self.objectName():
+            raise NameError('Impossible to save "{}" widget state because no objectName is defined!'.format(self))
+
+        data = {self.objectName(): {'checked': self.is_checked()}}
+        self._settings.save(data)
+
+    def save_settings(self):
+        """
+        Saves current widget state into settings
+        """
+
+        if not self._settings or not self._persistent:
+            return
+        if not self.objectName():
+            raise NameError('Impossible to load "{}" widget state because no objectName is defined!'.format(self))
+
+        data = self._settings.read()
+        data = data.get(self.objectName(), dict())
+        if data and isinstance(data, dict):
+            checked = data.get('checked', True)
+            self.set_checked(checked)
+
+    # ============================================================================================================
+    # CALLBACKS
+    # ============================================================================================================
+
+    def _on_toggled_title(self, flag):
+        """
+        Internal callback function that is called each time title group widget is toggled
+        :param flag: bool
+        """
+
+        self.save_settings()
+        self.set_checked(flag)
+        self.toggled.emit(flag)
 
 
 class BaseButtonGroup(base.BaseWidget, object):
@@ -332,3 +488,5 @@ class RadioButtonGroup(BaseButtonGroup, object):
             self.checkedChanged.emiet(value)
 
     checked = Property(int, _get_checked, _sert_checked, notify=checkedChanged)
+
+
