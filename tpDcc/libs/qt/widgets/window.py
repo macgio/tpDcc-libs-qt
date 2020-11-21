@@ -10,6 +10,7 @@ from __future__ import print_function, division, absolute_import
 import os
 import uuid
 import logging
+import weakref
 from collections import defaultdict
 
 from Qt.QtCore import Qt, Signal, QByteArray, QSettings
@@ -752,6 +753,10 @@ class MainWindow(BaseWindow, object):
 
         self.windowReady.connect(lambda: setattr(self, '_window_loaded', True))
 
+        app = QApplication.instance()
+        if app:
+            app.focusChanged.connect(self._on_change_focus)
+
     # ============================================================================================================
     # PROPERTIES
     # ============================================================================================================
@@ -806,6 +811,8 @@ class MainWindow(BaseWindow, object):
         if self.docked() != self._current_docked:
             self._current_docked = self.docked()
             self.dockChanged.emit(self._current_docked)
+
+        self._on_change_focus(None, self)
 
         super(MainWindow, self).showEvent(event)
 
@@ -1245,6 +1252,47 @@ class MainWindow(BaseWindow, object):
     #     self.settings().sync()
     #
     #     self.load_theme()
+
+    # ============================================================================================================
+    # CALLBACKS
+    # ============================================================================================================
+
+    def _on_change_focus(self, old, new):
+        """
+        Internal callback function that updates the current active Dcc client (if exists)
+        This function is triggered each time current window focus changes
+        :param old: QObject
+        :param new: QObject
+        """
+
+        if not self._toolset or not self._toolset.client:
+            return
+
+        children = self.findChildren(QWidget)
+        if old and dcc._CLIENTS and (old == self or old in children):
+            if self._toolset:
+                toolset_client = self._toolset.client
+                toolset_found = None
+                for client_id, client in dcc._CLIENTS.items():
+                    if toolset_client == client():
+                        toolset_found = client_id
+                        break
+
+                # We only remove the client if there is more active clients
+                if toolset_found is not None and len(list(dcc._CLIENTS.keys())) > 1:
+                    dcc._CLIENTS.pop(client_id)
+
+        if new and (new == self or new in children):
+            if self._toolset:
+                toolset_client = self._toolset.client
+                toolset_found = False
+                for client in list(dcc._CLIENTS.values()):
+                    if toolset_client == client():
+                        toolset_found = True
+                        break
+                if not toolset_found:
+                    if self._toolset.ID not in dcc._CLIENTS:
+                        dcc._CLIENTS[self._toolset.ID] = weakref.ref(self._toolset.client)
 
 
 class DetachedWindow(QMainWindow):
