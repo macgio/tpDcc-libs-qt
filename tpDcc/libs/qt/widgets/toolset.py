@@ -9,6 +9,7 @@ from __future__ import print_function, division, absolute_import
 
 import os
 import logging
+import weakref
 import webbrowser
 
 from Qt.QtCore import Qt, Signal, QSize
@@ -70,9 +71,8 @@ class ToolsetWidget(stack.StackItem, object):
         self._icon = self.CONFIG.get('icon') if self.CONFIG else None
         self._icon_color = icon_color
         self._tree_widget = tree_widget
-        self._toolset_widget_item = widget_item
         self._stacked_widget = None
-        self._prev_stack_index = 1
+        self._prev_stack_index = None
         self._display_mode_button = None
         self._manual_button = None
         self._help_button = None
@@ -107,7 +107,9 @@ class ToolsetWidget(stack.StackItem, object):
 
     @property
     def attacher(self):
-        return self._attacher
+        if not self._attacher:
+            return
+        return self._attacher()
 
     @property
     def dev(self):
@@ -120,6 +122,10 @@ class ToolsetWidget(stack.StackItem, object):
     @property
     def info_mode(self):
         return self._help_mode
+
+    @property
+    def client(self):
+        return self._client
 
     # =================================================================================================================
     # TO OVERRIDE
@@ -139,7 +145,7 @@ class ToolsetWidget(stack.StackItem, object):
         Override in specific toolset widgets
         """
 
-        pass
+        return False
 
     def pre_content_setup(self):
         """
@@ -186,10 +192,10 @@ class ToolsetWidget(stack.StackItem, object):
         self._contents_layout.setContentsMargins(0, 0, 0, 0)
         self._contents_layout.setSpacing(0)
 
-        self._stacked_widget = stack.SlidingOpacityStackedWidget(self._widget_hider)
+        self._stacked_widget = stack.SlidingOpacityStackedWidget(self)
         self._stacked_widget.setContentsMargins(0, 0, 0, 0)
         self._stacked_widget.setLineWidth(0)
-        self._contents_layout.addWidget(self._stacked_widget)
+        self.main_layout.addWidget(self._stacked_widget)
 
         self.show_expand_indicator(False)
         self.set_title_text_mouse_transparent(True)
@@ -212,8 +218,16 @@ class ToolsetWidget(stack.StackItem, object):
         self._settings_button.setFixedSize(QSize(22, 22))
         self._help_widget = ToolsetHelpWidget()
 
+        empty_widget = QFrame()
+        empty_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
+        empty_widget.setLayout(empty_layout)
+        empty_layout.addStretch()
+        empty_label = label.BaseLabel('Tool has no UI')
+        empty_label.theme_level = label.BaseLabel.Levels.H1
+        empty_layout.addWidget(empty_label)
+        empty_layout.addStretch()
+
         self._preferences_widget = preferences.PreferencesWidget(parent=self)
-        self._stacked_widget.addWidget(self._preferences_widget)
 
         # We call if after setting all buttons
         self.set_icon_color(self._icon_color)
@@ -241,15 +255,18 @@ class ToolsetWidget(stack.StackItem, object):
         if not dcc.is_standalone():
             self._connect_button.setVisible(False)
 
+        self._stacked_widget.addWidget(empty_widget)
+        self._stacked_widget.addWidget(self._widget_hider)
+        self._stacked_widget.addWidget(self._preferences_widget)
+
     def setup_signals(self):
         super(ToolsetWidget, self).setup_signals()
 
         self._title_frame.mouseReleaseEvent = self._on_activate_event
 
-        if self._toolset_widget_item:
-            self._display_mode_button.clicked.connect(self._toolset_widget_item.set_current_index)
-            self._display_mode_button.clicked.connect(lambda: self.displaySwitched.emit())
-            self.displaySwitched.connect(lambda: self.updateRequested.emit())
+        self._display_mode_button.clicked.connect(self.set_current_index)
+        self._display_mode_button.clicked.connect(lambda: self.displaySwitched.emit())
+        self.displaySwitched.connect(lambda: self.updateRequested.emit())
 
         self._manual_button.leftClicked.connect(self._on_open_help)
         self._help_button.leftClicked.connect(self._on_toggle_info_switch)
@@ -264,13 +281,15 @@ class ToolsetWidget(stack.StackItem, object):
     # =================================================================================================================
 
     def initialize(self):
-        self.setup_client()
+        valid = self.setup_client()
+        if valid is False:
+            self._connect_button.setVisible(False)
+
         self.pre_content_setup()
         toolset_contents = self.contents()
         for toolset_widget in toolset_contents:
             self.add_stacked_widget(toolset_widget)
-        if self.count() > 0:
-            self._stacked_widget.setCurrentIndex(1)
+        self._stacked_widget.setCurrentIndex(1) if self.count() > 0 else self._stacked_widget.setCurrentIndex(0)
         self.post_content_setup()
         self.update_display_button()
         self.expand()
@@ -282,20 +301,20 @@ class ToolsetWidget(stack.StackItem, object):
         :param attacher:
         """
 
-        self._attacher = attacher
+        self._attacher = weakref.ref(attacher)
 
         # Setup standard settings and attacher preferences
-        self._preferences_widget.set_settings(self._attacher.settings())
+        self._preferences_widget.set_settings(self.attacher.settings())
         self._theme_prefs_widget = theme.ThemePreferenceWidget(
-            theme=self._attacher.theme(), parent=self._preferences_widget)
+            theme=self.attacher.theme(), parent=self._preferences_widget)
         self._preferences_widget.add_category(self._theme_prefs_widget.CATEGORY, self._theme_prefs_widget)
 
         # self.setup_attacher_settings(attacher)
 
-        self._attacher.themeUpdated.connect(self.reload_theme)
-        self._attacher.styleReloaded.connect(self.reload_theme)
+        self.attacher.themeUpdated.connect(self.reload_theme)
+        self.attacher.styleReloaded.connect(self.reload_theme)
 
-        self.reload_theme(self._attacher.theme())
+        self.reload_theme(self.attacher.theme())
 
     def setup_attacher_settings(self, attacher):
         """
@@ -359,13 +378,11 @@ class ToolsetWidget(stack.StackItem, object):
 
     def count(self):
         """
-        Returns the total amount of widgets added to the stack
+        Returns the total amount of widgets added to the contents stack
         :return: int
         """
 
-        # We ignore first widget, which is the preferences widget
-
-        return self._stacked_widget.count() - 1
+        return len(self._widgets)
 
     def item_at(self, index):
         """
@@ -388,9 +405,11 @@ class ToolsetWidget(stack.StackItem, object):
                     str(self.__class__.__name__)))
 
         self._widgets.append(widget)
+        widget.setVisible(False)
         widget.setProperty('color', self._icon_color)
         widget.setParent(self._widget_hider)
-        self._stacked_widget.addWidget(widget)
+
+        self._widgets[0].setVisible(True)
 
     def visual_update(self, collapse=True):
         """
@@ -427,7 +446,7 @@ class ToolsetWidget(stack.StackItem, object):
         if displays in [ToolsetDisplays.Single, ToolsetDisplays.Double, ToolsetDisplays.Triple]:
             self._display_mode_button.set_displays(displays)
         else:
-            LOGGER.error('setDisplays() must be 2 or 3')
+            self._display_mode_button.setVisible(False)
 
     def block_save(self, flag):
         """
@@ -452,17 +471,22 @@ class ToolsetWidget(stack.StackItem, object):
 
     def set_current_index(self, index):
 
+        if not self._widgets:
+            return
+
         self.block_save(True)
 
-        for i in range(self._stacked_widget.count()):
-            w = self._stacked_widget.widget(i)
+        for i in range(self.count()):
+            w = self._widgets[i]
             w.setSizePolicy(w.sizePolicy().horizontalPolicy(), QSizePolicy.Ignored)
+            w.setVisible(False)
 
-        self._stacked_widget.setCurrentIndex(index)
+        self._stacked_widget.setCurrentIndex(1)
 
-        widget = self._stacked_widget.widget(index)
+        widget = self._widgets[index]
         if widget:
             widget.setSizePolicy(widget.sizePolicy().horizontalPolicy(), QSizePolicy.Expanding)
+            widget.setVisible(True)
         else:
             LOGGER.warning('Widget not found!')
 
@@ -656,7 +680,27 @@ class ToolsetWidget(stack.StackItem, object):
         if not dcc.is_standalone():
             self._connect_button.setVisible(False)
 
+        self._register_client(self._client)
+
         return True
+
+    def _register_client(self, client):
+        """
+        Internal function that registers given client in global Dcc clients variable
+        :param client: DccClient
+        """
+
+        if not client:
+            return
+        client_found = False
+        current_clients = dcc._CLIENTS
+        for current_client in list(current_clients.values()):
+            if client == current_client():
+                client_found = True
+                break
+        if client_found:
+            return
+        dcc._CLIENTS[self.ID] = weakref.ref(client)
 
     # =================================================================================================================
     # CALLBACKS
@@ -704,16 +748,19 @@ class ToolsetWidget(stack.StackItem, object):
         self._stop_selection_callback()
 
     def _on_show_preferences_dialog(self):
-        if not self._attacher:
+
+        if not self.attacher:
             return
 
-        self._prev_stack_index = self._stacked_widget.currentIndex()
-        self._stacked_widget.setCurrentIndex(0)
+        if self._prev_stack_index is None:
+            self._prev_stack_index = self._stacked_widget.currentIndex()
+        self._stacked_widget.setCurrentIndex(2)
 
     def _on_close_preferences_window(self, *args):
         self._stacked_widget.setCurrentIndex(self._prev_stack_index)
-        if self._attacher:
-            self.reload_theme(self._attacher.theme())
+        if self.attacher:
+            self.reload_theme(self.attacher.theme())
+        self._prev_stack_index = None
 
     def _on_dcc_disconnected(self):
         self._connect_button.setEnabled(False)
