@@ -272,12 +272,18 @@ class ImageSequence(QObject, object):
 
     def set_path(self, path):
         """
-        Set as singal frame image sequence
+        Sets s single frame image sequence
         :param path: str
         """
 
-        self._frame = 0
-        self._frames = [path]
+        if not path:
+            return
+
+        if os.path.isfile(path):
+            self._frame = 0
+            self._frames = [path]
+        elif os.path.isdir(path):
+            self.set_dirname(path)
 
     def dirname(self):
         """
@@ -311,6 +317,17 @@ class ImageSequence(QObject, object):
         if os.path.isdir(dirname):
             self._frames = [dirname + '/' + filename for filename in os.listdir(dirname)]
             natural_sort_items(self._frames)
+
+    def first_frame(self):
+        """
+        Returns the path of the first frame of the sequence
+        :return: str
+        """
+
+        if not self._frames:
+            return ''
+
+        return self._frames[0]
 
     def start(self):
         """

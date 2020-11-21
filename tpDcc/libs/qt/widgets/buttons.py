@@ -40,7 +40,11 @@ class BaseButton(QPushButton, object):
         WARNING = 'warning'
         DANGER = 'danger'
 
-    def __init__(self, text='', icon=None, parent=None):
+    def __init__(self, text='', icon=None, elided=False, parent=None):
+
+        self._text = text
+        self._elided = elided
+
         if not icon:
             super(BaseButton, self).__init__(text=text, parent=parent)
         else:
@@ -196,6 +200,19 @@ class BaseButton(QPushButton, object):
         self.theme_size = widget_theme.huge if widget_theme else theme.Theme.Sizes.HUGE
 
         return self
+
+    def setText(self, text):
+        self._text = text
+        super(BaseButton, self).setText(text)
+
+    def resizeEvent(self, event):
+        if self._elided:
+            has_icon = self.icon() and not self.icon().isNull()
+            if has_icon:
+                font_metrics = QFontMetrics(self.font())
+                elided = font_metrics.elidedText(self._text, Qt.ElideMiddle, self.width() - 30)
+                super(BaseButton, self).setText(elided)
+        super(BaseButton, self).resizeEvent(event)
 
 
 @theme.mixin
