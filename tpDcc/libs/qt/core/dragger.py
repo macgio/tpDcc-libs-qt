@@ -99,14 +99,8 @@ class WindowDragger(QFrame, object):
     # =================================================================================================================
 
     def ui(self):
-
-        palette = self.palette()
-        palette.setColor(self.backgroundRole(), QColor(35, 35, 35))
-        self.setPalette(palette)
-
         self.setFixedHeight(qtutils.dpi_scale(40))
-        self.setAutoFillBackground(True)
-
+        
         main_layout = layouts.HorizontalLayout(spacing=5, margins=(15, 0, 15, 0))
         self.setLayout(main_layout)
 
