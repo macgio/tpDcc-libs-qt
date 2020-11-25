@@ -36,8 +36,8 @@ class ColorPicker(QFrame, object):
 
     colorChanged = Signal(object)
 
-    def __init__(self, *args):
-        super(ColorPicker, self).__init__(*args)
+    def __init__(self, *args, **kwargs):
+        super(ColorPicker, self).__init__(*args, **kwargs)
 
         self._buttons = list()
         self._current_color = None
@@ -1784,6 +1784,12 @@ class ColorDialogWidget(base.BaseWidget, object):
         self._select_color_btn.clicked.connect(self._on_select_color)
         self._cancel_btn.clicked.connect(self.colorCancelled.emit)
 
+    def enable_select_cancel_buttons(self, flag):
+        self._cancel_btn.setVisible(flag)
+        self._cancel_btn.setEnabled(flag)
+        self._select_color_btn.setVisible(flag)
+        self._select_color_btn.setEnabled(flag)
+
     def dragEnterEvent(self, event):
         if event.mimeData().hasColor() or (event.mimeData().hasText() and QColor(event.mimeData().text()).isValid()):
             event.acceptProposedAction()
@@ -1843,6 +1849,10 @@ class ColorDialogWidget(base.BaseWidget, object):
         self._alpha_slider.setVisible(flag)
         self._alpha_spinner.setVisible(flag)
         self.alphaEnabledChanged.emit(flag)
+        if flag:
+            self._color_preview.set_display_mode(ColorPreview.DisplayMode.SPLIT_ALPHA)
+        else:
+            self._color_preview.set_display_mode(ColorPreview.DisplayMode.NO_ALPHA)
 
     def set_hsv(self):
         if not self.signalsBlocked():
@@ -1891,6 +1901,7 @@ class ColorDialogWidget(base.BaseWidget, object):
         if isinstance(color, (tuple, list)):
             color = QColor(*color)
         self._color_wheel.set_color(color)
+        alpha = self._color.alphaF()
         self._color = color
         blocked = self.signalsBlocked()
         self.blockSignals(True)
@@ -1927,13 +1938,14 @@ class ColorDialogWidget(base.BaseWidget, object):
         self._value_slider.set_first_color(QColor.fromHsvF(self._color_wheel.hue(), self._color_wheel.saturation(), 0))
         self._value_slider.set_last_color(QColor.fromHsvF(self._color_wheel.hue(), self._color_wheel.saturation(), 1))
 
-        alpha_color = color
+        color.setAlphaF(alpha)
+        alpha_color = QColor(color)
         alpha_color.setAlpha(0)
         self._alpha_slider.set_first_color(alpha_color)
         alpha_color.setAlpha(255)
         self._alpha_slider.set_last_color(alpha_color)
         self._alpha_spinner.setValue(color.alpha())
-        # self._alpha_slider.setValue(color.alpha())
+        self._alpha_slider.setValue(color.alpha())
         if not self._hex_line.isModified():
             self._hex_line.set_color(color)
         self._color_preview.set_color(color)
