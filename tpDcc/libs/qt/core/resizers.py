@@ -8,7 +8,7 @@ Module that contains implementation for dialog/window resizers
 from __future__ import print_function, division, absolute_import
 
 from Qt.QtCore import Qt, Signal, QSize
-from Qt.QtWidgets import QApplication, QFrame
+from Qt.QtWidgets import QApplication, QWidget
 from Qt.QtGui import QCursor, QColor, QPainter
 
 from tpDcc.libs.qt.core import qtutils
@@ -28,7 +28,7 @@ class Resizers:
     All = Vertical | Horizontal | Corners
 
 
-class WindowResizer(QFrame, object):
+class WindowResizer(QWidget, object):
     windowResized = Signal()
     windowResizedStarted = Signal()
     windowResizedFinished = Signal()
