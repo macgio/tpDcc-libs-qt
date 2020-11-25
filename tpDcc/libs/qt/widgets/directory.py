@@ -10,11 +10,11 @@ from __future__ import print_function, division, absolute_import
 import os
 import logging
 
+from tpDcc import dcc
 from Qt.QtCore import Qt, Signal
-from Qt.QtWidgets import QSizePolicy, QWidget, QLabel, QListWidget, QAbstractItemView
+from Qt.QtWidgets import QSizePolicy, QWidget, QListWidget, QAbstractItemView
 from Qt.QtGui import QColor, QPalette
 
-from tpDcc import dcc
 from tpDcc.managers import resources
 from tpDcc.libs.python import path
 from tpDcc.libs.qt.core import base, qtutils
@@ -201,16 +201,7 @@ class SelectFolderButton(QWidget, object):
 
         self.beforeNewDirectory.emit()
 
-        if dcc.is_maya():
-            import maya.cmds as cmds
-            result = cmds.fileDialog2(caption='Select Folder', fileMode=3, startingDirectory=self.init_directory)
-            if result:
-                result = result[0]
-            else:
-                return
-        else:
-            raise NotImplementedError(
-                'Open Folder Browser Dialog is not impelented in your current DCC: {}'.format(dcc.get_name()))
+        result = dcc.select_folder_dialog('Select Folder', start_directory=self.init_directory) or ''
 
         self.directoryChanged.emit(result)
         # if not result or not os.path.isdir(result[0]):
@@ -239,8 +230,11 @@ class SelectFolder(QWidget, object):
         main_layout = layouts.HorizontalLayout(spacing=2, margins=(2, 2, 2, 2))
         self.setLayout(main_layout)
 
-        self._folder_label = QLabel(
-            '{0}'.format(self._label_text)) if self._label_text == '' else QLabel('{0}:'.format(self._label_text))
+        self._folder_label = label.BaseLabel(
+            '{0}'.format(self._label_text)) if self._label_text == '' else label.BaseLabel(
+            '{0}:'.format(self._label_text))
+        if not self._label_text:
+            self._folder_label.setVisible(False)
         self._folder_line = FolderEditLine()
         self._folder_line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         if os.path.exists(self._directory):
@@ -304,21 +298,13 @@ class SelectFolder(QWidget, object):
         :return: str, Path of the selected folder
         """
 
-        if dcc.is_maya():
-            import maya.cmds
-            result = maya.cmds.fileDialog2(
-                caption='Select Folder', fileMode=3, startingDirectory=self.folder_line.text())
-            if result:
-                result = result[0]
-            if not result or not os.path.isdir(result):
-                return
-            else:
-                filename = path.clean_path(result)
-                self.set_directory(filename)
-                self._text_changed()
+        result = dcc.select_folder_dialog('Select Folder', start_directory=self.folder_line.text()) or ''
+        if not result or not os.path.isdir(result):
+            return
         else:
-            raise NotImplementedError(
-                'Open Folder Browser Dialog is not implemented in your current DCC: {}'.format(dcc.get_name()))
+            filename = path.clean_path(result)
+            self.set_directory(filename)
+            self._text_changed()
 
         return filename
 
@@ -381,8 +367,11 @@ class SelectFile(base.DirectoryWidget, object):
     def ui(self):
         super(SelectFile, self).ui()
 
-        self._file_label = QLabel('{0}'.format(self._label_text)) if self._label_text == '' else label.BaseLabel(
+        self._file_label = label.BaseLabel(
+            '{0}'.format(self._label_text)) if self._label_text == '' else label.BaseLabel(
             '{0}:'.format(self._label_text), parent=self)
+        if not self._label_text:
+            self._file_label.setVisible(False)
         self._file_line = FolderEditLine()
         self._file_line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         if self._directory and os.path.exists(self._directory):
@@ -426,6 +415,7 @@ class SelectFile(base.DirectoryWidget, object):
         """
 
         self._file_label.setText(text)
+        self._file_label.setVisible(bool(text))
 
     def set_directory(self, directory):
         """
@@ -451,26 +441,18 @@ class SelectFile(base.DirectoryWidget, object):
         :return: str, Path of the selected folder
         """
 
-        if dcc.is_maya():
-            import maya.cmds
-            file_line = self._file_line.text()
-            if os.path.isfile(file_line):
-                file_line = os.path.dirname(file_line)
-            result = maya.cmds.fileDialog2(
-                caption='Select File', fileMode=1, fileFilter=self._filters or '', startingDirectory=file_line)
-            if result:
-                result = result[0]
-            if not result or not os.path.isfile(result):
-                LOGGER.warning('Selected file {} is not a valid file!'.format(result))
-                return
-            else:
-                filename = path.clean_path(result)
-                self._file_line.setText(filename)
-                self.directoryChanged.emit(filename)
-                self.update_settings(filename=filename)
+        file_line = self._file_line.text()
+        if os.path.isfile(file_line):
+            file_line = os.path.dirname(file_line)
+        result = dcc.select_file_dialog('Select File', start_directory=file_line, pattern=self._filters or '') or ''
+        if not result or not os.path.isfile(result):
+            LOGGER.warning('Selected file "{}" is not a valid file!'.format(result))
+            return
         else:
-            raise NotImplementedError(
-                'Select File Dialog is not implemented in your current DCC: {}'.format(dcc.get_name()))
+            filename = path.clean_path(result)
+            self._file_line.setText(filename)
+            self.directoryChanged.emit(filename)
+            self.update_settings(filename=filename)
 
         return filename
 
