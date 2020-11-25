@@ -39,7 +39,7 @@ class Divider(QWidget, object):
         main_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
         self.setLayout(main_layout)
 
-        self._label = label.BaseLabel().secondary()
+        self._label = label.BaseLabel().strong(True)
 
         first_line = QFrame()
         self._second_line = QFrame()
