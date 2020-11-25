@@ -292,6 +292,18 @@ def get_signals(class_obj):
     return result
 
 
+def safe_disconnect_signal(signal):
+    """
+    Disconnects given signal in a safe way
+    :param signal: Signal
+    """
+
+    try:
+        signal.disconnect()
+    except Exception:
+        pass
+
+
 def safe_delete_later(widget):
     """
     calls the deleteLater method on the given widget, but only
@@ -439,6 +451,14 @@ def get_rounded_mask(width, height, radius_tl=10, radius_tr=10, radius_bl=10, ra
 
 
 def distance_point_to_line(p, v0, v1):
+    """
+    Returns the distance from the given point to line created by the two given v0 and v1 points
+    :param p: QPoint
+    :param v0: QPoint
+    :param v1: QPoint
+    :return:
+    """
+
     v = QtGui.QVector2D(v1 - v0)
     w = QtGui.QVector2D(p - v0)
     c1 = QtGui.QVector2D.dotProduct(w, v)
