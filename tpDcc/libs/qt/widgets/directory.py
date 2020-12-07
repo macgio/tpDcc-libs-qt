@@ -378,17 +378,20 @@ class SelectFile(base.DirectoryWidget, object):
             self._file_line.setText(self._directory)
 
         self._file_btn = buttons.BaseButton(parent=self)
+        self._clear_btn = buttons.BaseButton(parent=self)
         if self._use_icon:
-            folder_icon = resources.icon('folder')
-            self._file_btn.setIcon(folder_icon)
+            self._file_btn.setIcon(resources.icon('folder'))
+            self._clear_btn.setIcon(resources.icon('delete'))
         else:
             self._file_btn.setText('Browse ...')
+            self._clear_btn.setText('Clear')
 
-        for widget in [self._file_label, self._file_line, self._file_btn]:
+        for widget in [self._file_label, self._file_line, self._file_btn, self._clear_btn]:
             self.main_layout.addWidget(widget)
 
     def setup_signals(self):
         self._file_btn.clicked.connect(self._open_file_browser_dialog)
+        self._clear_btn.clicked.connect(self._on_reset_path)
         self._file_line.textChanged.connect(self._text_changed)
 
     def set_settings(self, settings):
@@ -450,11 +453,16 @@ class SelectFile(base.DirectoryWidget, object):
             return
         else:
             filename = path.clean_path(result)
-            self._file_line.setText(filename)
+            self.set_directory(filename)
             self.directoryChanged.emit(filename)
             self.update_settings(filename=filename)
 
         return filename
+
+    def _on_reset_path(self):
+        self.set_directory('')
+        self.directoryChanged.emit('')
+        self.update_settings(filename='')
 
     def _text_changed(self):
         """

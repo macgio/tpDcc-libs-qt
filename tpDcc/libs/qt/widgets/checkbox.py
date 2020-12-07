@@ -7,17 +7,26 @@ Module that contains custom widget for Qt check boxes
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import Qt, QRect
+from Qt.QtCore import Qt,Property,  QRect
 from Qt.QtWidgets import QCheckBox, QStylePainter, QStyleOption
 from Qt.QtGui import QColor, QPainter, QBrush
 
-from tpDcc.libs.qt.core import mixin, animation
+from tpDcc.libs.qt.core import animation, contexts as qt_contexts
 
 
 # @mixin.cursor_mixin
 class BaseCheckBox(QCheckBox, object):
     def __init__(self, text='', parent=None):
         super(BaseCheckBox, self).__init__(text=text, parent=parent)
+
+    def _get_checked(self):
+        return self.isChecked()
+
+    def _set_checked(self, flag):
+        with qt_contexts.block_signals(self):
+            self.setChecked(flag)
+
+    check = Property(bool, _get_checked, _set_checked)
 
 
 class StyledBaseCheckBox(BaseCheckBox, animation.BaseAnimObject):

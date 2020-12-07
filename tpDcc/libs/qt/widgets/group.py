@@ -188,7 +188,8 @@ class GroupBoxWidget(base.BaseFrame):
         self._title_widget.setIcon(self._off_icon)
 
         self._widget_frame = QFrame(self)
-        widget_frame_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
+        self._widget_frame.setObjectName('contentsWidget')
+        widget_frame_layout = layouts.VerticalLayout(spacing=2, margins=(0, 0, 0, 0))
         self._widget_frame.setLayout(widget_frame_layout)
 
         self.main_layout.addWidget(self._title_widget)
@@ -217,6 +218,7 @@ class GroupBoxWidget(base.BaseFrame):
 
         self._title_widget.setChecked(flag)
         self._title_widget.setIcon(self._on_icon if flag else self._off_icon)
+        self._widget_frame.setVisible(flag)
         if self._widget:
             self._widget.setVisible(flag)
 
@@ -252,8 +254,8 @@ class GroupBoxWidget(base.BaseFrame):
         """
 
         self._widget = widget
-        # self._widget.setParent(self._widget_frame)
-        # self._widget_frame.layout().addWidget(self._widget)
+        self._widget.setParent(self._widget_frame)
+        self._widget_frame.layout().addWidget(self._widget)
 
     # ============================================================================================================
     # SETTINGS

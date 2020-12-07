@@ -12,8 +12,9 @@ from Qt.QtWidgets import QWidget, QTabWidget, QMainWindow
 from Qt.QtGui import QColor, QPalette
 
 from tpDcc import dcc
-from tpDcc.libs.qt.core import qtutils, mixin
-from tpDcc.libs.qt.core import base, theme
+from tpDcc.libs.resources.core import theme
+from tpDcc.libs.qt.core import qtutils
+from tpDcc.libs.qt.core import base
 from tpDcc.libs.qt.widgets import layouts, window, tabbars, buttons, group, dividers, stack
 
 
@@ -536,7 +537,7 @@ class MenuTabBlockButton(buttons.BaseToolButton, object):
         self.setCheckable(True)
 
 
-@mixin.theme_mixin
+@theme.mixin
 class MenuTabBlockButtonGroup(group.BaseButtonGroup, object):
     checkedChanged = Signal(int)
 

@@ -7,11 +7,11 @@ Module that contains base functionality for Qt widgets
 
 from __future__ import print_function, division, absolute_import
 
-from Qt.QtCore import Qt, Signal, Property
+from Qt.QtCore import Qt, Property, Signal, Property
 from Qt.QtWidgets import QApplication, QSizePolicy, QWidget, QFrame, QScrollArea, QWhatsThis
 
 from tpDcc.libs.resources.core import theme
-from tpDcc.libs.qt.core import qtutils
+from tpDcc.libs.qt.core import qtutils, contexts as qt_contexts
 from tpDcc.libs.qt.widgets import layouts
 
 
@@ -256,8 +256,16 @@ class DirectoryWidget(BaseWidget, object):
         self._last_directory = None
         super(DirectoryWidget, self).__init__(parent=parent, **kwargs)
 
-    @property
-    def directory(self):
+    def _get_directory(self):
+        return self._directory
+
+    def _set_directory(self, directory):
+        with qt_contexts.block_signals(self):
+            self.set_directory(directory)
+
+    directory = Property(str, _get_directory ,_set_directory)
+
+    def get_directory(self):
         return self._directory
 
     def set_directory(self, directory):

@@ -10,6 +10,7 @@ from __future__ import print_function, division, absolute_import
 from functools import partial
 
 from Qt.QtCore import Qt, Signal, Property, QPoint, QTimer, QPropertyAnimation, QEasingCurve, QAbstractAnimation
+from Qt.QtWidgets import QFrame
 
 from tpDcc import dcc
 from tpDcc.managers import resources
@@ -229,13 +230,13 @@ class PopupMessage(base.BaseWidget, object):
         self._pos_anim.setTargetObject(self)
         self._pos_anim.setEasingCurve(QEasingCurve.OutCubic)
         self._pos_anim.setDuration(300)
-        self._pos_anim.setPropertyName('pos')
+        self._pos_anim.setPropertyName(b'pos')
 
         self._opacity_anim = QPropertyAnimation()
         self._opacity_anim.setTargetObject(self)
         self._opacity_anim.setEasingCurve(QEasingCurve.OutCubic)
         self._opacity_anim.setDuration(300)
-        self._opacity_anim.setPropertyName('windowOpacity')
+        self._opacity_anim.setPropertyName(b'windowOpacity')
         self._opacity_anim.setStartValue(0.0)
         self._opacity_anim.setEndValue(1.0)
 
@@ -269,16 +270,21 @@ class PopupMessage(base.BaseWidget, object):
                 icon_label.image = resources.pixmap(
                     current_type, color=getattr(current_theme, '{}_color'.format(current_type)))
 
+        main_frame = QFrame(self)
+        main_frame_layout = layouts.HorizontalLayout(spacing=5, margins=(5, 5, 5, 5))
+        main_frame.setLayout(main_frame_layout)
+        self.main_layout.addWidget(main_frame)
+
         self._content_label = label.BaseLabel(parent=self)
         self._content_label.setText(self._text)
 
         self._close_btn = buttons.BaseToolButton(parent=self).image('close', theme='window').icon_only().tiny()
         self._close_btn.setVisible(self._closable or False)
 
-        self.main_layout.addWidget(icon_label)
-        self.main_layout.addWidget(self._content_label)
-        self.main_layout.addStretch()
-        self.main_layout.addWidget(self._close_btn)
+        main_frame_layout.addWidget(icon_label)
+        main_frame_layout.addWidget(self._content_label)
+        main_frame_layout.addStretch()
+        main_frame_layout.addWidget(self._close_btn)
 
     def setup_signals(self):
         self._close_btn.clicked.connect(self.close)

@@ -19,7 +19,8 @@ from tpDcc.managers import resources
 from tpDcc.core import project as core_project
 from tpDcc.core import consts
 from tpDcc.libs.python import path, settings, folder, fileio
-from tpDcc.libs.qt.widgets import layouts, grid, search, directory, dividers, buttons, label, tabs, lineedit
+from tpDcc.libs.qt.core import base, qtutils
+from tpDcc.libs.qt.widgets import layouts, search, directory, dividers, buttons, label, tabs, lineedit
 
 LOGGER = logging.getLogger('tpDcc-libs-qt')
 
@@ -72,39 +73,16 @@ def get_projects(projects_path, project_class=None):
     return projects_found
 
 
-class Project(QWidget):
+class Project(base.BaseWidget):
     projectOpened = Signal(object)
     projectRemoved = Signal()
     projectImageChanged = Signal(str)
 
     def __init__(self, project_data, parent=None):
-        super(Project, self).__init__(parent)
 
         self._project_data = project_data
 
-        self.setMaximumWidth(160)
-        self.setMaximumHeight(200)
-
-        self.main_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
-        self.setLayout(self.main_layout)
-
-        widget_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
-        main_frame = QFrame()
-        main_frame.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
-        main_frame.setLineWidth(1)
-        main_frame.setLayout(widget_layout)
-        self.main_layout.addWidget(main_frame)
-
-        self.project_btn = QPushButton('', self)
-        self.project_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.project_btn.setIconSize(QSize(120, 120))
-        project_lbl = label.BaseLabel(self.name, parent=self)
-        project_lbl.setStyleSheet('background-color:rgba(0, 0, 0, 150);')
-        project_lbl.setAlignment(Qt.AlignCenter)
-        widget_layout.addWidget(self.project_btn)
-        widget_layout.addWidget(project_lbl)
-
-        self.setup_signals()
+        super(Project, self).__init__(parent)
 
     # ============================================================================================================
     # PROPERTIES
@@ -173,9 +151,34 @@ class Project(QWidget):
     # OVERRIDES
     # ============================================================================================================
 
+    def ui(self):
+        super(Project, self).ui()
+
+        self.setMaximumWidth(qtutils.dpi_scale(160))
+        self.setMaximumHeight(qtutils.dpi_scale(200))
+
+        widget_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
+        main_frame = QFrame()
+        main_frame.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
+        main_frame.setLineWidth(1)
+        main_frame.setLayout(widget_layout)
+        self.main_layout.addWidget(main_frame)
+
+        self.project_btn = QPushButton('', self)
+        self.project_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.project_btn.setIconSize(QSize(120, 120))
+        project_lbl = label.BaseLabel(self.name, parent=self)
+        project_lbl.setObjectName('projectLabel')
+        project_lbl.setAlignment(Qt.AlignCenter)
+        widget_layout.addWidget(self.project_btn)
+        widget_layout.addWidget(project_lbl)
+
+    def setup_signals(self):
+        self.project_btn.clicked.connect(self._on_open_project)
+
     def contextMenuEvent(self, event):
         menu = QMenu(self)
-        remove_icon = resources.icon(name='delete', extension='png')
+        remove_icon = resources.icon(name='delete')
         remove_action = QAction(remove_icon, 'Remove', menu)
         remove_action.setStatusTip(consts.DELETE_PROJECT_TOOLTIP)
         remove_action.setToolTip(consts.DELETE_PROJECT_TOOLTIP)
@@ -200,9 +203,6 @@ class Project(QWidget):
                 menu.addAction(action)
 
         menu.exec_(self.mapToGlobal(event.pos()))
-
-    def setup_signals(self):
-        self.project_btn.clicked.connect(self._on_open_project)
 
     # ============================================================================================================
     # BASE
@@ -389,7 +389,7 @@ class Project(QWidget):
             self.projectImageChanged.emit(image_file)
 
 
-class ProjectViewer(grid.GridWidget, object):
+class ProjectViewer(base.BaseWidget, object):
     projectOpened = Signal(object)
 
     def __init__(self, project_class, parent=None):
@@ -397,15 +397,9 @@ class ProjectViewer(grid.GridWidget, object):
         self._project_class = project_class
         super(ProjectViewer, self).__init__(parent=parent)
 
-        self.setShowGrid(False)
-        self.setColumnCount(3)
-        self.horizontalHeader().hide()
-        self.verticalHeader().hide()
-        self.resizeRowsToContents()
-        self.resizeColumnsToContents()
-        self.setSelectionMode(QAbstractItemView.NoSelection)
-        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.setFocusPolicy(Qt.NoFocus)
+    def get_main_layout(self):
+        main_layout = layouts.FlowLayout(parent=self, spacing_x=0, spacing_y=0)
+        return main_layout
 
     def set_settings(self, settings):
         """
@@ -421,13 +415,23 @@ class ProjectViewer(grid.GridWidget, object):
         if project_widget is None:
             return
 
-        row, col = self.first_empty_cell()
         project_widget.projectOpened.connect(self._on_open_project)
         project_widget.projectRemoved.connect(self._on_removed_project)
         project_widget.projectImageChanged.connect(self._on_updated_project_image)
 
-        self.addWidget(row, col, project_widget)
-        self.resizeRowsToContents()
+        self.main_layout.addWidget(project_widget)
+
+    def get_widgets(self):
+        all_widgets = list()
+
+        for i in range(self.main_layout.count()):
+            widget_item = self.main_layout.itemAt(i)
+            if not widget_item:
+                continue
+            w = widget_item.widget()
+            all_widgets.append(w)
+
+        return all_widgets
 
     def get_project_by_name(self, project_name):
         for w in self.get_widgets():
@@ -437,7 +441,10 @@ class ProjectViewer(grid.GridWidget, object):
         return None
 
     def update_projects(self, project_path=None):
-        self.clear()
+
+        qtutils.clear_layout(self.main_layout)
+
+        # self.clear()
 
         if not project_path:
             if self._settings is None:
@@ -544,21 +551,28 @@ class ProjectWidget(QWidget, object):
             self._open_project.update_projects()
 
 
-class OpenProjectWidget(QWidget, object):
+class OpenProjectWidget(base.BaseWidget, object):
     projectOpened = Signal(object)
 
     def __init__(self, project_class, parent=None):
-        super(OpenProjectWidget, self).__init__(parent=parent)
 
+        self._project_class = project_class
         self._settings = None
 
-        main_layout = layouts.VerticalLayout(spacing=2, margins=(0, 0, 0, 0))
-        self.setLayout(main_layout)
+        super(OpenProjectWidget, self).__init__(parent=parent)
 
-        self.search_widget = search.SearchFindWidget()
-        self.search_widget.set_placeholder_text('Filter Projects ...')
+        self._update_ui()
 
-        self._projects_list = ProjectViewer(project_class=project_class)
+    def get_main_layout(self):
+        return layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
+
+    def ui(self):
+        super(OpenProjectWidget, self).ui()
+
+        self._search_widget = search.SearchFindWidget()
+        self._search_widget.set_placeholder_text('Filter Projects ...')
+
+        self._projects_list = ProjectViewer(project_class=self._project_class)
         self._projects_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         buttons_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
@@ -566,20 +580,20 @@ class OpenProjectWidget(QWidget, object):
 
         buttons_layout1 = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
         buttons_layout1.setAlignment(Qt.AlignLeft)
-        self.browse_widget = directory.SelectFolder(label_text='Projects Path', use_app_browser=True, use_icon=True)
-        buttons_layout1.addWidget(self.browse_widget)
+        self._browse_widget = directory.SelectFolder(label_text='Projects Path', use_app_browser=True, use_icon=True)
+        buttons_layout1.addWidget(self._browse_widget)
 
         buttons_layout.addLayout(buttons_layout1)
 
-        main_layout.addWidget(self.search_widget)
-        main_layout.addWidget(dividers.Divider('PROJECTS', alignment=Qt.AlignCenter))
-        main_layout.addWidget(self._projects_list)
-        main_layout.addLayout(buttons_layout)
+        self.main_layout.addWidget(self._search_widget)
+        self.main_layout.addWidget(dividers.Divider('PROJECTS', alignment=Qt.AlignCenter))
+        self.main_layout.addWidget(self._projects_list)
+        self.main_layout.addLayout(buttons_layout)
 
-        self.browse_widget.directoryChanged.connect(self._on_directory_browsed)
+    def setup_signals(self):
+        self._search_widget.textChanged.connect(self._on_search_project)
+        self._browse_widget.directoryChanged.connect(self._on_directory_browsed)
         self._projects_list.projectOpened.connect(self._on_project_opened)
-
-        self._update_ui()
 
     def get_projects_list(self):
         """
@@ -626,11 +640,15 @@ class OpenProjectWidget(QWidget, object):
                     LOGGER.debug('Project Path stored in settings: {}'.format(project_path))
 
         if project_path:
-            self.browse_widget.set_directory(directory=project_path)
+            self._browse_widget.set_directory(directory=project_path)
             if self._settings:
                 self.update_projects()
             else:
                 self.update_projects(project_path=project_path)
+
+    def _on_search_project(self, project_text):
+        for project in self._projects_list.get_widgets():
+            project.setVisible(project_text.lower() in project.name.lower())
 
     def _on_directory_browsed(self, dir):
         """
@@ -652,50 +670,62 @@ class OpenProjectWidget(QWidget, object):
         self.projectOpened.emit(project)
 
 
-class NewProjectWidget(QWidget, object):
+class NewProjectWidget(base.BaseWidget, object):
     projectCreated = Signal(object)
 
     def __init__(self, project_class, parent=None):
-        super(NewProjectWidget, self).__init__(parent=parent)
 
         self._settings = None
         self._selected_template = None
+        self._project_class = project_class
 
-        main_layout = layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
-        self.setLayout(main_layout)
+        super(NewProjectWidget, self).__init__(parent=parent)
 
-        self.search_widget = search.SearchFindWidget()
-        self.search_widget.set_placeholder_text('Filter Templates ...')
+    def get_main_layout(self):
+        return layouts.VerticalLayout(spacing=0, margins=(0, 0, 0, 0))
 
-        self.templates_list = TemplatesViewer(project_class=project_class)
-        self.templates_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+    def ui(self):
+        super(NewProjectWidget, self).ui()
+
+        self._search_widget = search.SearchFindWidget()
+        self._search_widget.set_placeholder_text('Filter Templates ...')
+
+        self._templates_list = TemplatesViewer(project_class=self._project_class)
+        self._templates_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         project_layout = layouts.HorizontalLayout(spacing=1, margins=(0, 0, 0, 0))
 
         project_line_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
         project_layout.addLayout(project_line_layout)
-        self.project_line = lineedit.BaseLineEdit(parent=self)
-        self.project_line.setPlaceholderText('Project Path')
-        self.project_line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.project_btn = directory.SelectFolderButton(use_app_browser=True)
-        project_line_layout.addWidget(self.project_line)
-        project_line_layout.addWidget(self.project_btn)
-        self.name_line = lineedit.BaseLineEdit(parent=self)
-        self.name_line.setPlaceholderText('Project Name')
+        self._project_line = lineedit.BaseLineEdit(parent=self)
+        self._project_line.setPlaceholderText('Project Path')
+        self._project_line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self._project_btn = directory.SelectFolderButton(text='', use_app_browser=True)
+        project_line_layout.addWidget(self._project_line)
+        project_line_layout.addWidget(self._project_btn)
+        self._name_line = lineedit.BaseLineEdit(parent=self)
+        self._name_line.setPlaceholderText('Project Name')
         project_line_layout.addWidget(dividers.get_horizontal_separator_widget())
-        project_line_layout.addWidget(self.name_line)
-        self.create_btn = buttons.BaseButton('Create', parent=self)
+        project_line_layout.addWidget(self._name_line)
+        self._create_btn = buttons.BaseButton('Create', parent=self)
+        self._create_btn.setIcon(resources.icon('create'))
         project_line_layout.addSpacing(10)
-        project_line_layout.addWidget(self.create_btn)
+        project_line_layout.addWidget(self._create_btn)
 
-        main_layout.addWidget(self.search_widget)
-        main_layout.addWidget(dividers.Divider('TEMPLATES', alignment=Qt.AlignCenter))
-        main_layout.addWidget(self.templates_list)
-        main_layout.addLayout(project_layout)
+        self.main_layout.addWidget(self._search_widget)
+        self.main_layout.addWidget(dividers.Divider('TEMPLATES', alignment=Qt.AlignCenter))
+        self.main_layout.addWidget(self._templates_list)
+        self.main_layout.addLayout(project_layout)
 
-        self.templates_list.selectedTemplate.connect(self._on_selected_template)
-        self.project_btn.directoryChanged.connect(self._on_directory_browsed)
-        self.create_btn.clicked.connect(self._on_create)
+    def setup_signals(self):
+        self._search_widget.textChanged.connect(self._on_search_template)
+        self._templates_list.selectedTemplate.connect(self._on_selected_template)
+        self._project_btn.directoryChanged.connect(self._on_directory_browsed)
+        self._create_btn.clicked.connect(self._on_create)
+
+    @property
+    def templates_list(self):
+        return self._templates_list
 
     def set_settings(self, settings):
         """
@@ -715,8 +745,12 @@ class NewProjectWidget(QWidget, object):
         if self._settings:
             if self._settings.has_setting('project_directory'):
                 project_path = self._settings.get('project_directory')
-                self.project_line.setText(project_path)
-                self.project_btn.init_directory = project_path
+                self._project_line.setText(project_path)
+                self._project_btn.init_directory = project_path
+
+    def _on_search_template(self, template_text):
+        for template in self._templates_list.get_widgets():
+            template.setVisible(template_text.lower() in template.name.lower())
 
     def _on_selected_template(self, template):
         self._selected_template = template
@@ -725,11 +759,11 @@ class NewProjectWidget(QWidget, object):
         if not dir or not path.is_dir(dir):
             return
 
-        self.project_line.setText(str(dir))
+        self._project_line.setText(str(dir))
 
     def _on_create(self):
-        project_path = self.project_line.text()
-        project_name = self.name_line.text()
+        project_path = self._project_line.text()
+        project_name = self._name_line.text()
         if not project_path or not path.is_dir(project_path) or not project_name:
             LOGGER.warning('Project Path: {} or Project Name: {} are not valid!'.format(project_path, project_name))
             return
@@ -741,7 +775,7 @@ class NewProjectWidget(QWidget, object):
         if new_project is not None:
             LOGGER.debug(
                 'Project {} created successfully on path {}'.format(new_project.name, new_project.path))
-            self.name_line.setText('')
+            self._name_line.setText('')
             self.projectCreated.emit(new_project)
             return new_project
 
@@ -777,39 +811,37 @@ class TemplateData(object):
         return new_project
 
 
-class Template(QWidget):
+class Template(base.BaseWidget):
     templateChecked = Signal(object)
 
     def __init__(self, parent=None):
-        QWidget.__init__(self, parent=parent)
+        super(Template, self).__init__(parent=parent)
+
+    def ui(self):
+        super(Template, self).ui()
 
         self.setMaximumWidth(160)
         self.setMaximumHeight(200)
-
-        main_layout = layouts.VerticalLayout(spacing=0, margins=(5, 5, 5, 5))
-        self.setLayout(main_layout)
 
         widget_layout = layouts.VerticalLayout(spacing=0, margins=(2, 2, 2, 2))
         main_frame = QFrame()
         main_frame.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
         main_frame.setLineWidth(1)
         main_frame.setLayout(widget_layout)
-        main_layout.addWidget(main_frame)
+        self.main_layout.addWidget(main_frame)
 
-        self.project_btn = QPushButton('', self)
-        self.project_btn.setCheckable(True)
-        self.project_btn.setIcon(self.get_icon())
-        self.project_btn.setIconSize(QSize(120, 120))
-        project_lbl = label.BaseLabel(self.name, parent=self)
-        project_lbl.setStyleSheet('background-color:rgba(0, 0, 0, 150);')
-        project_lbl.setAlignment(Qt.AlignCenter)
-        widget_layout.addWidget(self.project_btn)
-        widget_layout.addWidget(project_lbl)
-
-        self.setup_signals()
+        self.template_btn = QPushButton('', self)
+        self.template_btn.setCheckable(True)
+        self.template_btn.setIcon(self.get_icon())
+        self.template_btn.setIconSize(QSize(120, 120))
+        template_lbl = label.BaseLabel(self.name, parent=self)
+        template_lbl.setObjectName('templateLabel')
+        template_lbl.setAlignment(Qt.AlignCenter)
+        widget_layout.addWidget(self.template_btn)
+        widget_layout.addWidget(template_lbl)
 
     def setup_signals(self):
-        self.project_btn.toggled.connect(self._on_selected_template)
+        self.template_btn.toggled.connect(self._on_selected_template)
 
     def get_icon(self):
         return resources.icon(name='project', extension='png')
@@ -841,7 +873,7 @@ class BlankTemplate(Template, BlankTemplateData):
         Template.__init__(self, parent=parent)
 
 
-class TemplatesViewer(grid.GridWidget, object):
+class TemplatesViewer(base.BaseWidget, object):
 
     STANDARD_TEMPLATES = [BlankTemplate]
     selectedTemplate = Signal(object)
@@ -850,16 +882,23 @@ class TemplatesViewer(grid.GridWidget, object):
         self._project_class = project_class
         super(TemplatesViewer, self).__init__(parent=parent)
 
-        self.setShowGrid(False)
-        self.setColumnCount(3)
-        self.horizontalHeader().hide()
-        self.verticalHeader().hide()
-        self.resizeRowsToContents()
-        self.resizeColumnsToContents()
-        self.setSelectionMode(QAbstractItemView.NoSelection)
-        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
-
         self._init_standard_templates()
+
+    def get_main_layout(self):
+        main_layout = layouts.FlowLayout(parent=self)
+        return main_layout
+
+    def get_widgets(self):
+        all_widgets = list()
+
+        for i in range(self.main_layout.count()):
+            widget_item = self.main_layout.itemAt(i)
+            if not widget_item:
+                continue
+            w = widget_item.widget()
+            all_widgets.append(w)
+
+        return all_widgets
 
     def add_template(self, template_widget):
         if template_widget is None:
@@ -868,12 +907,10 @@ class TemplatesViewer(grid.GridWidget, object):
         template_widget.PROJECT_CLASS = self._project_class
         template_widget.templateChecked.connect(self._on_template_selected)
 
-        row, col = self.first_empty_cell()
-        self.addWidget(row, col, template_widget)
-        self.resizeRowsToContents()
+        self.main_layout.addWidget(template_widget)
 
     def clear_templates(self):
-        self.clear()
+        qtutils.clear_layout(self.main_layout)
 
     def _init_standard_templates(self):
         for template in self.STANDARD_TEMPLATES:

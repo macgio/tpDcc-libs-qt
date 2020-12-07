@@ -487,10 +487,12 @@ def base64_to_image(base64_string, image_format='PNG'):
     :return: QImage
     """
 
-    if isinstance(base64_string, basestring):
+    try:
         ba = QByteArray.fromBase64(base64_string)
         image = QImage.fromData(ba, image_format)
         return image
+    except Exception:
+        return None
 
 
 def base64_to_bitmap(base64_string, bitmap_format='PNG'):
@@ -501,11 +503,10 @@ def base64_to_bitmap(base64_string, bitmap_format='PNG'):
     :return: QBitmap
     """
 
-    if isinstance(base64_string, basestring):
-        image = base64_to_image(base64_string, bitmap_format)
-        if image is not None:
-            bitmap = QBitmap.fromImage(image)
-            return bitmap
+    image = base64_to_image(base64_string, bitmap_format)
+    if image is not None:
+        bitmap = QBitmap.fromImage(image)
+        return bitmap
 
 
 def base64_to_icon(base64_string, icon_format='PNG'):
@@ -516,8 +517,7 @@ def base64_to_icon(base64_string, icon_format='PNG'):
     :return: QIcon
     """
 
-    if isinstance(base64_string, basestring):
-        bitmap = base64_to_bitmap(base64_string, icon_format)
-        if bitmap is not None:
-            icon = QIcon(bitmap)
-            return icon
+    bitmap = base64_to_bitmap(base64_string, icon_format)
+    if bitmap is not None:
+        icon = QIcon(bitmap)
+        return icon

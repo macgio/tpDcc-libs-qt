@@ -12,8 +12,8 @@ import logging
 import weakref
 import webbrowser
 
-from Qt.QtCore import Qt, Signal, QSize
-from Qt.QtWidgets import QApplication, QSizePolicy, QMenu, QFrame, QPlainTextEdit, QDialog
+from Qt.QtCore import Qt, Signal, QSize, QEvent
+from Qt.QtWidgets import QApplication, QSizePolicy, QMenu, QWidget, QFrame, QPlainTextEdit, QDialog
 from Qt.QtGui import QCursor, QPixmap, QFont
 
 from tpDcc import dcc
@@ -193,6 +193,8 @@ class ToolsetWidget(stack.StackItem, object):
         self._contents_layout.setSpacing(0)
 
         self._stacked_widget = stack.SlidingOpacityStackedWidget(self)
+        # NOTE: tpDcc style uses this objectName to apply specific style to this widget
+        self._stacked_widget.setObjectName('toolsetStackedWidget')
         self._stacked_widget.setContentsMargins(0, 0, 0, 0)
         self._stacked_widget.setLineWidth(0)
         self.main_layout.addWidget(self._stacked_widget)
@@ -218,7 +220,7 @@ class ToolsetWidget(stack.StackItem, object):
         self._settings_button.setFixedSize(QSize(22, 22))
         self._help_widget = ToolsetHelpWidget()
 
-        empty_widget = QFrame()
+        empty_widget = QWidget()
         empty_layout = layouts.HorizontalLayout(spacing=0, margins=(0, 0, 0, 0))
         empty_widget.setLayout(empty_layout)
         empty_layout.addStretch()
@@ -258,6 +260,9 @@ class ToolsetWidget(stack.StackItem, object):
         self._stacked_widget.addWidget(empty_widget)
         self._stacked_widget.addWidget(self._widget_hider)
         self._stacked_widget.addWidget(self._preferences_widget)
+
+        self._widget_hider.setVisible(False)
+        self._preferences_widget.setVisible(False)
 
     def setup_signals(self):
         super(ToolsetWidget, self).setup_signals()
@@ -408,6 +413,7 @@ class ToolsetWidget(stack.StackItem, object):
         widget.setVisible(False)
         widget.setProperty('color', self._icon_color)
         widget.setParent(self._widget_hider)
+        self._contents_layout.addWidget(widget)
 
         self._widgets[0].setVisible(True)
 
@@ -634,6 +640,7 @@ class ToolsetWidget(stack.StackItem, object):
         valid_connect = self._client.connect()
         if not valid_connect:
             self._reset_connect_button()
+            self._register_client(self._client)
             return False
 
         if dcc.is_standalone():
@@ -926,6 +933,7 @@ class ToolsetHelpEvent(base.BaseWidget, object):
         self._help_mode = False
         self._current_tooltip = ToolsetTooltipHelpDialog(self, tooltip_widget)
         self._current_widget = None
+        self._temp_tooltip = None
         self.setVisible(False)
 
         layout.insertWidget(0, self)
@@ -946,9 +954,18 @@ class ToolsetHelpEvent(base.BaseWidget, object):
         return self._current_tooltip
 
     def eventFilter(self, obj, event):
+
+        if event.type() == QEvent.Leave:
+            if obj == self._current_widget:
+                if self._temp_tooltip is not None:
+                    self._current_widget.setToolTip(self._temp_tooltip)
+                self._temp_tooltip = None
+                self._current_widget = None
+
         pos = QCursor.pos()
         widget_under_cursor = QApplication.widgetAt(pos)
-        if not widget_under_cursor or widget_under_cursor.objectName() == '':
+        # if not widget_under_cursor or widget_under_cursor.objectName() == '':
+        if not widget_under_cursor:
             self._current_tooltip.hide()
             return super(ToolsetHelpEvent, self).eventFilter(obj, event)
 
@@ -957,6 +974,8 @@ class ToolsetHelpEvent(base.BaseWidget, object):
             if self._current_widget != widget_under_cursor:
                 self._current_widget = widget_under_cursor
                 tooltip_data = self._current_widget.property('tooltip_help')
+                self._temp_tooltip = self._current_widget.toolTip()
+                self._current_widget.setToolTip('')
                 self._current_tooltip.update_tooltip(tooltip_data)
         else:
             self._current_tooltip.hide()

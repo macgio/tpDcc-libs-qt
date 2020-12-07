@@ -9,16 +9,16 @@ from __future__ import print_function, division, absolute_import
 
 from copy import copy
 
-from Qt.QtCore import Qt, Signal, QPoint, QPointF, QEvent
-from Qt.QtWidgets import QWidget, QLabel, QPushButton, QAbstractSpinBox, QDoubleSpinBox, QStyle, QStyleOptionSlider
+from Qt.QtCore import Qt, Signal, Property, QPoint, QPointF, QEvent
+from Qt.QtWidgets import QSizePolicy, QWidget, QAbstractSpinBox, QDoubleSpinBox, QStyle, QStyleOptionSlider
 from Qt.QtWidgets import QGroupBox, QSlider, QToolTip, QMenu, QColorDialog
 from Qt.QtGui import QCursor, QColor, QFont, QPainter, QBrush, QLinearGradient, QMouseEvent
 
 from tpDcc import dcc
 from tpDcc.libs.python import mathlib, color as core_color
 from tpDcc.libs.resources.core import theme, color
-from tpDcc.libs.qt.core import qtutils
-from tpDcc.libs.qt.widgets import layouts
+from tpDcc.libs.qt.core import qtutils, contexts as qt_contexts
+from tpDcc.libs.qt.widgets import layouts, label, buttons
 
 FLOAT_SLIDER_DRAG_STEPS = [100.0, 10.0, 1.0, 0.1, 0.01, 0.001]
 INT_SLIDER_DRAG_STEPS = [100.0, 10.0, 1.0]
@@ -330,7 +330,7 @@ class HoudiniInputDragger(QWidget, object):
         self._frame.setLayout(frame_layout)
         main_layout.addWidget(self._frame)
 
-        self._label = QLabel('+' + str(factor))
+        self._label = label.BaseLabel('+' + str(factor), parent=self)
         font = self._label.font()
         font.setPointSize(7)
         self._label.setFont(font)
@@ -527,8 +527,8 @@ class HoudiniDoubleSlider(QWidget, object):
         self._input.setButtonSymbols(QAbstractSpinBox.NoButtons)
         self._input.setRange(slider_range[0], slider_range[1])
         self._input.setContentsMargins(0, 0, 0, 0)
-        self._input.setMinimumWidth(50)
-        self._input.setMaximumWidth(50)
+        self._input.setMinimumWidth(60 if self._type == 'float' else 40)
+        self._input.setMaximumWidth(60 if self._type == 'float' else 40)
         self._input.setMinimumHeight(h)
         self._input.setMaximumHeight(h)
         self._input.valueIncremented.connect(self._on_increment_value)
@@ -542,9 +542,10 @@ class HoudiniDoubleSlider(QWidget, object):
         self._slider.setContentsMargins(0, 0, 0, 0)
         self._slider.setMinimumHeight(h)
         self._slider.setMaximumHeight(h)
+        self._slider.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         if name:
-            self._label = QLabel(name + '  ')
+            self._label = label.BaseLabel(name + '  ', parent=self)
             self._main_layout.addWidget(self._label)
         self._main_layout.addWidget(self._input)
         self._main_layout.addWidget(self._slider)
@@ -575,6 +576,16 @@ class HoudiniDoubleSlider(QWidget, object):
     def _value_range(self):
         return self.maximum - self.minimum
 
+    def _get_value(self):
+        return self.value()
+
+    def _set_value(self, value):
+        with qt_contexts.block_signals(self):
+            self.set_value(value)
+
+    intValue = Property(int, _get_value, _set_value, user=True)
+    floatValue = Property(float, _get_value, _set_value, user=True)
+
     def value(self):
         self._value = self._input.value()
         if self._type == 'int':
@@ -586,7 +597,7 @@ class HoudiniDoubleSlider(QWidget, object):
         self._input.setValue(value)
         self._value = self._input.value()
         self.valueChanged.emit(self.value())
-        self._on_houdini_slider_value_changed(0)
+        # self._on_houdini_slider_value_changed(0)
 
     def set_decimals(self, decimals):
         self._input.setDecimals(decimals)
@@ -622,18 +633,16 @@ class HoudiniDoubleSlider(QWidget, object):
     def _on_slider_value_changed(self, value):
         out_value = mathlib.map_range_unclamped(
             value, self._slider.minimum(), self._slider.maximum(), self._input.minimum(), self._input.maximum())
-        self._input.blockSignals(True)
-        self._input.setValue(out_value)
-        self._input.blockSignals(False)
+        with qt_contexts.block_signals(self._input):
+            self._input.setValue(out_value)
         self.valueChanged.emit(out_value)
 
     def _on_houdini_slider_value_changed(self, value):
         in_value = mathlib.map_range_unclamped(
             self._input.value(), self._input.minimum(), self._input.maximum(),
             self._slider.minimum(), self._slider.maximum())
-        self._slider.blockSignals(True)
-        self._slider.setValue(int(in_value))
-        self._slider.blockSignals(False)
+        with qt_contexts.block_signals(self._slider):
+            self._slider.setValue(int(in_value))
         self.valueChanged.emit(value)
 
     def _get_style_sheet(self, style_type):
@@ -708,230 +717,3 @@ class HoudiniDoubleSlider(QWidget, object):
                 height : 10;
             }
             """ % "rgba%s" % str(self._main_color)
-
-
-class GradientSlider(DoubleSlider, object):
-    """
-    Custom slider to select a color by non editable gradient
-    """
-
-    def __init__(self, parent, color1=None, color2=None, slider_range=None, dragger_steps=None, main_color=None, *args):
-        if color1 is None:
-            color1 = [0, 0, 0]
-        if color2 is None:
-            color2 = [255, 255, 255]
-        if slider_range is None:
-            slider_range = (0.0, 255.0)
-        if dragger_steps is None:
-            dragger_steps = [5.0, 1.0, 0.25]
-        super(GradientSlider, self).__init__(
-            parent=parent, slider_range=slider_range, dragger_steps=dragger_steps, *args)
-
-        self._parent = parent
-        self._color1 = QColor(color1[0], color1[1], color1[2])
-        self._color2 = QColor(color2[0], color2[1], color2[2])
-        self._main_color = main_color if main_color else QColor(215, 128, 26).getRgb()
-
-        self.setStyleSheet(self._get_style_sheet())
-
-    def paintEvent(self, event):
-        painter = QPainter()
-        painter.begin(self)
-        self._draw_widget(painter)
-        painter.end()
-        super(GradientSlider, self).paintEvent(event)
-
-    def get_color(self):
-        """
-        Computes and returns current color
-        :return: list(float, float, float)
-        """
-
-        r1, g1, b1 = self._color1.getRgb()
-        r2, g2, b2 = self._color2.getRgb()
-        f_r = (r2 - r1) * self.mapped_value() + r1
-        f_g = (g2 - g1) * self.mapped_value() + g1
-        f_b = (b2 - b1) * self.mapped_value() + b1
-
-        return [f_r, f_g, f_b]
-
-    def _draw_widget(self, painter):
-        width = self.width()
-        height = self.height()
-
-        gradient = QLinearGradient(0, 0, width, height)
-        gradient.setColorAt(0, self._color1)
-        gradient.setColorAt(1, self._color2)
-        painter.setBrush(QBrush(gradient))
-
-        painter.drawRect(0, 0, width, height)
-
-    def _get_style_sheet(self):
-        return """
-        QSlider,QSlider:disabled,QSlider:focus{
-                                  background: qcolor(0,0,0,0);   }
-
-         QSlider::groove:horizontal {
-            border: 1px solid #999999;
-            background: qcolor(0,0,0,0);
-         }
-        QSlider::handle:horizontal {
-            background:  rgba(255, 255, 255, 150);
-            width: 10px;
-            border-radius: 4px;
-            border: 1.5px solid black;
-         }
-         QSlider::handle:horizontal:hover {
-            border: 2.25px solid %s;
-         }
-        """ % "rgba%s" % str(self._main_color)
-
-
-class ColorSlider(QWidget, object):
-    """
-    Custom slider to choose a color by its components
-    """
-
-    valueChanged = Signal(list)
-
-    def __init__(self, parent=None, start_color=None, slider_type='float', alpha=False, height=50, *args):
-        super(ColorSlider, self).__init__(parent=parent, *args)
-
-        self._parent = parent
-        self._type = slider_type
-        self._alpha = alpha
-        self._default_color = start_color
-        self._style_str = "QPushButton{ background-color: rgba(%f,%f,%f,%f);border-color: black;" \
-                          "border-radius: 2px;border-style: outset;border-width: 1px;}" \
-                          "\nQPushButton:pressed{ border-style: inset;border-color: beige}"
-
-        main_layout = layouts.HorizontalLayout(spacing=5)
-        self.setLayout(main_layout)
-        self.setMaximumHeight(height)
-        self._menu = QMenu()
-        self._action_reset = self._menu.addAction('Reset Value')
-
-        self._red_dragger = DraggerSlider(slider_type=self._type)
-        self._green_dragger = DraggerSlider(slider_type=self._type)
-        self._blue_dragger = DraggerSlider(slider_type=self._type)
-        self._alpha_dragger = DraggerSlider(slider_type=self._type)
-        for dragger in [self._red_dragger, self._green_dragger, self._blue_dragger, self._alpha_dragger]:
-            dragger.setMinimum(0)
-            if slider_type == 'int':
-                dragger.setMaximum(255)
-            else:
-                dragger.setMaximum(1.0)
-
-        self._red_slider = GradientSlider(parent=self, color2=[255, 0, 0])
-        self._green_slider = GradientSlider(parent=self, color2=[0, 255, 0])
-        self._blue_slider = GradientSlider(parent=self, color2=[0, 0, 255])
-        self._alpha_slider = GradientSlider(parent=self, color2=[255, 255, 255])
-
-        self._red_dragger.valueChanged.connect(lambda value: self._red_slider.set_mapped_value(float(value)))
-        self._red_slider.doubleValueChanged.connect(lambda value: self._red_dragger.setValue(value))
-        self._green_dragger.valueChanged.connect(lambda value: self._green_slider.set_mapped_value(float(value)))
-        self._green_slider.doubleValueChanged.connect(lambda value: self._green_dragger.setValue(value))
-        self._blue_dragger.valueChanged.connect(lambda value: self._blue_slider.set_mapped_value(float(value)))
-        self._blue_slider.doubleValueChanged.connect(lambda value: self._blue_dragger.setValue(value))
-        self._alpha_dragger.valueChanged.connect(lambda value: self._alpha_slider.set_mapped_value(float(value)))
-        self._alpha_slider.doubleValueChanged.connect(lambda value: self._alpha_dragger.setValue(value))
-
-        red_layout = layouts.HorizontalLayout()
-        green_layout = layouts.HorizontalLayout()
-        blue_layout = layouts.HorizontalLayout()
-        alpha_layout = layouts.HorizontalLayout()
-        red_layout.addWidget(self._red_dragger)
-        red_layout.addWidget(self._red_slider)
-        green_layout.addWidget(self._green_dragger)
-        green_layout.addWidget(self._green_slider)
-        blue_layout.addWidget(self._blue_dragger)
-        blue_layout.addWidget(self._blue_slider)
-        alpha_layout.addWidget(self._alpha_dragger)
-        alpha_layout.addWidget(self._alpha_slider)
-        self._sliders_layout = layouts.VerticalLayout()
-        self._sliders_layout.setSpacing(0)
-        layouts_list = [red_layout, green_layout, blue_layout]
-        if self._alpha:
-            layouts_list.append(alpha_layout)
-        else:
-            self._alpha_slider.hide()
-
-        self._alpha_slider.set_mapped_value(255)
-
-        self._color_btn = QPushButton()
-        self._color_btn.setMaximumWidth(height)
-        self._color_btn.setMinimumWidth(height)
-        self._color_btn.setMaximumHeight(height - 12)
-        self._color_btn.setMinimumHeight(height - 12)
-        self._color_btn.setStyleSheet(
-            self._style_str % (
-                self._red_slider.mapped_value(), self._green_slider.mapped_value(),
-                self._blue_slider.mapped_value(), self._alpha_slider.mapped_value()))
-
-        for widget in [self._red_slider, self._green_slider, self._blue_slider, self._alpha_slider,
-                       self._red_dragger, self._green_dragger, self._blue_dragger, self._alpha_dragger]:
-            widget.setMaximumHeight(height / len(layouts_list) + 1)
-            widget.setMinimumHeight(height / len(layouts_list) + 1)
-
-        for slider in [self._red_slider, self._green_slider, self._blue_slider, self._alpha_slider]:
-            slider.doubleValueChanged.connect(self._on_color_changed)
-
-        for layout in layouts_list:
-            self._sliders_layout.addLayout(layout)
-
-        main_layout.addWidget(self._color_btn)
-        main_layout.addLayout(self._sliders_layout)
-
-        if isinstance(start_color, list) and len(start_color) >= 3:
-            self.set_color(start_color)
-
-        self._color_btn.clicked.connect(self._on_show_color_dialog)
-        self._action_reset.triggered.connect(self._on_reset_value)
-
-    def contextMenuEvent(self, event):
-        self._menu.exec_(event.globalPos())
-
-    def set_color(self, new_color):
-        self._red_slider.set_mapped_value(new_color[0])
-        self._green_slider.set_mapped_value(new_color[1])
-        self._green_slider.set_mapped_value(new_color[2])
-        if len(new_color) > 3:
-            self._alpha_slider.set_mapped_value(new_color[3])
-
-    def _on_color_changed(self):
-        self._color_btn.setStyleSheet(
-            self._style_str % (
-                self._red_slider.mapped_value(), self._green_slider.mapped_value(),
-                self._blue_slider.mapped_value(), self._alpha_slider.mapped_value()))
-        value_list = [
-            self._red_slider.mapped_value(), self._green_slider.mapped_value(), self._blue_slider.mapped_value()]
-        if self._alpha:
-            value_list.append(self._alpha_slider.mapped_value())
-        if self._type == 'int':
-            value_list = [mathlib.clamp(int(i), 0, 255) for i in value_list]
-        self.valueChanged.emit(value_list)
-
-    def _on_show_color_dialog(self):
-        if self._alpha:
-            new_color = QColorDialog.getColor(options=QColorDialog.ShowAlphaChannel)
-        else:
-            new_color = QColorDialog.getColor()
-        if new_color.isValid():
-            self._red_slider.set_mapped_value(
-                mathlib.map_range_unclamped(
-                    new_color.redF(), 0.0, 1.0, self._red_slider.slider_range[0], self._red_slider.slider_range[1]))
-            self._green_slider.set_mapped_value(
-                mathlib.map_range_unclamped(
-                    new_color.greenF(), 0.0, 1.0, self._green_slider.slider_range[0],
-                    self._green_slider.slider_range[1]))
-            self._blue_slider.set_mapped_value(
-                mathlib.map_range_unclamped(
-                    new_color.blueF(), 0.0, 1.0, self._blue_slider.slider_range[0], self._blue_slider.slider_range[1]))
-            self._alpha_slider.set_mapped_value(
-                mathlib.map_range_unclamped(
-                    new_color.alphaF(), 0.0, 1.0, self._alpha_slider.slider_range[0],
-                    self._alpha_slider.slider_range[1]))
-
-    def _on_reset_value(self):
-        if self._default_color:
-            self.set_color(self._default_color)

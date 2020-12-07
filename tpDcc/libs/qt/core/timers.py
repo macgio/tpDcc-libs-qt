@@ -11,7 +11,7 @@ from Qt.QtCore import Signal, QObject, QTimer
 
 
 class ClickTimer(QObject, object):
-    EXECUTE = Signal()
+    executed = Signal()
 
     def __init__(self):
         super(ClickTimer, self).__init__()
@@ -20,15 +20,15 @@ class ClickTimer(QObject, object):
 
     def set_data(self, button, modifier, pos, selected):
         self.button = button
-        self.modifier = modifier
+        self.modifiers = modifier
         self.pos = pos
-        self.isSelected = selected
+        self.is_selected = selected
 
     def init_data(self):
         self.button = None
-        self.modifier = None
+        self.modifiers = None
         self.pos = None
-        self.isSelected = False
+        self.is_selected = False
 
     def start(self, interval):
         self.timer_id = self.startTimer(interval)
@@ -41,7 +41,7 @@ class ClickTimer(QObject, object):
 
     def timerEvent(self, event):
         if self.timer_id == event.timerId():
-            self.EXECUTE.emit()
+            self.executed.emit()
         self.remove_timer()
 
 

@@ -11,9 +11,10 @@ import math
 import array
 from functools import partial
 
-from Qt.QtCore import Qt, Signal, Slot, QSize, QSizeF, QPoint, QPointF, QRect, QRectF, QLineF, QMimeData, qFuzzyCompare
+from Qt.QtCore import Qt, Signal, Property, Slot, QSize, QSizeF, QPoint, QPointF, QRect, QRectF, QLineF, QMimeData
+from Qt.QtCore import qFuzzyCompare
 from Qt.QtWidgets import QStyle, QStyleOptionFrame, QStylePainter, QSizePolicy, QColorDialog, QDialogButtonBox
-from Qt.QtWidgets import QApplication, QWidget, QFrame, QDialog, QToolButton, QLineEdit, QSlider
+from Qt.QtWidgets import QApplication, QWidget, QFrame, QDialog, QToolButton, QLineEdit, QSlider, QMenu
 from Qt.QtGui import QColor, QBrush, QPen, QPainter, QPainterPath, QGradient, QLinearGradient, QConicalGradient
 from Qt.QtGui import QPixmap, QImage, QPolygonF, QDrag
 
@@ -21,8 +22,19 @@ from tpDcc.dcc import dialog
 from tpDcc.managers import resources
 from tpDcc.libs.python import mathlib, python
 from tpDcc.libs.resources.core import color as core_color
-from tpDcc.libs.qt.core import base, qtutils
-from tpDcc.libs.qt.widgets import layouts, buttons, label, spinbox, dividers, panel
+from tpDcc.libs.qt.core import base, qtutils, contexts as qt_contexts
+from tpDcc.libs.qt.widgets import layouts, buttons, label, spinbox, dividers, panel, sliders
+
+
+# TODO: Move all defualt colors into a configuration file that can be ready by any widget
+DEFAULT_COLORS = {
+    'Grey': (102, 102, 102, 255),
+    'Ok': (128, 178, 204, 255),
+    'Cancel': (178, 128, 102, 255),
+    'Warn': (178, 51, 51, 255),
+    'Collapse': (38, 38, 38, 255),
+    'Subtle': (122, 122, 153, 255)
+}
 
 
 class ColorButton(buttons.BaseButton, object):
@@ -709,6 +721,7 @@ class ColorWheel(QWidget, object):
             self.colorSelected.emit(self.color())
             self.colorChanged.emit(self.color())
             self.update()
+            return
         elif self._mouse_status == self.MouseStatus.DRAW_SQUARE:
             glob_mouse_ln = self._line_to_point(event.pos())
             center_mouse_ln = QLineF(QPointF(0, 0), glob_mouse_ln.p2() - glob_mouse_ln.p1())
@@ -1639,6 +1652,7 @@ class ColorDialogWidget(base.BaseWidget, object):
 
     def __init__(self, parent=None):
         self._color = QColor()
+        self._color_list = (0, 0, 0, 255)
         self._alpha_enabled = False
         self._pick_from_screen = False
 
@@ -1646,6 +1660,10 @@ class ColorDialogWidget(base.BaseWidget, object):
 
         self.setAcceptDrops(True)
         self.set_alpha_enabled(True)
+
+    # =================================================================================================================
+    # OVERRIDES
+    # =================================================================================================================
 
     def get_main_layout(self):
         main_layout = layouts.VerticalLayout(spacing=2, margins=(0, 0, 0, 0,))
@@ -1763,9 +1781,11 @@ class ColorDialogWidget(base.BaseWidget, object):
         self._value_slider.valueChanged.connect(self.set_hsv)
         self._value_slider.valueChanged.connect(self._value_spinner.setValue)
         self._saturation_slider.valueChanged.connect(self.set_hsv)
-        self._saturation_slider.valueChanged.connect(self._saturation_spinner.setValue)
+        # TODO: Check why this was causing crash when moving saturation slider
+        # self._saturation_slider.valueChanged.connect(self._saturation_spinner.setValue)
         self._hue_slider.valueChanged.connect(self.set_hsv)
-        self._hue_slider.valueChanged.connect(self._hue_spinner.setValue)
+        # TODO: Check why this was causing crash when moving hue slider
+        # self._hue_slider.valueChanged.connect(self._hue_spinner.setValue)
         self._red_slider.valueChanged.connect(self.set_rgb)
         self._red_slider.valueChanged.connect(self._red_spinner.setValue)
         self._green_slider.valueChanged.connect(self.set_rgb)
@@ -1814,7 +1834,11 @@ class ColorDialogWidget(base.BaseWidget, object):
             self._pick_from_screen = False
             self.releaseMouse()
 
-    def color(self):
+    # =================================================================================================================
+    # BASE
+    # =================================================================================================================
+
+    def get_color(self):
         col = self._color
         if not self._alpha_enabled:
             col.setAlpha(255)
@@ -1825,6 +1849,24 @@ class ColorDialogWidget(base.BaseWidget, object):
         self._color_preview.set_comparison_color(color)
         self._hex_line.setModified(False)
         self._set_color(color)
+
+    def get_color_list(self):
+        return self._color_list
+
+    def set_color_list(self, color_list):
+        self._color_list = color_list
+        self.blockSignals(True)
+        widgets = self.findChildren(QWidget)
+        for widget in widgets:
+            widget.blockSignals(True)
+        try:
+            self.set_color(QColor(*color_list))
+        finally:
+            self.blockSignals(False)
+            for widget in widgets:
+                widget.blockSignals(False)
+
+    colorList = Property(tuple, get_color_list, set_color_list, user=True)
 
     def comparison_color(self):
         return self._color_preview.comparison_color()
@@ -1898,11 +1940,15 @@ class ColorDialogWidget(base.BaseWidget, object):
         self._color_wheel.set_rotating_selector(flag)
 
     def _set_color(self, color):
+
         if isinstance(color, (tuple, list)):
             color = QColor(*color)
-        self._color_wheel.set_color(color)
         alpha = self._color.alphaF()
         self._color = color
+        self._color_list = color.red(), color.green(), color.blue(), color.alpha()
+
+        self._color_wheel.set_color(color)
+
         blocked = self.signalsBlocked()
         self.blockSignals(True)
         for widget in self.findChildren(QWidget):
@@ -1956,6 +2002,10 @@ class ColorDialogWidget(base.BaseWidget, object):
 
         self.colorChanged.emit(color)
 
+    # =================================================================================================================
+    # CALLBACKS
+    # =================================================================================================================
+
     def _on_edit_hex_color_changed(self, color):
         self._set_color(color)
 
@@ -1971,7 +2021,7 @@ class ColorDialogWidget(base.BaseWidget, object):
         self._set_color(self._color_preview.comparison_color())
 
     def _on_select_color(self):
-        current_color = self.color()
+        current_color = self.get_color()
         self.colorSelected.emit(current_color)
 
 
@@ -2012,7 +2062,7 @@ class ColorDialog(QDialog, object):
     #     return QSize(400, 0)
 
     def color(self):
-        return self._color_widget.color()
+        return self._color_widget.get_color()
 
     def set_color(self, color):
         self._color_widget.set_color(color)
@@ -2052,5 +2102,277 @@ class ColorDialog(QDialog, object):
     def _on_button_box_clicked(self, btn):
         role = self._button_box.buttonRole(btn)
         if role == QDialogButtonBox.AcceptRole or role == QDialogButtonBox.ApplyRole:
-            self._color_widget._color_preview.set_comparison_color(self._color_widget.color())
-            self._color_widget.colorSelected.emit(self._color_widget.color())
+            self._color_widget._color_preview.set_comparison_color(self._color_widget.get_color())
+            self._color_widget.colorSelected.emit(self._color_widget.get_color())
+
+
+class ColorRgbGradientSlider(sliders.DoubleSlider, object):
+    """
+    Custom slider to select a color by non editable gradient
+    """
+
+    def __init__(self, parent, color1=None, color2=None, slider_range=None, dragger_steps=None, main_color=None, *args):
+        if color1 is None:
+            color1 = [0, 0, 0]
+        if color2 is None:
+            color2 = [255, 255, 255]
+        if slider_range is None:
+            slider_range = (0.0, 255.0)
+        if dragger_steps is None:
+            dragger_steps = [5.0, 1.0, 0.25]
+        super(ColorRgbGradientSlider, self).__init__(
+            parent=parent, slider_range=slider_range, dragger_steps=dragger_steps, *args)
+
+        self._parent = parent
+        self._color1 = QColor(color1[0], color1[1], color1[2])
+        self._color2 = QColor(color2[0], color2[1], color2[2])
+        self._main_color = main_color if main_color else QColor(215, 128, 26).getRgb()
+
+        self.setStyleSheet(self._get_style_sheet())
+
+    def paintEvent(self, event):
+        painter = QPainter()
+        painter.begin(self)
+        self._draw_widget(painter)
+        painter.end()
+        super(ColorRgbGradientSlider, self).paintEvent(event)
+
+    def get_color(self):
+        """
+        Computes and returns current color
+        :return: list(float, float, float)
+        """
+
+        r1, g1, b1 = self._color1.getRgb()
+        r2, g2, b2 = self._color2.getRgb()
+        f_r = (r2 - r1) * self.mapped_value() + r1
+        f_g = (g2 - g1) * self.mapped_value() + g1
+        f_b = (b2 - b1) * self.mapped_value() + b1
+
+        return [f_r, f_g, f_b]
+
+    def _draw_widget(self, painter):
+        width = self.width()
+        height = self.height()
+
+        gradient = QLinearGradient(0, 0, width, height)
+        gradient.setColorAt(0, self._color1)
+        gradient.setColorAt(1, self._color2)
+        painter.setBrush(QBrush(gradient))
+
+        painter.drawRect(0, 0, width, height)
+
+    def _get_style_sheet(self):
+        return """
+        QSlider,QSlider:disabled,QSlider:focus{
+                                  background: qcolor(0,0,0,0);   }
+
+         QSlider::groove:horizontal {
+            border: 1px solid #999999;
+            background: qcolor(0,0,0,0);
+         }
+        QSlider::handle:horizontal {
+            background:  rgba(255, 255, 255, 150);
+            width: 10px;
+            border-radius: 4px;
+            border: 1.5px solid black;
+         }
+         QSlider::handle:horizontal:hover {
+            border: 2.25px solid %s;
+         }
+        """ % "rgba%s" % str(self._main_color)
+
+
+class ColorRgbSliders(base.BaseWidget, object):
+    """
+    Custom slider to choose a color by its components
+    """
+
+    colorChanged = Signal(tuple)
+
+    def __init__(self, parent=None, start_color=None, slider_type='float', alpha=False, height=50, *args):
+
+        self._parent = parent
+        self._type = slider_type
+        self._alpha = alpha
+        self._default_color = start_color or 0, 0, 0, 255
+        self._height = height
+        self._color = self._default_color
+        self._style_str = "QPushButton{ background-color: rgba(%f,%f,%f,%f);border-color: black;" \
+                          "border-radius: 2px;border-style: outset;border-width: 1px;}" \
+                          "\nQPushButton:pressed{ border-style: inset;border-color: beige}"
+
+        super(ColorRgbSliders, self).__init__(parent=parent, *args)
+
+    def _get_color(self):
+        return self._color
+
+    def _set_color(self, color_tuple):
+        self._color = color_tuple
+        with qt_contexts.block_signals(self):
+            self._red_slider.set_mapped_value(self._color[0], block_signals=True)
+            self._green_slider.set_mapped_value(self._color[1], block_signals=True)
+            self._blue_slider.set_mapped_value(self._color[2], block_signals=True)
+            try:
+                self._alpha_slider.set_mapped_value(self._color[3], block_signals=True)
+            except Exception:
+                pass
+
+    color = Property(tuple, _get_color, _set_color)
+
+    def get_main_layout(self):
+        return layouts.HorizontalLayout(spacing=5)
+
+    def ui(self):
+        super(ColorRgbSliders, self).ui()
+
+        self.setMaximumHeight(self._height)
+
+        self._menu = QMenu(self)
+        self._action_reset = self._menu.addAction('Reset Value')
+
+        self._red_dragger = sliders.DraggerSlider(slider_type=self._type)
+        self._green_dragger = sliders.DraggerSlider(slider_type=self._type)
+        self._blue_dragger = sliders.DraggerSlider(slider_type=self._type)
+        self._alpha_dragger = sliders.DraggerSlider(slider_type=self._type)
+        for dragger in [self._red_dragger, self._green_dragger, self._blue_dragger, self._alpha_dragger]:
+            dragger.setMinimum(0)
+            if self._type == 'int':
+                dragger.setMaximum(255)
+            else:
+                dragger.setMaximum(1.0)
+
+        self._red_slider = ColorRgbGradientSlider(parent=self, color2=[255, 0, 0])
+        self._green_slider = ColorRgbGradientSlider(parent=self, color2=[0, 255, 0])
+        self._blue_slider = ColorRgbGradientSlider(parent=self, color2=[0, 0, 255])
+        self._alpha_slider = ColorRgbGradientSlider(parent=self, color2=[255, 255, 255])
+
+        self._red_dragger.valueChanged.connect(lambda value: self._red_slider.set_mapped_value(float(value)))
+        self._red_slider.doubleValueChanged.connect(lambda value: self._red_dragger.setValue(value))
+        self._green_dragger.valueChanged.connect(lambda value: self._green_slider.set_mapped_value(float(value)))
+        self._green_slider.doubleValueChanged.connect(lambda value: self._green_dragger.setValue(value))
+        self._blue_dragger.valueChanged.connect(lambda value: self._blue_slider.set_mapped_value(float(value)))
+        self._blue_slider.doubleValueChanged.connect(lambda value: self._blue_dragger.setValue(value))
+        self._alpha_dragger.valueChanged.connect(lambda value: self._alpha_slider.set_mapped_value(float(value)))
+        self._alpha_slider.doubleValueChanged.connect(lambda value: self._alpha_dragger.setValue(value))
+
+        red_layout = layouts.HorizontalLayout()
+        green_layout = layouts.HorizontalLayout()
+        blue_layout = layouts.HorizontalLayout()
+        alpha_layout = layouts.HorizontalLayout()
+        red_layout.addWidget(self._red_dragger)
+        red_layout.addWidget(self._red_slider)
+        green_layout.addWidget(self._green_dragger)
+        green_layout.addWidget(self._green_slider)
+        blue_layout.addWidget(self._blue_dragger)
+        blue_layout.addWidget(self._blue_slider)
+        alpha_layout.addWidget(self._alpha_dragger)
+        alpha_layout.addWidget(self._alpha_slider)
+        self._sliders_layout = layouts.VerticalLayout()
+        self._sliders_layout.setSpacing(0)
+        layouts_list = [red_layout, green_layout, blue_layout]
+        if self._alpha:
+            layouts_list.append(alpha_layout)
+        else:
+            self._alpha_slider.hide()
+
+        self._alpha_slider.set_mapped_value(255)
+
+        self._color_btn = buttons.BaseButton(parent=self)
+        self._color_btn.setMaximumWidth(self._height)
+        self._color_btn.setMinimumWidth(self._height)
+        self._color_btn.setMaximumHeight(self._height - 12)
+        self._color_btn.setMinimumHeight(self._height - 12)
+        self._color_btn.setStyleSheet(
+            self._style_str % (
+                self._red_slider.mapped_value(), self._green_slider.mapped_value(),
+                self._blue_slider.mapped_value(), self._alpha_slider.mapped_value()))
+
+        for widget in [self._red_slider, self._green_slider, self._blue_slider, self._alpha_slider,
+                       self._red_dragger, self._green_dragger, self._blue_dragger, self._alpha_dragger]:
+            widget.setMaximumHeight(self._height / len(layouts_list) + 1)
+            widget.setMinimumHeight(self._height / len(layouts_list) + 1)
+
+        for slider in [self._red_slider, self._green_slider, self._blue_slider, self._alpha_slider]:
+            slider.doubleValueChanged.connect(self._on_color_changed)
+
+        for layout in layouts_list:
+            self._sliders_layout.addLayout(layout)
+
+        self.main_layout.addWidget(self._color_btn)
+        self.main_layout.addLayout(self._sliders_layout)
+
+        if isinstance(self._default_color, list) and len(self._default_color) >= 3:
+            self.set_color(self._default_color)
+
+        self._color_btn.clicked.connect(self._on_show_color_dialog)
+        self._action_reset.triggered.connect(self._on_reset_value)
+
+    def contextMenuEvent(self, event):
+        self._menu.exec_(event.globalPos())
+
+    def set_color(self, new_color):
+        self._red_slider.set_mapped_value(new_color[0])
+        self._green_slider.set_mapped_value(new_color[1])
+        self._green_slider.set_mapped_value(new_color[2])
+        if len(new_color) > 3:
+            self._alpha_slider.set_mapped_value(new_color[3])
+
+    def _on_color_changed(self):
+        self._color_btn.setStyleSheet(
+            self._style_str % (
+                self._red_slider.mapped_value(), self._green_slider.mapped_value(),
+                self._blue_slider.mapped_value(), self._alpha_slider.mapped_value()))
+        value_list = [
+            self._red_slider.mapped_value(), self._green_slider.mapped_value(), self._blue_slider.mapped_value()]
+        if self._alpha:
+            value_list.append(self._alpha_slider.mapped_value())
+        if self._type == 'int':
+            value_list = [mathlib.clamp(int(i), 0, 255) for i in value_list]
+        self._color = python.force_tuple(value_list)
+        self.colorChanged.emit(self._color)
+
+    def _on_show_color_dialog(self):
+        if self._alpha:
+            new_color = QColorDialog.getColor(options=QColorDialog.ShowAlphaChannel)
+        else:
+            new_color = QColorDialog.getColor()
+        if new_color.isValid():
+            self._red_slider.set_mapped_value(
+                mathlib.map_range_unclamped(
+                    new_color.redF(), 0.0, 1.0, self._red_slider.slider_range[0], self._red_slider.slider_range[1]))
+            self._green_slider.set_mapped_value(
+                mathlib.map_range_unclamped(
+                    new_color.greenF(), 0.0, 1.0, self._green_slider.slider_range[0],
+                    self._green_slider.slider_range[1]))
+            self._blue_slider.set_mapped_value(
+                mathlib.map_range_unclamped(
+                    new_color.blueF(), 0.0, 1.0, self._blue_slider.slider_range[0], self._blue_slider.slider_range[1]))
+            self._alpha_slider.set_mapped_value(
+                mathlib.map_range_unclamped(
+                    new_color.alphaF(), 0.0, 1.0, self._alpha_slider.slider_range[0],
+                    self._alpha_slider.slider_range[1]))
+
+    def _on_reset_value(self):
+        if self._default_color:
+            self.set_color(self._default_color)
+
+
+class ColorPaletteWidget(base.BaseWidget):
+    def __init__(self, draggable=True, parent=None):
+
+        self._draggable = draggable
+        self._pressed = None
+        self._drag_color = QColor()
+        self._prev_button = None
+
+        super(ColorPaletteWidget, self).__init__(parent=parent)
+
+        self._fill_default_color_list()
+
+    def ui(self):
+        super(ColorPaletteWidget, self).ui()
+
+    def _fill_default_color_list(self):
+        pass
+

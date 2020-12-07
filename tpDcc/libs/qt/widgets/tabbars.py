@@ -67,6 +67,8 @@ class EditableTabBar(QTabBar, object):
         self.add_tab_btn = EditableAddButton(parent=self)
         self._move_add_tab_btn()
 
+        self.setDrawBase(False)
+
         self.add_tab_btn.clicked.connect(self.addTabClicked.emit)
 
     def is_editable(self):
@@ -197,6 +199,7 @@ class TearOffTabBar(QTabBar, object):
         self.setCursor(Qt.ArrowCursor)
         self.setMouseTracking(True)             # We want to track mouse events even if no buttons are pressed
         self.setIconSize(QSize(12, 12))
+        self.setDrawBase(False)
 
         self._select_tab_index = -1
         self._drag_initiated = False

@@ -14,6 +14,7 @@ from Qt.QtWidgets import QApplication, QLineEdit, QTextEdit
 from Qt.QtGui import QDoubleValidator, QIntValidator
 
 from tpDcc.libs.resources.core import theme
+from tpDcc.libs.qt.core import contexts as qt_contexts
 from tpDcc.libs.qt.widgets import layouts, buttons, browser
 
 
@@ -54,6 +55,13 @@ class BaseLineEdit(QLineEdit, object):
     # PROPERTIES
     # =================================================================================================================
 
+    def _get_text(self):
+        return self.text()
+
+    def _set_text(self, value):
+        with qt_contexts.block_signals(self):
+            self.setText(value)
+
     def _get_size(self):
         """
         Returns the spin box height size
@@ -76,6 +84,7 @@ class BaseLineEdit(QLineEdit, object):
         self.style().polish(self)
 
     theme_size = Property(int, _get_size, _set_size)
+    line_text = Property(str, _get_text, _set_text)
 
     # =================================================================================================================
     # OVERRIDES

@@ -15,7 +15,8 @@ from collections import defaultdict
 
 from Qt.QtCore import Qt, Signal, QByteArray, QSettings
 from Qt.QtWidgets import QApplication, QSizePolicy, QToolBar, QScrollArea, QMenuBar, QAction, QDockWidget
-from Qt.QtWidgets import QMainWindow, QWidget, QFrame, QTabWidget, QTabBar
+from Qt.QtWidgets import QMainWindow, QWidget, QTabWidget, QTabBar
+from Qt.QtGui import QCursor
 
 from tpDcc import dcc
 from tpDcc.managers import resources
@@ -28,7 +29,7 @@ from tpDcc.libs.qt.widgets import layouts
 LOGGER = logging.getLogger('tpDcc-libs-qt')
 
 
-class WindowContents(QFrame, object):
+class WindowContents(QWidget, object):
     """
     Widget that defines the core contents of frameless window
     Can be used to custom CSS for frameless windows contents
@@ -535,7 +536,7 @@ class BaseWindow(QMainWindow, object):
         Loads window theme
         """
 
-        theme_name = theme_name or self.settings().get('theme', None) if self._settings else 'default'
+        theme_name = theme_name or self.settings().get('theme', 'default') if self._settings else 'default'
         theme_to_load = resources.theme(theme_name)
         if not theme_to_load:
             theme_to_load = theme.Theme()
@@ -730,6 +731,8 @@ class MainWindow(BaseWindow, object):
         self._current_docked = None
 
         super(MainWindow, self).__init__(parent=parent, **kwargs)
+
+        self.setAttribute(Qt.WA_TranslucentBackground)
 
         self._dockable = getattr(self, 'WindowDockable', False)
         frameless = kwargs.get('frameless', True)

@@ -12,7 +12,7 @@ from Qt.QtWidgets import QSizePolicy, QFrame, QSpinBox, QDoubleSpinBox
 from Qt.QtGui import QColor, QPainter, QDoubleValidator
 
 from tpDcc.libs.resources.core import theme
-from tpDcc.libs.qt.core import base
+from tpDcc.libs.qt.core import base, contexts as qt_contexts
 from tpDcc.libs.qt.widgets import layouts, lineedit, buttons, label
 
 
@@ -322,7 +322,7 @@ class DragDoubleSpinBoxLine(lineedit.BaseLineEdit, object):
 
     valueChanged = Signal(float)
 
-    def __init__(self, start=0.0, max=10, min=-10, positive=False, parent=None):
+    def __init__(self, start=0.0, max=10, min=-10, positive=False, decimals=4, parent=None):
         super(DragDoubleSpinBoxLine, self).__init__(parent=parent)
 
         self._click = False
@@ -330,6 +330,7 @@ class DragDoubleSpinBoxLine(lineedit.BaseLineEdit, object):
         self._mouse_position = QPoint(0, 0)
         self._min = 0.01 if positive else min
         self._max = max
+        self._decimals = decimals or 3
         self._sup = positive
         self.setText(str(start))
 
@@ -337,6 +338,24 @@ class DragDoubleSpinBoxLine(lineedit.BaseLineEdit, object):
 
         theme = self.theme()
         self._color = theme.accent_color_5 or QColor(0, 255, 0)
+
+        self.textChanged.connect(self._on_text_changed)
+
+    def _on_text_changed(self, text):
+
+        cursor_pos = self.cursorPosition()
+
+        value = round(float(text), self._decimals)
+        if value > self._max:
+            value = self._max
+        elif value < self._min:
+            value = self._min
+
+        value = str(value)
+
+        self.setText(value)
+
+        self.setCursorPosition(cursor_pos)
 
     @property
     def default(self):
@@ -359,7 +378,7 @@ class DragDoubleSpinBoxLine(lineedit.BaseLineEdit, object):
             delta = event.x() - self._mouse_position.x()
             v = float(self.text()) + delta / 100.0
             v = max(self._min, min(self._max, v))
-            self.setText(str(v))
+            self.setText(str(round(v, self._decimals)))
             self._mouse_position = event.pos()
             self.valueChanged.emit(v)
 
@@ -391,11 +410,27 @@ class DragDoubleSpinBoxLine(lineedit.BaseLineEdit, object):
     def set_default(self, default):
         self._default = default
 
+    def set_minimum(self, minimum_value):
+        self._min = minimum_value
+        if self.value() < self._min:
+            self.setValue(self._min)
+        self.update()
+
+    def set_maximum(self, maximum_value):
+        self._max = maximum_value
+        if self.value() > self._max:
+            self.setValue(self._max)
+        self.update()
+
     def value(self):
         try:
             return float(self.text())
         except Exception:
             return 0.0
+
+    def setText(self, text):
+        super(DragDoubleSpinBoxLine, self).setText(text)
+        self.valueChanged.emit(self.value())
 
     # NOTE: Here I'm breaking naming nomenclature on purpose. Doing this we follow nomenclature of Qt SpinBoxes
     def setValue(self, new_value):
@@ -448,6 +483,15 @@ class DragDoubleSpinBoxLineAxis(base.BaseWidget, object):
         self._line.valueChanged.connect(self.valueChanged.emit)
         self._line.textChanged.connect(self.textChanged.emit)
 
+    def _get_value(self):
+        return self.value()
+
+    def _set_value(self, value):
+        with qt_contexts.block_signals(self, children=True):
+            self.setValue(value)
+
+    floatValue = Property(float, _get_value, _set_value)
+
     def value(self):
         return self._line.value()
 
@@ -456,6 +500,14 @@ class DragDoubleSpinBoxLineAxis(base.BaseWidget, object):
 
     def set_default(self, default):
         self._line.set_default(default)
+
+    def set_minimum(self, minimum_value):
+        self._min = minimum_value
+        self._line.set_minimum(self._min)
+
+    def set_maximum(self, maximum_value):
+        self._max = maximum_value
+        self._line.set_maximum(self._max)
 
     def _on_reset(self):
         self._line.setValue(str(self._line.default))

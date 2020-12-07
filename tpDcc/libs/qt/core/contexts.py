@@ -10,7 +10,7 @@ from __future__ import print_function, division, absolute_import
 import sys
 import contextlib
 
-from Qt.QtWidgets import QApplication
+from Qt.QtWidgets import QApplication, QWidget
 
 from tpDcc import dcc
 from tpDcc.dcc import window
@@ -30,12 +30,17 @@ def application():
 
 
 @contextlib.contextmanager
-def block_signals(widget):
+def block_signals(widget, children=False):
     widget.blockSignals(True)
+    child_widgets = widget.findChildren(QWidget) if children else list()
+    for child_widget in child_widgets:
+        child_widget.blockSignals(True)
     try:
         yield widget
     finally:
         widget.blockSignals(False)
+        for child_widget in child_widgets:
+            child_widget.blockSignals(False)
 
 
 @contextlib.contextmanager

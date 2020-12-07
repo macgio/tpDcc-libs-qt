@@ -89,28 +89,29 @@ class GraphicsLayeredBlurEffect(QGraphicsBlurEffect, object):
         self._inner_radius = inner_radius
         self._outer_radius = outer_radius
 
+    @property
     @decorators.returns(float)
-    def get_inner_radius(self):
+    def inner_radius(self):
         return self._inner_radius
 
+    @inner_radius.setter
     @decorators.accepts(float)
-    def set_inner_radius(self, value):
+    def inner_radius(self, value):
         self._inner_radius = value
 
+    @property
     @decorators.returns(float)
-    def get_outer_radius(self):
+    def outer_radius(self):
         return self._outer_radius
 
+    @outer_radius.setter
     @decorators.accepts(float)
-    def set_outer_radius(self, value):
+    def outer_radius(self, value):
         self._outer_radius = value
-
-    inner_radius = property(get_inner_radius, set_inner_radius)
-    outer_radius = property(get_outer_radius, set_outer_radius)
 
     def draw(self, painter):
         if self._outer_radius > 0:
-            self.setBlurRadius(self.outer_radius)
+            self.setBlurRadius(self._outer_radius)
             super(GraphicsLayeredBlurEffect, self).draw(painter)
         if self._inner_radius > 0:
             self.setBlurRadius(self._inner_radius)

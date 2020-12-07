@@ -100,7 +100,7 @@ class WindowDragger(QFrame, object):
 
     def ui(self):
         self.setFixedHeight(qtutils.dpi_scale(40))
-        
+
         main_layout = layouts.HorizontalLayout(spacing=5, margins=(15, 0, 15, 0))
         self.setLayout(main_layout)
 
